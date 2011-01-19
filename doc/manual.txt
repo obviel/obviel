@@ -1,19 +1,24 @@
-jQuery Views 
-============
+Obviel: Object/View/Element for jQuery
+======================================
 
 Introduction
 ------------
 
-jQuery Views is an extension to jQuery that allows you to create a
-better structure for your rich-client applications. It lets you use a
-model/view architecture on the client side. A model is simply a
-Javascript object. A view is a component that can represent the model
-in the browser, usually as part of a larger web page.
+Obviel is an extension to jQuery that allows you to create a better
+structure for Javascript applications. It is especially geared towards
+rich-client applications, but should work for any website that uses
+Javascript.
 
-A jQuery view is simply an object that knows how to represent a model
-object into the browser DOM. A few options are made available to help
-with common use cases, such as client-side templating, form handling,
-and iframe embedding of content.
+Obviel allows you a model/view architecture on the client side, with
+dynamic view lookup. In Obviel, a model is simply a Javascript object,
+typically retrieved through JSON.
+
+An Obviel view is an object that knows how to represent a model object
+into the browser DOM. Some options are made available to help with
+common use cases, such as form handling, client-side templating, and
+iframe embedding of content.
+
+When a view is rendered, it is bound to a DOM element.
 
 Rendering a view
 ----------------
@@ -25,7 +30,20 @@ render itself? You use a jQuery selector and the ``render`` method::
   $('#foo').render(obj);
 
 This will represent ``obj`` for the element indicated by the selector
-``#foo``.
+``#foo``. If we use a selector that matches more than one element,
+view lookup is performed multiple times, once for each matching
+element, and the callback is called each time a view is rendered for
+such an element.
+
+Views can also render URLs. In this case, it will send a GET request
+to the server to fetch a JSON object from the URL, and then render it::
+
+  $('#foo').render('http://example.com/somejson')
+
+This allows you to create a hyperlinked structure of Javascript
+objects: you can send back an object that contains sub-objects or URLs
+to other objects elsewhere on the server. These object can in turn
+be rendered using Obviel as well.
 
 Views are named. The default view for an object is named ``default``
 and is looked up by default, and this is usually sufficient, but in
@@ -51,81 +69,92 @@ Optionally also a callback function may be provided::
 The callback will be called after the view is rendered. It receives
 three arguments, the first a reference to the element the view is
 rendered on, then the view object itself, and the lastly the object
-that the view was rendered for.
+that the view was rendered for. XXX should we make this order
+ob/vie/el?
 
-Another optional handler can be provided to handle errors (note that this
-is only correctly recognized if the callback discussed previously is provided):
+If a callback is provided, it becomes also possible to add another
+handle for errors::
 
   $('#foo').render(obj, function(el, view, obj) {}, function(err) {});
 
-This is called with an instance of the exception as its only argument, and
-allows customizing error handling, and catching of errors in asynchronous
-situations (where usually errors are silently ignored).
-
-Sometimes we don't have a Javascript object but only a URL pointing to
-JSON content. In this case we can use the convenience function
-``renderURL``::
-
-  $('#foo').renderURL(url);
-
-This will load the JSON content at ``url`` into an object ((using a
-GET request) and then look up and render a view for this object. The
-function allows passing the same additional arguments as ``render``
-(the 'callback' and 'errback' handlers) and behaves the same as ``render``,
-with the only exception that the context object (``obj`` in our example)
-is retrieved from the URL rather than provided directly.
-
-If we use a selector that matches more than one element, view lookup
-is performed multiple times, once for each matching element, and the
-callback is called each time a view is rendered for such an element.
+This is called with an instance of the exception as its only argument,
+and allows customizing error handling, and catching of errors in
+asynchronous situations, where otherwise errors are usually silently
+ignored.
 
 View declaration
 ----------------
 
-A view is declared like this::
+Let's look at an example of a view::
 
-  views.view({<options>});
+   obviel.view({
+       render: function(el, obj, name) {
+           el.text("Hello world!");
+       });
 
-There are many options, discussed in detail in the API.txt document, but the
-most important are discussed in short below.
+Now you can do this::
 
-The ``iface`` option is basically a string marker to disconnect registration
-of views from the data definitions, in other words a view is registered for
-a certain marker, and later on the views system can be told to find a view
-for an object by providing that same marker (or a 'child' for that marker,
-see the 'Lookup and registration' and 'Interface extension' chapters further
-on) as it's ``interface``, basically a declaration of its data type/contents.
+  $(el).render(obj);
 
-The ``render`` option is a handler that takes three arguments: ``el``, the
-element the view is being rendered on (wrapped by jQuery), ``obj``, the object
-to represent, and ``name``, the name under which this view was invoked.
-``this`` is the view object itself, which may have information and options
-relevant to the rendering of the view. The render method can then do the actual
-work of manipulating the DOM, hooking up event handlers, etc.
+The ``render`` option is a handler that takes three arguments: ``el``,
+the element the view is being rendered on (wrapped by jQuery),
+``obj``, the object to represent, and ``name``, the name under which
+this view was invoked (usually ``default``).  ``this`` is the view
+object itself, which may have information and options relevant to the
+rendering of the view. The render method is there to do the actual
+work of manipulating the DOM, hooking up event handlers, and so on.
 
-This view was registered under the default name ``default``, and for
-all types of objects - in fact the ``View`` object defines this as the
-default. You can also be more specific by providing your own ``name``
-or ``iface`` value::
+The render function in this view will be registered for any Javascript
+object. This is because the view, by default, was registered for all
+types of objects. Usually you want to be more specific. So, let's get
+more specific and declare our view for a specific type of object, an
+``iface``::
 
-  views.view({
-    render: function(el, obj, name) { ... },
-    iface: 'person',
-    name: 'display'
-  });
+  obviel.view({
+    iface: 'foo',
+    render: function(el, obj, name) {
+         el.text("Hello world!");
+    });
 
-This view is only registered for those objects that provide the
-interface (iface, the string marker discussed previously) with the id
-``person``. An object can be made to provide an interface by giving it a
-special ``ifaces`` attribute::
+Now the view will only be invoked if ``$(el).render()`` is called with
+an object that has the iface ``foo``. How does an object say it
+provides the iface ``foo``? You can do this by adding an ``ifaces``
+attribute to the object with a list of ifaces that this object
+provides::
 
-  person = {'name': 'Bob', ifaces: ['person']};
+  something =  { 
+    'ifaces': ['foo'],
+    'data': 3 
+  }
+
+Or as another example::
+
+  a_person = {'name': 'Bob', ifaces: ['person']};
+
+An ``iface`` (interface) is a string marker that can be used to
+describe objects, and views are connected to those ifaces. In this
+way, it supports a dynamic, loose, coupling between data and views. A
+view only needs to know an object has a certain iface in order to work
+for it. Ifaces can also have relations to each other: a child iface
+can expand a parent iface. See :ref:`lookup-and-registration` and
+:ref:`interface-extension` for more information.
+
+More in general, a view is declared like this::
+
+  obviel.view({<options>});
+
+There are many other options, discussed in detail in the :doc:`API
+documentation <api>`.
 
 View composition
 ----------------
 
-A view can use sub-views to help render itself. You can achieve this by hand
-in a render method, like this::
+Often a view is composed out of other views. A larger view renders a
+whole page, and sections of the page are rendered using
+sub-views. These may in turn use other views for smaller fragments on
+the page.
+
+You can achieve sub-views by hand in a render method, like this::
 
   views.view({
     render: function(el, obj) {
@@ -133,10 +162,13 @@ in a render method, like this::
     }
   });
 
-What this says is to render the 'attr' attribute of obj on the
-element(s) of class ``foo`` under the element that this view is on.
+What this says is to render the 'attr' attribute of ``obj`` on the
+element(s) of class ``foo`` under the element that this view is
+on. ``attr`` might be a sub-object, or might be a URL, in which a
+whole other object is fetched from the server.
 
-The system, however, also allows you to express this declaratively instead::
+Doing this by hand is not too bad, but the system also allows a shorter,
+declarative way to express this::
 
   views.view({
     subviews: {
@@ -144,16 +176,13 @@ The system, however, also allows you to express this declaratively instead::
     }
   });
 
-This does the same thing as above, but using a somewhat cleaner notation.
+This does the same thing as above.
 
 The ``subviews`` attribute, if available, should define a mapping from
 JQuery selector to attribute name. After the view has rendered, if any
 subviews are defined, the selectors are resolved within the view's
 element, and the attributes are looked up on the context object for
-the view. If the value of the attribute is a string, it is assumed to
-be a URL and ``renderURL(obj.attr)`` is called on the result of the
-selector. If it's not a string it is assumed to be a content object
-and ``render(obj.attr)`` is called on the selector. 
+the view.
 
 So, if you have this view::
 
@@ -170,9 +199,13 @@ And render it with the following context object::
     beta_url: '/beta.json'
   }
 
-the system will, in effect, call
-``$('#alpha', viewelement).render({text: 'foo'})`` and
-``$('#beta', viewelement).renderURL('/beta.json')``. 
+the system will, in effect, call::
+
+  $('#alpha', viewelement).render({text: 'foo'})
+
+and::
+
+  $('#beta', viewelement).renderURL('/beta.json') 
 
 Any callback passed to the original ('parent') render function is only
 applied after all the subviews have been rendered.
@@ -461,7 +494,9 @@ XXX not supported - I don't understand the purpose if something similar can
     basically this mechanism will allow any object that has the expected
     attributes to be registered as a view
 
-Lookup and registration
+.. _lookup-and-registration:
+
+Lookup and Registration
 -----------------------
 
 When registering a view, you can pass in two arguments:
@@ -527,7 +562,9 @@ of the views can respond to things happening on a view. Those events are:
     rendering a new view on that same element, target is again the element
     but arguments this time are (old_view, new_view, obj)
 
-Interface extension
+.. _interface-extension:
+
+Interface Extension
 -------------------
 
 It is frequently useful to be able to register an interface more
