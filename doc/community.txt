@@ -1,0 +1,20 @@
+Community
+=========
+
+.. _`mailing list`:
+
+Mailing list
+------------
+
+Discussions on the use and further development of Obviel happen on the
+Obviel mailing list: obviel@googlegroups.com
+
+You can subscribe here: https://groups.google.com/group/obviel
+
+IRC
+---
+
+Come to the ``#obviel`` IRC channel on FreeNode_.
+
+.. _FreeNode: http://freenode.net/
+

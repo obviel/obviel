@@ -12,6 +12,7 @@ Contents:
    form
    api
    parent-render
+   community
    development
 
 Indices and tables
