@@ -118,7 +118,7 @@ View base class itself, and is optional, but it's used by most subclasses, also
 the ones provided by the views and forms libs themselves.
 
 views.view(view or options)
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Register a view either by providing a view instance or a set of options. The
 view is registered for interface view.iface (defaulting to 'base') and name
@@ -223,7 +223,7 @@ continued until the top of the document is reached, in which case undefined is
 returned.
 
 Options
--------
++++++++
 
 The following section described the options for views defined in the views
 lib, note that views defined outside of this lib may define/require different
@@ -385,11 +385,9 @@ Events
 ------
 
 rendered.views
-~~~~~~~~~~~~~~
+++++++++++++++
 
 Triggered when rendering of a view - including all subviews, etc. - is done.
 
 XXX isn't this redundant? why not use the callback?
 
-Forms library
-=============

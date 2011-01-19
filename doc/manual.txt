@@ -348,7 +348,7 @@ The view to initially display the form::
 As long as the form submit keeps failing an object with iface ``form``
 will be returned, and this view will be triggered again.
 
-As soon as the response object is ``formsuccess`, another view  
+As soon as the response object is ``formsuccess``, another view  
 can kick in, where we can for instance change the display to 
 show some other object::
 

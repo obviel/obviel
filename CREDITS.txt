@@ -1,0 +1,18 @@
+Obviel credits
+==============
+
+Creation and Implementation
+---------------------------
+
+* Guido Wesdorp - implementation, docs
+
+* Martijn Faassen - concepts/design, prototyping, docs
+
+* Izhar Firdaus - design discussions, prototyping, feedback
+
+Also thanks to
+--------------
+
+* Christian Zagrodnick
+
+* Antonin Amand

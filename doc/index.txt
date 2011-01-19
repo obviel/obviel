@@ -1,0 +1,22 @@
+Obviel: Object/View/Element for Javascript
+==========================================
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   readme
+   manual
+   deps 
+   form
+   api
+   parent-render
+   
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
