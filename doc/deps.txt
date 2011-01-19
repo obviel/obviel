@@ -1,0 +1,18 @@
+Core
+----
+
+jquery
+jquery.form (form.ajaxForm in core)
+
+Forms
+-----
+
+jquery-ui (forms, for some widgets)
+json2 (needed to serialize json before posting in forms)
+datalink (not in jquery? only for forms?)
+json-template.js (forms depend on it for widgets)
+
+Test runner
+-----------
+
+qunit

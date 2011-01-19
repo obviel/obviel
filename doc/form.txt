@@ -1,0 +1,251 @@
+Some thoughts about forms
+=========================
+
+Introduction
+------------
+
+A web form is a user interface for modifying an object.
+
+This object may be new, or retrieved from some place, such as the
+server.
+
+When the user is done modifying the object through the form, the user
+issues a submit. The submit handling code can then do things with the
+object, such as sending it to the server.
+
+Each widget in the form is linked to an attribute of the object. A
+link may convert the form data. As a simple example, a text input
+field value might be converted to an integer in the object.
+
+Conversion may also fail: some text cannot be converted to integers,
+for instance. If conversion fails, the failure is reported to a
+callback, so that the user interface can respond, for instance by
+displaying an error message.
+
+After conversion, there is a validation step. Conversion makes sure
+that the value is converted to the correct format/type, but validation
+makes sure that this value is indeed correct (within range, not too
+long, etc).
+
+Conversion and validation are immediate: you do not have to wait until
+submission.
+
+There is also an *object validation* when the user submits. Where the
+above validation was on the individual form field level, object
+validation determines whether an entire object is ready to be
+submitted. This is the stage where validation for missing required
+object attributes should be done. Attributes with inter-dependent
+values can also be validated at this stage.
+
+A form description
+------------------
+
+The above describes an abstract form framework. It does not handle the
+*construction* of the form yet though - it is often convenient that a
+form can be constructed automatically based on a simple
+description. In addition, it is inconvenient to have to write a lot of
+custom converters and validators by hand. 
+
+We therefore will define a form description language here. To make it
+convenient for web development, it's been designed to be expressed
+as JSON.
+
+Let's start with a simple field where the user can enter a value from
+0 to 100::
+
+  {
+    ifaces: ['integer_field'],
+    name: "value",
+    title: "Value",
+    description: "A value from 0 to 100",
+    defaultvalue: null, // XXX used to be 'default', but that's a keyword :)
+    link: 'value',
+    validator: {
+      min_value: 0,
+      max_value: 100
+    }
+  }
+
+The field is an 'integer_field' field. This indicates to the form
+rendering system how to display the form, and indicates to the
+conversion system how to convert and validate the field.
+
+It has a name, which is the internal name the field will use, a title,
+which is the display name of the field, and a description, which is an
+optional long display name for the field (that may for instance appear
+on hover, or in a separate section of the UI. It also has a default
+value (null, meaning empty), and a link, which links it to an
+attribute of the object that the form represents. By default, 'link' is
+the same as 'name'.
+
+There are also a set of validator arguments, which are optional. By
+default, the validator offer no restrictions (no validator).
+
+Field types
+-----------
+
+These are field types we need to get widgets for. In some cases, we
+may want to do server-interaction to fill the field itself.
+
+* drop-down field
+
+* autocomplete field (with search on code and/or text)
+
+* integer input (possibly fixed amount of digits)
+
+* textline input
+
+* text (area) input
+
+* decimal input
+
+* particularly formatted text/codes
+
+* date
+
+* checkbox
+
+Form controls
+-------------
+
+By default, a submit button is added to the form, unless form.disabled is set
+to true - this will cause all the fields to become disabled, and the controls
+to be hidden from view. There are several ways to override the submit button
+label, or the entire controls section (besides, of course, overriding the form
+JSON template entirely):
+
+* form.submitname/form.submitvalue - setting these will control the name resp.
+  value of the submit button, but rendering is done by the form view
+
+* form.controlshtml - setting this to a snippet of HTML will cause the snippet
+  to replace the controls section (everything inside a div with class
+  'viewform-controls') entirely, this should contain a submit button to allow
+  submitting the form
+
+* form.controls - setting this to a list of dicts with button information (see
+  section below for the dict format) will cause the form view to generate
+  buttons for each bit of information; note that this can be provided both from
+  the view config structure and from the context object, so the context
+  provider (server) can override controls in certain cases
+
+form.controls
+-------------
+
+XXX not yet implemented!! please discuss format and results
+
+One of the options to control what controls are displayed is by providing an
+array (us python devs call 'em 'lists') of associative arrays (aka 'dicts') as
+attribute 'controls' on either the view instance (config on view instantiation)
+or the context object (context.form.controls). The dicts in this list may have
+the following keys:
+
+  * name - the input/button name
+
+    optional, if not provided no 'name' is set on the input
+
+  * value - the input/button value
+
+    optional, if not provided no 'value' is set on the input
+
+  * type - the input type
+
+    optional, defaults to 'submit', this is used along with 'action' below
+    to determine what the button does. if 'type' equals 'submit' the form
+    is submitted to the button action (which must be a url in this case) if
+    provided, else to the action of the form, if it is 'reset' the action of
+    the button is ignored and the button functions as a plain reset button,
+    if it is 'button' the action should be either a url or a structure, and
+    clicking the button causes the action to be rendered on the form element
+    (using views.render() if action is a structure, views.renderURL() if the
+    action is a string)
+
+  * action - the submit action of the button
+
+    what to do when the button is clicked, this is ignored if the button is
+    of type 'reset', optional if the type is 'submit' (with the form action
+    as fallback, either one needs to be provided in case of a submit button)
+    and if provided it should be a string in that case, and it is mandatory
+    in case the button is of type 'button', in which case it should either be
+    a URL (string) to a viewable structure, or a viewable structure itself,
+    in this case clicking the button will cause the viewable structure to be
+    displayed using the views mechanism
+
+form.controls examples
+----------------------
+
+Some small examples of the form.controls feature (note that we render form
+structures directly, while usually they will come from the server)::
+
+  el.render({
+    ifaces: ['viewform'],
+    data: null,
+    form: {
+        action: '/foo',
+        widgets: [ ... ],
+        controls: [
+            // submit button that displays 'save', clicking it will cause
+            // a POST of the context object to /foo (form action)
+            {type: 'submit',
+                value: 'Save'
+            },
+            // a submit that causes the form context to be posted to /bar
+            {type: 'submit',
+                value: 'Save to bar',
+                action: '/bar'
+            },
+            // a button that causes the form data to be ignored and the
+            // provided context object to be rendered on the element on which
+            // the form view is rendered
+            {type: 'button',
+                value: 'View something',
+                action: {ifaces: ['foo'], spam: 'eggs'}
+            },
+            // plain form reset button
+            {type: 'button',
+                value: 'Reset form'
+            }
+        ]
+    }
+  });
+
+form.controls notes
+-------------------
+
+* providing form.controls overrides both form.submitname/form.submitvalue and
+  form.controlshtml, the library only generates controls for forms that do not
+  have form.controls defined
+
+* it is not clear what to do when form.controls does not contain a submit
+  button definition, do we add it automagically, and if so, where? or do we
+  assume the form should perhaps not have a submit button for some reason?
+
+* it is not clear how this cooperates with form.disabled, do we hide any of
+  the buttons, or do we assume that the server deals with this correctly?
+
+Implementation notes
+--------------------
+
+The jquery data linking (beware, needs jquery 1.4.3 pre/beta) API
+should take care of most of the linking concerns. Converters are also
+supported, but I'm not sure how we can hook in conversion failure and
+validation messages; probably by cleverly constructing converter
+functions on the fly.
+
+http://api.jquery.com/link/
+
+Issues
+------
+
+XXX 'field' is a shorthand for 'ifaces', so this is really a context
+for a view. Maybe also we want to allow an alias 'iface' which is
+checked if 'ifaces' is missing for a single value.
+
+XXX need way to send validation failures to message generation system
+and/or include messages themselves in description.
+
+XXX we need a story for nested objects as well as nested repeating
+objects (arrays). Not necessary for this project perhaps, but would
+be very cool to have. Thinking about sub-forms and such.
+
+Izhar XXX: Idea for widget handling: a widget attribute for the field which 
+we define a view in it. 

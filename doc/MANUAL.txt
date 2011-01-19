@@ -1,0 +1,609 @@
+jQuery Views 
+============
+
+Introduction
+------------
+
+jQuery Views is an extension to jQuery that allows you to create a
+better structure for your rich-client applications. It lets you use a
+model/view architecture on the client side. A model is simply a
+Javascript object. A view is a component that can represent the model
+in the browser, usually as part of a larger web page.
+
+A jQuery view is simply an object that knows how to represent a model
+object into the browser DOM. A few options are made available to help
+with common use cases, such as client-side templating, form handling,
+and iframe embedding of content.
+
+Rendering a view
+----------------
+
+A view is a component that can *render* itself into the DOM
+tree. Where does it render itself, and how do you tell a view to
+render itself? You use a jQuery selector and the ``render`` method::
+
+  $('#foo').render(obj);
+
+This will represent ``obj`` for the element indicated by the selector
+``#foo``.
+
+Views are named. The default view for an object is named ``default``
+and is looked up by default, and this is usually sufficient, but in
+some cases it is useful to have more than one view for an object. If
+you want to invoke a view with a different name you can pass the name
+of that view as a second parameter::
+
+  $('#foo').render(obj, 'x');
+
+This looks up the view ``x`` for the element matched by ``#foo`` and
+``obj`` and renders it into the element.
+
+Names are a mechanism to distinguish between multiple views on the
+same object. They should be used in moderation and ideally be fairly
+generic, like 'default', 'edit', and such, to encourage loose coupling
+between code. Typically, a name is used when one or more objects registered
+on the same interface need to be rendered in multiple ways.
+
+Optionally also a callback function may be provided::
+
+  $('#foo').render(obj, function(element, view, obj) { ... });
+
+The callback will be called after the view is rendered. It receives
+three arguments, the first a reference to the element the view is
+rendered on, then the view object itself, and the lastly the object
+that the view was rendered for.
+
+Another optional handler can be provided to handle errors (note that this
+is only correctly recognized if the callback discussed previously is provided):
+
+  $('#foo').render(obj, function(el, view, obj) {}, function(err) {});
+
+This is called with an instance of the exception as its only argument, and
+allows customizing error handling, and catching of errors in asynchronous
+situations (where usually errors are silently ignored).
+
+Sometimes we don't have a Javascript object but only a URL pointing to
+JSON content. In this case we can use the convenience function
+``renderURL``::
+
+  $('#foo').renderURL(url);
+
+This will load the JSON content at ``url`` into an object ((using a
+GET request) and then look up and render a view for this object. The
+function allows passing the same additional arguments as ``render``
+(the 'callback' and 'errback' handlers) and behaves the same as ``render``,
+with the only exception that the context object (``obj`` in our example)
+is retrieved from the URL rather than provided directly.
+
+If we use a selector that matches more than one element, view lookup
+is performed multiple times, once for each matching element, and the
+callback is called each time a view is rendered for such an element.
+
+View declaration
+----------------
+
+A view is declared like this::
+
+  views.view({<options>});
+
+There are many options, discussed in detail in the API.txt document, but the
+most important are discussed in short below.
+
+The ``iface`` option is basically a string marker to disconnect registration
+of views from the data definitions, in other words a view is registered for
+a certain marker, and later on the views system can be told to find a view
+for an object by providing that same marker (or a 'child' for that marker,
+see the 'Lookup and registration' and 'Interface extension' chapters further
+on) as it's ``interface``, basically a declaration of its data type/contents.
+
+The ``render`` option is a handler that takes three arguments: ``el``, the
+element the view is being rendered on (wrapped by jQuery), ``obj``, the object
+to represent, and ``name``, the name under which this view was invoked.
+``this`` is the view object itself, which may have information and options
+relevant to the rendering of the view. The render method can then do the actual
+work of manipulating the DOM, hooking up event handlers, etc.
+
+This view was registered under the default name ``default``, and for
+all types of objects - in fact the ``View`` object defines this as the
+default. You can also be more specific by providing your own ``name``
+or ``iface`` value::
+
+  views.view({
+    render: function(el, obj, name) { ... },
+    iface: 'person',
+    name: 'display'
+  });
+
+This view is only registered for those objects that provide the
+interface (iface, the string marker discussed previously) with the id
+``person``. An object can be made to provide an interface by giving it a
+special ``ifaces`` attribute::
+
+  person = {'name': 'Bob', ifaces: ['person']};
+
+View composition
+----------------
+
+A view can use sub-views to help render itself. You can achieve this by hand
+in a render method, like this::
+
+  views.view({
+    render: function(el, obj) {
+       $('.foo', el).render(obj.attr);
+    }
+  });
+
+What this says is to render the 'attr' attribute of obj on the
+element(s) of class ``foo`` under the element that this view is on.
+
+The system, however, also allows you to express this declaratively instead::
+
+  views.view({
+    subviews: {
+      '.foo': 'attr'
+    }
+  });
+
+This does the same thing as above, but using a somewhat cleaner notation.
+
+The ``subviews`` attribute, if available, should define a mapping from
+JQuery selector to attribute name. After the view has rendered, if any
+subviews are defined, the selectors are resolved within the view's
+element, and the attributes are looked up on the context object for
+the view. If the value of the attribute is a string, it is assumed to
+be a URL and ``renderURL(obj.attr)`` is called on the result of the
+selector. If it's not a string it is assumed to be a content object
+and ``render(obj.attr)`` is called on the selector. 
+
+So, if you have this view::
+
+   views.view({
+     subviews: {
+        '#alpha': 'alpha',
+        '#beta': 'beta_url'
+   });
+
+And render it with the following context object::
+
+  {
+    alpha: {text: 'foo'},
+    beta_url: '/beta.json'
+  }
+
+the system will, in effect, call
+``$('#alpha', viewelement).render({text: 'foo'})`` and
+``$('#beta', viewelement).renderURL('/beta.json')``. 
+
+Any callback passed to the original ('parent') render function is only
+applied after all the subviews have been rendered.
+
+You can provide a name for subviews as well by passing an array
+instead of a string as the value of the subviews mapping::
+
+  views.view({
+    subviews: {
+        '#selector': ['attr', 'name']
+    }
+  });
+
+Here, a subview is registered for the selector '#selector', the data is looked
+up on the context object using attribute name 'attr', and the view is looked
+up using name 'name'.
+
+View event registration
+-----------------------
+
+XXX this has not yet been implemented, this part serves to get the details
+right before we start coding
+
+A large part of the view's code will consist of attaching event handlers to
+elements inside the view. To ease this process, and provide a pattern for
+partitioning that code, the views framework allows defining events on the
+view object using the 'events' attribute. This attribute should point to a
+mapping from selector to event data, which in turn should be a mapping from
+event name to handler. All events defined this way are registered after the
+view has been rendered. An example::
+
+  >>> views.view({
+  ...     name: 'foo',
+  ...     render: function(el, obj, name) {
+  ...         $(el).html('<div id="foo">foo</div>bar');
+  ...     },
+  ...     events: {
+  ...         '': {
+  ...             'click': function(ev) {
+  ...                 alert($(ev.target).text()); // alerts 'foobar'
+  ...                 ev.preventDefault();
+  ...             }
+  ...         },
+  ...         '#foo': {
+  ...             'click': function(ev) {
+  ...                 alert($(ev.target).text()); // alerts 'foo'
+  ...                 ev.preventDefault();
+  ...             }
+  ...         }
+  ...     }
+  ... });
+
+HTML mode
+----------
+
+A view can be configured so that it renders a piece of HTML. The HTML
+can be pointed to using a ``html_url`` URL in the view definition. The
+URL is assumed to point to a static resource on the server and will be
+cached by the system. ``render`` is called after the HTML is loaded into
+the element, and can register event handlers, etc.
+
+XXX alternatively obey cache headers
+
+The HTML can also be supplied directly as a string using the ``html``
+parameter in the view definition. The ``html`` parameter always
+overrides the ``html_url`` parameter.
+
+The HTML can also be defined by the object being rendered; it can have
+a ``html`` or ``html_url`` attribute. If the object supplies one of
+these attributes it overrides the attributes supplied by the view. The
+general rule is that if both configuration on the view as well as on
+the context object are provided, the context object configuration takes
+precedence.
+
+An example::
+
+  views.view({
+    iface: 'person',
+    name: 'edit',
+    html_url: '/static/edit.html'
+  });
+
+This is an example of supplying the information in the object being rendered::
+
+  views.view({
+    iface: 'person',
+    name: 'edit'
+  });
+
+  var person = { 'html_url': '/static/edit.html', ... };
+  $('#someelement').render(person, 'edit')
+
+Note that in this case it will be an error to pass in an object that
+does not supply this information. 
+
+JSON Template mode
+------------------
+
+Instead of a HTML snippet, you can also supply a JSON Template
+language template. This will be combined with the object to render it.
+The attributes involved are ``jsont`` and ``jsont_url``, with the same
+behavior as ``html`` and ``html_url``. ``jsont`` is a directly
+supplied JSON Template object. The template is again a static
+resource. Let's look at an example::
+
+  views.view({
+    iface: 'person',
+    name: 'edit',
+    jsont_url: '/templates/person_edit.jsont'
+  });
+
+The template behind a template URL is loaded and parsed only once by
+the system, and is thereafter cached. Parsed versions of templates provided
+directly are cached as well.
+
+It is also possible to supply ``jsont_url`` or ``json`` in the object
+that is being rendered and leave the ``json_url`` and ``json`` configuration
+parameters out::
+
+  views.view({
+    iface: 'person',
+    name: 'edit'
+  });
+  
+  person = { 'jsont_url': '/templates/person_edit.jsont', ... };
+  $('#someelement').render(person, 'edit')
+
+Again, leaving this information out entirely is an error (or rather, makes
+that the view is not considered to be a JSON template one), and object
+configuration takes precedence over view configuration.
+
+Form mode
+---------
+
+A view, when rendered, may contain a form. We can automatically turn
+this form into an AJAX-submitted form. A (JSON) object is expected to
+be returned when the form is submitted. This behavior is triggered by
+setting the special ``form`` parameter. A view is looked up on the
+retrieved object using ``render``, using the configuration parameters
+supplied::
+
+  views.view({
+    form: {name: 'completed'},
+    html_url: ...,
+  });
+
+Alternatively, ``true`` can be supplied, in which case the
+configuration is assumed to be ``{name: 'default'}``. Note that the name
+is only used for the view that is rendered after the form has been submitted,
+the name for the form view itself is passed to render()/renderURL() in the
+usual manner.
+
+Let's consider a common case in form rendering: a self-submitting form
+that keeps re-rendering itself as long as there are validation
+errors. The application will only proceed if the form is correctly
+filled out.  How would we implement such a protocol?
+
+XXX this is not implemented entirely yet... we're currently discussing how
+to best deal with the name/iface of the success view
+
+We will define the object on the server to be a JSON structure of
+iface ``form``, which contains a special ``html`` attribute,
+triggering the HTML view behavior. If the form submit is successful,
+the iface will be ``formsuccess``.
+
+The view to initially display the form::
+
+  views.view({
+     iface: 'form',
+     form: true
+  });
+
+As long as the form submit keeps failing an object with iface ``form``
+will be returned, and this view will be triggered again.
+
+As soon as the response object is ``formsuccess`, another view  
+can kick in, where we can for instance change the display to 
+show some other object::
+
+  views.view({
+    iface: 'formsuccess',
+    render: function(el) {
+      el.render(some_other_obj);
+    }
+  });
+
+For each type of form on the server that has a different behavior, the
+developer needs to supply a new interface id that indicates form
+success.
+
+Iframe mode
+-----------
+
+If the ``iframe`` configuration option set to ``true``, the rendered
+view will be inlined into an iframe. This iframe is constructed within
+the element provided, which is assumed to allow such
+embedding. ``render()`` will receive the original element as the ``el``
+argument (XXX the idea used to be to pass the iframe to render(), however, this
+does not solve much, as render() would still need to find the body or whatnot
+itself, and makes it less flexible, since render() no longer has proper access
+to the parent element). The iframe will be automatically adjusted to the
+correct height and weight for its contents after rendering.
+
+The ``form`` option interacts with the ``iframe`` option: if the
+``iframe`` option is set, the system will look for the form within the
+``$(iframe).contents()`` of the embedded iframe. 
+
+The ``html`` attribute also interacts with the ``iframe`` option; the
+contents of the html attribute will be placed within the iframe, using
+``iframe.contentDocument.write()``.
+
+Additional methods
+------------------
+
+A view may supply extra methods that it calls itself to assist in the
+rendering of the view and setting up of event handlers::
+
+  views.view({
+    render: function(el, obj, name) {
+      this.foo();
+    },
+    foo: function() {
+      ...extra work...
+    }
+  });
+
+Similarly additional attributes may be provided.
+
+View inheritance
+----------------
+
+While in many cases the "additional methods" strategy as described
+above is sufficient, it can also be useful to be able to define new
+types of views that have their own special behavior and support their
+own kinds of patterns. For this it must be understood that the
+following registration::
+
+  views.view({
+    render: function(el, obj, name) { ... }
+  });
+
+is in fact a shorthand for this registration::
+
+  views.view(new views.View({render: function(el, obj, name) { ... }}));
+
+The system assumes that if an object that is not an instance of views.View
+is supplied, this is actually the configuration for a ``View`` object. This
+``View`` object in fact implements the various view modes described above.
+
+The developer can also create new view objects by subclassing as follows::
+
+  var MyView = function(options) {
+    $.extend(true, this, options);
+  };
+
+  views.extend(MyView.prototype, views.View.prototype);
+  views.extend(MyView.prototype, {
+    new and overridden methods
+  });
+
+
+Now the new view can be registered like this::
+
+  views.view(new MyView(...));
+
+That is a bit cumbersome, so the developer can also make available a
+convenience function::
+ 
+  views.myview = function(options) {
+    views.view(new MyView(options));
+  }
+
+So that now you can use this to register a ``MyView``::
+
+  views.myview(...);
+
+In some cases you may want to create a completely different view base
+class that has nothing in common with ``View`` at all. In this case it
+is sufficient to implement an object that provides the ``render``
+attribute, and optionally ``iface`` and ``name``, and ``isView`` set
+to ``True`` to indicate that this is indeed a view and not just a
+bunch of configuration options.
+
+XXX not supported - I don't understand the purpose if something similar can
+    be done with views.view() (the 'shorthand' option passing mechanism) -
+    basically this mechanism will allow any object that has the expected
+    attributes to be registered as a view
+
+Lookup and registration
+-----------------------
+
+When registering a view, you can pass in two arguments:
+
+* object
+* name
+
+In the future we may also want to register a view for type of element,
+but we will ignore this for now - all views are registered on
+all elements.
+
+``name`` registration is simple: either a view exists with a certain
+name and can be found during lookup, or it doesn't. 
+
+Object-based lookup is more complicated.
+
+Essentially, all objects in Javascript provide a number of interfaces,
+identified by id. For simple built-in objects this is simply the
+type of the object (as retrieved by the ``typeof`` operator)::
+
+  >>> views.ifaces(1)
+  ["number"]
+  >>> views.ifaces("foo")
+  ["string"]
+  >>> views.ifaces({})
+  ["object"]
+
+Javascript objects of type ``object`` can declare that they provide
+additional interfaces by adding an ``interfaces`` attribute::
+
+  >>> views.iface('foo') // register an interface with the name 'foo'
+  >>> views.ifaces({ifaces: ['foo']})
+  ["foo", "base", "object"]
+
+What happened here? We have explicitly declared that the object has
+the interface with the id ``foo``. All object interfaces imply that
+the object also provides a special interface with the id ``base``, so
+that is also in the list. Finally, all objects provide the interface
+``object``.
+
+There are more details to interface lookup, as interfaces can extend
+each other.
+
+Events
+------
+
+XXX this is not yet implemented, this part mostly serves to discuss this new
+feature before it's added
+
+At certain moments, events are triggered by the framework so that code outside
+of the views can respond to things happening on a view. Those events are:
+
+  * views.beforerender - called just before a view is rendered on an element,
+    with 'target' pointing to the element on which the view is to be rendered,
+    and as additional arguments (view, obj) where 'view' is a reference
+    to the view instance, and 'obj' a reference to the object being rendered.
+
+  * views.afterrender - called just after a view has completed rendering, but
+    before the callback is called (if provided), the target and arguments
+    are the same as for 'BeforeRender'
+
+  * views.cleanup - called just before a view is unrendered for an element by
+    rendering a new view on that same element, target is again the element
+    but arguments this time are (old_view, new_view, obj)
+
+Interface extension
+-------------------
+
+It is frequently useful to be able to register an interface more
+generically, for a whole selection of related objects. We may have
+more particular ``person`` objects such as ``employee``,
+``contest_winner``, etc, but if we register a view for ``person``
+objects we want it to automatically apply to those other types of
+objects as well, unless we registered more specific views for the
+latter.
+ 
+Let's consider the following object describing a person::
+
+  >>> bob = {name: 'Bob', location: 'US', occupation: 'skeptic'}
+
+We can formalize what we expect from a person in this system by saying
+a person must have a ``name``, ``location`` and ``occupation``
+attribute (XXX ?). We skip this formalization for now, and will simply say
+there is an interface in the system with the id ``person``, and that
+``bob`` has the attributes necessary to provide that interface. Let's
+make that explicit so that this information can be introspected::
+
+  >>> bob = {name: 'Bob', location: 'US', occupation: 'skeptic', 
+  ...        ifaces: ['person']}
+
+  >>> views.ifaces(bob)
+  ['person', 'base', 'object']
+
+So far nothing new. But interfaces themselves can have an extension
+relationship with each other: interface ``b`` can be declared to
+extend interface ``a``. We've already seen an example of this, because
+``person`` automatically extends the base interface ``base``.
+
+If a view is declared for an interface with a certain id, it is also
+automatically declared for all interfaces that extend that interface.
+
+So let's imagine we have an interface ``employee`` that extends the
+``person`` interface. We can tell the system about it like this::
+
+  >>> views.extendsIface('employee', 'person')
+
+An interface may extend an arbitrary amount of other interfaces, but
+circular relationships cannot be set up. The ``views.ifaces``
+function knows about extensions. So, let's say that we have an
+``employee`` object::
+
+  >>> employee = {name: 'Bob', location: 'US', occupation: 'skeptic',
+  ...             wage: 0, ifaces: ['employee']}
+
+Since we said before that any ``employee`` is also a ``person``, the
+following is true::
+
+  >>> views.ifaces(employee)
+  ['employee', 'person', 'base', 'object']
+
+Note that interfaces are sorted by topological sort, with the most
+specific interfaces at the start. When looking up a view for an
+object, this is useful to ensure that the views registered for the
+most specific interfaces are found first.
+
+Binding views to URLs and elements
+----------------------------------
+
+XXX just thoughts, not sure about this yet, and nothing implemented so far
+
+It might sometimes be useful to bind a view to a URL and element, so
+that it can be invoked later-on without having to provide this information.
+This can be done as follows::
+
+  >>> bound = $(selector).bindURL(url)
+
+``bound`` is now a function that can be called later. It will look up
+all elements that match the selector at that time, and will load the
+object at the URL, and render it.
+
+XXX one of the reasons I'm not sure of this yet is that we often
+don't know the URL to bind to yet until we've just loaded an object
+with this URL in it. We can then just as well simply use that URL,
+because there's no stage to later use the bound view. So perhaps this
+is not a very useful exercise.

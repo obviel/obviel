@@ -1,0 +1,9 @@
+==========
+todo items
+==========
+
+'validate' should have a sensible default
+=========================================
+
+It should be possible for 'validate' to be absent from the widget
+structure and it should use a sensible default then.

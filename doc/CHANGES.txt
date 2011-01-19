@@ -1,0 +1,20 @@
+CHANGES
+*******
+
+0.7 (unreleased)
+================
+
+- Nothing changed yet.
+
+
+0.6 (2010-12-10)
+================
+
+- Nothing changed yet.
+
+
+0.5 (2010-11-16)
+================
+
+* Initial release.
+
