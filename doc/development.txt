@@ -1,0 +1,44 @@
+Developing Obviel
+=================
+
+Here is some information on how we develop Obviel and how you could
+participate.
+
+Please talk to us our on our :ref:`mailing list <mailing list>` about
+your plans!
+
+Sources
+-------
+
+Obviel's source code is maintained on bitbucket:
+http://bitbucket.org/obviel/obviel
+
+You can check it out using `Mercurial`_ (hg); see the bitbucket_
+documentation for more information as well.
+
+.. _`Mercurial`: http://mercurial.selenic.com/
+
+.. _`bitbucket`: http://bitbucket.org
+
+Feel free to fork Obviel on bitbucket if you want to hack on it, and
+send us a pull request when you want us to merge your improvements.
+
+Building the documentation
+--------------------------
+
+To build the documentation of Obviel you need Python 2.6. First you
+need to install buildout, a tool that installs some useful scripts for
+us. From the Obviel directory, do the following::
+
+ $ python bootstrap.py -d
+ $ bin/buildout
+
+After you've done this once, you can build the documentation using
+Sphinx_::
+
+  $ bin/sphinxbuilder
+
+.. _Sphinx: http://sphinx.pocoo.org/
+
+The docs source is in ``doc``, the built documentation will be
+available in ``doc/_build/html``.
