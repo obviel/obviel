@@ -561,6 +561,8 @@ var views = {};
            the view, when done, render is called (for attaching event
            handlers, etc.)
         */
+        // XXX incomplete!! either adjust the docstring or the function, or
+        // remove entirely...
         var settings = {
             name: 'default',
             iface: 'object',

@@ -214,3 +214,5 @@ man_pages = [
     ('index', 'obviel', u'Obviel Documentation',
      [u'Obviel Developers'], 1)
 ]
+
+primary_domain = 'js'

@@ -4,32 +4,31 @@ Obviel: Object/View/Element for jQuery
 Introduction
 ------------
 
-Obviel is an extension to jQuery that allows you to create a better
-structure for Javascript applications. It is especially geared towards
-rich-client applications, but should work for any website that uses
-Javascript.
+Obviel is an extension to jQuery that tries to help in improving the
+structure of JavaScript applications. It is especially geared towards
+'RESTful' rich-client applications, but should work for any website that uses
+JavaScript.
 
-Obviel allows you a model/view architecture on the client side, with
-dynamic view lookup. In Obviel, a model is simply a Javascript object,
-typically retrieved through JSON.
+Obviel provides you with a model/view architecture on the client side, with
+dynamic view lookup based on a data descriptor (called 'iface' in Obviel,
+though it is just a marker rather than an interface that describes the whole
+data structure). In Obviel, a model is simply a JavaScript object,
+typically retrieved through JSON, an Obviel view is an object that knows how
+to represent such a model object into the browser DOM.
 
-An Obviel view is an object that knows how to represent a model object
-into the browser DOM. Some options are made available to help with
-common use cases, such as form handling, client-side templating, and
-iframe embedding of content.
-
-When a view is rendered, it is bound to a DOM element.
+Some options are made available to help with common use cases, such as form
+handling, client-side templating, and iframe embedding of content.
 
 Rendering a view
 ----------------
 
-A view is a component that can *render* itself into the DOM
-tree. Where does it render itself, and how do you tell a view to
-render itself? You use a jQuery selector and the ``render`` method::
+A view is a component that can *render* its data into the DOM
+tree. This is done using the JQuery mechanism of calling a function,
+in this case called 'render', on the result of a JQuery selector::
 
-  $('#foo').render(obj);
+  $('#foo').render(model);
 
-This will represent ``obj`` for the element indicated by the selector
+This will represent ``model`` for the element indicated by the selector
 ``#foo``. If we use a selector that matches more than one element,
 view lookup is performed multiple times, once for each matching
 element, and the callback is called each time a view is rendered for
@@ -40,27 +39,72 @@ to the server to fetch a JSON object from the URL, and then render it::
 
   $('#foo').render('http://example.com/somejson')
 
-This allows you to create a hyperlinked structure of Javascript
+This allows you to create a hyperlinked structure of JavaScript
 objects: you can send back an object that contains sub-objects or URLs
-to other objects elsewhere on the server. These object can in turn
-be rendered using Obviel as well.
+to other objects elsewhere on the server. These objects can in turn
+be rendered by the code defined for the view (creating 'sub-views').
 
-Views are named. The default view for an object is named ``default``
-and is looked up by default, and this is usually sufficient, but in
-some cases it is useful to have more than one view for an object. If
-you want to invoke a view with a different name you can pass the name
-of that view as a second parameter::
+View lookup and registration
+----------------------------
+
+To avoid having to tightly bind a view to a model, Obviel uses 2 seperate
+mechanisms: the first involving a marker on the view and model, called
+'iface' - since it's rather similar to what interfaces are normally used
+for, though they're really just strings - and the second involving an id
+for the view, called 'name'.
+
+When a view is registered, both the iface and name can be provided, and when a
+view is looked up, it happens on a combination of iface, provided by the model,
+and name, provided as an argument to the view function. In most cases, though,
+only an iface is provided, the name is really only useful for when you want to
+have different ways of rendering the same object (or URL), depending on where
+a user clicks, or what tab is open, etc.
+
+The iface is optional, though providing it is highly encouraged except in the
+most simple of situations. It it used to tell the system what type of data
+a model represents, when a model is passed to render() Obviel uses this
+information to find a view which knows how to render such a model based on
+this information.
+
+The default name for a view is ``default``, if you want to look up a view
+for a different name, say ``x``, it can be provided as a second argument
+to the render function::
 
   $('#foo').render(obj, 'x');
 
-This looks up the view ``x`` for the element matched by ``#foo`` and
-``obj`` and renders it into the element.
+This looks up the view named ``x`` for model obj (so it also checks obj's
+iface) and renders it on all elements matching ``$('#foo')``, with the object
+as context.
 
-Names are a mechanism to distinguish between multiple views on the
-same object. They should be used in moderation and ideally be fairly
-generic, like 'default', 'edit', and such, to encourage loose coupling
-between code. Typically, a name is used when one or more objects registered
-on the same interface need to be rendered in multiple ways.
+Arguments to render
+-------------------
+
+The render function can have up to 4 arguments, the first of which is the
+object or URL to render, and the rest depends on what others are provided.
+The other arguments are ``name``, ``callback`` and ``errback``, all are
+optional, and there's some smartness that checks whether the second argument
+is a string or a function to allow leaving out ``name`` and providing
+``callback`` as second argument instead.
+
+model
++++++
+
+The first, and only mandatory, argument defines what to render. If it is
+of a string type, it's considered a URL that returns a JSON structure
+for a model (JSON is the default, thought it's possible to customize),
+if it's anything else it's considered a model object.
+
+name
+++++
+
+As described above, names are a mechanism to distinguish between multiple views
+on the same object. They should be used in moderation and ideally be fairly
+generic, like 'default', 'edit', and such, to encourage loose coupling between
+code. Typically, a name is used when one or more objects registered on the same
+interface need to be rendered in multiple ways.
+
+callback
+++++++++
 
 Optionally also a callback function may be provided::
 
@@ -72,40 +116,57 @@ rendered on, then the view object itself, and the lastly the object
 that the view was rendered for. XXX should we make this order
 ob/vie/el?
 
-If a callback is provided, it becomes also possible to add another
-handle for errors::
+errback
++++++++
+
+Another optional handler that can be passed is for error handling,
+and is called if anything goes wrong. Since this is a function just
+like callback, there's no magic to determine whether this or callback
+is provided, so you will either need to provide both a callback and
+an errback, or no errback at all (note that ``null`` can be passed
+as callback). Example of calling render with this argument::
 
   $('#foo').render(obj, function(el, view, obj) {}, function(err) {});
 
-This is called with an instance of the exception as its only argument,
+The errback is called with an instance of the exception as its only argument,
 and allows customizing error handling, and catching of errors in
 asynchronous situations, where otherwise errors are usually silently
-ignored.
+ignored. Note that if not provided, the errback will be set to
+``views.onerror``, which either console.logs the error (if Firebug is enabled)
+or pops up an alert.
 
 View declaration
 ----------------
 
-Let's look at an example of a view::
+A view is declared like this::
+
+  obviel.view({<options>});
+
+Or an actual example::
 
    obviel.view({
        render: function(el, obj, name) {
            el.text("Hello world!");
        });
 
-Now you can do this::
+There are many other options, discussed in detail in the :doc:`API
+documentation <api>`.
+
+After it's defined, it can be rendered like this::
 
   $(el).render(obj);
 
-The ``render`` option is a handler that takes three arguments: ``el``,
-the element the view is being rendered on (wrapped by jQuery),
-``obj``, the object to represent, and ``name``, the name under which
-this view was invoked (usually ``default``).  ``this`` is the view
-object itself, which may have information and options relevant to the
-rendering of the view. The render method is there to do the actual
-work of manipulating the DOM, hooking up event handlers, and so on.
+The ``render`` view method/config option (so the thing that's in the view
+definition) is a handler that takes three arguments: ``el``, the element the
+view is being rendered on (wrapped by jQuery), ``obj``, the object to
+represent, and ``name``, the name under which this view was invoked (usually
+``default``).  ``this`` is the view object itself, which may have information
+and options relevant to the rendering of the view. The render method is there
+to do the actual work of manipulating the DOM, hooking up event handlers, and
+so on.
 
-The render function in this view will be registered for any Javascript
-object. This is because the view, by default, was registered for all
+The render function in this view will be registered for any JavaScript
+object. This is because views by default get registered for all
 types of objects. Usually you want to be more specific. So, let's get
 more specific and declare our view for a specific type of object, an
 ``iface``::
@@ -122,14 +183,19 @@ provides the iface ``foo``? You can do this by adding an ``ifaces``
 attribute to the object with a list of ifaces that this object
 provides::
 
-  something =  { 
+  var something =  { 
     'ifaces': ['foo'],
     'data': 3 
   }
 
 Or as another example::
 
-  a_person = {'name': 'Bob', ifaces: ['person']};
+  var a_person = {'name': 'Bob', ifaces: ['person']};
+
+Note that the model attribute name is ``ifaces`` while the view attribute name
+is ``iface``! This makes sense - a model may have more descriptions of what the
+data is, but a view only knows how to render one type of data - but may be
+a cause of errors that is easy to overlook.
 
 An ``iface`` (interface) is a string marker that can be used to
 describe objects, and views are connected to those ifaces. In this
@@ -139,12 +205,11 @@ for it. Ifaces can also have relations to each other: a child iface
 can expand a parent iface. See :ref:`lookup-and-registration` and
 :ref:`interface-extension` for more information.
 
-More in general, a view is declared like this::
-
-  obviel.view({<options>});
-
-There are many other options, discussed in detail in the :doc:`API
-documentation <api>`.
+Of course, if a model implements an iface and a view is defined for an iface,
+the view will not function correctly if the data on the model does not
+actually reflect the iface (data description), and the view should assume
+nothing besides the data for that iface is on the object, there is however
+nothing that checks whether that is actually the case.
 
 View composition
 ----------------
@@ -154,18 +219,13 @@ whole page, and sections of the page are rendered using
 sub-views. These may in turn use other views for smaller fragments on
 the page.
 
-You can achieve sub-views by hand in a render method, like this::
+You can create sub-views by hand in a render method, like this::
 
   views.view({
     render: function(el, obj) {
        $('.foo', el).render(obj.attr);
     }
   });
-
-What this says is to render the 'attr' attribute of ``obj`` on the
-element(s) of class ``foo`` under the element that this view is
-on. ``attr`` might be a sub-object, or might be a URL, in which a
-whole other object is fetched from the server.
 
 Doing this by hand is not too bad, but the system also allows a shorter,
 declarative way to express this::
@@ -176,7 +236,7 @@ declarative way to express this::
     }
   });
 
-This does the same thing as above.
+This does the same thing as the previous example.
 
 The ``subviews`` attribute, if available, should define a mapping from
 JQuery selector to attribute name. After the view has rendered, if any
@@ -194,9 +254,8 @@ So, if you have this view::
 
 And render it with the following context object::
 
-  {
-    alpha: {text: 'foo'},
-    beta_url: '/beta.json'
+  {alpha: {text: 'foo'},
+   beta_url: '/beta.json'
   }
 
 the system will, in effect, call::
@@ -222,6 +281,9 @@ instead of a string as the value of the subviews mapping::
 Here, a subview is registered for the selector '#selector', the data is looked
 up on the context object using attribute name 'attr', and the view is looked
 up using name 'name'.
+
+Note that if a callback is provided to render(), it will be called after the
+main view and all its subviews are done rendering.
 
 View event registration
 -----------------------
@@ -261,45 +323,38 @@ view has been rendered. An example::
 HTML mode
 ----------
 
-A view can be configured so that it renders a piece of HTML. The HTML
-can be pointed to using a ``html_url`` URL in the view definition. The
-URL is assumed to point to a static resource on the server and will be
-cached by the system. ``render`` is called after the HTML is loaded into
-the element, and can register event handlers, etc.
+A view can be configured so that it renders a piece of HTML. The HTML can be
+pointed to using a ``html`` string or a ``html_url`` URL in the view
+definition. The string is assumed to be a snippet of HTML as a string, the URL
+is assumed to point to a static resource on the server and will be cached by
+the system. ``render`` is called after the HTML is loaded into the element, and
+can place data from the model into the rendered element, register event
+handlers, etc.
 
 XXX alternatively obey cache headers
 
-The HTML can also be supplied directly as a string using the ``html``
-parameter in the view definition. The ``html`` parameter always
-overrides the ``html_url`` parameter.
+Note that the ``html`` parameter always overrides the ``html_url`` parameter.
 
-The HTML can also be defined by the object being rendered; it can have
-a ``html`` or ``html_url`` attribute. If the object supplies one of
-these attributes it overrides the attributes supplied by the view. The
-general rule is that if both configuration on the view as well as on
-the context object are provided, the context object configuration takes
-precedence.
+The HTML can also be contained in the model, this can have a ``html`` or
+``html_url`` attribute too, with the same behaviour as when it would have been
+provided on view definition. If the object supplies one of these attributes it
+overrides the attributes supplied by the view. The general rule is that if both
+configuration on the view as well as on the context object are provided, the
+context object configuration takes precedence.
 
 An example::
 
   views.view({
     iface: 'person',
     name: 'edit',
-    html_url: '/static/edit.html'
+    html_url: 'foo.html'
   });
 
-This is an example of supplying the information in the object being rendered::
-
-  views.view({
-    iface: 'person',
-    name: 'edit'
-  });
-
-  var person = { 'html_url': '/static/edit.html', ... };
+  var person = {'html_url': 'edit.html', ...};
   $('#someelement').render(person, 'edit')
 
-Note that in this case it will be an error to pass in an object that
-does not supply this information. 
+This will result in the HTML of url 'edit.html' getting used, 'foo.html' would
+only have been used if the ``person`` structure would not contain ``html_url``.
 
 JSON Template mode
 ------------------
@@ -314,17 +369,24 @@ resource. Let's look at an example::
   views.view({
     iface: 'person',
     name: 'edit',
-    jsont_url: '/templates/person_edit.jsont'
+    jsont: '<div>{name}</div>'
   });
 
-The template behind a template URL is loaded and parsed only once by
-the system, and is thereafter cached. Parsed versions of templates provided
-directly are cached as well.
+  $('#somediv').render({
+    iface: 'person',
+    name: 'John'});
 
-It is also possible to supply ``jsont_url`` or ``json`` in the object
-that is being rendered and leave the ``json_url`` and ``json`` configuration
-parameters out::
+This bit of code will result in '<div>John</div>' getting rendered inside any
+div with id 'somediv'. JSON template views are handy, since they form a quick
+way of deploying client-side templates. Note that this defines the JSON
+Template in-place, but loading from URLs is of course also supported using
+the ``jsont_url`` attribute, templates are automatically retrieved and
+cached. Parsed versions of templates provided directly are cached as well.
 
+It is possible to supply ``jsont_url`` or ``json`` in the model, similar to
+``html_url`` and ``html``::
+
+  views.extends('person', 'jsont');
   views.view({
     iface: 'person',
     name: 'edit'
@@ -333,19 +395,21 @@ parameters out::
   person = { 'jsont_url': '/templates/person_edit.jsont', ... };
   $('#someelement').render(person, 'edit')
 
-Again, leaving this information out entirely is an error (or rather, makes
-that the view is not considered to be a JSON template one), and object
-configuration takes precedence over view configuration.
-
 Form mode
 ---------
 
-A view, when rendered, may contain a form. We can automatically turn
-this form into an AJAX-submitted form. A (JSON) object is expected to
-be returned when the form is submitted. This behavior is triggered by
-setting the special ``form`` parameter. A view is looked up on the
-retrieved object using ``render``, using the configuration parameters
-supplied::
+NOTE: this section describes the ``form`` iface, which makes that a submit
+handler is attached to forms automatically, and the results are rendered, but
+nothing more - the ``forms`` system that builds a framework to render widgets
+based on this ``form`` iface is not touched here, it has its own documentation.
+(XXX link)
+
+A view, when rendered, may contain a form. We can automatically turn this form
+into an AJAX-submitted form. If we do that, a (JSON) object is expected to be
+returned when the form is submitted, which in turn is rendered using Obviel.
+This behavior is triggered by setting the special ``form`` parameter. A view is
+looked up on the retrieved object using ``render``, using the configuration
+parameters supplied::
 
   views.view({
     form: {name: 'completed'},
@@ -358,18 +422,14 @@ is only used for the view that is rendered after the form has been submitted,
 the name for the form view itself is passed to render()/renderURL() in the
 usual manner.
 
-Let's consider a common case in form rendering: a self-submitting form
-that keeps re-rendering itself as long as there are validation
-errors. The application will only proceed if the form is correctly
-filled out.  How would we implement such a protocol?
-
-XXX this is not implemented entirely yet... we're currently discussing how
-to best deal with the name/iface of the success view
-
-We will define the object on the server to be a JSON structure of
-iface ``form``, which contains a special ``html`` attribute,
-triggering the HTML view behavior. If the form submit is successful,
-the iface will be ``formsuccess``.
+Let's consider a common case in form rendering: a self-submitting form that
+keeps re-rendering itself as long as there are validation errors. The
+application will only proceed if the form is correctly filled out.  How would
+we implement such a protocol? We will define the object on the server to be a
+JSON structure of iface ``form``, which contains an ``html`` attribute,
+triggering the HTML view behavior, until it decides the submit is successful,
+at which point it returns a model with a different iface (or of course an
+unrelated form).
 
 The view to initially display the form::
 
@@ -378,39 +438,30 @@ The view to initially display the form::
      form: true
   });
 
-As long as the form submit keeps failing an object with iface ``form``
-will be returned, and this view will be triggered again.
+As long as the server keeps sending a model with the iface ``form``, this view
+is triggered, and the form submit handler is hooked to the html provided
+on the model. If a model with a non-form iface is returned, the submit handler
+is of course not hooked up.
 
-As soon as the response object is ``formsuccess``, another view  
-can kick in, where we can for instance change the display to 
-show some other object::
-
-  views.view({
-    iface: 'formsuccess',
-    render: function(el) {
-      el.render(some_other_obj);
-    }
-  });
-
-For each type of form on the server that has a different behavior, the
-developer needs to supply a new interface id that indicates form
-success.
+Note: a simple view with iface ``form`` is already registered by Obviel, so
+the view in the example above is not required, you can use ``form`` as an
+iface without defining a view to get the described behaviour.
 
 Iframe mode
 -----------
 
-If the ``iframe`` configuration option set to ``true``, the rendered
-view will be inlined into an iframe. This iframe is constructed within
-the element provided, which is assumed to allow such
-embedding. ``render()`` will receive the original element as the ``el``
-argument (XXX the idea used to be to pass the iframe to render(), however, this
-does not solve much, as render() would still need to find the body or whatnot
-itself, and makes it less flexible, since render() no longer has proper access
-to the parent element). The iframe will be automatically adjusted to the
-correct height and weight for its contents after rendering.
+If the ``iframe`` configuration option set to ``true``, the rendered view will
+be inlined into an iframe. This iframe is constructed within the element
+provided, which is assumed to allow such embedding. ``render()`` will receive
+the original element as the ``el`` argument (at some point we thought it might
+be smart to pass the iframe to render(), however, this does not solve much, as
+render() would still need to find the body or whatnot itself, and makes it less
+flexible, since render() no longer has easy access to the parent element). The
+iframe will be automatically adjusted to the correct height and weight for its
+contents after rendering.
 
 The ``form`` option interacts with the ``iframe`` option: if the
-``iframe`` option is set, the system will look for the form within the
+``iframe`` option is set, the system will look for the form within
 ``$(iframe).contents()`` of the embedded iframe. 
 
 The ``html`` attribute also interacts with the ``iframe`` option; the
@@ -471,8 +522,8 @@ Now the new view can be registered like this::
 
   views.view(new MyView(...));
 
-That is a bit cumbersome, so the developer can also make available a
-convenience function::
+which may be considered cumbersome, in which case the developer can make
+available a convenience function::
  
   views.myview = function(options) {
     views.view(new MyView(options));
@@ -499,6 +550,8 @@ XXX not supported - I don't understand the purpose if something similar can
 Lookup and Registration
 -----------------------
 
+XXX move to/merge with top section
+
 When registering a view, you can pass in two arguments:
 
 * object
@@ -511,9 +564,9 @@ all elements.
 ``name`` registration is simple: either a view exists with a certain
 name and can be found during lookup, or it doesn't. 
 
-Object-based lookup is more complicated.
+Object-based (iface-based) lookup is more complicated.
 
-Essentially, all objects in Javascript provide a number of interfaces,
+Essentially, all objects in JavaScript provide a number of interfaces,
 identified by id. For simple built-in objects this is simply the
 type of the object (as retrieved by the ``typeof`` operator)::
 
@@ -524,7 +577,7 @@ type of the object (as retrieved by the ``typeof`` operator)::
   >>> views.ifaces({})
   ["object"]
 
-Javascript objects of type ``object`` can declare that they provide
+JavaScript objects of type ``object`` can declare that they provide
 additional interfaces by adding an ``interfaces`` attribute::
 
   >>> views.iface('foo') // register an interface with the name 'foo'
