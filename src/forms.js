@@ -174,7 +174,8 @@ var formviews = {};
                     '"></fieldset>');
                 if (groupdata.title) {
                     fieldset.append(
-                        '<legend>' + entitize(groupdata.title) + '</legend>');
+                        '<legend>' + entitize(groupdata.title) +
+                        '</legend>');
                 };
             } else {
                 fieldset = $('<div class="viewform-main-fields"></div>');
@@ -444,7 +445,7 @@ var formviews = {};
                     '<div class="viewform-error viewform-field-error"></div>' +
                     '{.section description}' +
                     '<div class="viewform-field-description">' +
-                    '{description}</div>{.end}'
+                    '{description|htmltag}</div>{.end}'
             };
             $.extend(settings, arguments[0]);
             views.View.call(this, settings);
@@ -746,7 +747,7 @@ var formviews = {};
                 // XXX scary note: we depend on the difference between and/or
                 // and the ternary operator here!
                 var validate = widgetdata.validate || {};
-                var sep = validate.seperator || '.';
+                var sep = validate.separator || '.';
                 var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
                 var floatmatch = (new RegExp(reg)).exec(value);
                 if (sep != '.') {
@@ -801,7 +802,7 @@ var formviews = {};
                 return value;
             };
             var sep =
-                widgetdata.validate && widgetdata.validate.seperator || '.,';
+                widgetdata.validate && widgetdata.validate.separator || '.,';
             var reg = '^([0-9]*)([' + sep + ']([0-9]*))?$';
             var decimalmatch = (new RegExp(reg)).exec(value);
             if (!decimalmatch) {
@@ -831,9 +832,9 @@ var formviews = {};
                         (widgetdata.validate.max_after_sep &&
                             after_sep.length >
                                 widgetdata.validate.max_after_sep) ||
-                        (widgetdata.validate.seperator &&
+                        (widgetdata.validate.separator &&
                             sep && // support not providing a dot/comma
-                            widgetdata.validate.seperator != sep)
+                            widgetdata.validate.separator != sep)
                         ) {
                     // improved messages can be provided by overriding the
                     // 'viewformerror-invaliddecimal' view
@@ -846,7 +847,7 @@ var formviews = {};
                         before_sep: before_sep,
                         sep: sep,
                         after_sep: after_sep,
-                        expected_seperator: widgetdata.validate.seperator,
+                        expected_separator: widgetdata.validate.separator,
                         min_before_sep: widgetdata.validate.min_before_sep,
                         max_before_sep: widgetdata.validate.max_before_sep,
                         min_after_sep: widgetdata.validate.min_after_sep,
