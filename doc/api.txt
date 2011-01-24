@@ -12,13 +12,23 @@ Views library
     default implementation logs the exception to Firebug if it's available,
     else alerts it, and then throws() it again to stop execution.
 
-.. function:: views.iface(name, [base])
+    Note that this is the default for 'errback' to the render() function, if
+    you provide an errback yourself, errors will trigger that instead of
+    onerror().
+
+    XXX at some point I'd like to change error handling to be more like that
+    of the forms lib, where some view gets rendered on errors
+
+.. function:: views.iface(name[, base, ...])
 
     Register an 'interface' (string marker for views) with name 'name' and
     optionally mark 'base' as base interface to create an inheritance tree for
-    looking up views. Note that registering an interface before use is not
+    looking up views. More than one base can be passed for multiple inheritance
+    behaviour. Note that registering an interface before use is not
     required, this mechanism is optional but provides the inheritance mechanism
     which may be useful if you want to register 'base views'.
+
+    Throws DuplicateInterfaces exception on duplicate registrations.
 
 .. function:: views.implements(obj, base)
 
@@ -29,6 +39,8 @@ Views library
 .. function:: views.extendsIface(name, base)
 
     Register an additional base interface for interface 'name'.
+    
+    Throws UnknownIface when any of the bases is not a registered iface.
 
 .. function:: views.ifaces(obj)
 
@@ -55,9 +67,8 @@ Views library
     Base class for views, use this if you create a new View subclass. It
     provides default implementations of a View's required functionality,
     including support for the .html attribute, the .jsont attribute, the .form
-    attribute, etc. For a description of options, see the section 'Options'
-    below.
-
+    attribute, etc. For a description of options, see the section 'View
+    options' below. For the View class methods, see the section 'View methods'.
 
 .. function:: views.view(view or options)
 
@@ -87,11 +98,12 @@ Views library
     Render view 'view' or a view built from options 'options' on an element.
     Note that this can/should be triggered using $(element).render(data), so
     it's exposed as a function on a jQuery result set. The 'obj' argument
-    should be a structure with data for a view, it can provide .ifaces
-    (optional, defaulting to ['base']) and .name (also optional, defaulting to
-    'default', though usually either .ifaces or .name will be supplied)
-    attributes to find a view, and additional attributes that serve as data for
-    that view. A quick example::
+    should be a structure with data for a view or a URL (string) that points
+    to a JSON representation of such a structure. The object can provide a
+    .ifaces attribute (optional, defaulting to ['base']) and a .name one (also
+    optional, defaulting to 'default', though usually either .ifaces or .name
+    will be supplied) attributes to find a view, and additional attributes that
+    serve as data for that view. A quick example::
 
       // register a simple view for iface 'foo' that renders context.data into
       // the html - note that we don't explicitly register 'foo' since we're not
@@ -128,6 +140,8 @@ Views library
 
 .. function:: $.fn.renderURL(url, [name], [callback], [errback])
 
+    DEPRECATED: use $.fn.render(url, ...) instead!
+
     This behaves exactly like $.fn.views() described above, with the difference
     that instead of providing the context object for the view directly, it is
     loaded from a URL as JSON. So, given the view definition above, a server
@@ -139,10 +153,10 @@ Views library
     Re-render the currently rendered view on an element, iow re-trigger the
     last view that was rendered on an element. The view is rendered using the
     same options and context object or url as before. Note that a view can be
-    marked 'ephemeral' (see section 'Options' below) to keep it from hitting
-    the 'view stack', so views marked as such can not be re-rendered - instead,
-    calling rerender() on an element on which the last view was marked as
-    ephemeral will cause the view rendered before the current view will be
+    marked 'ephemeral' (see section 'View options' below) to keep it from
+    hitting the 'view stack', so views marked as such can not be re-rendered -
+    instead, calling rerender() on an element on which the last view was marked
+    as ephemeral will cause the view rendered before the current view will be
     re-rendered.
 
 .. function:: $.fn.renderPrevious(callback)
@@ -205,8 +219,9 @@ View methods
     process the HTML from the server, etc. Note that this is not provided by
     the View base class itself, and is optional, but it's used by most
     subclasses, also the ones provided by the views and forms libs themselves.
-Options
-+++++++
+
+View options
+++++++++++++
 
 The following section described the options for views defined in the views
 lib, note that views defined outside of this lib may define/require different
@@ -311,8 +326,8 @@ options.
         }});
 
       // render the 'baz' view into body, providing data for 'attr1' (which is
-      // rendered for iface 'foo') and 'attr2' (which is rendered for iface 'bar'
-      // and name 'spam')
+      // rendered for iface 'foo') and 'attr2' (which is rendered for iface
+      // 'bar' and name 'spam')
       $('body', document).render({
         ifaces: ['baz'],
         attr1: {
@@ -370,6 +385,6 @@ Events
     explicitly want to pass a callback to all views that you want to trigger
     after-render actions for.
 
-    XXX event attrs/args
-
-
+    Arguments passed to the event handler are ``element``, a reference to the
+    element on which the view is rendered, ``view``, a reference to the view
+    instance, and ``obj``, a reference to the model being rendered.

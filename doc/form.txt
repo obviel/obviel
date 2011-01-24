@@ -1,13 +1,15 @@
-Some thoughts about forms
-=========================
+The forms library
+=================
+
+XXX this document was written before the forms lib existed, and reflects early
+thoughts - I'm currently re-writing to reflect the actual current
+implementation.
 
 Introduction
 ------------
 
-A web form is a user interface for modifying an object.
-
-This object may be new, or retrieved from some place, such as the
-server.
+A web form is a user interface for modifying an object. This object may be new,
+or retrieved from some place, such as the server.
 
 When the user is done modifying the object through the form, the user
 issues a submit. The submit handling code can then do things with the
@@ -34,19 +36,20 @@ There is also an *object validation* when the user submits. Where the
 above validation was on the individual form field level, object
 validation determines whether an entire object is ready to be
 submitted. This is the stage where validation for missing required
-object attributes should be done. Attributes with inter-dependent
+object attributes happens, attributes with inter-dependent
 values can also be validated at this stage.
 
 A form description
 ------------------
 
-The above describes an abstract form framework. It does not handle the
+The above describes part of a form framework, it does not handle the
 *construction* of the form yet though - it is often convenient that a
-form can be constructed automatically based on a simple
-description. In addition, it is inconvenient to have to write a lot of
-custom converters and validators by hand. 
+form can be constructed automatically based on a simple description.
+In addition, it is inconvenient to have to write a lot of custom
+converters and validators by hand. 
 
-We therefore will define a form description language here. To make it
+We have therefore defined a form description language here, which we used
+for the other part of our framework, form construction. To make it
 convenient for web development, it's been designed to be expressed
 as JSON.
 
@@ -81,57 +84,163 @@ the same as 'name'.
 There are also a set of validator arguments, which are optional. By
 default, the validator offer no restrictions (no validator).
 
-Field types
------------
+Form definition attributes
+--------------------------
 
-These are field types we need to get widgets for. In some cases, we
-may want to do server-interaction to fill the field itself.
+The formviews system expects a structure with a ``data`` attribute that points
+to the data object to save to, and a ``form`` one that points to the actual
+form definition. On initialization, the ``form`` attribute is used to build
+a form, and links are made from the form fields to the data object. Note that
+the system creates a new object if ``data`` is null or not provided.
 
-* drop-down field
+A form structure can have the following attributes:
 
-* autocomplete field (with search on code and/or text)
+* method
 
-* integer input (possibly fixed amount of digits)
+  the HTTP request method to use, defaults to POST
 
-* textline input
+* disabled
 
-* text (area) input
+  if set to true, all widgets in the form are disabled, rendering the form
+  as read-only, of course this is false by default
 
-* decimal input
+* widgets
 
-* particularly formatted text/codes
+  a list of widget definitions, optional (though either ``widgets`` or
+  ``groups`` (see below) must be provided) - for information about what
+  widgets are available and how to define new ones, see below
 
-* date
+* groups
 
-* checkbox
+  a list of group definitions, each of which have the following keys:
 
-Form controls
--------------
+    - ``name``, the name of the group, used to generate ids in the HTML
+    - ``title``, a title of the group, if provided a legend tag is rendered
+      with its value as contents
+    - ``widgets``, a list of widget definitions, see below for more information
 
-By default, a submit button is added to the form, unless form.disabled is set
-to true - this will cause all the fields to become disabled, and the controls
-to be hidden from view. There are several ways to override the submit button
-label, or the entire controls section (besides, of course, overriding the form
-JSON template entirely):
+* controls
 
-* form.submitname/form.submitvalue - setting these will control the name resp.
-  value of the submit button, but rendering is done by the form view
+  a list of form controls structures, see the section ``form.controls`` for
+  more information
 
-* form.controlshtml - setting this to a snippet of HTML will cause the snippet
-  to replace the controls section (everything inside a div with class
-  'viewform-controls') entirely, this should contain a submit button to allow
-  submitting the form
+widget types
+------------
 
-* form.controls - setting this to a list of dicts with button information (see
-  section below for the dict format) will cause the form view to generate
-  buttons for each bit of information; note that this can be provided both from
-  the view config structure and from the context object, so the context
-  provider (server) can override controls in certain cases
+The following field ifaces are defined in the 'core' of the framework, the
+``formviews`` module (forms.js):
+
+* viewformwidget
+
+  This is the base iface for all views, and renders as a simple text input
+  field. Options to the widget are::
+  
+   - ``name``, the widget name
+   - ``title``, the widget title (may contain markup)
+   - ``description``, a text description (may contain markup)
+   - ``link``, the name of the object attribute to link to
+   - ``defaultvalue``, the initial value for the field on rendering with an
+     object that does not contain an explicit value for the field (usually
+     for 'add forms')
+   - ``width``, the rendering width
+   - ``height``, the rendering height
+   - ``validate``, a structure that may in turn contain
+     ~ ``max_length``, the maximum number of characters entered into the
+       field
+     ~ ``min_length``, the minimum number of characters entered into the
+       field
+     ~ ``required``, whether a value must be added to the field, if this
+       is set to false empty fields will result in a null value getting
+       saved on the object
+   - ``disabled``, a boolean that's used to determine whether the field
+     should be (rendered as) disabled
+   - ``regs``, a list of structures used for regular expression validation,
+     with keys:
+     ~ ``reg``, a regular expression against which the widget value is
+       matched on change
+     ~ ``message``, an error message that is displayed when the reg doesn't
+       match
+
+  XXX errors
+
+* textline_field
+
+  This is merely an additional iface for ``viewformwidget``, and has no
+  actual implementation - using this iface will render the base text input
+  as described above (though do not use ``viewformwidget`` as iface for a
+  field, this is not only conceptually wrong but in the future this behaviour
+  may change!). It allows the same options as ``viewformwidget``.
+
+* text_field
+
+  Renders as a textarea, but apart from that it behaves exactly like the
+  textline_field described above.
+
+* integer_field
+
+  Same as texline_field, but it validates only if the value entered is of
+  an integer type, and allows for some additional options:
+
+    - ``validate`` allows for additional options:
+      ~ ``allow_negative``, set to true to allow negative values, false by
+        default
+      ~ ``length``, this basically sets min_length and max_length to the
+        same value, so the input value must contain exactly length characters
+
+* float_field
+
+  Similar to integer_field, though it allows floats as value, and saves values
+  to the object as float. In addition to the options of textline_field,
+  though, it allows the following options:
+
+    - ``validate`` allows for additional options:
+      ~ ``separator``, what separator the user is allowed to use, defaults to
+        '.'
+      ~ ``allow_negative``, set to true to allow negative values, false by
+        default
+
+* decimal_field
+
+  Very similar to float_field, but it converts the value to a string
+  containing a decimal value with digits separated by a dot. This makes it
+  more suitable to deal with things like money, or in situations where float
+  conversions must not happen. In addition to those of textline_field, it
+  allows the following options:
+
+    - ``validate`` allows for additional options:
+      ~ ``separator``, what separator the user is allowed to use, defaults to
+        '.'
+      ~ ``min_before_sep``, the minimum number of digits before the
+        separator
+      ~ ``max_before_sep``, the maximum number of digits before the
+        separator
+      ~ ``min_after_sep``, the minimum number of digits after the
+        separator
+      ~ ``max_after_sep``, the maximum number of digits after the
+        separator
+
+* choice_field
+
+  A field that allows a user to choose from a list of values, rendered as
+  a select tag with options. It supports the following options in addition
+  to those of textline_field:
+
+    - ``choices``, a list of structures with keys ``label`` for the label
+      and ``value`` for the value
+    - ``empty_option``, the label of an empty option, if validate.required
+      is false and empty_option is not provided, '' is used
+
+* boolean_field
+
+  A field that allows selecting a single choice (on/off basically), rendered
+  as a checkbox. This supports the following additional options:
+
+    - ``label_before_input``, set to true to have the label rendered before the
+      checkbox, defaults to false, which causes the label to get rendered after
+      it
 
 form.controls
 -------------
-
-XXX not yet implemented!! please discuss format and results
 
 One of the options to control what controls are displayed is by providing an
 array (us python devs call 'em 'lists') of associative arrays (aka 'dicts') as
@@ -146,6 +255,10 @@ the following keys:
   * value - the input/button value
 
     optional, if not provided no 'value' is set on the input
+
+  * id - the id to use for the form element, optional
+
+  * class - the class name to use for the form element, optional
 
   * type - the input type
 
@@ -169,6 +282,11 @@ the following keys:
     a URL (string) to a viewable structure, or a viewable structure itself,
     in this case clicking the button will cause the viewable structure to be
     displayed using the views mechanism
+
+  * action_name - the view name to use for the submit action result
+
+    this can be used to customize what view is used for the action structure
+    (in addition to the structure's iface, of course)
 
 form.controls examples
 ----------------------
@@ -218,9 +336,20 @@ form.controls notes
 * it is not clear what to do when form.controls does not contain a submit
   button definition, do we add it automagically, and if so, where? or do we
   assume the form should perhaps not have a submit button for some reason?
+  currently we don't do anything
 
 * it is not clear how this cooperates with form.disabled, do we hide any of
   the buttons, or do we assume that the server deals with this correctly?
+
+Error views
+-----------
+
+XXX
+
+Events
+------
+
+XXX
 
 Implementation notes
 --------------------
