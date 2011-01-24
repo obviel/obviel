@@ -585,11 +585,15 @@ var views = {};
             var arg = args[1];
             if (typeof arg == 'function') {
                 callback = arg;
-                errback = args[2];
+                if (args[2]) {
+                    errback = args[2];
+                };
             } else {
                 name = arg;
                 callback = args[2];
-                errback = args[3];
+                if (args[3]) {
+                    errback = args[3];
+                };
             };
         };
         return {
