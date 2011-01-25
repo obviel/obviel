@@ -1,8 +1,6 @@
-var views = {};
+var obviel = {};
 
 (function($, module) {
-    var jsviews = module;
-
     // XXX use an error reporting system similar to what form.js uses...
     module.onerror = function(e) {
         if (window.console && console.log) {
@@ -300,7 +298,7 @@ var views = {};
             // loop has finished, fortunately js is rather stupid... :)
             running--;
             if (running == 0) {
-                element.trigger('rendered.views', [element, self, obj]);
+                element.trigger('rendered.obviel', [element, self, obj]);
                 if (callback) {
                     try {
                         callback(element, self, obj);
@@ -357,7 +355,7 @@ var views = {};
         if (numsubs == 0) {
             // if there were subviews, the callback has been called already
             // XXX should be renamed to 'rendered.views'
-            element.trigger('rendered.views', [element, this, obj]);
+            element.trigger('rendered.obviel', [element, this, obj]);
             if (callback) {
                 callback(element, this, obj);
             };
@@ -622,7 +620,7 @@ var views = {};
                         // the handler on document makes that doRender is
                         // called with the original target
                         element.trigger(
-                            'render.views',
+                            'render.obviel',
                             [view, element, obj, args.name, args.callback,
                              args.errback]);
                     };
@@ -632,7 +630,7 @@ var views = {};
                     // not have access to the view object yet...
                     if (view.ephemeral) {
                         // remove the view from the stack
-                        var viewstack = element.data('views.viewstack');
+                        var viewstack = element.data('obviel.viewstack');
                         viewstack.pop();
                     };
                     return;
@@ -690,13 +688,13 @@ var views = {};
         */
         var args = module._parse_render_args(arguments);
         var element = $(this);
-        element.data('views.hasview', true);
+        element.data('obviel.hasview', true);
 
         // add view data to the element's view stack (history buffer)
-        var viewstack = element.data('views.viewstack');
+        var viewstack = element.data('obviel.viewstack');
         if (!viewstack) {
             viewstack = [];
-            element.data('views.viewstack', viewstack);
+            element.data('obviel.viewstack', viewstack);
         };
         var isurl = (typeof obj == 'string' || obj instanceof String);
         viewstack.push([obj, args, isurl]);
@@ -727,13 +725,13 @@ var views = {};
         */
         var args = module._parse_render_args(arguments);
         var element = $(this);
-        element.data('views.hasview', true);
+        element.data('obviel.hasview', true);
 
         // add view data to the element's view stack (history buffer)
-        var viewstack = element.data('views.viewstack');
+        var viewstack = element.data('obviel.viewstack');
         if (!viewstack) {
             viewstack = [];
-            element.data('views.viewstack', viewstack);
+            element.data('obviel.viewstack', viewstack);
         };
         viewstack.push([url, args, true]);
         module._render_from_url(element, url, args);
@@ -742,7 +740,7 @@ var views = {};
     // refresh/history functionality for the views
     $.fn.rerender = function(callback) {
         var element = $(this);
-        var viewstack = element.data('views.viewstack');
+        var viewstack = element.data('obviel.viewstack');
         if (!viewstack) {
             return;
         };
@@ -767,7 +765,7 @@ var views = {};
     $.fn.renderPrevious = function(callback) {
         // pop the current view, display the previous
         var element = $(this);
-        var viewstack = element.data('views.viewstack');
+        var viewstack = element.data('obviel.viewstack');
         if (viewstack.length < 2) {
             // XXX log warning!
             return;
@@ -783,7 +781,7 @@ var views = {};
         */
         var current = this.parent();
         while (current.length) {
-            if (current.data('views.hasview')) {
+            if (current.data('obviel.hasview')) {
                 return current;
             };
             current = current.parent();
@@ -793,13 +791,13 @@ var views = {};
     // register an event handler to handle views that aren't explicitly
     // handled already
     $(document).bind(
-        'render.views',
+        'render.obviel',
         function(ev, view, el, obj, name, callback, errback) {
             // register a handler for the iface/name combo on the element so
             // that render calls on child elements with similar data end up
             // on the element again
             var is_new = obj.ephemeral ? false : true;
-            var registered = el.data('views.registered-handlers');
+            var registered = el.data('obviel.registered-handlers');
             var ifaces = obj.ifaces ? obj.ifaces.join(',') : '';
             if (!obj.ephemeral && registered) {
                 $.each(registered, function(i, item) {
@@ -814,7 +812,7 @@ var views = {};
             };
             if (is_new) {
                 el.bind(
-                    'render.views',
+                    'render.obviel',
                     function(iev, iview, iel, iobj, iname, icb, ieb) {
                         var ifaces = obj.ifaces ? obj.ifaces.join(',') : '';
                         var iifaces = iobj.ifaces ? iobj.ifaces.join(',') : '';
@@ -826,8 +824,8 @@ var views = {};
                         iev.stopPropagation();
                     });
                 registered.push({ifaces: ifaces, name: name});
-                el.data('views.registered-handlers', registered);
+                el.data('obviel.registered-handlers', registered);
             };
             view.doRender(el, obj, name, callback, errback);
         });
-})(jQuery, views);
+})(jQuery, obviel);

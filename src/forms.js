@@ -1,6 +1,6 @@
-var formviews = {};
+obviel.forms = {};
 
-(function($, views, module) {
+(function($, obviel, module) {
     function entitize(s) {
         /* convert the 4 chars that must not be in XML to 'entities'
         */
@@ -52,8 +52,8 @@ var formviews = {};
         el.val(value);
     };
 
-    views.iface('viewformerror-formerror');
-    views.view({
+    obviel.iface('viewformerror-formerror');
+    obviel.view({
         iface: 'viewformerror-formerror',
         render: function(el, obj, name) {
             // may match more than 1 element
@@ -63,8 +63,8 @@ var formviews = {};
         }
     });
 
-    views.iface('viewformerror-noformerror', 'viewformerror-formerror');
-    views.view({
+    obviel.iface('viewformerror-noformerror', 'viewformerror-formerror');
+    obviel.view({
         iface: 'viewformerror-noformerror',
         render: function(el, obj, name) {
             // XXX may match more than 1 element, though not sure if that's
@@ -75,8 +75,8 @@ var formviews = {};
         }
     });
 
-    views.iface('viewformerror-fielderror');
-    views.view({
+    obviel.iface('viewformerror-fielderror');
+    obviel.view({
         iface: 'viewformerror-fielderror',
         render: function(formel, obj, name) {
             var errorel = $('.viewform-field-error', formel).first();
@@ -86,8 +86,8 @@ var formviews = {};
     });
 
     // a view to clear error messages displayed previously
-    views.iface('viewformerror-nofielderror', 'viewformerror-fielderror');
-    views.view({
+    obviel.iface('viewformerror-nofielderror', 'viewformerror-fielderror');
+    obviel.view({
         iface: 'viewformerror-nofielderror',
         render: function(formel, obj, name) {
             var errorel = $('.viewform-error', formel).first();
@@ -96,7 +96,7 @@ var formviews = {};
         }
     });
 
-    views.iface('viewform');
+    obviel.iface('viewform');
     module.FormView = function() {
         /* basic form view implementation
 
@@ -131,11 +131,11 @@ var formviews = {};
                     '{.end}'
             };
             $.extend(settings, arguments[0]);
-            views.View.call(this, settings);
+            obviel.View.call(this, settings);
         };
     };
 
-    module.FormView.prototype = new views.View;
+    module.FormView.prototype = new obviel.View;
 
     module.FormView.prototype.render = function(
             el, obj, name, callback, errback) {
@@ -264,7 +264,8 @@ var formviews = {};
                 if (controldata.action &&
                         typeof controldata.action == 'string') {
                     control.click(function(ev) {
-                        var ev = new $.Event('formviews-before-submit-render');
+                        var ev = new $.Event(
+                            'before-submit-render.obviel-forms');
                         ev.target = el;
                         el.trigger(
                             ev,
@@ -280,7 +281,8 @@ var formviews = {};
                 } else if (controldata.action) {
                     // we assume it's an object that needs to be rendered
                     control.click(function(ev) {
-                        var ev = new $.Event('formviews-before-submit-render');
+                        var ev = new $.Event(
+                            'before-submit-render.obviel-forms');
                         ev.target = el;
                         el.trigger(
                             ev,
@@ -340,7 +342,8 @@ var formviews = {};
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function(data) {
-                    var ev = new $.Event('formviews-before-submit-render');
+                    var ev = new $.Event(
+                        'before-submit-render.obviel-forms');
                     ev.target = element;
                     element.trigger(
                         ev,
@@ -351,13 +354,6 @@ var formviews = {};
                     if (!ev.isDefaultPrevented()) {
                         element.render(data, action_name, callback, errback);
                     };
-                    // XXX: <izhar> i have no idea where the callback come from,
-                    // and whether its only executed here or elsewhere
-                    //
-                    // anyway, injecting event raise here
-                    // 
-                    element.trigger(
-                        'formjs.submitted', [data, name, callback, errback]);
                 },
                 error: function(xhr, status, error) {
                     if (errback) {
@@ -369,7 +365,7 @@ var formviews = {};
         });
     };
 
-    views.iface('viewformerror-forminvalid', 'viewformerror-formerror');
+    obviel.iface('viewformerror-forminvalid', 'viewformerror-formerror');
     module.FormView.prototype.validate = function(form, formdata, obj) {
         /* validate the full object before the form is submitted
 
@@ -412,9 +408,9 @@ var formviews = {};
         return true;
     };
 
-    views.view((new module.FormView({name: 'default'})));
+    obviel.view((new module.FormView({name: 'default'})));
 
-    views.iface('viewformwidget');
+    obviel.iface('viewformwidget');
     module.WidgetView = function() {
         /* 'base class' for widgets
 
@@ -448,12 +444,12 @@ var formviews = {};
                     '{description|htmltag}</div>{.end}'
             };
             $.extend(settings, arguments[0]);
-            views.View.call(this, settings);
+            obviel.View.call(this, settings);
         };
         $.extend(this, settings);
     };
 
-    module.WidgetView.prototype = new views.View;
+    module.WidgetView.prototype = new obviel.View;
 
     module.WidgetView.prototype.render = function(formel, obj, name) {
         /* render the widget HTML
@@ -534,16 +530,16 @@ var formviews = {};
         return value;
     };
 
-    views.iface('viewformerror-required', 'viewformerror-fielderror');
-    views.iface('viewformerror-tooshort', 'viewformerror-fielderror');
-    views.iface('viewformerror-toolong', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-required', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-tooshort', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-toolong', 'viewformerror-fielderror');
     module.WidgetView.prototype.validate = function(
             formeldiv, widgetdata, obj, value) {
         /* validate the value
 
             this deals with 'required', 'min_length' and 'max_length',
             if you need more validation override (and call this implementation
-            using views.WidgetView.prototype.validate.call())
+            using obviel.WidgetView.prototype.validate.call())
 
             on errors, call
             formeldiv.render({iface: 'viewformerror-fielderror', ...}) and
@@ -610,10 +606,10 @@ var formviews = {};
         return value;
     };
 
-    views.iface('textline_field', 'viewformwidget');
+    obviel.iface('textline_field', 'viewformwidget');
     // we register here for the default iface, 'textline_field' will
     // fall back to this too
-    views.view(new module.WidgetView({
+    obviel.view(new module.WidgetView({
         iface: 'viewformwidget',
         validate: function(formeldiv, widgetdata, obj, value) {
             value = module.WidgetView.prototype.validate.call(
@@ -642,8 +638,8 @@ var formviews = {};
         }
     }));
 
-    views.iface('text_field', 'viewformwidget');
-    views.view(new module.WidgetView({
+    obviel.iface('text_field', 'viewformwidget');
+    obviel.view(new module.WidgetView({
         iface: 'text_field',
         jsont:
             '<label for="vf-{name}">' +
@@ -661,11 +657,11 @@ var formviews = {};
             '{description|htmltag}</div>{.end}'
     }));
 
-    views.iface('integer_field', 'viewformwidget');
-    views.iface('viewformerror-noint', 'viewformerror-fielderror');
-    views.iface('viewformerror-intlength', 'viewformerror-fielderror');
-    views.iface('viewformerror-intnegative', 'viewformerror-fielderror');
-    views.view(new module.WidgetView({
+    obviel.iface('integer_field', 'viewformwidget');
+    obviel.iface('viewformerror-noint', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-intlength', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-intnegative', 'viewformerror-fielderror');
+    obviel.view(new module.WidgetView({
         iface: 'integer_field',
         validate: function(formeldiv, widgetdata, obj, value) {
             if (value) {
@@ -710,7 +706,7 @@ var formviews = {};
                     return;
                 };
             };
-            return formviews.WidgetView.prototype.validate.call(
+            return module.WidgetView.prototype.validate.call(
                 this, formeldiv, widgetdata, obj, value);
         },
         convert: function(formeldiv, widgetdata, obj, value) {
@@ -737,10 +733,10 @@ var formviews = {};
         }
     }));
 
-    views.iface('float_field', 'viewformwidget');
-    views.iface('viewformerror-nofloat', 'viewformerror-fielderror');
-    views.iface('viewformerror-floatnegative', 'viewformerror-fielderror');
-    views.view(new module.WidgetView({
+    obviel.iface('float_field', 'viewformwidget');
+    obviel.iface('viewformerror-nofloat', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-floatnegative', 'viewformerror-fielderror');
+    obviel.view(new module.WidgetView({
         iface: 'float_field',
         validate: function(formeldiv, widgetdata, obj, value) {
             if (value) {
@@ -776,12 +772,12 @@ var formviews = {};
                     return;
                 };
             };
-            return formviews.WidgetView.prototype.validate.call(
+            return module.WidgetView.prototype.validate.call(
                 this, formeldiv, widgetdata, obj, value);
         },
         convert: function(formeldiv, widgetdata, obj, value) {
             // XXX don't we lose precision here?
-            value = formviews.WidgetView.prototype.convert.call(
+            value = module.WidgetView.prototype.convert.call(
                 this, formeldiv, widgetdata, obj, value);
             if (value) {
                 value = parseFloat(value);
@@ -790,10 +786,10 @@ var formviews = {};
         }
     }));
 
-    views.iface('decimal_field', 'viewformwidget');
-    views.iface('viewformerror-nodecimal', 'viewformerror-fielderror');
-    views.iface('viewformerror-invaliddecimal', 'viewformerror-fielderror');
-    views.view(new module.WidgetView({
+    obviel.iface('decimal_field', 'viewformwidget');
+    obviel.iface('viewformerror-nodecimal', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-invaliddecimal', 'viewformerror-fielderror');
+    obviel.view(new module.WidgetView({
         iface: 'decimal_field',
         convert: function(formeldiv, widgetdata, obj, value) {
             value = module.WidgetView.prototype.convert.call(
@@ -864,8 +860,8 @@ var formviews = {};
         }
     }));
 
-    views.iface('choice_field', 'viewformwidget');
-    views.view(new module.WidgetView({
+    obviel.iface('choice_field', 'viewformwidget');
+    obviel.view(new module.WidgetView({
         iface: 'choice_field',
         jsont:
             '<label for="vf-{name}">' +
@@ -895,8 +891,8 @@ var formviews = {};
         }
     }));
 
-    views.iface('boolean_field', 'viewformwidget');
-    views.view(new module.WidgetView({
+    obviel.iface('boolean_field', 'viewformwidget');
+    obviel.view(new module.WidgetView({
         iface: 'boolean_field',
         jsont:
             '<label for="vf-{name}">' +
@@ -927,4 +923,4 @@ var formviews = {};
                 this, formeldiv, widgetdata, obj, value);
         }
     }));
-})(jQuery, views, formviews);
+})(jQuery, obviel, obviel.forms);

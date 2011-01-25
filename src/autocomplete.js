@@ -1,4 +1,4 @@
-(function($, views, formviews) {
+(function($, obviel, formviews) {
     _copy_and_validate = formviews._autocomplete_cnv = function(
             input, value, required) {
         if (!value && !required) {
@@ -16,11 +16,11 @@
         formviews.update_linked_formel(input, value);
     };
 
-    views.iface('autocomplete_textline_field', 'textline_field');
-    views.iface(
+    obviel.iface('autocomplete_textline_field', 'textline_field');
+    obviel.iface(
         'viewformerror-autocomplete-unknown-value',
         'viewformerror-fielderror');
-    views.view(new formviews.WidgetView({
+    obviel.view(new formviews.WidgetView({
         iface: 'autocomplete_textline_field',
         render: function(formel, obj, name) {
             // first we call the super's render to create an input, then
@@ -74,7 +74,7 @@
                         },
                         error: function(xhr, status, error) {
                             // XXX improve!!
-                            views.onerror(error);
+                            obviel.onerror(error);
                         }
                     });
                 };
@@ -187,4 +187,4 @@
             };
         }
     }));
-}(jQuery, views, formviews));
+}(jQuery, obviel, obviel.forms));

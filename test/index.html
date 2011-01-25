@@ -18,35 +18,35 @@
 
         $(document).ready(function() {
 
-            views.onerror = function(e) {
+            obviel.onerror = function(e) {
                 throw(e);
             };
 
             module('JSViews');
 
             // register using default name
-            views.view((new views.View({
+            obviel.view((new obviel.View({
                 render: function(el, obj) {
                     $(el).text(obj.text);
                 }})));
 
             // register using non-default name
-            views.view((new views.View({
+            obviel.view((new obviel.View({
                 name: 'foo',
                 render: function(el, obj) {
                     $(el).text(obj.text2);
                 }})));
 
             // register by iface
-            views.iface('ifoo');
-            views.view((new views.View({
+            obviel.iface('ifoo');
+            obviel.view((new obviel.View({
                 iface: 'ifoo',
                 render: function(el, obj) {
                     $(el).text(obj.text3);
                 }})));
 
             // register by iface and name
-            views.view((new views.View({
+            obviel.view((new obviel.View({
                 name: 'foo',
                 iface: 'ifoo',
                 render: function(el, obj) {
@@ -54,8 +54,8 @@
                 }})));
 
             // short-hand registration from options
-            views.iface('ibar');
-            views.view({
+            obviel.iface('ibar');
+            obviel.view({
                 name: 'bar',
                 iface: 'ibar',
                 render: function(el, obj) {
@@ -63,8 +63,8 @@
                 }});
 
             // view for testing cleanups, has a cleanup hook
-            views.iface('cleanup');
-            views.view({
+            obviel.iface('cleanup');
+            obviel.view({
                 iface: 'cleanup',
                 render: function(element, obj, name) {
                     window._cleanup_called = false;
@@ -75,8 +75,8 @@
                 }});
 
             // test for re-rendering views
-            views.iface('rerender');
-            views.view({
+            obviel.iface('rerender');
+            obviel.view({
                 iface: 'rerender',
                 render: function(element, obj, name) {
                     var numrenders = obj.numrenders || 1;
@@ -87,7 +87,7 @@
 
             // used to test render - uses interface 'ifoo' but expects
             // different data
-            views.view({
+            obviel.view({
                 name: 'error',
                 iface: 'ifoo',
                 render: function(element, obj, name) {
@@ -96,17 +96,17 @@
             });
 
             // view that doesn't do anything
-            views.view({
+            obviel.view({
                 name: 'noop',
                 render: function(element, obj, name) {
                 }
             });
 
             // view that doesn't (even ;) provide a render method
-            views.view({name: 'norender'});
+            obviel.view({name: 'norender'});
 
             // view that doesn't get added to the view stack (ephemeral)
-            views.view({
+            obviel.view({
                 name: 'ephemeral',
                 ephemeral: true,
                 render: function(el, obj) {
@@ -115,7 +115,7 @@
             });
 
             // view with subviews declared
-            views.view({
+            obviel.view({
                 name: 'subviews',
                 render: function(el, obj) {
                     el.html(
@@ -131,7 +131,7 @@
             });
 
             // view with a single subview
-            views.view({
+            obviel.view({
                 name: 'subviews_single',
                 render: function(el, obj) {
                     el.html('<div id="sub1"></div>');
@@ -142,7 +142,7 @@
             });
 
             // view that adds iframe
-            views.view({
+            obviel.view({
                 name: 'iframeview',
                 iframe: true,
                 render: function(el, obj) {
@@ -155,7 +155,7 @@
                 }
             });
 
-            views.view({
+            obviel.view({
                 iface: 'inline_html',
                 html: '<span></span>',
                 render: function(el, obj, name) {
@@ -163,15 +163,15 @@
                 }});
 
             // special views
-            views.formView({
+            obviel.formView({
                 render: function() {}});
 
-            views.formView({
+            obviel.formView({
                 name: 'iframeformview',
                 iframe: true,
             });
 
-            views.htmlView({
+            obviel.htmlView({
                 iface: 'html',
                 html_url: 'test1.html',
                 render: function(element, obj, name) {
@@ -179,7 +179,7 @@
                         window._render_html_calls || 0) + 1;
                 }});
 
-            views.jsontView({
+            obviel.jsontView({
                 iface: 'jt',
                 jsont_url: 'test1.jt',
                 render: function() {
@@ -554,9 +554,9 @@
                         equals($.trim($('#viewdiv').text()), 'bar');
                         equals(window._render_jt_calls, 1);
                         // the jsont cache should hold the url now
-                        ok(views._jsont_cache['test1.jt'] !== undefined);
+                        ok(obviel._jsont_cache['test1.jt'] !== undefined);
                         equals(
-                            views._jsont_cache['test1.jt'].expand({foo: 'bar'}),
+                            obviel._jsont_cache['test1.jt'].expand({foo: 'bar'}),
                             $('#viewdiv').html());
                         start();
                         $('#viewdiv').unbind();
@@ -594,7 +594,7 @@
 
             test('view override on iface', function() {
                 var el = $('#viewdiv');
-                views.view({
+                obviel.view({
                     iface: 'ifoo',
                     render: function(el, obj, name) {
                         el.text('spam: ' + obj.text3);
@@ -610,84 +610,84 @@
             // ifaces
             module('Interfaces');
 
-            views.iface('foo');
-            views.iface('spam');
-            views.iface('bar', 'foo');
-            views.iface('baz', 'foo');
-            views.iface('qux', 'baz');
-            views.iface('eggs', 'spam');
-            views.iface('mess', 'eggs', 'qux');
+            obviel.iface('foo');
+            obviel.iface('spam');
+            obviel.iface('bar', 'foo');
+            obviel.iface('baz', 'foo');
+            obviel.iface('qux', 'baz');
+            obviel.iface('eggs', 'spam');
+            obviel.iface('mess', 'eggs', 'qux');
             
             test('object implements object', function() {
-                ok(views.implements({}, 'object'));
+                ok(obviel.implements({}, 'object'));
             });
 
             test('object ifaces', function() {
-                same(views.ifaces({}), ['object']);
+                same(obviel.ifaces({}), ['object']);
             });
 
             test('object does not implement base', function() {
-                ok(!views.implements({}, 'base'));
+                ok(!obviel.implements({}, 'base'));
             });
 
             test('foo implements foo', function() {
-                ok(views.implements({ifaces: ['foo']}, 'foo'));
+                ok(obviel.implements({ifaces: ['foo']}, 'foo'));
             });
 
             test('foo implements object', function() {
-                ok(views.implements({ifaces: ['foo']}, 'object'));
+                ok(obviel.implements({ifaces: ['foo']}, 'object'));
             });
 
             test('foo implements base', function() {
-                ok(views.implements({ifaces: ['foo']}, 'base'));
+                ok(obviel.implements({ifaces: ['foo']}, 'base'));
             });
 
             test('foo does not implement bar', function() {
-                ok(!views.implements({ifaces: ['foo']}, 'bar'));
+                ok(!obviel.implements({ifaces: ['foo']}, 'bar'));
             });
 
             test('foo ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['foo']}),
+                    obviel.ifaces({ifaces: ['foo']}),
                     ['foo', 'base', 'object']);
             });
 
             test('bar implements bar', function() {
-                ok(views.implements({ifaces: ['bar']}, 'bar'));
+                ok(obviel.implements({ifaces: ['bar']}, 'bar'));
             });
 
             test('bar implements foo', function() {
-                ok(views.implements({ifaces: ['bar']}, 'foo'));
+                ok(obviel.implements({ifaces: ['bar']}, 'foo'));
             });
 
             test('bar ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['bar']}),
+                    obviel.ifaces({ifaces: ['bar']}),
                     ['bar', 'foo', 'base', 'object']);
             });
 
             test('qux ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['qux']}),
+                    obviel.ifaces({ifaces: ['qux']}),
                     ['qux', 'baz', 'foo', 'base', 'object']);
             });
 
             test('mess ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['mess']}),
+                    obviel.ifaces({ifaces: ['mess']}),
                     ['mess', 'eggs', 'qux', 'spam', 'baz', 'foo',
                      'base', 'object']);
             });
 
             test('foo+spam ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['foo', 'spam']}),
+                    obviel.ifaces({ifaces: ['foo', 'spam']}),
                     ['foo', 'spam', 'base', 'object']);
             });
 
             test('bar+foo ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['bar', 'foo']}),
+                    obviel.ifaces({ifaces: ['bar', 'foo']}),
                     ['bar', 'foo', 'base', 'object']);
             });
 
@@ -695,20 +695,20 @@
             // precedence here?
             test('foo+bar ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['foo', 'bar']}),
+                    obviel.ifaces({ifaces: ['foo', 'bar']}),
                     ['foo', 'bar', 'base', 'object']);
             });
 
             test('eggs+qux ifaces', function() {
                 same(
-                    views.ifaces({ifaces: ['eggs', 'qux']}),
+                    obviel.ifaces({ifaces: ['eggs', 'qux']}),
                     ['eggs', 'qux', 'spam', 'baz', 'foo', 'base', 'object']);
             });
 
             test('error on non-existent base', function() {
                 var exc;
                 try {
-                    views.iface('bla', 'blabla');
+                    obviel.iface('bla', 'blabla');
                 } catch(e) {
                     exc = e;
                 };
@@ -718,7 +718,7 @@
             test('error on duplicate registration', function() {
                 var exc;
                 try {
-                    views.iface('foo');
+                    obviel.iface('foo');
                 } catch(e) {
                     exc = e;
                 };
@@ -726,16 +726,16 @@
             });
 
             test('basic extendsIface', function() {
-                views.iface('mess2');
-                views.extendsIface('mess2', 'eggs');
-                views.extendsIface('mess2', 'qux');
-                same(views.ifaces('mess'), views.ifaces('mess2'));
+                obviel.iface('mess2');
+                obviel.extendsIface('mess2', 'eggs');
+                obviel.extendsIface('mess2', 'qux');
+                same(obviel.ifaces('mess'), obviel.ifaces('mess2'));
             });
 
             test('extendsIface on non-existent iface', function() {
                 var exc;
                 try {
-                    views.extendsIface('bla', 'foo');
+                    obviel.extendsIface('bla', 'foo');
                 } catch(e) {
                     exc = e;
                 };
@@ -743,11 +743,11 @@
             });
 
             test('error on recursion', function() {
-                views.iface('x');
-                views.iface('y', 'x');
+                obviel.iface('x');
+                obviel.iface('y', 'x');
                 var exc;
                 try {
-                    views.extendsIface('x', 'y');
+                    obviel.extendsIface('x', 'y');
                 } catch(e) {
                     exc = e;
                 };
@@ -1303,7 +1303,7 @@
                 textarea.trigger(ev);
                 equals(obj.text, 'bar');
 
-                views.view({
+                obviel.view({
                     iface: 'icontrolsfoo',
                     render: function(el, obj, name) {
                         el.html('<div>' + obj.text + '</div');
@@ -1956,7 +1956,7 @@
                         // changing
                         var input = $('[name=somefield]', el);
                         var winput = $('[name=wrappedinput-somefield]', el);
-                        formviews._autocomplete_cnv(input, winput.val());
+                        obviel.forms._autocomplete_cnv(input, winput.val());
                     });
                     var input = $('[name=somefield]', el);
                     var winput = $('[name=wrappedinput-somefield]', el);
@@ -2013,8 +2013,8 @@
 
             test('test override template from view', function() {
                 var el = $('#viewdiv');
-                views.iface('textline_field_alt', 'textline_field');
-                views.view((new formviews.WidgetView({
+                obviel.iface('textline_field_alt', 'textline_field');
+                obviel.view((new obviel.forms.WidgetView({
                     iface: 'textline_field_alt',
                     jsont: '<div>foo</div>'})));
                 el.render({
@@ -2069,7 +2069,7 @@
 
         module('Events on render');
 
-        views.view({
+        obviel.view({
             iface: 'foo',
             name: 'render-event',
             render: function(el, obj, name) {
@@ -2079,10 +2079,10 @@
 
         test('render on other element', function() {
             $('#jsview-area').bind(
-                'render.views',
+                'render.obviel',
                 function(ev, view, orgel, obj, name, callback, errback) {
                     var newel = $('#viewdiv2');
-                    if (!views.implements(obj, 'foo') || orgel == newel) {
+                    if (!obviel.implements(obj, 'foo') || orgel == newel) {
                         return;
                     };
                     view.doRender(newel, obj, name, callback, errback);
@@ -2100,7 +2100,7 @@
             $('#viewdiv').html('');
             $('#viewdiv2').html('');
 
-            views.view({
+            obviel.view({
                 iface: 'foo',
                 jsont: '<div>{foo}</div>'
             });
@@ -2126,7 +2126,7 @@
             $('#viewdiv').html('').unbind();
             $('#viewdiv2').html('').unbind();
 
-            views.view({
+            obviel.view({
                 iface: 'evfoo',
                 name: 'outer',
                 html: '<div class="ifoo"></div>',
@@ -2135,7 +2135,7 @@
                 }
             });
 
-            views.view({
+            obviel.view({
                 iface: 'evfoo',
                 name: 'inner',
                 render: function(el, obj, name) {
@@ -2144,8 +2144,8 @@
             });
 
             $('body').unbind();
-            $('body').bind('render.views', function(ev, view, el, obj, name) {
-                if (!views.implements(obj, 'evfoo') || name != 'outer') {
+            $('body').bind('render.obviel', function(ev, view, el, obj, name) {
+                if (!obviel.implements(obj, 'evfoo') || name != 'outer') {
                     return;
                 };
                 view.doRender($('#viewdiv2'), obj, name);
@@ -2182,7 +2182,7 @@
 
         test('basic re-render of structure handled by parent', function() {
             var el = $('#viewdiv');
-            views.view({
+            obviel.view({
                 iface: 'parenttest',
                 jsont: '<div>{foo}</div>'
             });

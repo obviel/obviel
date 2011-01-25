@@ -1,5 +1,5 @@
-(function($, views, formviews) {
-    views.iface('datepicker_textline_field', 'textline_field');
+(function($, obviel, formviews) {
+    obviel.iface('datepicker_textline_field', 'textline_field');
     formviews.DatePickerView = function() {
         var settings = {
             iface: 'datepicker_textline_field',
@@ -40,5 +40,5 @@
         newinput.val(input.val());
     };
 
-    views.view((new formviews.DatePickerView()));
-}(jQuery, views, formviews));
+    obviel.view((new formviews.DatePickerView()));
+}(jQuery, obviel, obviel.forms));

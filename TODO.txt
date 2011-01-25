@@ -14,3 +14,5 @@ should we make 'obviel' a namespace?
 We have 'views' and 'formviews' as namespaces for our app now, but we our
 package is called 'obviel', should we use that as namespace (either instead,
 or in addition to, the existing ones)?
+
+DONE, 'views' is not called 'obviel', and 'formviews' is 'obviel.forms'
