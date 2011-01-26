@@ -379,7 +379,9 @@ obviel.forms = {};
         */
         // clear any previously set error message
         form.render({ifaces: ['viewformerror-noformerror']});
-        $('input[type=submit]', form).removeAttr('disabled');
+        var submits = $('input[type=submit]', form);
+        submits.removeAttr('disabled');
+        submits.trigger('obviel-form-button-disabled', [false]);
 
         var invalid_fields = [];
         var widgets = get_widgets(formdata);
@@ -399,7 +401,8 @@ obviel.forms = {};
                 message: invalid_fields.length + ' field(s) did not validate',
                 fields: invalid_fields
             });
-            $('input[type=submit]', form).attr('disabled', 'true');
+            submits.attr('disabled', 'true');
+            submits.trigger('obviel-form-button-disabled', [true]);
             return false;
         };
         if (this.validate_full) {
