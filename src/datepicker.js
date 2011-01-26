@@ -23,7 +23,8 @@
         input.after(newinput);
         input.hide();
         newinput.change(function(ev) {
-            formviews.update_linked_formel(input, newinput.val());
+            formviews.WidgetView.prototype._update_linked_formel(
+                input, newinput.val());
         });
         var dpoptions = {dateFormat:'mm/dd/yy'};
         $.extend(dpoptions, this.datepicker_options);

@@ -13,7 +13,7 @@
                 value = newvalue;
             };
         };
-        formviews.update_linked_formel(input, value);
+        formviews.WidgetView.prototype._update_linked_formel(input, value);
     };
 
     obviel.iface('autocomplete_textline_field', 'textline_field');

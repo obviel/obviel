@@ -13,45 +13,6 @@ obviel.forms = {};
         return s;
     };
 
-    function get_widgets(formdata) {
-        /* return all widgets for a form
-        
-            returns both the widgets defined in the .widgets list, and those
-            in .groups of a form definition
-        */
-        var widgets = formdata.widgets ? formdata.widgets.slice(0) : [];
-        var groups = formdata.groups || [];
-        $.each(groups, function(groupi, group) {
-            widgets = widgets.concat(group.widgets);
-        });
-        return widgets;
-    };
-
-    function update_linked_formel(el, value) {
-        /* update the value of el and trigger a change event
-        */
-        set_element_value(el, value);
-        var ev = new $.Event('change');
-        ev.target = el;
-        el.trigger(ev);
-    };
-
-    // expose so code outside of this module can use it
-    module.update_linked_formel = update_linked_formel;
-
-    function set_element_value(el, value) {
-        /* el.val() isn't sufficient to set the element value (/status)
-
-            when setting a checkbox or radio value using val(), the status
-            of that element is not updated - this also sets checked etc.
-        */
-        if (el.attr('type') == 'checkbox') {
-            el.attr('checked', value ? 'checked' : false);
-        };
-        // set element value always, since it's used for the data link
-        el.val(value);
-    };
-
     obviel.iface('viewformerror-formerror');
     obviel.view({
         iface: 'viewformerror-formerror',
@@ -215,7 +176,7 @@ obviel.forms = {};
             // field sets, which works as long as the change event is triggered
             // on the hidden fields at the right time...
             this.validate(form, obj.form, obj.data); 
-            var widgets = get_widgets(obj.form);
+            var widgets = this._get_widgets(obj.form);
             var self = this;
             $.each(widgets, function(e, widget) {
                 var input = $('[name=' + widget.name + ']', form);
@@ -379,12 +340,10 @@ obviel.forms = {};
         */
         // clear any previously set error message
         form.render({ifaces: ['viewformerror-noformerror']});
-        var submits = $('input[type=submit]', form);
-        submits.removeAttr('disabled');
-        submits.trigger('obviel-form-button-disabled', [false]);
+        $('input[type=submit]', form).removeAttr('disabled');
 
         var invalid_fields = [];
-        var widgets = get_widgets(formdata);
+        var widgets = this._get_widgets(formdata);
         $.each(widgets, function(i, widget) {
             var input = $('[name=' + widget.name + ']', form);
             var error = input.data('viewform-error');
@@ -401,14 +360,27 @@ obviel.forms = {};
                 message: invalid_fields.length + ' field(s) did not validate',
                 fields: invalid_fields
             });
-            submits.attr('disabled', 'true');
-            submits.trigger('obviel-form-button-disabled', [true]);
+            $('input[type=submit]', form).attr('disabled', 'true');
             return false;
         };
         if (this.validate_full) {
             return this.validate_full(form, formdata, obj);
         };
         return true;
+    };
+
+    module.FormView.prototype._get_widgets = function(formdata) {
+        /* return all widgets for a form
+        
+            returns both the widgets defined in the .widgets list, and those
+            in .groups of a form definition
+        */
+        var widgets = formdata.widgets ? formdata.widgets.slice(0) : [];
+        var groups = formdata.groups || [];
+        $.each(groups, function(groupi, group) {
+            widgets = widgets.concat(group.widgets);
+        });
+        return widgets;
     };
 
     obviel.view((new module.FormView({name: 'default'})));
@@ -474,7 +446,9 @@ obviel.forms = {};
         var convert_wrapper = function(value) {
             return self.handle_convert(form, widgetdata, obj, value);
         };
-        linkcontext[widgetdata.link] = {convert: convert_wrapper};
+        linkcontext[widgetdata.link] = {
+            twoWay: false,
+            convert: convert_wrapper};
         if (widgetdata.link != widgetdata.name) {
             linkcontext[widgetdata.link]['name'] = widgetdata.name;
         };
@@ -500,7 +474,9 @@ obviel.forms = {};
             // XXX note: this does not properly set undefined values,
             // the object's attributes will not be sent to the server if their
             // value is undefined... should we fix that?
-            update_linked_formel(el, widgetdata.defaultvalue);
+            this._update_linked_formel(
+                el, this.convert_model_value(
+                    widgetdata.defaultvalue, widgetdata));
         } else {
             // if it's _not_ a new object, try to set the current value of
             // the element to the object value, if the object value is
@@ -509,9 +485,13 @@ obviel.forms = {};
             if (objvalue === undefined) {
                 // set both el value and object data by triggering the
                 // data link hooks
-                update_linked_formel(el, widgetdata.defaultvalue);
+                this._update_linked_formel(
+                    el, this.convert_model_value(
+                        widgetdata.defaultvalue, widgetdata));
             } else {
-                set_element_value(el, objvalue);
+                this._set_element_value(
+                    el, this.convert_model_value(
+                        objvalue, widgetdata));
             };
         };
     };
@@ -606,6 +586,45 @@ obviel.forms = {};
         if (value === '') {
             value = null;
         };
+        return value;
+    };
+
+    module.WidgetView.prototype._update_linked_formel = function(el, value) {
+        /* update the value of el and trigger a change event
+        */
+        this._set_element_value(el, value);
+        var ev = new $.Event('change');
+        ev.target = el;
+        el.trigger(ev);
+    };
+
+    module.WidgetView.prototype._set_element_value = function(el, value) {
+        /* el.val() isn't sufficient to set the element value (/status)
+
+            when setting a checkbox or radio value using val(), the status
+            of that element is not updated - this also sets checked etc.
+        */
+        if (el.attr('type') == 'checkbox') {
+            el.attr('checked', value ? 'checked' : false);
+        };
+        // set element value always, since it's used for the data link
+        el.val(value);
+    };
+
+    module.WidgetView.prototype.convert_model_value = function(
+            value, widgetdata) {
+        /* this converts the object value to the human-readable (input) one
+
+            when a user types something in an input, that something is
+            converted to a value that can be stored on the model, this does
+            the opposite - convert a value that is stored on the model to
+            a human-readable version that is presented in the input
+
+            only override for widgets where 'what you see' is different from
+            'what you get' (e.g. for floats/decimals, this deals with
+            presenting the value with a custom separator), else just return
+            the value
+        */
         return value;
     };
 
@@ -786,6 +805,18 @@ obviel.forms = {};
                 value = parseFloat(value);
             };
             return value;
+        },
+        convert_model_value: function(value, widgetdata) {
+            if (value === '' || value === undefined || value === null) {
+                return value;
+            };
+            var validate = widgetdata.validate || {};
+            var sep = (validate && validate.separator);
+            if (!sep) {
+                return value;
+            };
+            var chunks = value.toString().split('.');
+            return chunks[0] + sep.charAt(0) + chunks[1];
         }
     }));
 
@@ -860,6 +891,18 @@ obviel.forms = {};
                 };
             };
             return value;
+        },
+        convert_model_value: function(value, widgetdata) {
+            if (value === '' || value === undefined || value === null) {
+                return value;
+            };
+            var validate = widgetdata.validate || {};
+            var sep = (validate && validate.separator);
+            if (!sep) {
+                return value;
+            };
+            var chunks = value.toString().split('.');
+            return chunks[0] + sep.charAt(0) + chunks[1];
         }
     }));
 
