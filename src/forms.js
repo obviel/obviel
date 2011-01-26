@@ -265,7 +265,7 @@ obviel.forms = {};
                         typeof controldata.action == 'string') {
                     control.click(function(ev) {
                         var ev = new $.Event(
-                            'before-submit-render.obviel-forms');
+                            'obviel-forms-before-submit-render');
                         ev.target = el;
                         el.trigger(
                             ev,
@@ -282,7 +282,7 @@ obviel.forms = {};
                     // we assume it's an object that needs to be rendered
                     control.click(function(ev) {
                         var ev = new $.Event(
-                            'before-submit-render.obviel-forms');
+                            'obviel-forms-before-submit-render');
                         ev.target = el;
                         el.trigger(
                             ev,
@@ -343,7 +343,7 @@ obviel.forms = {};
                 dataType: 'json',
                 success: function(data) {
                     var ev = new $.Event(
-                        'before-submit-render.obviel-forms');
+                        'obviel-forms-before-submit-render');
                     ev.target = element;
                     element.trigger(
                         ev,

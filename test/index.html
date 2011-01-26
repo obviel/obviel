@@ -2079,7 +2079,7 @@
 
         test('render on other element', function() {
             $('#jsview-area').bind(
-                'render.obviel',
+                'obviel-render',
                 function(ev, view, orgel, obj, name, callback, errback) {
                     var newel = $('#viewdiv2');
                     if (!obviel.implements(obj, 'foo') || orgel == newel) {
@@ -2144,7 +2144,7 @@
             });
 
             $('body').unbind();
-            $('body').bind('render.obviel', function(ev, view, el, obj, name) {
+            $('body').bind('obviel-render', function(ev, view, el, obj, name) {
                 if (!obviel.implements(obj, 'evfoo') || name != 'outer') {
                     return;
                 };

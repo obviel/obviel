@@ -298,7 +298,7 @@ var obviel = {};
             // loop has finished, fortunately js is rather stupid... :)
             running--;
             if (running == 0) {
-                element.trigger('rendered.obviel', [element, self, obj]);
+                element.trigger('obviel-rendered', [element, self, obj]);
                 if (callback) {
                     try {
                         callback(element, self, obj);
@@ -355,7 +355,7 @@ var obviel = {};
         if (numsubs == 0) {
             // if there were subviews, the callback has been called already
             // XXX should be renamed to 'rendered.views'
-            element.trigger('rendered.obviel', [element, this, obj]);
+            element.trigger('obviel-rendered', [element, this, obj]);
             if (callback) {
                 callback(element, this, obj);
             };
@@ -620,7 +620,7 @@ var obviel = {};
                         // the handler on document makes that doRender is
                         // called with the original target
                         element.trigger(
-                            'render.obviel',
+                            'obviel-render',
                             [view, element, obj, args.name, args.callback,
                              args.errback]);
                     };
@@ -791,7 +791,7 @@ var obviel = {};
     // register an event handler to handle views that aren't explicitly
     // handled already
     $(document).bind(
-        'render.obviel',
+        'obviel-render',
         function(ev, view, el, obj, name, callback, errback) {
             // register a handler for the iface/name combo on the element so
             // that render calls on child elements with similar data end up
@@ -812,7 +812,7 @@ var obviel = {};
             };
             if (is_new) {
                 el.bind(
-                    'render.obviel',
+                    'obviel-render',
                     function(iev, iview, iel, iobj, iname, icb, ieb) {
                         var ifaces = obj.ifaces ? obj.ifaces.join(',') : '';
                         var iifaces = iobj.ifaces ? iobj.ifaces.join(',') : '';

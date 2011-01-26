@@ -596,6 +596,8 @@ each other.
 Events
 ------
 
+XXX implemented partially, UPDATE THIS DOC!
+
 XXX this is not yet implemented, this part mostly serves to discuss this new
 feature before it's added
 
