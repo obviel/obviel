@@ -701,6 +701,7 @@ obviel.forms = {};
                         field_name: widgetdata.name,
                         value: value,
                         message: message});
+                    return;
                  } else if (!allow_negative && asint < 0) {
                     var message = 'negative numbers are not allowed';
                     $('[name=' + widgetdata.name + ']', formeldiv).data(
