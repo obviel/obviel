@@ -630,7 +630,7 @@ obviel.forms = {};
 
     obviel.iface('textline_field', 'viewformwidget');
     // we register here for the default iface, 'textline_field' will
-    // fall back to this too
+    // fall back to this because of iface inheritance
     obviel.view(new module.WidgetView({
         iface: 'viewformwidget',
         validate: function(formeldiv, widgetdata, obj, value) {
