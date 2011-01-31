@@ -21,6 +21,31 @@ DONE, 'views' is not called 'obviel', and 'formviews' is 'obviel.forms'
 Feature suggestion
 ===================
 
+Clean event binding
+--------------------
+
+currently events are binded in the render() method, which is kindof not clean.
+
+    obviel.view({
+        iface: 'myview',
+        render: function (el, obj, name) {
+            .... 
+        },
+        binds : {
+            '.selector' : {
+                'click': function (event) {},
+                'focus': function (event) {},
+            }
+        },
+        live-binds : {
+            '.selector: {
+                'click': function(event) {}
+            }
+        }
+    });
+
+handlers are bound after rendering is done.
+
 Ability to get the view object from a rendered view
 ----------------------------------------------------
 
@@ -32,8 +57,10 @@ can register useful methods to it and call it from another view. eg:
         render: function (el, obj, name) {
             ....
         },
-        search: function (key) {
-            ... do stuff ...
+        _fn : {
+            search: function (key) {
+                ... do stuff ...
+            }
         }
     });
     $(el).render({ifaces:['myview']});
