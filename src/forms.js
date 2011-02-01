@@ -199,17 +199,6 @@ obviel.forms = {};
         $.each(controls, function(i, controldata) {
             var control = $('<input />');
             var action = controldata.action;
-            control.attr('value', controldata.label || '');
-            if (controldata.id) {
-                control.attr('id', controldata.id);
-            };
-            // XXX registered keyword, should we use className instead?
-            if (controldata['class']) {
-                control.attr('class', controldata['class']);
-            };
-            if (controldata.name) {
-                control.attr('name', controldata.name);
-            };
             var action_name = controldata.action_name || 'default';
             if (controldata.submit_data) {
                 control.attr('type', 'submit');
@@ -257,6 +246,17 @@ obviel.forms = {};
                         };
                     });
                 };
+            };
+            control.val(controldata.label || '');
+            if (controldata.id) {
+                control.id = controldata.id;
+            };
+            // XXX registered keyword, should we use className instead?
+            if (controldata['class']) {
+                control.className = controldata['class'];
+            };
+            if (controldata.name) {
+                controlname = controldata.name;
             };
             cel.append(control);
         });
@@ -701,6 +701,7 @@ obviel.forms = {};
                         field_name: widgetdata.name,
                         value: value,
                         message: message});
+                    return;
                  } else if (!allow_negative && asint < 0) {
                     var message = 'negative numbers are not allowed';
                     $('[name=' + widgetdata.name + ']', formeldiv).data(
