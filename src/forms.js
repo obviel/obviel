@@ -261,7 +261,7 @@ obviel.forms = {};
                 control.addClass(controldata['class']);
             };
             if (controldata.name) {
-                controlname.attr('name', controldata.name);
+                control.attr('name', controldata.name);
             };
             cel.append(control);
         });
