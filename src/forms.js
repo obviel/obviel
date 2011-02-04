@@ -156,6 +156,11 @@ obviel.forms = {};
                         view.link(el, widgetdata, obj.data);
                         view.setdefault(el, widgetdata, obj.data, isnewobj);
                     });
+                // somewhat nasty, but required for a lot of style issues
+                // (they need an element at the end they can rely on, and
+                // the field-error div gets removed from view at times)
+                fieldel.append(
+                    '<div class="viewform-field-clear">&#xa0;</div>');
             });
             formdiv.append(fieldset);
         });
