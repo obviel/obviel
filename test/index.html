@@ -20,8 +20,9 @@
         $(document).ready(function() {
 
             $.fn.html_lower = function() {
+                // some nasty normalization for IE
                 var html = this.html();
-                return html.toLowerCase();
+                return html.toLowerCase().replace(/"/g, '');
             };
 
             obviel.onerror = function(e) {
@@ -565,8 +566,10 @@
                         // the jsont cache should hold the url now
                         ok(obviel._jsont_cache['test1.jt'] !== undefined);
                         equals(
-                            obviel._jsont_cache['test1.jt'].expand({foo: 'bar'}),
-                            $('#viewdiv').html_lower());
+                            $.trim(
+                                obviel._jsont_cache['test1.jt']
+                                    .expand({foo: 'bar'})),
+                            $.trim($('#viewdiv').html_lower()));
                         start();
                         $('#viewdiv').unbind();
                     });
@@ -2051,7 +2054,7 @@
                 });
                 var form = $('form', el);
                 equals($('.viewform-fields input', form).length, 0);
-                equals(form.text(), 'foo');
+                equals(form.text(), 'foo\xa0');
             });
 
             test('test override template from view', function() {
@@ -2077,7 +2080,7 @@
                 });
                 var form = $('form', el);
                 equals($('.viewform-fields input', form).length, 0);
-                equals(form.text(), 'bar');
+                equals(form.text(), 'bar\xa0');
             });
         });
 
@@ -2177,7 +2180,7 @@
             }, 'outer');
 
             equals($('#viewdiv').html_lower(), '');
-            equals($('#viewdiv2').html_lower(), '<div class="ifoo">baz</div>');
+            equals($('#viewdiv2').html_lower(), '<div class=ifoo>baz</div>');
 
             // now triggering an outer structure render on an inner element
             // will cause viewdiv2 to be updated again
@@ -2190,7 +2193,7 @@
             }, 'outer');
 
             equals($('#viewdiv').html_lower(), '');
-            equals($('#viewdiv2').html_lower(), '<div class="ifoo">qux</div>');
+            equals($('#viewdiv2').html_lower(), '<div class=ifoo>qux</div>');
             $('body').unbind();
         });
 
