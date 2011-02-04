@@ -249,14 +249,14 @@ obviel.forms = {};
             };
             control.val(controldata.label || '');
             if (controldata.id) {
-                control.id = controldata.id;
+                control.attr('id', controldata.id);
             };
             // XXX registered keyword, should we use className instead?
             if (controldata['class']) {
-                control.className = controldata['class'];
+                control.addClass(controldata['class']);
             };
             if (controldata.name) {
-                controlname = controldata.name;
+                controlname.attr('name', controldata.name);
             };
             cel.append(control);
         });
@@ -950,7 +950,7 @@ obviel.forms = {};
             '<input type="checkbox" name="{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
-            '{.end}{.end}' +
+            '{.end}{.end}</div>' +
             '<div class="viewform-error viewform-field-error"></div>' +
             '{.section description}' +
             '<div class="viewform-field-description">' +

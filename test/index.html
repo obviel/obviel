@@ -6,6 +6,7 @@
     <script type="text/javascript" src="jquery-ui.js"></script>
     <script type="text/javascript" src="jquery.form-2.43.js"></script>
     <script type="text/javascript" src="json-template.js"></script>
+    <script type="text/javascript" src="../src/json2.js"></script>
     <script type="text/javascript" src="jquery.datalink.js"></script>
     <script type="text/javascript" src="jquery.autocomplete.js"></script>
     <script type="text/javascript" src="qunit.js"></script>
@@ -17,6 +18,11 @@
       // <![CDATA[
 
         $(document).ready(function() {
+
+            $.fn.html_lower = function() {
+                var html = this.html();
+                return html.toLowerCase();
+            };
 
             obviel.onerror = function(e) {
                 throw(e);
@@ -148,10 +154,10 @@
                 render: function(el, obj) {
                     // let's add some content to the html
                     var iframe = el[0].getElementsByTagName('iframe')[0];
-                    var body = iframe.contentDocument.getElementsByTagName(
+                    var body = iframe.contentWindow.document.getElementsByTagName(
                         'body')[0];
                     body.appendChild(
-                            iframe.contentDocument.createTextNode('foo'));
+                            iframe.contentWindow.document.createTextNode('foo'));
                 }
             });
 
@@ -168,7 +174,7 @@
 
             obviel.formView({
                 name: 'iframeformview',
-                iframe: true,
+                iframe: true
             });
 
             obviel.htmlView({
@@ -456,13 +462,15 @@
                 el.html('');
                 el.render({
                     html:
-                        '<html><head><title>test doc</title</head>' +
+                        '<html><head><title>test doc</title></head>' +
                         '<body></body></html>'
                 }, 'iframeview', function(el, obj, name) {
                     var iframe = $(
-                        $('iframe', el)[0].contentDocument.documentElement);
+                        $('iframe', el)[0].contentWindow.document
+                            .documentElement);
                     equals($('body', iframe).text(), 'foo');
-                    equals($('title', iframe).text(), 'test doc');
+                    // for some reason, .text() seems to fail on ie?!?
+                    equals($('title', iframe).html_lower(), 'test doc');
                     start();
                 });
                 el.unbind();
@@ -493,8 +501,9 @@
                     function(element, view, context) {
                         // XXX would it be nice to have 'element' point to
                         // the iframe body instead? not sure...
-                        var iframe = $($('iframe', element)[0].contentDocument
-                            .documentElement)
+                        var iframe = $(
+                            $('iframe', element)[0].contentWindow.document
+                                .documentElement)
                         if (context.action) {
                             $('form', iframe).submit();
                         } else {
@@ -557,7 +566,7 @@
                         ok(obviel._jsont_cache['test1.jt'] !== undefined);
                         equals(
                             obviel._jsont_cache['test1.jt'].expand({foo: 'bar'}),
-                            $('#viewdiv').html());
+                            $('#viewdiv').html_lower());
                         start();
                         $('#viewdiv').unbind();
                     });
@@ -796,7 +805,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 2,
+                                min_length: 2
                             }
                         }]
                     },
@@ -826,7 +835,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 2,
+                                min_length: 2
                             }
                         }]
                     },
@@ -867,7 +876,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 2,
+                                min_length: 2
                             }
                         }]
                     },
@@ -908,7 +917,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 5,
+                                min_length: 5
                             }
                         }]
                     },
@@ -941,7 +950,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 1,
+                                min_length: 1
                             }
                         }]
                     },
@@ -1000,7 +1009,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 1,
+                                min_length: 1
                             }
                         }]
                     },
@@ -1028,7 +1037,7 @@
                             link: 'text1',
                             validate: {
                                 required: true,
-                                min_length: 1,
+                                min_length: 1
                             }
                         }]
                     },
@@ -1058,7 +1067,7 @@
                                 link: 'text',
                                 validate: {
                                     required: true,
-                                    min_length: 1,
+                                    min_length: 1
                                 }
                             }]
                         }, {
@@ -1070,7 +1079,7 @@
                                 title: 'Text 2',
                                 link: 'text2',
                                 validate: {
-                                    required: true,
+                                    required: true
                                 }
                             }]
                         }]
@@ -1120,7 +1129,7 @@
                             link: 'text',
                             validate: {
                                 required: true,
-                                min_length: 1,
+                                min_length: 1
                             }
                         }]
                     },
@@ -1156,7 +1165,7 @@
                             link: 'text',
                             validate: {
                                 required: true,
-                                min_length: 1,
+                                min_length: 1
                             }
                         }]
                     },
@@ -1190,7 +1199,7 @@
                             name: 'text1',
                             title: 'Text 1',
                             description: 'This is the first text field',
-                            link: 'text',
+                            link: 'text'
                         }],
                         controls: [
                             {label: 'save',
@@ -1201,7 +1210,7 @@
                             {label: 'other view',
                                 action: 'default.json',
                                 id: 'otherviewbutton',
-                                class: 'button'}
+                                'class': 'button'}
                         ]
                     },
                     data: obj
@@ -1234,12 +1243,12 @@
                             name: 'text1',
                             title: 'Text 1',
                             description: 'This is the first text field',
-                            link: 'text',
+                            link: 'text'
                         }],
                         controls: [
                             {label: 'save',
                                 action: 'success.form',
-                                submit_data: true},
+                                submit_data: true}
                         ]
                     },
                     data: obj
@@ -1280,13 +1289,13 @@
                             name: 'text1',
                             title: 'Text 1',
                             description: 'This is the first text field',
-                            link: 'text',
+                            link: 'text'
                         }],
                         controls: [
                             {label: 'preview',
                                 // neat trick, view context with button click
                                 action: obj,
-                                submit_data: false},
+                                submit_data: false}
                         ]
                     },
                     data: obj
@@ -1326,12 +1335,12 @@
                             name: 'text1',
                             title: 'Text 1',
                             description: 'This is the first text field',
-                            link: 'text',
+                            link: 'text'
                         }],
                         controls: [
                             {label: 'view some object',
                                 action: 'default.json',
-                                submit_data: false},
+                                submit_data: false}
                         ]
                     },
                     data: null
@@ -1371,7 +1380,7 @@
                             validate: {
                                 required: true,
                                 min_length: 2,
-                                max_length: 5,
+                                max_length: 5
                             }
                         }]
                     },
@@ -1561,7 +1570,7 @@
                             link: 'foo',
                             validate: {
                                 required: true,
-                                length: 4,
+                                length: 4
                             }
                         }]
                     },
@@ -1605,7 +1614,7 @@
                             link: 'foo',
                             label: 'yes',
                             validate: {
-                                required: true,
+                                required: true
                             }
                         }]
                     },
@@ -1627,6 +1636,11 @@
                 input.trigger(ev);
                 equals(obj.foo, true);
                 equals($('.viewform-field-error', el).text(), '');
+
+                // test to see whether html has been fixed properly
+                same(
+                    $('.viewform-field-error', el).parent()[0],
+                    $('.viewform-field', el)[0]);
             });
 
             test('test boolean_field initial false', function() {
@@ -1644,7 +1658,7 @@
                             link: 'foo',
                             label: 'yes',
                             validate: {
-                                required: true,
+                                required: true
                             }
                         }]
                     },
@@ -1670,7 +1684,7 @@
                             link: 'foo',
                             label: 'yes',
                             validate: {
-                                required: true,
+                                required: true
                             }
                         }]
                     },
@@ -1694,7 +1708,7 @@
                     link: 'foo',
                     validate: {
                         required: true,
-                        max_length: 5,
+                        max_length: 5
                     }
                 };
                 el.render({
@@ -1791,7 +1805,7 @@
                         min_before_sep: 1,
                         min_after_sep: 0,
                         max_before_sep: 3,
-                        max_after_sep: 5,
+                        max_after_sep: 5
                     }
                 };
                 el.render({
@@ -1866,7 +1880,7 @@
                             empty_option: 'Pick one',
                             link: 'foo',
                             validate: {
-                                required: true,
+                                required: true
                             }
                         }]
                     },
@@ -2110,8 +2124,8 @@
                 foo: 'bar'
             });
 
-            equals($('#viewdiv').html(), '');
-            equals($('#viewdiv2').html(), '<div>bar</div>');
+            equals($('#viewdiv').html_lower(), '');
+            equals($('#viewdiv2').html_lower(), '<div>bar</div>');
 
             $('#viewdiv2 div').render({
                 ifaces: ['foo'],
@@ -2119,7 +2133,7 @@
             });
 
             // rendering the structure on 
-            equals($('#viewdiv2').html(), '<div>baz</div>');
+            equals($('#viewdiv2').html_lower(), '<div>baz</div>');
         });
 
         test('re-render parent', function() {
@@ -2162,8 +2176,8 @@
                 }
             }, 'outer');
 
-            equals($('#viewdiv').html(), '');
-            equals($('#viewdiv2').html(), '<div class="ifoo">baz</div>');
+            equals($('#viewdiv').html_lower(), '');
+            equals($('#viewdiv2').html_lower(), '<div class="ifoo">baz</div>');
 
             // now triggering an outer structure render on an inner element
             // will cause viewdiv2 to be updated again
@@ -2175,8 +2189,8 @@
                 }
             }, 'outer');
 
-            equals($('#viewdiv').html(), '');
-            equals($('#viewdiv2').html(), '<div class="ifoo">qux</div>');
+            equals($('#viewdiv').html_lower(), '');
+            equals($('#viewdiv2').html_lower(), '<div class="ifoo">qux</div>');
             $('body').unbind();
         });
 
@@ -2187,9 +2201,9 @@
                 jsont: '<div>{foo}</div>'
             });
             el.render({ifaces: ['parenttest'], foo: 'bar'});
-            equals(el.html(), '<div>bar</div>');
+            equals(el.html_lower(), '<div>bar</div>');
             $('div', el).render({ifaces: ['parenttest'], foo: 'baz'});
-            equals(el.html(), '<div>baz</div>');
+            equals(el.html_lower(), '<div>baz</div>');
         });
 
       // ]]>

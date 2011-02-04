@@ -193,17 +193,26 @@ var obviel = {};
     module.View.prototype._add_content = function(
             html, element, obj, name, callback, errback) {
         if (this.iframe) {
-            element.html('<iframe></iframe>');
-            var iframe = element[0].childNodes[0];
+            var iframe = document.createElement('iframe');
+            iframe.src = '';
+            element.html(iframe);
             if (html) {
-                iframe.contentDocument.write(html);
-                iframe.contentDocument.close();
                 var self = this;
-                iframe.contentWindow.onload = function() {
+                var cw = iframe.contentWindow;
+                var cd = cw.document;
+                if (html.indexOf('<html') == -1 &&
+                        html.indexOf('<HTML') == -1) {
+                    // no html tags, assume it's body content rather than a
+                    // full doc
+                    html = '<html><body>' + html + '</body></html>';
+                };
+                cd.write(html);
+                var onload = cw.onload = function() {
+                    var iframe = element[0].childNodes[0];
                     function cbwrapper() {
                         try {
                             var jiframe = $(iframe);
-                            var jcontents = $(iframe.contentDocument);
+                            var jcontents = $(cd);
                             $('body', jcontents).css('overflow', 'hidden');
                             // deal with margin, though not sure where...
                             jiframe.width(jcontents.width() + 2);
@@ -223,6 +232,7 @@ var obviel = {};
                     self._add_content_continue(
                         html, element, obj, name, cbwrapper, errback);
                 };
+                cd.close();
             } else {
                 this._add_content_continue(
                     html, element, obj, name, callback, errback);
@@ -252,7 +262,7 @@ var obviel = {};
             element, obj, name, callback, errback) {
         var form;
         if (this.iframe) {
-            form = $('form', $('iframe', element)[0].contentDocument
+            form = $('form', $('iframe', element)[0].contentWindow.document
                 .documentElement);
         } else {
             form = $('form', element);
