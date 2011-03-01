@@ -346,6 +346,8 @@ obviel.forms = {};
         // clear any previously set error message
         form.render({ifaces: ['viewformerror-noformerror']});
         $('input[type=submit]', form).removeAttr('disabled');
+        $('input[type=submit]', form).trigger(
+                                    'obviel-form-button-state-changed');
 
         var invalid_fields = [];
         var widgets = this._get_widgets(formdata);
@@ -366,6 +368,8 @@ obviel.forms = {};
                 fields: invalid_fields
             });
             $('input[type=submit]', form).attr('disabled', 'true');
+            $('input[type=submit]', form).trigger(
+                                    'obviel-form-button-state-changed');
             return false;
         };
         if (this.validate_full) {
