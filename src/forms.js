@@ -826,6 +826,9 @@ obviel.forms = {};
                 return value;
             };
             var chunks = value.toString().split('.');
+            if (chunks[1] === undefined) {
+                chunks[1] = '0';
+            };
             return chunks[0] + sep.charAt(0) + chunks[1];
         }
     }));
