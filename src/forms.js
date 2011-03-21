@@ -184,7 +184,10 @@ obviel.forms = {};
             var self = this;
             $.each(widgets, function(e, widget) {
                 var input = $('[name=' + widget.name + ']', form);
-                input.change(function() {
+                input.change(function(ev) {
+                    if (ev.skip_form) {
+                        return;
+                    };
                     self.validate(form, obj.form, obj.data);
                 });
             });
@@ -286,6 +289,7 @@ obviel.forms = {};
                 if (!input.data('viewform-validated') && !widget.disabled) {
                     var ev = new $.Event('change');
                     ev.target = input;
+                    ev.skip_form = true;
                     input.trigger(ev);
                 };
             });
@@ -355,13 +359,6 @@ obviel.forms = {};
             this.validate_full() (if available) which should be responsible for
             checking relations, etc.
         */
-        // since this may trigger change events on inputs, which in turn
-        // triggers form validation, leading back to this function, we need
-        // to manually avoid recursion
-        if (this.currently_validating) {
-            return;
-        };
-        this.currently_validating = true;
         // clear any previously set error message
         form.render({ifaces: ['viewformerror-noformerror']});
         $('input[type=submit]', form).removeAttr('disabled');
@@ -389,14 +386,11 @@ obviel.forms = {};
             $('input[type=submit]', form).attr('disabled', 'true');
             $('input[type=submit]', form).trigger(
                                     'obviel-form-button-state-changed');
-            this.currently_validating = false;
             return false;
         };
         if (this.validate_full) {
-            this.currently_validating = false;
             return this.validate_full(form, formdata, obj);
         };
-        this.currently_validating = false;
         return true;
     };
 
