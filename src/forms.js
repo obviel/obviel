@@ -180,7 +180,6 @@ obviel.forms = {};
             // actual fields to allow widgets to hide them and use their own
             // field sets, which works as long as the change event is triggered
             // on the hidden fields at the right time...
-            this.validate(form, obj.form, obj.data); 
             var widgets = this._get_widgets(obj.form);
             var self = this;
             $.each(widgets, function(e, widget) {
@@ -189,6 +188,7 @@ obviel.forms = {};
                     self.validate(form, obj.form, obj.data);
                 });
             });
+            this.validate(form, obj.form, obj.data); 
         };
     };
 
@@ -343,6 +343,13 @@ obviel.forms = {};
             this.validate_full() (if available) which should be responsible for
             checking relations, etc.
         */
+        // since this may trigger change events on inputs, which in turn
+        // triggers form validation, leading back to this function, we need
+        // to manually avoid recursion
+        if (this.currently_validating) {
+            return;
+        };
+        this.currently_validating = true;
         // clear any previously set error message
         form.render({ifaces: ['viewformerror-noformerror']});
         $('input[type=submit]', form).removeAttr('disabled');
@@ -353,6 +360,11 @@ obviel.forms = {};
         var widgets = this._get_widgets(formdata);
         $.each(widgets, function(i, widget) {
             var input = $('[name=' + widget.name + ']', form);
+            if (!input.data('viewform-validated') && !widget.disabled) {
+                var ev = new $.Event('change');
+                ev.target = input;
+                input.trigger(ev);
+            };
             var error = input.data('viewform-error');
             if (error) {
                 invalid_fields.push({
@@ -370,11 +382,14 @@ obviel.forms = {};
             $('input[type=submit]', form).attr('disabled', 'true');
             $('input[type=submit]', form).trigger(
                                     'obviel-form-button-state-changed');
+            this.currently_validating = false;
             return false;
         };
         if (this.validate_full) {
+            this.currently_validating = false;
             return this.validate_full(form, formdata, obj);
         };
+        this.currently_validating = false;
         return true;
     };
 
@@ -537,11 +552,12 @@ obviel.forms = {};
             formeldiv.render({iface: 'viewformerror-fielderror', ...}) and
             return undefined
         */
+        var input = $('[name=' + widgetdata.name + ']', formeldiv);
+        input.data('viewform-validated', true);
         if (widgetdata.validate && widgetdata.validate.required && !value) {
             value = undefined;
             var message = 'this field is required'; // XXX allow override?
-            $('[name=' + widgetdata.name + ']', formeldiv).data(
-                'viewform-error', message);
+            input.data('viewform-error', message);
             formeldiv.render({
                 ifaces: ['viewformerror-required'],
                 message: message,
@@ -551,8 +567,7 @@ obviel.forms = {};
                 widgetdata.validate && widgetdata.validate.min_length &&
                 value.length < widgetdata.validate.min_length) {
             var message = 'value too short';
-            $('[name=' + widgetdata.name + ']', formeldiv).data(
-                'viewform-error', message);
+            input.data('viewform-error', message);
             formeldiv.render({
                 ifaces: ['viewformerror-tooshort'],
                 message: message,
@@ -565,8 +580,7 @@ obviel.forms = {};
                 widgetdata.validate && widgetdata.validate.max_length &&
                 value.length > widgetdata.validate.max_length) {
             var message = 'value too long';
-            $('[name=' + widgetdata.name + ']', formeldiv).data(
-                'viewform-error', message);
+            input.data('viewform-error', message);
             formeldiv.render({
                 ifaces: ['viewformerror-toolong'],
                 message: message,

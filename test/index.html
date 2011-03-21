@@ -938,6 +938,37 @@
                 equals(obj.text1, 'bar'); // XXX is this what we want?
             });
 
+            test('test link required no change event', function() {
+                var el = $('#viewdiv');
+                var obj = {text1: ''};
+                el.render({
+                    ifaces: ['viewform'],
+                    form: {
+                        widgets: [{
+                            ifaces: ['text_field'],
+                            name: 'text1',
+                            title: 'Text 1',
+                            description: 'This is the first text field',
+                            defaultvalue: '',
+                            link: 'text1',
+                            validate: {
+                                required: true,
+                                min_length: 5
+                            }
+                        }]
+                    },
+                    data: obj
+                });
+                var form = $('form', el);
+                var ev = $.Event('submit');
+                ev.target = form;
+                form.trigger(ev);
+                equals(
+                    $('.viewform-field-error', el).text(),
+                    'this field is required');
+                equals(obj.text1, '');
+            });
+
             test('test link required form submit', function() {
                 var el = $('#viewdiv');
                 var obj = {text1: 'bar'};
