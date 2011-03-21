@@ -940,6 +940,7 @@
 
             test('test link required no change event', function() {
                 var el = $('#viewdiv');
+                el.text('');
                 var obj = {text1: ''};
                 el.render({
                     ifaces: ['viewform'],
@@ -959,6 +960,7 @@
                     },
                     data: obj
                 });
+                equals($('.viewform-field-error', el).text(), '');
                 var form = $('form', el);
                 var ev = $.Event('submit');
                 ev.target = form;

@@ -188,7 +188,11 @@ obviel.forms = {};
                     self.validate(form, obj.form, obj.data);
                 });
             });
-            this.validate(form, obj.form, obj.data); 
+            // this may be nice for 'edit' forms, but will usually not be
+            // desired for 'add' ones and such
+            if (obj.form.validate_on_load) {
+                this.validate(form, obj.form, obj.data);
+            };
         };
     };
 
@@ -277,6 +281,14 @@ obviel.forms = {};
         var self = this;
         form.submit(function(ev) {
             ev.preventDefault();
+            $.each(self._get_widgets(obj.form), function(i, widget) {
+                var input = $('[name=' + widget.name + ']', form);
+                if (!input.data('viewform-validated') && !widget.disabled) {
+                    var ev = new $.Event('change');
+                    ev.target = input;
+                    input.trigger(ev);
+                };
+            });
             if (!self.validate(form, obj.form, obj.data)) {
                 // invalid form, do not submit (errors have been reported by
                 // 'validate()')
@@ -360,11 +372,6 @@ obviel.forms = {};
         var widgets = this._get_widgets(formdata);
         $.each(widgets, function(i, widget) {
             var input = $('[name=' + widget.name + ']', form);
-            if (!input.data('viewform-validated') && !widget.disabled) {
-                var ev = new $.Event('change');
-                ev.target = input;
-                input.trigger(ev);
-            };
             var error = input.data('viewform-error');
             if (error) {
                 invalid_fields.push({
