@@ -527,10 +527,11 @@ obviel.forms = {};
         */
         // render the 'no-error' view on the form/el to remove any previously
         // displayed errors
-        formeldiv.render({ifaces: ['viewformerror-nofielderror']});
-
-        $('[name=' + widgetdata.name + ']', formeldiv).data(
-            'viewform-error', false);
+        var input = $('[name=' + widgetdata.name + ']', formeldiv);
+        if (input.data('viewform-error')) {
+            formeldiv.render({ifaces: ['viewformerror-nofielderror']});
+        }
+        input.data('viewform-error', false);
         value = this.validate(formeldiv, widgetdata, obj, value);
         if (value !== undefined) {
             value = this.convert(formeldiv, widgetdata, obj, value);
