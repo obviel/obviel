@@ -24,18 +24,23 @@ var obviel = {};
     module._ifaces = {
         'base': []
     };
-
+    
+    /**
+     * Register an interface (iface)
+     * @param name: interface name (string)
+     *
+     * register an iface with name 'name' (string), if other arguments
+     * are passed to this function, consider the rest base ifaces
+     * (supers) that this iface extends.
+     *
+     * ifaces are just strings, used as markers
+     *
+     * note that registered ifaces automatically always
+     * extend the iface 'base'
+     */
     module.iface = function(name) {
         /* register an interface
 
-           register an iface with name 'name' (string), if other arguments
-           are passed to this function, consider the rest base ifaces
-           (supers), in order of importance
-
-           interfaces are just strings, used as markers
-
-           note that if an iface is registered, it automatically inherits
-           from 'base'
         */
         if (module._ifaces[name]) {
             throw((new module.DuplicateInterfaces(name)));
@@ -61,9 +66,11 @@ var obviel = {};
         module._ifaces[name] = bases;
     };
 
+    /**
+     * Returns true if obj implements iface.
+     * @param base: the iface to check
+     */
     module.implements = function(obj, base) {
-        /* returns true of obj implements base, false otherwise
-        */
         var ifaces = module.ifaces(obj);
         for (var i=0; i < ifaces.length; i++) {
             if (ifaces[i] == base) {
@@ -73,9 +80,11 @@ var obviel = {};
         return false;
     };
 
+    /* Register a new base for an interface.
+     * @param name: an iface (string)
+     * @param base: base iface (string)
+     */
     module.extendsIface = function(name, base) {
-        /* register a new base for interface name
-        */
         var basebases = module._ifaces[base];
         if (basebases === undefined) {
             throw((new module.UnknownIface(base)));
@@ -88,6 +97,13 @@ var obviel = {};
         module._ifaces[name].push(base);
     };
 
+    /**
+     * Return the interfaces of an obj, breadth first.
+     * @param obj: the object
+     * 
+     * The object can have an ifaces attributes. If not,
+     * the JS type of the object is 
+     
     module.ifaces = function(obj) {
         /* return the interfaces of an obj, breadth first
         */
