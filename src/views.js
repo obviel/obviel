@@ -39,9 +39,6 @@ var obviel = {};
      * extend the iface 'base'
      */
     module.iface = function(name) {
-        /* register an interface
-
-        */
         if (module._ifaces[name]) {
             throw((new module.DuplicateInterfaces(name)));
         };
@@ -456,7 +453,9 @@ var obviel = {};
                         };
                     };
                 },
-                error: function() {module.onerror(arguments[0].responseText)}
+                error: function() {
+                    module.onerror(arguments[0].responseText);
+                }
             });
         } else {
             // no explicit content, just call the callback
@@ -812,6 +811,7 @@ var obviel = {};
             };
             current = current.parent();
         };
+        return undefined;
     };
 
     // register an event handler to handle views that aren't explicitly
@@ -840,7 +840,6 @@ var obviel = {};
                 el.bind(
                     'obviel-render',
                     function(iev, iview, iel, iobj, iname, icb, ieb) {
-                        var ifaces = obj.ifaces ? obj.ifaces.join(',') : '';
                         var iifaces = iobj.ifaces ? iobj.ifaces.join(',') : '';
                         if (iifaces != ifaces || iname != name) {
                             return;
