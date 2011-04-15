@@ -102,8 +102,8 @@ var obviel = {};
      * @param obj: the object
      * 
      * The object can have an ifaces attributes. If not,
-     * the JS type of the object is 
-     
+     * the JS type of the object is returned.
+     */
     module.ifaces = function(obj) {
         /* return the interfaces of an obj, breadth first
         */
