@@ -653,42 +653,53 @@ obviel.forms = {};
         return value;
     };
 
+    
     obviel.iface('textline_field', 'viewformwidget');
     // we register here for the default iface, 'textline_field' will
     // fall back to this because of iface inheritance
-    obviel.view(new module.WidgetView({
-        iface: 'viewformwidget',
-        validate: function(formeldiv, widgetdata, obj, value) {
-            value = module.WidgetView.prototype.validate.call(
-                this, formeldiv, widgetdata, obj, value);
-            if (value == '' &&
-                    (widgetdata.validate && !widgetdata.validate.required)) {
-                return value;
-            };
-            if (value !== undefined && widgetdata.validate &&
-                    widgetdata.validate.regs) {
-                $.each(widgetdata.validate.regs, function(i, regdata) {
-                    var reg = RegExp(regdata['reg']); // no flags?
-                    var res = reg.exec(value);
-                    if (!res) {
-                        $('[name=' + widgetdata.name + ']', formeldiv).data(
-                            'viewform-error', regdata['message']);
-                        formeldiv.render({
-                            ifaces: ['viewformerror-fielderror'],
-                            message: regdata['message']});
-                        value = undefined;
-                        return false;
-                    };
-                });
-            };
+    module.TextLineWidget = function() {
+        var settings = {
+            iface: 'viewformwidget'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);
+    };
+
+    module.TextLineWidget.prototype = new module.WidgetView;
+    module.TextLineWidget.prototype.validate = function(formeldiv, widgetdata,
+                                              obj, value) {
+        value = module.WidgetView.prototype.validate.call(
+            this, formeldiv, widgetdata, obj, value);
+        if (value == '' &&
+            (widgetdata.validate && !widgetdata.validate.required)) {
             return value;
         }
-    }));
+        if (value !== undefined && widgetdata.validate &&
+            widgetdata.validate.regs) {
+            $.each(widgetdata.validate.regs, function(i, regdata) {
+                var reg = RegExp(regdata['reg']); // no flags?
+                var res = reg.exec(value);
+                if (!res) {
+                    $('[name=' + widgetdata.name + ']', formeldiv).data(
+                        'viewform-error', regdata['message']);
+                    formeldiv.render({
+                        ifaces: ['viewformerror-fielderror'],
+                        message: regdata['message']});
+                    value = undefined;
+                    return false;
+                };
+            });
+        };
+        return value;
+    };
+
+    obviel.view(new module.TextLineWidget());
 
     obviel.iface('text_field', 'viewformwidget');
-    obviel.view(new module.WidgetView({
-        iface: 'text_field',
-        jsont:
+    module.TextWidget = function() {
+        var settings = {
+            iface: 'text_field',
+            jsont:
             '<label for="vf-{name}">' +
             '{title|htmltag}</label>' +
             '<div class="viewform-field-input">' +
@@ -702,69 +713,38 @@ obviel.forms = {};
             '{.section description}' +
             '<div class="viewform-field-description">' +
             '{description|htmltag}</div>{.end}'
-    }));
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);
+    };
 
+    module.TextWidget.prototype = new module.WidgetView;
+
+    obviel.view(new module.TextWidget());
+
+     
     obviel.iface('integer_field', 'viewformwidget');
     obviel.iface('viewformerror-noint', 'viewformerror-fielderror');
     obviel.iface('viewformerror-intlength', 'viewformerror-fielderror');
     obviel.iface('viewformerror-intnegative', 'viewformerror-fielderror');
-    obviel.view(new module.WidgetView({
-        iface: 'integer_field',
-        validate: function(formeldiv, widgetdata, obj, value) {
-            if (value) {
-                var asint = parseInt(value);
-                var allow_negative =
-                    widgetdata.validate ? widgetdata.validate.allow_negative :
-                    false;
-                if (isNaN(asint) ||
-                        asint.toString().length != value.length) {
-                    var message = 'not a number';
-                    $('[name=' + widgetdata.name + ']', formeldiv).data(
-                        'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-noint'],
-                        field_name: widgetdata.name,
-                        value: value,
-                        message: message});
-                    return;
-                 } else if (!allow_negative && asint < 0) {
-                    var message = 'negative numbers are not allowed';
-                    $('[name=' + widgetdata.name + ']', formeldiv).data(
-                        'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-intnegative'],
-                        field_name: widgetdata.name,
-                        value: value,
-                        message: message});
-                    return;
-                } else if (
-                        widgetdata.validate && widgetdata.validate.length &&
-                        widgetdata.validate.length != value.length) {
-                    var message =
-                        'value must be ' + widgetdata.validate.length +
-                        ' digits long';
-                    $('[name=' + widgetdata.name + ']', formeldiv).data(
-                        'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-intlength'],
-                        field_name: widgetdata.name,
-                        value: value,
-                        length: widgetdata.validate.length,
-                        message: message});
-                    return;
-                };
-            };
-            return module.WidgetView.prototype.validate.call(
-                this, formeldiv, widgetdata, obj, value);
-        },
-        convert: function(formeldiv, widgetdata, obj, value) {
-            value = module.WidgetView.prototype.convert.call(
-                this, formeldiv, widgetdata, obj, value);
-            if (!value) {
-                return value;
-            };
-            var intvalue = parseInt(value);
-            if (isNaN(intvalue)) {
+    module.IntegerWidget = function() {
+        var settings = {
+            iface: 'integer_field'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);
+    };
+
+    module.IntegerWidget.prototype = new module.WidgetView;
+
+    module.IntegerWidget.prototype.validate = function(formeldiv, widgetdata, obj, value) {
+        if (value) {
+            var asint = parseInt(value);
+            var allow_negative =
+                widgetdata.validate ? widgetdata.validate.allow_negative :
+                false;
+            if (isNaN(asint) ||
+                asint.toString().length != value.length) {
                 var message = 'not a number';
                 $('[name=' + widgetdata.name + ']', formeldiv).data(
                     'viewform-error', message);
@@ -773,172 +753,246 @@ obviel.forms = {};
                     field_name: widgetdata.name,
                     value: value,
                     message: message});
-                value = undefined; // makes that nothing is changed
-            } else {
-                value = intvalue;
-            };
-            return value;
-        }
-    }));
-
-    obviel.iface('float_field', 'viewformwidget');
-    obviel.iface('viewformerror-nofloat', 'viewformerror-fielderror');
-    obviel.iface('viewformerror-floatnegative', 'viewformerror-fielderror');
-    obviel.view(new module.WidgetView({
-        iface: 'float_field',
-        validate: function(formeldiv, widgetdata, obj, value) {
-            if (value) {
-                // XXX scary note: we depend on the difference between and/or
-                // and the ternary operator here!
-                var validate = widgetdata.validate || {};
-                var sep = validate.separator || '.';
-                var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
-                var floatmatch = (new RegExp(reg)).exec(value);
-                if (sep != '.') {
-                    value = value.replace(sep, '.');
-                };
-                var asfloat = parseFloat(value);
-                if (isNaN(asfloat) || !floatmatch) {
-                    var message = 'not a float';
-                    $('[name=' + widgetdata.name + ']', formeldiv).data(
-                        'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-nofloat'],
-                        field_name: widgetdata.name,
-                        value: value,
-                        message: message});
-                    return;
-                } else if (!validate.allow_negative && asfloat < 0) {
-                    var message = 'negative numbers are not allowed';
-                    $('[name=' + widgetdata.name + ']', formeldiv).data(
-                        'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-floatnegative'],
-                        field_name: widgetdata.name,
-                        value: value,
-                        message: message});
-                    return;
-                };
-            };
-            return module.WidgetView.prototype.validate.call(
-                this, formeldiv, widgetdata, obj, value);
-        },
-        convert: function(formeldiv, widgetdata, obj, value) {
-            // XXX don't we lose precision here?
-            value = module.WidgetView.prototype.convert.call(
-                this, formeldiv, widgetdata, obj, value);
-            if (value) {
-                value = parseFloat(value);
-            };
-            return value;
-        },
-        convert_model_value: function(value, widgetdata) {
-            if (value === '' || value === undefined || value === null) {
-                return value;
-            };
-            var validate = widgetdata.validate || {};
-            var sep = (validate && validate.separator);
-            if (!sep) {
-                return value;
-            };
-            var chunks = value.toString().split('.');
-            if (chunks[1] === undefined) {
-                chunks[1] = '0';
-            };
-            return chunks[0] + sep.charAt(0) + chunks[1];
-        }
-    }));
-
-    obviel.iface('decimal_field', 'viewformwidget');
-    obviel.iface('viewformerror-nodecimal', 'viewformerror-fielderror');
-    obviel.iface('viewformerror-invaliddecimal', 'viewformerror-fielderror');
-    obviel.view(new module.WidgetView({
-        iface: 'decimal_field',
-        convert: function(formeldiv, widgetdata, obj, value) {
-            value = module.WidgetView.prototype.convert.call(
-                this, formeldiv, widgetdata, obj, value);
-            if (!value) {
-                return value;
-            };
-            var sep =
-                widgetdata.validate && widgetdata.validate.separator || '.,';
-            var reg = '^([0-9]*)([' + sep + ']([0-9]*))?$';
-            var decimalmatch = (new RegExp(reg)).exec(value);
-            if (!decimalmatch) {
-                var message = 'not a decimal';
+                return;
+            } else if (!allow_negative && asint < 0) {
+                var message = 'negative numbers are not allowed';
                 $('[name=' + widgetdata.name + ']', formeldiv).data(
                     'viewform-error', message);
                 formeldiv.render({
-                    ifaces: ['viewformerror-nodecimal'],
+                    ifaces: ['viewformerror-intnegative'],
                     field_name: widgetdata.name,
                     value: value,
                     message: message});
-                value = undefined;
-            } else {
-                var before_sep = decimalmatch[1];
-                var sep = decimalmatch[2] && decimalmatch[2].charAt(0) || '';
-                var after_sep = decimalmatch[3] || '';
-                if (widgetdata.validate &&
-                        (widgetdata.validate.min_before_sep &&
-                            before_sep.length <
-                                widgetdata.validate.min_before_sep) ||
-                        (widgetdata.validate.max_before_sep &&
-                            before_sep.length >
-                                widgetdata.validate.max_before_sep) ||
-                        (widgetdata.validate.min_after_sep &&
-                            after_sep.length <
-                                widgetdata.validate.min_after_sep) ||
-                        (widgetdata.validate.max_after_sep &&
-                            after_sep.length >
-                                widgetdata.validate.max_after_sep) ||
-                        (widgetdata.validate.separator &&
-                            sep && // support not providing a dot/comma
-                            widgetdata.validate.separator != sep)
-                        ) {
-                    // improved messages can be provided by overriding the
-                    // 'viewformerror-invaliddecimal' view
-                    var message = 'invalid decimal format';
+                return;
+            } else if (
+                widgetdata.validate && widgetdata.validate.length &&
+                    widgetdata.validate.length != value.length) {
+                var message =
+                    'value must be ' + widgetdata.validate.length +
+                    ' digits long';
                     $('[name=' + widgetdata.name + ']', formeldiv).data(
                         'viewform-error', message);
-                    formeldiv.render({
-                        ifaces: ['viewformerror-invaliddecimal'],
-                        field_name: widgetdata.name,
-                        before_sep: before_sep,
-                        sep: sep,
-                        after_sep: after_sep,
-                        expected_separator: widgetdata.validate.separator,
-                        min_before_sep: widgetdata.validate.min_before_sep,
-                        max_before_sep: widgetdata.validate.max_before_sep,
-                        min_after_sep: widgetdata.validate.min_after_sep,
-                        max_after_sep: widgetdata.validate.max_after_sep,
-                        value: value,
-                        message: message});
-                    value = undefined;
-                } else if (value) {
-                    // save as string, float could cause rounding errors
-                    value = before_sep + '.' + after_sep;
-                };
+                formeldiv.render({
+                    ifaces: ['viewformerror-intlength'],
+                    field_name: widgetdata.name,
+                    value: value,
+                    length: widgetdata.validate.length,
+                    message: message});
+                return;
             };
-            return value;
-        },
-        convert_model_value: function(value, widgetdata) {
-            if (value === '' || value === undefined || value === null) {
-                return value;
-            };
-            var validate = widgetdata.validate || {};
-            var sep = (validate && validate.separator);
-            if (!sep) {
-                return value;
-            };
-            var chunks = value.toString().split('.');
-            return chunks[0] + sep.charAt(0) + chunks[1];
-        }
-    }));
+        };
+        return module.WidgetView.prototype.validate.call(
+            this, formeldiv, widgetdata, obj, value);
+    };
 
+    module.IntegerWidget.prototype.convert = function(formeldiv, widgetdata, obj, value) {
+        value = module.WidgetView.prototype.convert.call(
+            this, formeldiv, widgetdata, obj, value);
+        if (!value) {
+            return value;
+        };
+        var intvalue = parseInt(value);
+        if (isNaN(intvalue)) {
+            var message = 'not a number';
+            $('[name=' + widgetdata.name + ']', formeldiv).data(
+                'viewform-error', message);
+            formeldiv.render({
+                ifaces: ['viewformerror-noint'],
+                field_name: widgetdata.name,
+                value: value,
+                message: message});
+            value = undefined; // makes that nothing is changed
+        } else {
+            value = intvalue;
+        };
+        return value;
+    };
+    
+    obviel.view(new module.IntegerWidget());
+    
+    obviel.iface('float_field', 'viewformwidget');
+    obviel.iface('viewformerror-nofloat', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-floatnegative', 'viewformerror-fielderror');
+
+    module.FloatWidget = function() {
+        var settings = {
+            iface: 'float_field'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);
+    };
+
+    module.FloatWidget.prototype = new module.WidgetView;
+
+    module.FloatWidget.prototype.validate = function(formeldiv, widgetdata, obj, value) {
+        if (value) {
+            // XXX scary note: we depend on the difference between and/or
+            // and the ternary operator here!
+            var validate = widgetdata.validate || {};
+            var sep = validate.separator || '.';
+            var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
+            var floatmatch = (new RegExp(reg)).exec(value);
+            if (sep != '.') {
+                value = value.replace(sep, '.');
+            };
+            var asfloat = parseFloat(value);
+            if (isNaN(asfloat) || !floatmatch) {
+                var message = 'not a float';
+                $('[name=' + widgetdata.name + ']', formeldiv).data(
+                    'viewform-error', message);
+                formeldiv.render({
+                    ifaces: ['viewformerror-nofloat'],
+                    field_name: widgetdata.name,
+                    value: value,
+                    message: message});
+                return;
+            } else if (!validate.allow_negative && asfloat < 0) {
+                var message = 'negative numbers are not allowed';
+                $('[name=' + widgetdata.name + ']', formeldiv).data(
+                    'viewform-error', message);
+                formeldiv.render({
+                    ifaces: ['viewformerror-floatnegative'],
+                    field_name: widgetdata.name,
+                    value: value,
+                    message: message});
+                return;
+            };
+        };
+        return module.WidgetView.prototype.validate.call(
+            this, formeldiv, widgetdata, obj, value);
+    };
+    
+    module.FloatWidget.prototype.convert = function(formeldiv, widgetdata, obj, value) {
+        // XXX don't we lose precision here?
+        value = module.WidgetView.prototype.convert.call(
+            this, formeldiv, widgetdata, obj, value);
+        if (value) {
+            value = parseFloat(value);
+        };
+        return value;
+    };
+
+    module.FloatWidget.prototype.convert_model_value = function(value, widgetdata) {
+        if (value === '' || value === undefined || value === null) {
+            return value;
+        };
+        var validate = widgetdata.validate || {};
+            var sep = (validate && validate.separator);
+        if (!sep) {
+            return value;
+        };
+        var chunks = value.toString().split('.');
+        if (chunks[1] === undefined) {
+            chunks[1] = '0';
+        };
+        return chunks[0] + sep.charAt(0) + chunks[1];
+    };
+    
+    obviel.view(new module.FloatWidget());
+    
+    obviel.iface('decimal_field', 'viewformwidget');
+    obviel.iface('viewformerror-nodecimal', 'viewformerror-fielderror');
+    obviel.iface('viewformerror-invaliddecimal', 'viewformerror-fielderror');
+
+    module.DecimalWidget = function() {
+        var settings = {
+            iface: 'decimal_field'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);        
+    };
+
+    module.DecimalWidget.prototype = new module.WidgetView;
+
+    module.DecimalWidget.prototype.convert = function(formeldiv, widgetdata, obj, value) {
+        value = module.WidgetView.prototype.convert.call(
+            this, formeldiv, widgetdata, obj, value);
+        if (!value) {
+            return value;
+        };
+        var sep =
+            widgetdata.validate && widgetdata.validate.separator || '.,';
+        var reg = '^([0-9]*)([' + sep + ']([0-9]*))?$';
+        var decimalmatch = (new RegExp(reg)).exec(value);
+        if (!decimalmatch) {
+            var message = 'not a decimal';
+            $('[name=' + widgetdata.name + ']', formeldiv).data(
+                'viewform-error', message);
+            formeldiv.render({
+                ifaces: ['viewformerror-nodecimal'],
+                field_name: widgetdata.name,
+                value: value,
+                message: message});
+            value = undefined;
+        } else {
+            var before_sep = decimalmatch[1];
+            var sep = decimalmatch[2] && decimalmatch[2].charAt(0) || '';
+            var after_sep = decimalmatch[3] || '';
+            if (widgetdata.validate &&
+                    (widgetdata.validate.min_before_sep &&
+                     before_sep.length <
+                     widgetdata.validate.min_before_sep) ||
+                (widgetdata.validate.max_before_sep &&
+                 before_sep.length >
+                 widgetdata.validate.max_before_sep) ||
+                (widgetdata.validate.min_after_sep &&
+                 after_sep.length <
+                 widgetdata.validate.min_after_sep) ||
+                (widgetdata.validate.max_after_sep &&
+                 after_sep.length >
+                 widgetdata.validate.max_after_sep) ||
+                (widgetdata.validate.separator &&
+                 sep && // support not providing a dot/comma
+                 widgetdata.validate.separator != sep)
+               ) {
+                // improved messages can be provided by overriding the
+                // 'viewformerror-invaliddecimal' view
+                var message = 'invalid decimal format';
+                $('[name=' + widgetdata.name + ']', formeldiv).data(
+                    'viewform-error', message);
+                formeldiv.render({
+                    ifaces: ['viewformerror-invaliddecimal'],
+                        field_name: widgetdata.name,
+                    before_sep: before_sep,
+                    sep: sep,
+                    after_sep: after_sep,
+                    expected_separator: widgetdata.validate.separator,
+                    min_before_sep: widgetdata.validate.min_before_sep,
+                    max_before_sep: widgetdata.validate.max_before_sep,
+                    min_after_sep: widgetdata.validate.min_after_sep,
+                    max_after_sep: widgetdata.validate.max_after_sep,
+                    value: value,
+                    message: message});
+                value = undefined;
+            } else if (value) {
+                // save as string, float could cause rounding errors
+                value = before_sep + '.' + after_sep;
+            };
+        };
+        return value;
+    };
+
+    module.DecimalWidget.prototype.convert_model_value = function(value, widgetdata) {
+        if (value === '' || value === undefined || value === null) {
+            return value;
+        };
+        var validate = widgetdata.validate || {};
+        var sep = (validate && validate.separator);
+        if (!sep) {
+            return value;
+        };
+        var chunks = value.toString().split('.');
+        return chunks[0] + sep.charAt(0) + chunks[1];
+    };
+
+    obviel.view(new module.DecimalWidget());
+    
     obviel.iface('choice_field', 'viewformwidget');
-    obviel.view(new module.WidgetView({
-        iface: 'choice_field',
-        jsont:
+
+    module.ChoiceWidget = function() {
+        var settings = {
+            iface: 'choice_field',
+            jsont:
             '<label for="vf-{name}">' +
             '{title|htmltag}</label>' +
             '<div class="viewform-field-input">' +
@@ -953,23 +1007,32 @@ obviel.forms = {};
             '<div class="viewform-error viewform-field-error"></div>' +
             '{.section description}' +
             '<div class="viewform-field-description">' +
-            '{description|htmltag}</div>{.end}',
-        render: function(formeldiv, obj, name) {
-            if ((!obj.validate || !obj.validate.required) &&
-                    !obj.empty_option &&
-                    obj.choices.length &&
-                    obj.choices[0].value) {
-                // if an empty option is not yet provided to the widget,
-                // but the widget is allowed to be empty, create one here
-                $('select', formeldiv).prepend('<option></option>');
-            };
-        }
-    }));
+            '{description|htmltag}</div>{.end}'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);
+    };
+
+    module.ChoiceWidget.prototype = new module.WidgetView;
+
+    module.ChoiceWidget.prototype.render = function(formeldiv, obj, name) {
+        if ((!obj.validate || !obj.validate.required) &&
+            !obj.empty_option &&
+            obj.choices.length &&
+            obj.choices[0].value) {
+            // if an empty option is not yet provided to the widget,
+            // but the widget is allowed to be empty, create one here
+            $('select', formeldiv).prepend('<option></option>');
+        };
+    };
+    
+    obviel.view(new module.ChoiceWidget());
 
     obviel.iface('boolean_field', 'viewformwidget');
-    obviel.view(new module.WidgetView({
-        iface: 'boolean_field',
-        jsont:
+    module.BooleanWidget = function() {
+        var settings = {
+            iface: 'boolean_field',
+            jsont:
             '<label for="vf-{name}">' +
             '{title|htmltag}</label>' +
             '<div class="viewform-field-input">' +
@@ -982,20 +1045,28 @@ obviel.forms = {};
             '<div class="viewform-error viewform-field-error"></div>' +
             '{.section description}' +
             '<div class="viewform-field-description">' +
-            '{description|htmltag}</div>{.end}',
-        validate: function(formeldiv, widgetdata, obj, value) {
-            // value is taken checking input.checked, not input.val(),
-            // so fix that here... (XXX bit of a hack, perhaps a get_value
-            // on the widget would be nicer?)
-            value = $('input', formeldiv).attr('checked') ? true : false;
-            // widgetdata.validate.required makes no sense at all for a
-            // boolean field, fix silently
-            if (!widgetdata.validate) {
-                widgetdata.validate = {};
-            };
-            widgetdata.validate.required = false;
-            return module.WidgetView.prototype.validate.call(
-                this, formeldiv, widgetdata, obj, value);
-        }
-    }));
+            '{description|htmltag}</div>{.end}'
+        };
+        module.WidgetView.call(this, settings);
+        $.extend(this, settings);        
+    };
+    
+    module.BooleanWidget.prototype = new module.WidgetView;
+    module.BooleanWidget.prototype.validate = function(formeldiv, widgetdata, obj, value) {
+        // value is taken checking input.checked, not input.val(),
+        // so fix that here... (XXX bit of a hack, perhaps a get_value
+        // on the widget would be nicer?)
+        value = $('input', formeldiv).attr('checked') ? true : false;
+        // widgetdata.validate.required makes no sense at all for a
+        // boolean field, fix silently
+        if (!widgetdata.validate) {
+            widgetdata.validate = {};
+        };
+        widgetdata.validate.required = false;
+        return module.WidgetView.prototype.validate.call(
+            this, formeldiv, widgetdata, obj, value);
+    };
+
+    obviel.view(new module.BooleanWidget());
+    
 })(jQuery, obviel, obviel.forms);
