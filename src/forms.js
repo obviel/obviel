@@ -409,7 +409,7 @@ obviel.forms = {};
     obviel.view((new module.FormView()));
 
     obviel.iface('viewformwidget');
-    module.WidgetView = function() {
+    module.WidgetView = function(settings) {
         /* 'base class' for widgets
 
             this generates a simple single input field of type 'text' by
@@ -417,34 +417,31 @@ obviel.forms = {};
             providing the basic functionality to deal with a single input
             mirroring a single context object attribute
         */
-        if (arguments.length) {
-            var settings = {
-                name: 'default',
-                iface: 'viewformwidget',
-                jsont:
-                    '<label for="vf-{name}">' +
-                    '{title|htmltag}</label>' +
-                    '<div class="viewform-field-input">' +
-                    '<input type="text" name="{name}" id="vf-{name}" ' +
-                    'style="{.section width}width: {width}em;{.end}" ' +
-                    '{.section validate}' +
-                    '{.section max_length}' +
-                    'maxlength="{max_length}" ' +
-                    '{.end}' +
-                    '{.end}' +
-                    '{.section disabled}' +
-                    'disabled="disabled" ' +
-                    '{.end} />' +
-                    '</div>' +
-                    '<div class="viewform-error viewform-field-error"></div>' +
-                    '{.section description}' +
-                    '<div class="viewform-field-description">' +
-                    '{description|htmltag}</div>{.end}'
-            };
-            $.extend(settings, arguments[0]);
-            obviel.View.call(this, settings);
+        var d = {
+            name: 'default',
+            iface: 'viewformwidget',
+            jsont:
+            '<label for="vf-{name}">' +
+                '{title|htmltag}</label>' +
+                '<div class="viewform-field-input">' +
+                '<input type="text" name="{name}" id="vf-{name}" ' +
+                'style="{.section width}width: {width}em;{.end}" ' +
+                '{.section validate}' +
+                '{.section max_length}' +
+                'maxlength="{max_length}" ' +
+                '{.end}' +
+                '{.end}' +
+                '{.section disabled}' +
+                'disabled="disabled" ' +
+                '{.end} />' +
+                '</div>' +
+                '<div class="viewform-error viewform-field-error"></div>' +
+                '{.section description}' +
+                '<div class="viewform-field-description">' +
+                '{description|htmltag}</div>{.end}'
         };
-        $.extend(this, settings);
+        $.extend(d, settings);
+        obviel.View.call(this, d);
     };
 
     module.WidgetView.prototype = new obviel.View;
