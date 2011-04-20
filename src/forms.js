@@ -75,25 +75,23 @@ obviel.forms = {};
             this provides most of what you'd need basically, override only
             if you have specific rendering ideas or whatnot
         */
-        if (arguments.length) {
-            var settings = {
-                name: 'default',
-                iface: 'viewform',
-                form: true,
-                jsont:
-                    '{.section form}' +
-                    '<form ' +
-                    'method="{.section method}{method}' +
-                    '{.or}post{.end}">' +
-                    '<div class="viewform-fields"></div>' +
-                    '<div class="viewform-error viewform-form-error"></div>' +
-                    '<div class="viewform-controls"></div>' +
-                    '</form>' +
-                    '{.end}'
-            };
-            $.extend(settings, arguments[0]);
-            obviel.View.call(this, settings);
+        var settings = {
+            name: 'default',
+            iface: 'viewform',
+            form: true,
+            jsont:
+            '{.section form}' +
+                '<form ' +
+                'method="{.section method}{method}' +
+                '{.or}post{.end}">' +
+                '<div class="viewform-fields"></div>' +
+                '<div class="viewform-error viewform-form-error"></div>' +
+                '<div class="viewform-controls"></div>' +
+                '</form>' +
+                '{.end}'
         };
+        $.extend(settings, arguments[0]);
+        obviel.View.call(this, settings);
     };
 
     module.FormView.prototype = new obviel.View;
@@ -408,7 +406,7 @@ obviel.forms = {};
         return widgets;
     };
 
-    obviel.view((new module.FormView({name: 'default'})));
+    obviel.view((new module.FormView()));
 
     obviel.iface('viewformwidget');
     module.WidgetView = function() {
