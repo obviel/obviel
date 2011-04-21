@@ -83,7 +83,7 @@ obviel.forms = {};
             iface: 'viewform',
             form: true,
             jsont:
-            '{.section form}' +
+                '{.section form}' +
                 '<form ' +
                 'method="{.section method}{method}' +
                 '{.or}post{.end}">' +
@@ -427,7 +427,7 @@ obviel.forms = {};
             name: 'default',
             iface: 'viewformwidget',
             jsont:
-            '<label for="vf-{name}">' +
+                '<label for="vf-{name}">' +
                 '{title|htmltag}</label>' +
                 '<div class="viewform-field-input">' +
                 '<input type="text" name="{name}" id="vf-{name}" ' +
