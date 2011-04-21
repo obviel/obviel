@@ -111,7 +111,7 @@ obviel.forms = {};
         this.render_controls(el, obj, name, callback, errback);
     };
 
-    module.FormView.prototype.render_widgets = function (el, obj, name) {
+    module.FormView.prototype.render_widgets = function(el, obj, name) {
         var isnewobj = false;
         if (!obj.data) {
             isnewobj = true;
