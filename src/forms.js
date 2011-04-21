@@ -457,7 +457,7 @@ obviel.forms = {};
         */
     };
 
-    module.WidgetView.prototype.link = function(form, widgetdata, obj) {
+    module.WidgetView.prototype.link = function(field_el, widgetdata, obj) {
         /* create a Data Link from the form field(s) to the obj attr(s)
 
             the default implementation assumes there's a single input
@@ -470,7 +470,7 @@ obviel.forms = {};
         var linkcontext = {};
         var self = this;
         var convert_wrapper = function(value) {
-            return self.handle_convert(form, widgetdata, obj, value);
+            return self.handle_convert(field_el, widgetdata, obj, value);
         };
         linkcontext[widgetdata.link] = {
             twoWay: false,
@@ -478,7 +478,7 @@ obviel.forms = {};
         if (widgetdata.link != widgetdata.name) {
             linkcontext[widgetdata.link]['name'] = widgetdata.name;
         };
-        var el = $('[name=' + widgetdata.name + ']', form);
+        var el = $('[name=' + widgetdata.name + ']', field_el);
         el.link(obj, linkcontext);
     };
 
