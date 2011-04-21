@@ -75,6 +75,9 @@ obviel.forms = {};
             this provides most of what you'd need basically, override only
             if you have specific rendering ideas or whatnot
         */
+        if (settings === undefined) {
+            settings = {};
+        }
         var d = {
             name: 'default',
             iface: 'viewform',
@@ -417,6 +420,9 @@ obviel.forms = {};
             providing the basic functionality to deal with a single input
             mirroring a single context object attribute
         */
+        if (settings === undefined) {
+            settings = {};
+        }
         var d = {
             name: 'default',
             iface: 'viewformwidget',
