@@ -226,7 +226,7 @@ obviel.forms = {};
                 control.attr('type', 'button');
                 if (controldata.action &&
                         typeof controldata.action == 'string') {
-                    control.click(function(ev) {
+                    control.click(function(ev_) {
                         var ev = new $.Event(
                             'obviel-forms-before-submit-render');
                         ev.target = el;
@@ -243,7 +243,7 @@ obviel.forms = {};
                     });
                 } else if (controldata.action) {
                     // we assume it's an object that needs to be rendered
-                    control.click(function(ev) {
+                    control.click(function(ev_) {
                         var ev = new $.Event(
                             'obviel-forms-before-submit-render');
                         ev.target = el;
