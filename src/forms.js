@@ -117,7 +117,9 @@ obviel.forms = {};
             isnewobj = true;
             obj.data = {};
         };
-
+        if (!obj.errors) {
+            obj.errors = {};
+        };
         var form = $('form', el);
         var formdiv = $('.viewform-fields', form);
         var groups = obj.form.groups ? obj.form.groups.slice(0) : [];
@@ -154,7 +156,7 @@ obviel.forms = {};
                 };
                 fieldel.render(
                     widgetdata, function(el, view, widgetdata, name) {
-                        view.link(el, widgetdata, obj.data);
+                        view.link(el, widgetdata, obj);
                         view.setdefault(el, widgetdata, obj.data, isnewobj);
                     });
                 // somewhat nasty, but required for a lot of style issues
@@ -467,19 +469,29 @@ obviel.forms = {};
         if (widgetdata.disabled) {
             return;
         };
+        var data = obj.data;
+        var errors = obj.errors;
+        
         var linkcontext = {};
+        var error_linkcontext = {};
         var self = this;
         var convert_wrapper = function(value) {
-            return self.handle_convert(field_el, widgetdata, obj, value);
+            return self.handle_convert(field_el, widgetdata, data, value);
         };
         linkcontext[widgetdata.link] = {
             twoWay: false,
             convert: convert_wrapper};
+        error_linkcontext[widgetdata.link] = {
+            twoWay: true
+        };
         if (widgetdata.link != widgetdata.name) {
             linkcontext[widgetdata.link]['name'] = widgetdata.name;
+            error_linkcontext[widgetdata.link]['name'] = widgetdata.name;
         };
         var el = $('[name=' + widgetdata.name + ']', field_el);
-        el.link(obj, linkcontext);
+        el.link(data, linkcontext);
+        var error_el = $('viewform-field-error', field_el);
+        error_el.link(errors, error_linkcontext);
     };
 
     module.WidgetView.prototype.setdefault = function(
