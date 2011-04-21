@@ -58,7 +58,7 @@ obviel.forms = {};
     });
 
     obviel.iface('viewform');
-    module.FormView = function() {
+    module.FormView = function(settings) {
         /* basic form view implementation
 
             when this is rendered, an object needs to be provided with a 'form'
@@ -75,7 +75,7 @@ obviel.forms = {};
             this provides most of what you'd need basically, override only
             if you have specific rendering ideas or whatnot
         */
-        var settings = {
+        var d = {
             name: 'default',
             iface: 'viewform',
             form: true,
@@ -90,8 +90,8 @@ obviel.forms = {};
                 '</form>' +
                 '{.end}'
         };
-        $.extend(settings, arguments[0]);
-        obviel.View.call(this, settings);
+        $.extend(d, settings);
+        obviel.View.call(this, d);
     };
 
     module.FormView.prototype = new obviel.View;
