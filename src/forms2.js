@@ -280,10 +280,10 @@ obviel.forms2 = {};
         // the value is there, we should validate it using a regex
         if (widget.validate.regs) {
             $.each(widget.validate.regs, function(index, reg) {
-                var regexp = RegExp(reg['reg']); // no flags?
+                var regexp = RegExp(reg.reg); // no flags?
                 var result = regexp.exec(value);
                 if (!result) {
-                    error = reg['message'];
+                    error = reg.message;
                     return false;
                 }
                 return true;

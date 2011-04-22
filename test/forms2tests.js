@@ -79,6 +79,15 @@ test('textline validate required', function() {
     equals(widget.validate(widget_data, null), "this field is required");
 });
 
+test("textline validate not required", function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+    };
+    equals(widget.validate(widget_data, 'foo'), undefined);
+    equals(widget.validate(widget_data, ''), undefined);
+    equals(widget.validate(widget_data, null), undefined);
+});
+
 test("textline validate min_length", function() {
     var widget = new obviel.forms2.TextLineWidget();
     var widget_data = {
@@ -95,9 +104,22 @@ test("textline validate max_length", function() {
     var widget_data = {
         validate: {
             max_length: 3
-            }
+        }
     };
     equals(widget.validate(widget_data, 'foo'), undefined);
     equals(widget.validate(widget_data, 'fooo'), "value too long");
 });
 
+test("textline validate regular expression", function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+        validate: {
+            regs: [{
+                reg:  '^a*$',
+                message: "Should all be letter a"
+            }]
+        }
+    };
+    equals(widget.validate(widget_data, 'aaa'), undefined);
+    equals(widget.validate(widget_data, 'bbb'), "Should all be letter a");
+});
