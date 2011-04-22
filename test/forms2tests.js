@@ -123,3 +123,32 @@ test("textline validate regular expression", function() {
     equals(widget.validate(widget_data, 'aaa'), undefined);
     equals(widget.validate(widget_data, 'bbb'), "Should all be letter a");
 });
+
+test("form error rendering", function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_widget'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                defaultvalue: '',
+                validate: {
+                    min_length: 3
+                }
+            }]
+        }
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-text', form_el);
+    // put in a value that's too short, so should trigger error
+    field_el.val('fo');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    // we now expect the error
+    var error_el = $('.field-error', form_el);
+    equals(error_el.text(), 'value too short');
+});

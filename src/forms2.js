@@ -33,8 +33,9 @@ obviel.forms2 = {};
     module.Form.prototype = new obviel.View;
 
     module.Form.prototype.render = function(el, obj, name) {
-        this.render_widgets(el, obj, name);
-        this.render_controls(el, obj, name);
+        var self = this;
+        self.render_widgets(el, obj, name);
+        self.render_controls(el, obj, name);
     };
 
     module.Form.prototype.render_widgets = function(el, obj, name) {
@@ -127,6 +128,11 @@ obviel.forms2 = {};
 
     obviel.iface('widget');
 
+    // XXX must have a unique per form identifier, otherwise
+    // if we render more than one form the field-error-<foo> ids
+    // will be duplicated. this may also occur in case of repeated or
+    // nested fields
+    
     module.Widget = function(settings) {
         settings = settings || {};
         var d = {
@@ -147,7 +153,7 @@ obviel.forms2 = {};
                 'disabled="disabled" ' +
                 '{.end} />' +
                 '</div>' +
-                '<div class="field-error"></div>' +
+                '<div class="field-error" id="field-error-{name}"></div>' +
                 '{.section description}' +
                 '<div class="field-description">' +
                 '{description|htmltag}</div>{.end}'
@@ -177,7 +183,7 @@ obviel.forms2 = {};
         var convert_wrapper = function(value) {
             var result = self.handle_convert(widget, value);
             if (result.error) {
-                errors[widget.name] = result.error;
+                $(errors).setField(widget.name, result.error);
             }
             return result.value;
         };
@@ -191,16 +197,21 @@ obviel.forms2 = {};
             convertBack: convert_back_wrapper
         };
         error_link_context[widget.name] = {
-            twoWay: true
+            twoWay: true,
+            name: 'field-error-' + widget.name,
+            convertBack: function(value, source, target) {
+                $(target).text(value);
+            }
         };
 
         var field_el = $('[name=' + widget.name + ']', el);
         el.link(data, link_context);
-        var error_el = $('field-error', el);
+        var error_el = $('.field-error', el);
         error_el.link(errors, error_link_context);
     };
 
     module.Widget.prototype.handle_convert = function(widget, value) {
+        var self = this;
         // try to convert original form value
         var result = self.convert(widget, value);
         if (result.error !== undefined) {
@@ -213,7 +224,7 @@ obviel.forms2 = {};
 
         // this is the converted value, now validate it
         value = result.value;
-        var error = this.validate(widget, value);
+        var error = self.validate(widget, value);
         if (error !== undefined) {
             // validation error, so bail out
             return {
@@ -226,6 +237,11 @@ obviel.forms2 = {};
         return {
             value: value
         };
+    };
+
+    module.Widget.prototype.handle_convert_back = function(widget, value) {
+        var self = this;
+        return self.convert_back(widget, value);
     };
     
     module.Widget.prototype.convert = function(widget, value) {
