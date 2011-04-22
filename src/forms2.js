@@ -245,12 +245,15 @@ obviel.forms2 = {};
     };
 
     module.Widget.prototype.validate = function(widget, value) {
-        if (widget.validate && widget.validate.required && !value) {
+        if (!widget.validate) {
+            widget.validate = {};
+        }
+        if (widget.validate.required && !value) {
             return 'this field is required';
-        } else if (value && widget.validate && widget.validate.min_length &&
+        } else if (value && widget.validate.min_length &&
                    value.length < widget.validate.min_length) {
             return 'value too short';
-        } else if (value && widget.validate && widget.validate.max_length &&
+        } else if (value && widget.validate.max_length &&
                    value.length > widget.validate.max_length) {
             return 'value too long';
         };
@@ -276,13 +279,12 @@ obviel.forms2 = {};
             return error;
         }
         // if the value isn't required we're done
-        if (value === null &&
-            widget.validate && !widget.validate.required) {
+        if (value === null && !widget.validate.required) {
             return undefined;
         }
         // the value is there, we should validate it using a regex
-        if (widget.validate && widget.validate.regs) {
-            $.each(widget.validat.regs, function(index, reg) {
+        if (widget.validate.regs) {
+            $.each(widget.validate.regs, function(index, reg) {
                 var regexp = RegExp(reg['reg']); // no flags?
                 var result = regexp.exec(value);
                 if (!result) {
