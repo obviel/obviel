@@ -10,7 +10,19 @@ obviel.onerror = function(e) {
 
 module("Forms2");
 
-test('obj with simple form, no data', function() {
+test('empty form', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: []
+            }
+    });
+    var form_el = $('form', el);
+    equals($('.form-field', form_el).length, 0);
+});
+
+test('form with one field', function() {
     var el = $('#viewdiv');
     el.render({
         ifaces: ['form2'],
@@ -20,13 +32,72 @@ test('obj with simple form, no data', function() {
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
-                defaultvalue: '',
-                link: 'text'
+                defaultvalue: ''
             }]
-        },
-        data: null
+        }
     });
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
-    equals($('#field-text', form_el).length, 1);
+    equals($('.form-field', form_el).length, 1);
 });
+
+test('form with two fields', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [
+                {ifaces: ['textline_widget'],
+                 name: 'text1',
+                 title: 'Text',
+                 description: 'A text widget',
+                 defaultvalue: ''
+                },
+                {ifaces: ['textline_widget'],
+                 name: 'text2',
+                 title: 'Text',
+                 description: 'A text widget',
+                 defaultvalue: ''
+                }
+            ]
+        }
+    });
+    var form_el = $('form', el);
+    ok(form_el.length, 'checking for form element');
+    equals($('.form-field', form_el).length, 2);
+});
+
+test('textline validate required', function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+        validate: {
+            required: true
+        }
+    };
+    equals(widget.validate(widget_data, 'foo'), undefined);
+    equals(widget.validate(widget_data, ''), "this field is required");
+    equals(widget.validate(widget_data, null), "this field is required");
+});
+
+test("textline validate min_length", function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+        validate: {
+            min_length: 3
+        }
+    };
+    equals(widget.validate(widget_data, 'fooa'), undefined);
+    equals(widget.validate(widget_data, 'fo'), "value too short");
+});
+
+test("textline validate max_length", function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+        validate: {
+            max_length: 3
+            }
+    };
+    equals(widget.validate(widget_data, 'foo'), undefined);
+    equals(widget.validate(widget_data, 'fooo'), "value too long");
+});
+

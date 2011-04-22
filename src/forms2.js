@@ -177,7 +177,7 @@ obviel.forms2 = {};
         var convert_wrapper = function(value) {
             var result = self.handle_convert(widget, value);
             if (result.error) {
-                errors[widget.link] = result.error;
+                errors[widget.name] = result.error;
             }
             return result.value;
         };
@@ -185,18 +185,13 @@ obviel.forms2 = {};
             return self.handle_convert_back(widget, value);
         };
         
-        link_context[widget.link] = {
+        link_context[widget.name] = {
             twoWay: true,
             convert: convert_wrapper,
             convertBack: convert_back_wrapper
         };
-        error_link_context = {
+        error_link_context[widget.name] = {
             twoWay: true
-        };
-
-        if (widget.link != widget.name) {
-            link_context[widget.link].name = widget.name;
-            error_link_context[widget.link].name = widget.name; 
         };
 
         var field_el = $('[name=' + widget.name + ']', el);
