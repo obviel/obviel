@@ -19,7 +19,7 @@ test('empty form', function() {
             }
     });
     var form_el = $('form', el);
-    equals($('.form-field', form_el).length, 0);
+    equal($('.form-field', form_el).length, 0);
 });
 
 test('form with one field', function() {
@@ -38,7 +38,7 @@ test('form with one field', function() {
     });
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
-    equals($('.form-field', form_el).length, 1);
+    equal($('.form-field', form_el).length, 1);
 });
 
 test('form with two fields', function() {
@@ -64,7 +64,15 @@ test('form with two fields', function() {
     });
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
-    equals($('.form-field', form_el).length, 2);
+    equal($('.form-field', form_el).length, 2);
+});
+
+test('textline convert', function() {
+    var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, 'foo'), {value: 'foo'});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
 });
 
 test('textline validate required', function() {
@@ -74,18 +82,16 @@ test('textline validate required', function() {
             required: true
         }
     };
-    equals(widget.validate(widget_data, 'foo'), undefined);
-    equals(widget.validate(widget_data, ''), "this field is required");
-    equals(widget.validate(widget_data, null), "this field is required");
+    equal(widget.validate(widget_data, 'foo'), undefined);
+    equal(widget.validate(widget_data, null), "this field is required");
 });
 
 test("textline validate not required", function() {
     var widget = new obviel.forms2.TextLineWidget();
     var widget_data = {
     };
-    equals(widget.validate(widget_data, 'foo'), undefined);
-    equals(widget.validate(widget_data, ''), undefined);
-    equals(widget.validate(widget_data, null), undefined);
+    equal(widget.validate(widget_data, 'foo'), undefined);
+    equal(widget.validate(widget_data, null), undefined);
 });
 
 test("textline validate min_length", function() {
@@ -95,8 +101,8 @@ test("textline validate min_length", function() {
             min_length: 3
         }
     };
-    equals(widget.validate(widget_data, 'fooa'), undefined);
-    equals(widget.validate(widget_data, 'fo'), "value too short");
+    equal(widget.validate(widget_data, 'fooa'), undefined);
+    equal(widget.validate(widget_data, 'fo'), "value too short");
 });
 
 test("textline validate max_length", function() {
@@ -106,8 +112,8 @@ test("textline validate max_length", function() {
             max_length: 3
         }
     };
-    equals(widget.validate(widget_data, 'foo'), undefined);
-    equals(widget.validate(widget_data, 'fooo'), "value too long");
+    equal(widget.validate(widget_data, 'foo'), undefined);
+    equal(widget.validate(widget_data, 'fooo'), "value too long");
 });
 
 test("textline validate regular expression", function() {
@@ -120,9 +126,90 @@ test("textline validate regular expression", function() {
             }]
         }
     };
-    equals(widget.validate(widget_data, 'aaa'), undefined);
-    equals(widget.validate(widget_data, 'bbb'), "Should all be letter a");
+    equal(widget.validate(widget_data, 'aaa'), undefined);
+    equal(widget.validate(widget_data, 'bbb'), "Should all be letter a");
 });
+
+test("integer convert not an integer", function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, 'foo'), {'error': 'not a number'});
+});
+
+test("integer convert not an integer but float", function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, '1.5'), {'error': 'not an integer number'});
+});
+
+test("integer convert but empty", function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+});
+
+test('integer validate required', function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+        validate: {
+            required: true
+        }
+    };
+    equal(widget.validate(widget_data, 1), undefined);
+    equal(widget.validate(widget_data, null), 'this field is required');
+});
+
+test('integer validate not required', function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+        validate: {
+            required: false
+        }
+    };
+    equal(widget.validate(widget_data, 1), undefined);
+    equal(widget.validate(widget_data, null), undefined);
+});
+
+test('integer validate negative', function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+        validate: {
+        }
+    };
+    equal(widget.validate(widget_data, -1), 'negative numbers are not allowed');
+});
+
+test('integer validate allow negative', function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+        validate: {
+            allow_negative: true
+        }
+    };
+    equal(widget.validate(widget_data, -1), undefined);
+});
+
+test('integer validate lengths in digits', function() {
+    var widget = new obviel.forms2.IntegerWidget();
+    var widget_data = {
+        validate: {
+            length: 3,
+            allow_negative: true
+        }
+    };
+    equal(widget.validate(widget_data, 111), undefined);
+    equals(widget.validate(widget_data, 1111), 'value must be 3 digits long');
+    equals(widget.validate(widget_data, 11), 'value must be 3 digits long');
+    equals(widget.validate(widget_data, -111), undefined);
+    equals(widget.validate(widget_data, -1111), 'value must be 3 digits long');
+    equals(widget.validate(widget_data, -11), 'value must be 3 digits long');
+});
+
+
+
 
 test("form error rendering", function() {
     var el = $('#viewdiv');
@@ -150,5 +237,5 @@ test("form error rendering", function() {
     field_el.trigger(ev);
     // we now expect the error
     var error_el = $('.field-error', form_el);
-    equals(error_el.text(), 'value too short');
+    equal(error_el.text(), 'value too short');
 });

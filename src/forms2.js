@@ -225,9 +225,6 @@ obviel.forms2 = {};
     };
     
     module.Widget.prototype.convert = function(widget, value) {
-        if (value === '') {
-            return {value: null};
-        }
         return {value: value};
     };
 
@@ -239,18 +236,14 @@ obviel.forms2 = {};
         if (!widget.validate) {
             widget.validate = {};
         }
-        if (widget.validate.required && !value) {
-            return 'this field is required';
-        }
         return undefined;
     };
 
-    obviel.iface('textline_field', 'widget');
-
-    module.TextLineWidget = function(settings) {
+    obviel.iface('input_field', 'widget');
+    module.InputWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'textline_field',
+            iface: 'input_field',
             jsont:
                 '<label for="field-{name}">' +
                 '{title|htmltag}</label>' +
@@ -272,29 +265,67 @@ obviel.forms2 = {};
                 '{description|htmltag}</div>{.end}'
         };
         $.extend(d, settings);
-        module.Widget.call(this, d);
+        module.Widget.call(this, d);        
+    };
+    
+    module.InputWidget.prototype = new module.Widget;
+
+    module.InputWidget.prototype.convert = function(widget, value) {
+        if (value === '') {
+            return {value: null};
+        }
+        return module.Widget.prototype.convert.call(this, widget, value);
     };
 
-    module.TextLineWidget.prototype = new module.Widget;
+    module.InputWidget.prototype.convert_back = function(widget, value) {
+        if (value === null) {
+            return '';
+        }
+        return module.Widget.prototype.convert_back.call(this, widget, value);
+    };
 
-    module.TextLineWidget.prototype.validate = function(widget, value) {
+    module.InputWidget.prototype.validate = function(widget, value) {
         var error = module.Widget.prototype.validate.call(this, widget, value);
         if (error !== undefined) {
             return error;
         }
-        if (value && widget.validate.min_length &&
-                   value.length < widget.validate.min_length) {
+        if (widget.validate.required && value === null) {
+            return 'this field is required';
+        }
+        return undefined;
+    };
+    
+    obviel.iface('textline_field', 'input_field');
+
+    module.TextLineWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'textline_field'
+        };
+        $.extend(d, settings);
+        module.InputWidget.call(this, d);
+    };
+
+    module.TextLineWidget.prototype = new module.InputWidget;
+
+    module.TextLineWidget.prototype.validate = function(widget, value) {
+        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+        if (error !== undefined) {
+            return error;
+        }
+        // if the value is empty and isn't required we're done
+        if (value === null && !widget.validate.required) {
+            return undefined;
+        }
+        
+        if (widget.validate.min_length &&
+            value.length < widget.validate.min_length) {
             return 'value too short';
-        } else if (value && widget.validate.max_length &&
+        } else if (widget.validate.max_length &&
                    value.length > widget.validate.max_length) {
             return 'value too long';
         };
 
-        // if the value isn't required we're done
-        if (value === null && !widget.validate.required) {
-            return undefined;
-        }
-        // the value is there, we should validate it using a regex
         if (widget.validate.regs) {
             $.each(widget.validate.regs, function(index, reg) {
                 var regexp = RegExp(reg.reg); // no flags?
@@ -314,11 +345,61 @@ obviel.forms2 = {};
 
     obviel.view(new module.TextLineWidget());
 
-    obviel.iface('text_field', 'widget');
-    
-    module.TextWidget = function() {
-        
-
+    obviel.iface('integer_field', 'input_field');
+    module.IntegerWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'integer_field'
+        };
+        $.extend(d, settings);
+        module.InputWidget.call(this, d);
     };
+
+    module.IntegerWidget.prototype = new module.InputWidget;
+
+    module.IntegerWidget.prototype.convert = function(widget, value) {
+        if (value === '') {
+            return {value: null};
+        }
+        var asint = parseInt(value);
+        if (isNaN(asint)) {
+            return {error: "not a number"};
+        }
+        if (asint != parseFloat(value)) {
+            return {error: "not an integer number"};
+        }
+        return {value: asint};
+    };
+
+    module.Widget.prototype.convert_back = function(widget, value) {
+        return value.toString();
+    };
+ 
+    module.IntegerWidget.prototype.validate = function(widget, value) {
+        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+        if (error !== undefined) {
+            return error;
+        }
+        // if the value is empty and isn't required we're done
+        if (value === null && !widget.validate.required) {
+            return undefined;
+        }
+
+        if (!widget.validate.allow_negative && value < 0) {
+            return 'negative numbers are not allowed';
+        }
+        if (widget.validate.length !== undefined) {
+            var asstring = value.toString();
+            if (asstring[0] == '-') {
+                asstring = asstring.slice(1);
+            }
+            if (asstring.length != widget.validate.length) {       
+                return 'value must be ' + widget.validate.length + ' digits long';
+            }
+        }
+        return undefined;
+    };
+    
+   
     
 })(jQuery, obviel, obviel.forms2);
