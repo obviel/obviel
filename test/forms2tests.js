@@ -83,7 +83,24 @@ test('text rendering', function() {
     });
     var form_el = $('form', el);
     equal($('textarea', form_el).length, 1);
+});
 
+test("boolean rendering", function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['boolean_field'],
+                name: 'boolean',
+                title: 'Boolean',
+                description: 'A boolean widget',
+                defaultvalue: ''
+            }]
+        }
+    });
+    var form_el = $('form', el);
+    equal($('input[type="checkbox"]', form_el).length, 1);
 });
 
 test('textline convert', function() {
@@ -286,10 +303,105 @@ test('float convert validate negative', function() {
     equal(widget.validate(widget_data, -1.2), 'negative numbers are not allowed');
 });
 
+test("textline datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                defaultvalue: '',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('foo');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, 'foo');
+});
 
+test("integer datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                defaultvalue: '',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('3');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, 3);
+});
+
+test("boolean datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['boolean_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                defaultvalue: '',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    // starts as off
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, false);
+    
+    // set to on
+    field_el.attr('checked', true);
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, true);
+
+    // turn off again
+    field_el.attr('checked', false);
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, false);
+});
 
 test("form error rendering", function() {
     var el = $('#viewdiv');
+    var errors = {};
     el.render({
         ifaces: ['form2'],
         form: {
@@ -303,7 +415,8 @@ test("form error rendering", function() {
                     min_length: 3
                 }
             }]
-        }
+        },
+        errors: errors
     });
     var form_el = $('form', el);
     var field_el = $('#field-text', form_el);
@@ -315,4 +428,6 @@ test("form error rendering", function() {
     // we now expect the error
     var error_el = $('.field-error', form_el);
     equal(error_el.text(), 'value too short');
+    // it's also in the errors object
+    equal(errors.text, 'value too short');
 });

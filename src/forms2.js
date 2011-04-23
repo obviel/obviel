@@ -160,15 +160,15 @@ obviel.forms2 = {};
         var link_context = {};
         var error_link_context = {};
 
-        var convert_wrapper = function(value) {
-            var result = self.handle_convert(widget, value);
+        var convert_wrapper = function(value, source, target) {
+            var result = self.handle_convert(widget, value, source, target);
             if (result.error) {
                 $(errors).setField(widget.name, result.error);
             }
             return result.value;
         };
-        var convert_back_wrapper = function(value) {
-            return self.handle_convert_back(widget, value);
+        var convert_back_wrapper = function(value, source, target) {
+            return self.handle_convert_back(widget, value, source, target);
         };
         
         link_context[widget.name] = {
@@ -185,15 +185,16 @@ obviel.forms2 = {};
         };
 
         var field_el = $('[name=' + widget.name + ']', el);
-        el.link(data, link_context);
+        field_el.link(data, link_context);
         var error_el = $('.field-error', el);
         error_el.link(errors, error_link_context);
     };
 
-    module.Widget.prototype.handle_convert = function(widget, value) {
+    module.Widget.prototype.handle_convert = function(widget, value,
+                                                      source, target) {
         var self = this;
         // try to convert original form value
-        var result = self.convert(widget, value);
+        var result = self.convert(widget, value, source, target);
         if (result.error !== undefined) {
             // conversion error, so bail out
             return {
@@ -219,9 +220,10 @@ obviel.forms2 = {};
         };
     };
 
-    module.Widget.prototype.handle_convert_back = function(widget, value) {
+    module.Widget.prototype.handle_convert_back = function(widget, value,
+                                                          source, target) {
         var self = this;
-        return self.convert_back(widget, value);
+        return self.convert_back(widget, value, source, target);
     };
     
     module.Widget.prototype.convert = function(widget, value) {
@@ -497,5 +499,43 @@ obviel.forms2 = {};
     };
     obviel.view(new module.FloatWidget());
 
+    obviel.iface('boolean_field', 'widget');
+
+    module.BooleanWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'boolean_field',
+            jsont:
+            '<label for="field-{name}">' +
+            '{title|htmltag}</label>' +
+            '<div class="field-input">' +
+            '{.section label}{.section label_before_input}{label}' +
+            '{.end}{.end}' +
+            '<input type="checkbox" name="{name}" id="field-{name}"' +
+            '{.section disabled} disabled="disabled"{.end} />' +
+            '{.section label}{.section label_before_input}{.or}{label}' +
+            '{.end}{.end}</div>' +
+            '<div class="field-error" id="field-error-{name}"></div>' +
+            '{.section description}' +
+            '<div class="field-description">' +
+            '{description|htmltag}</div>{.end}'
+        };
+        $.extend(d, settings);
+        module.Widget.call(this, d);
+    };
+
+    module.BooleanWidget.prototype = new module.Widget;
+
+    module.BooleanWidget.prototype.convert = function(widget, value,
+                                                      source, target) {
+        return {value:$(source).is(':checked')};
+    };
+
+    module.BooleanWidget.prototype.convert_back = function(widget, value,
+                                                           source, target) {
+        $(target).attr('checked', value);
+    };
+    
+    obviel.view(new module.BooleanWidget());
     
 })(jQuery, obviel, obviel.forms2);
