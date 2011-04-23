@@ -28,7 +28,7 @@ test('form with one field', function() {
         ifaces: ['form2'],
         form: {
             widgets: [{
-                ifaces: ['textline_widget'],
+                ifaces: ['textline_field'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
@@ -47,13 +47,13 @@ test('form with two fields', function() {
         ifaces: ['form2'],
         form: {
             widgets: [
-                {ifaces: ['textline_widget'],
+                {ifaces: ['textline_field'],
                  name: 'text1',
                  title: 'Text',
                  description: 'A text widget',
                  defaultvalue: ''
                 },
-                {ifaces: ['textline_widget'],
+                {ifaces: ['textline_field'],
                  name: 'text2',
                  title: 'Text',
                  description: 'A text widget',
@@ -130,7 +130,7 @@ test("form error rendering", function() {
         ifaces: ['form2'],
         form: {
             widgets: [{
-                ifaces: ['textline_widget'],
+                ifaces: ['textline_field'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',

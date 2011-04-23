@@ -136,27 +136,7 @@ obviel.forms2 = {};
     module.Widget = function(settings) {
         settings = settings || {};
         var d = {
-            name: 'default',
-            iface: 'widget',
-            jsont:
-                '<label for="field-{name}">' +
-                '{title|htmltag}</label>' +
-                '<div class="field-input">' +
-                '<input type="text" name="{name}" id="field-{name}" ' +
-                'style="{.section width}width: {width}em;{.end}" ' +
-                '{.section validate}' +
-                '{.section max_length}' +
-                'maxlength="{max_length}" ' +
-                '{.end}' +
-                '{.end}' +
-                '{.section disabled}' +
-                'disabled="disabled" ' +
-                '{.end} />' +
-                '</div>' +
-                '<div class="field-error" id="field-error-{name}"></div>' +
-                '{.section description}' +
-                '<div class="field-description">' +
-                '{description|htmltag}</div>{.end}'
+            name: 'default'
         };
         $.extend(d, settings);
         obviel.View.call(this, d); 
@@ -265,12 +245,31 @@ obviel.forms2 = {};
         return undefined;
     };
 
-    obviel.iface('textline_widget', 'widget');
+    obviel.iface('textline_field', 'widget');
 
     module.TextLineWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'textline_widget'
+            iface: 'textline_field',
+            jsont:
+                '<label for="field-{name}">' +
+                '{title|htmltag}</label>' +
+                '<div class="field-input">' +
+                '<input type="text" name="{name}" id="field-{name}" ' +
+                'style="{.section width}width: {width}em;{.end}" ' +
+                '{.section validate}' +
+                '{.section max_length}' +
+                'maxlength="{max_length}" ' +
+                '{.end}' +
+                '{.end}' +
+                '{.section disabled}' +
+                'disabled="disabled" ' +
+                '{.end} />' +
+                '</div>' +
+                '<div class="field-error" id="field-error-{name}"></div>' +
+                '{.section description}' +
+                '<div class="field-description">' +
+                '{description|htmltag}</div>{.end}'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -314,5 +313,12 @@ obviel.forms2 = {};
     };
 
     obviel.view(new module.TextLineWidget());
+
+    obviel.iface('text_field', 'widget');
+    
+    module.TextWidget = function() {
+        
+
+    };
     
 })(jQuery, obviel, obviel.forms2);
