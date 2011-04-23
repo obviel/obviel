@@ -243,12 +243,50 @@ test('integer validate lengths in digits', function() {
         }
     };
     equal(widget.validate(widget_data, 111), undefined);
-    equals(widget.validate(widget_data, 1111), 'value must be 3 digits long');
-    equals(widget.validate(widget_data, 11), 'value must be 3 digits long');
-    equals(widget.validate(widget_data, -111), undefined);
-    equals(widget.validate(widget_data, -1111), 'value must be 3 digits long');
-    equals(widget.validate(widget_data, -11), 'value must be 3 digits long');
+    equal(widget.validate(widget_data, 1111), 'value must be 3 digits long');
+    equal(widget.validate(widget_data, 11), 'value must be 3 digits long');
+    equal(widget.validate(widget_data, -111), undefined);
+    equal(widget.validate(widget_data, -1111), 'value must be 3 digits long');
+    equal(widget.validate(widget_data, -11), 'value must be 3 digits long');
 });
+
+test('float convert', function() {
+    var widget = new obviel.forms2.FloatWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, '1.2'), {value: 1.2});
+    deepEqual(widget.convert(widget_data, '1'), {value: 1});
+    deepEqual(widget.convert(widget_data, '-1.2'), {value: -1.2});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});
+    deepEqual(widget.convert(widget_data, '1,2'), {error: 'not a float'});
+});
+
+test('float convert different separator', function() {
+    var widget = new obviel.forms2.FloatWidget();
+    var widget_data = {
+        validate: {
+            separator: ','
+        }
+    };
+    deepEqual(widget.convert(widget_data, '1,2'), {value: 1.2});
+    deepEqual(widget.convert(widget_data, '1'), {value: 1});
+    deepEqual(widget.convert(widget_data, '-1,2'), {value: -1.2});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});    
+    deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a float'});
+});
+
+test('float convert validate negative', function() {
+    var widget = new obviel.forms2.FloatWidget();
+    var widget_data = {
+        validate: {
+        }
+    };
+    equal(widget.validate(widget_data, -1.2), 'negative numbers are not allowed');
+});
+
+
 
 test("form error rendering", function() {
     var el = $('#viewdiv');

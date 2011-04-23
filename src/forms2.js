@@ -401,7 +401,8 @@ obviel.forms2 = {};
         return {value: asint};
     };
 
-    module.Widget.prototype.convert_back = function(widget, value) {
+    module.IntegerWidget.prototype.convert_back = function(widget, value) {
+        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
         return value.toString();
     };
  
@@ -431,6 +432,70 @@ obviel.forms2 = {};
     };
     obviel.view(new module.IntegerWidget());
     
-   
+    
+    obviel.iface('float_field', 'input_field');
+    module.FloatWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'float_field'
+        };
+        $.extend(d, settings);
+        module.InputWidget.call(this, d);
+    };
+
+    module.FloatWidget.prototype = new module.InputWidget;
+
+    module.FloatWidget.prototype.convert = function(widget, value) {
+        if (value === '') {
+            return {value: null};
+        }
+        // XXX converter is getting information from validate,
+        // but keep this for backwards compatibility
+        widget.validate = widget.validate || {};
+        var sep = widget.validate.separator || '.';
+
+        var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
+        var floatmatch = (new RegExp(reg)).exec(value);
+        if (!floatmatch) {
+            return {error: "not a float"};
+        }
+        if (sep != '.') {
+            value = value.replace(sep, '.');
+        }
+        var asfloat = parseFloat(value);
+        if (isNaN(asfloat)) {
+            return {error: "not a float"};
+        }
+        return {value: asfloat};
+    };
+
+    module.FloatWidget.prototype.convert_back = function(widget, value) {
+        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
+        value = value.toString();
+        widget.validate = widget.validate || {};
+        var sep = widget.validate.separator || '.';
+        if (sep != '.') {
+            value.replace('.', sep);
+        }
+        return value;
+    };
+ 
+    module.FloatWidget.prototype.validate = function(widget, value) {
+        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+        if (error !== undefined) {
+            return error;
+        }
+        // if the value is empty and isn't required we're done
+        if (value === null && !widget.validate.required) {
+            return undefined;
+        }
+
+        if (!widget.validate.allow_negative && value < 0) {
+            return 'negative numbers are not allowed';
+        }
+        return undefined;
+    };
+    obviel.view(new module.FloatWidget());
+
     
 })(jQuery, obviel, obviel.forms2);
