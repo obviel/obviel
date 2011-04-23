@@ -345,6 +345,36 @@ obviel.forms2 = {};
 
     obviel.view(new module.TextLineWidget());
 
+    // text field (textarea)
+    // even though we subclass input field, we are going to
+    // reuse textline_field for most of its behavior
+    obviel.iface('text_field', 'input_field');
+    module.TextWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'text_field',
+            jsont:
+            '<label for="field-{name}">' +
+            '{title|htmltag}</label>' +
+            '<div class="field-input">' +
+            '<textarea name="{name}" id="field-{name}"' +
+            ' style="{.section width}width: {width}em;{.end}' +
+            '{.section height}height: {height}em;{.end}"' +
+            '{.section disabled} disabled="disabled"{.end}>' +
+            '</textarea>' +
+            '</div>' +
+            '<div class="field-error" id="field-error-{name}"></div>' +
+            '{.section description}' +
+            '<div class="field-description">' +
+            '{description|htmltag}</div>{.end}'
+        };
+        $.extend(d, settings);
+        module.TextLineWidget.call(this, d);
+    };
+
+    module.TextWidget.prototype = new module.TextLineWidget;
+    obviel.view(new module.TextWidget());
+    
     obviel.iface('integer_field', 'input_field');
     module.IntegerWidget = function(settings) {
         settings = settings || {};
@@ -399,6 +429,7 @@ obviel.forms2 = {};
         }
         return undefined;
     };
+    obviel.view(new module.IntegerWidget());
     
    
     

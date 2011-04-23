@@ -31,7 +31,7 @@ test('form with one field', function() {
                 ifaces: ['textline_field'],
                 name: 'text',
                 title: 'Text',
-                description: 'A text widget',
+                description: 'A textline widget',
                 defaultvalue: ''
             }]
         }
@@ -50,13 +50,13 @@ test('form with two fields', function() {
                 {ifaces: ['textline_field'],
                  name: 'text1',
                  title: 'Text',
-                 description: 'A text widget',
+                 description: 'A textline widget',
                  defaultvalue: ''
                 },
                 {ifaces: ['textline_field'],
                  name: 'text2',
                  title: 'Text',
-                 description: 'A text widget',
+                 description: 'A textline widget',
                  defaultvalue: ''
                 }
             ]
@@ -65,6 +65,25 @@ test('form with two fields', function() {
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
     equal($('.form-field', form_el).length, 2);
+});
+
+test('text rendering', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['text_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                defaultvalue: ''
+            }]
+        }
+    });
+    var form_el = $('form', el);
+    equal($('textarea', form_el).length, 1);
+
 });
 
 test('textline convert', function() {
@@ -118,6 +137,29 @@ test("textline validate max_length", function() {
 
 test("textline validate regular expression", function() {
     var widget = new obviel.forms2.TextLineWidget();
+    var widget_data = {
+        validate: {
+            regs: [{
+                reg:  '^a*$',
+                message: "Should all be letter a"
+            }]
+        }
+    };
+    equal(widget.validate(widget_data, 'aaa'), undefined);
+    equal(widget.validate(widget_data, 'bbb'), "Should all be letter a");
+});
+
+// this would duplicate the textline tests, so just do a few for sampling
+test("text convert", function() {
+    var widget = new obviel.forms2.TextWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, 'foo'), {value: 'foo'});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+});
+
+test("text validate regular expression", function() {
+    var widget = new obviel.forms2.TextWidget();
     var widget_data = {
         validate: {
             regs: [{
@@ -207,9 +249,6 @@ test('integer validate lengths in digits', function() {
     equals(widget.validate(widget_data, -1111), 'value must be 3 digits long');
     equals(widget.validate(widget_data, -11), 'value must be 3 digits long');
 });
-
-
-
 
 test("form error rendering", function() {
     var el = $('#viewdiv');
