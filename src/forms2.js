@@ -261,13 +261,7 @@ obviel.forms2 = {};
         }
         if (widget.validate.required && !value) {
             return 'this field is required';
-        } else if (value && widget.validate.min_length &&
-                   value.length < widget.validate.min_length) {
-            return 'value too short';
-        } else if (value && widget.validate.max_length &&
-                   value.length > widget.validate.max_length) {
-            return 'value too long';
-        };
+        }
         return undefined;
     };
 
@@ -289,6 +283,14 @@ obviel.forms2 = {};
         if (error !== undefined) {
             return error;
         }
+        if (value && widget.validate.min_length &&
+                   value.length < widget.validate.min_length) {
+            return 'value too short';
+        } else if (value && widget.validate.max_length &&
+                   value.length > widget.validate.max_length) {
+            return 'value too long';
+        };
+
         // if the value isn't required we're done
         if (value === null && !widget.validate.required) {
             return undefined;
