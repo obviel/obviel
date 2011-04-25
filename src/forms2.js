@@ -433,8 +433,13 @@ obviel.forms2 = {};
         return undefined;
     };
     obviel.view(new module.IntegerWidget());
+
     
-    
+    var is_decimal = function(sep, value) {
+        var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
+        return (new RegExp(reg)).exec(value);
+    };
+
     obviel.iface('float_field', 'input_field');
     module.FloatWidget = function(settings) {
         settings = settings || {};
@@ -456,9 +461,7 @@ obviel.forms2 = {};
         widget.validate = widget.validate || {};
         var sep = widget.validate.separator || '.';
 
-        var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
-        var floatmatch = (new RegExp(reg)).exec(value);
-        if (!floatmatch) {
+        if (!is_decimal(sep, value)) {
             return {error: "not a float"};
         }
         if (sep != '.') {
@@ -510,7 +513,7 @@ obviel.forms2 = {};
     };
 
     module.DecimalWidget.prototype = new module.InputWidget;
-
+    
     module.DecimalWidget.prototype.convert = function(widget, value) {
         if (value === '') {
             return {value: null};
@@ -520,11 +523,10 @@ obviel.forms2 = {};
         widget.validate = widget.validate || {};
         var sep = widget.validate.separator || '.';
 
-        var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
-        var decimalmatch = (new RegExp(reg)).exec(value);
-        if (!decimalmatch) {
+        if (!is_decimal(sep, value)) {
             return {error: "not a decimal"};
         }
+        
         // normalize to . as separator
         if (sep != '.') {
             value = value.replace(sep, '.');
