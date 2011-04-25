@@ -274,9 +274,15 @@ test('float convert', function() {
     deepEqual(widget.convert(widget_data, '1.2'), {value: 1.2});
     deepEqual(widget.convert(widget_data, '1'), {value: 1});
     deepEqual(widget.convert(widget_data, '-1.2'), {value: -1.2});
+    deepEqual(widget.convert(widget_data, '.2'), {value: .2});
+    deepEqual(widget.convert(widget_data, '-1'), {value: -1});
+    deepEqual(widget.convert(widget_data, '-1.2'), {value: -1.2});
+    deepEqual(widget.convert(widget_data, '-.2'), {value: -.2});
     deepEqual(widget.convert(widget_data, ''), {value: null});
     deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});
     deepEqual(widget.convert(widget_data, '1,2'), {error: 'not a float'});
+    deepEqual(widget.convert(widget_data, '-'), {error: 'not a float'});
+    deepEqual(widget.convert(widget_data, '.'), {error: 'not a float'});
 });
 
 test('float convert different separator', function() {
@@ -294,13 +300,46 @@ test('float convert different separator', function() {
     deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a float'});
 });
 
-test('float convert validate negative', function() {
+test('float validate negative', function() {
     var widget = new obviel.forms2.FloatWidget();
     var widget_data = {
         validate: {
         }
     };
     equal(widget.validate(widget_data, -1.2), 'negative numbers are not allowed');
+});
+
+test('decimal convert', function() {
+    var widget = new obviel.forms2.DecimalWidget();
+    var widget_data = {
+        validate: {
+        }
+    };
+    deepEqual(widget.convert(widget_data, '1.2'), {value: '1.2'});
+    deepEqual(widget.convert(widget_data, '1'), {value: '1'});
+    deepEqual(widget.convert(widget_data, '.2'), {value: '.2'});
+    deepEqual(widget.convert(widget_data, '-1'), {value: '-1'});
+    deepEqual(widget.convert(widget_data, '-1.2'), {value: '-1.2'});
+    deepEqual(widget.convert(widget_data, '-.2'), {value: '-.2'});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, '.'), {error: 'not a decimal'});
+    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});
+    deepEqual(widget.convert(widget_data, '-'), {error: 'not a decimal'});
+});
+
+test('decimal convert different separator', function() {
+    var widget = new obviel.forms2.DecimalWidget();
+    var widget_data = {
+        validate: {
+            separator: ','
+        }
+    };
+    deepEqual(widget.convert(widget_data, '1,2'), {value: '1.2'});
+    deepEqual(widget.convert(widget_data, '1'), {value: '1'});
+    deepEqual(widget.convert(widget_data, '-1,2'), {value: '-1.2'});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});    
+    deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a decimal'});
 });
 
 test("textline datalink", function() {
