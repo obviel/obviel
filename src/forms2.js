@@ -644,5 +644,53 @@ obviel.forms2 = {};
     };
     
     obviel.view(new module.BooleanWidget());
+
+    module.ChoiceWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'choice_field',
+            jsont:
+            '<label for="field-{name}">' +
+            '{title|htmltag}</label>' +
+            '<div class="field-input">' +
+            '<select name="{name}" id="field-{name}"' +
+            ' style="{.section width}width: {width}em;{.end}"' +
+            '{.section disabled} disabled="disabled"{.end}>' +
+            '{.section empty_option}' +
+            '<option value="">{empty_option|htmltag}</option>{.end}' +
+            '{.repeated section choices}' +
+            '<option value="{value|htmltag}">{label|htmltag}</option>' +
+            '{.end}</select></div>' +
+            '<div class="field-error" id="field-error-{name}"></div>' +
+            '{.section description}' +
+            '<div class="field-description">' +
+            '{description|htmltag}</div>{.end}'
+        };
+        $.extend(d, settings);
+        module.Widget.call(this, d);
+    };
+
+    module.ChoiceWidget.prototype = new module.Widget;
+
+    // XXX need more testing for empty, empty_option when not default handling
+    module.ChoiceWidget.prototype.convert = function(widget, value) {
+        if (!value) {
+            return {value: null};
+        }
+        return {value: value};
+    };
+
+    module.ChoiceWidget.prototype.convert_back = function(widget, value) {
+        if (value === null) {
+            if (widget.empty_option !== undefined) {
+                return widget.empty_option;
+            } else {
+                return ''; /// XXX can this ever be reached?
+            }
+        }
+        return value;
+    };
+    
+    obviel.view(new module.ChoiceWidget());
     
 })(jQuery, obviel, obviel.forms2);

@@ -3,19 +3,31 @@ $(document).ready(function() {
     var data = {};
     
     $('#a_button').click(function() {
-        $('#output').text(data.a.toString());
+        $('#output').text(data.b);
     });
     
     $('#testform').render({
         ifaces: ['form2'],
         form: {
-            widgets: [{
-                ifaces: ['boolean_field'],
-                name: 'a',
-                title: 'A',
-                description: 'What',
-                defaultvalue: ''
-            }]
+            widgets: [
+                {
+                    ifaces: ['boolean_field'],
+                    name: 'a',
+                    title: 'A',
+                    description: 'What',
+                    defaultvalue: ''
+                },
+                {
+                    ifaces: ['choice_field'],
+                    name: 'b',
+                    title: 'B',
+                    choices: [
+                        {value: 'foo', label: 'Foo'},
+                        {value: 'bar', label: 'Bar'}
+                        ],
+                    defaultvalue: ''
+                }
+            ]
         },
         data: data
     });

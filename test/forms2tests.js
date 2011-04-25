@@ -31,8 +31,7 @@ test('form with one field', function() {
                 ifaces: ['textline_field'],
                 name: 'text',
                 title: 'Text',
-                description: 'A textline widget',
-                defaultvalue: ''
+                description: 'A textline widget'
             }]
         }
     });
@@ -50,14 +49,12 @@ test('form with two fields', function() {
                 {ifaces: ['textline_field'],
                  name: 'text1',
                  title: 'Text',
-                 description: 'A textline widget',
-                 defaultvalue: ''
+                 description: 'A textline widget'
                 },
                 {ifaces: ['textline_field'],
                  name: 'text2',
                  title: 'Text',
-                 description: 'A textline widget',
-                 defaultvalue: ''
+                 description: 'A textline widget'
                 }
             ]
         }
@@ -76,8 +73,7 @@ test('text rendering', function() {
                 ifaces: ['text_field'],
                 name: 'text',
                 title: 'Text',
-                description: 'A text widget',
-                defaultvalue: ''
+                description: 'A text widget'
             }]
         }
     });
@@ -94,8 +90,7 @@ test("boolean rendering", function() {
                 ifaces: ['boolean_field'],
                 name: 'boolean',
                 title: 'Boolean',
-                description: 'A boolean widget',
-                defaultvalue: ''
+                description: 'A boolean widget'
             }]
         }
     });
@@ -418,7 +413,6 @@ test("textline datalink", function() {
                 name: 'a',
                 title: 'A',
                 description: 'A',
-                defaultvalue: '',
                 validate: {
                 }
             }]
@@ -434,6 +428,29 @@ test("textline datalink", function() {
     equal(data.a, 'foo');
 });
 
+test("textline back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    $(data).setField('a', 'Bar');
+    equal(field_el.val(), 'Bar');
+});
+
 test("integer datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -445,7 +462,6 @@ test("integer datalink", function() {
                 name: 'a',
                 title: 'A',
                 description: 'A',
-                defaultvalue: '',
                 validate: {
                 }
             }]
@@ -461,6 +477,79 @@ test("integer datalink", function() {
     equal(data.a, 3);
 });
 
+test("integer back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    $(data).setField('a', 1);
+    equal(field_el.val(), 1);
+});
+
+test("float datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['float_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('3.3');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, 3.3);
+});
+
+test("float back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['float_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    $(data).setField('a', 3.4);
+    equal(field_el.val(), '3.4');
+});
+
 test("boolean datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -472,7 +561,6 @@ test("boolean datalink", function() {
                 name: 'a',
                 title: 'A',
                 description: 'A',
-                defaultvalue: '',
                 validate: {
                 }
             }]
@@ -503,6 +591,62 @@ test("boolean datalink", function() {
     equal(data.a, false);
 });
 
+test("boolean back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['boolean_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    $(data).setField('a', true);
+    equal(field_el.is(':checked'), true);
+    
+    $(data).setField('a', false);
+    equal(field_el.is(':checked'), false);
+});
+
+test("choice datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    
+    field_el.val('foo');
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, 'foo');
+});
+
 test("form error rendering", function() {
     var el = $('#viewdiv');
     var errors = {};
@@ -514,7 +658,6 @@ test("form error rendering", function() {
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
-                defaultvalue: '',
                 validate: {
                     min_length: 3
                 }
