@@ -499,8 +499,7 @@ obviel.forms2 = {};
     };
     obviel.view(new module.FloatWidget());
 
-    obviel.iface('decimal_field', 'input_widget');
-
+    obviel.iface('decimal_field', 'input_field');
     module.DecimalWidget = function(settings) {
         settings = settings || {};
         var d = {
