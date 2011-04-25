@@ -593,13 +593,13 @@ obviel.forms2 = {};
         var min_after_sep = widget.validate.min_after_sep;
         if (min_after_sep !== undefined &&
             after_sep.length < min_after_sep) {
-            return "decimal may not contain more than " + min_after_sep + " digits after the decimal mark";
+            return "decimal must contain at least " + min_after_sep + " digits after the decimal mark";
         }
 
         var max_after_sep = widget.validate.max_after_sep;
         if (max_after_sep != undefined &&
             after_sep.length > max_after_sep) {
-            return "decimal may not contain more than " + max_after_sep + " digits after the decmial mark";
+            return "decimal may not contain more than " + max_after_sep + " digits after the decimal mark";
         }
         return undefined;
     };

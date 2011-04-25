@@ -280,6 +280,7 @@ test('float convert', function() {
     deepEqual(widget.convert(widget_data, '-.2'), {value: -.2});
     deepEqual(widget.convert(widget_data, ''), {value: null});
     deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});
+    deepEqual(widget.convert(widget_data, '1.2.3'), {error: 'not a float'});
     deepEqual(widget.convert(widget_data, '1,2'), {error: 'not a float'});
     deepEqual(widget.convert(widget_data, '-'), {error: 'not a float'});
     deepEqual(widget.convert(widget_data, '.'), {error: 'not a float'});
@@ -322,6 +323,7 @@ test('decimal convert', function() {
     deepEqual(widget.convert(widget_data, '-1.2'), {value: '-1.2'});
     deepEqual(widget.convert(widget_data, '-.2'), {value: '-.2'});
     deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, '1.2.3'), {error: 'not a decimal'});
     deepEqual(widget.convert(widget_data, '.'), {error: 'not a decimal'});
     deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});
     deepEqual(widget.convert(widget_data, '-'), {error: 'not a decimal'});
@@ -340,6 +342,69 @@ test('decimal convert different separator', function() {
     deepEqual(widget.convert(widget_data, ''), {value: null});
     deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});    
     deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a decimal'});
+});
+
+test('decimal validate', function() {
+    var widget = new obviel.forms2.DecimalWidget();
+    var widget_data = {
+        validate: {
+        }
+    };
+
+    equal(widget.validate(widget_data, '1.2'), undefined);
+    equal(widget.validate(widget_data, '-1.2'), 'negative numbers are not allowed');
+
+    widget_data = {
+        validate: {
+            allow_negative: true
+        }
+    };
+    equal(widget.validate(widget_data, '-1.2'), undefined);
+
+    widget_data = {
+        validate: {
+            allow_negative: true,
+            min_before_sep: 2,
+            max_before_sep: 5,
+            min_after_sep: 2,
+            max_after_sep: 5
+        }
+    };
+
+    equal(widget.validate(widget_data, '1.22'),
+          'decimal must contain at least 2 digits before the decimal mark');
+    equal(widget.validate(widget_data, '11.22'),
+          undefined);
+    equal(widget.validate(widget_data, '11111.22'),
+          undefined);
+    equal(widget.validate(widget_data, '111111.22'),
+          'decimal may not contain more than 5 digits before the decimal mark');
+    equal(widget.validate(widget_data, '22.1'),
+          'decimal must contain at least 2 digits after the decimal mark');
+    equal(widget.validate(widget_data, '22.11'),
+          undefined);
+    equal(widget.validate(widget_data, '22.11111'),
+                          undefined);
+    equal(widget.validate(widget_data, '22.111111'),
+          'decimal may not contain more than 5 digits after the decimal mark');
+
+    equal(widget.validate(widget_data, '-1.22'),
+          'decimal must contain at least 2 digits before the decimal mark');
+    equal(widget.validate(widget_data, '-11.22'),
+          undefined);
+    equal(widget.validate(widget_data, '-11111.22'),
+          undefined);
+    equal(widget.validate(widget_data, '-111111.22'),
+          'decimal may not contain more than 5 digits before the decimal mark');
+    equal(widget.validate(widget_data, '-22.1'),
+          'decimal must contain at least 2 digits after the decimal mark');
+    equal(widget.validate(widget_data, '-22.11'),
+          undefined);
+    equal(widget.validate(widget_data, '-22.11111'),
+          undefined);
+    equal(widget.validate(widget_data, '-22.111111'),
+          'decimal may not contain more than 5 digits after the decimal mark');
+    
 });
 
 test("textline datalink", function() {
