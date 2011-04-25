@@ -499,6 +499,112 @@ obviel.forms2 = {};
     };
     obviel.view(new module.FloatWidget());
 
+    obviel.iface('decimal_field', 'input_widget');
+
+    module.DecimalWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'decimal_field'
+        };
+        $.extend(d, settings);
+        module.InputWidget.call(this, d);
+    };
+
+    module.DecimalWidget.prototype = new module.InputWidget;
+
+    module.DecimalWidget.prototype.convert = function(widget, value) {
+        if (value === '') {
+            return {value: null};
+        }
+        // XXX converter is getting information from validate,
+        // but keep this for backwards compatibility
+        widget.validate = widget.validate || {};
+        var sep = widget.validate.separator || '.';
+
+        var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
+        var decimalmatch = (new RegExp(reg)).exec(value);
+        if (!decimalmatch) {
+            return {error: "not a decimal"};
+        }
+        // normalize to . as separator
+        if (sep != '.') {
+            value = value.replace(sep, '.');
+        }
+        // this may be redunant but can't hurt I think
+        var asfloat = parseFloat(value);
+        if (isNaN(asfloat)) {
+            return {error: "not a decimal"};
+        }
+        // we want to return the string as we don't want to
+        // lose precision due to rounding errors
+        return {value: value};
+    };
+
+    module.DecimalWidget.prototype.convert_back = function(widget, value) {
+        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
+        widget.validate = widget.validate || {};
+        var sep = widget.validate.separator || '.';
+        if (sep != '.') {
+            value.replace('.', sep);
+        }
+        return value;
+    };
+ 
+    module.DecimalWidget.prototype.validate = function(widget, value) {
+        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+        if (error !== undefined) {
+            return error;
+        }
+        // if the value is empty and isn't required we're done
+        if (value === null && !widget.validate.required) {
+            return undefined;
+        }
+
+        if (!widget.validate.allow_negative && value[0] == '-') {
+            return 'negative numbers are not allowed';
+        }
+        
+        var parts = value.split('.');
+        var before_sep = parts[0];
+        var after_sep;
+        if (parts.length > 1) {
+            after_sep = parts[1];
+        } else {
+            after_sep = '';
+        };
+
+        if (before_sep[0] == '-') {
+            before_sep = before_sep.slice(1);
+        }
+
+        var min_before_sep = widget.validate.min_before_sep;
+        
+        if (min_before_sep !== undefined &&
+            before_sep.length < min_before_sep) {
+            return "decimal must contain at least " + min_before_sep + " digits before the decimal mark";
+        }
+        var max_before_sep = widget.validate.max_before_sep;
+        if (max_before_sep !== undefined &&
+            before_sep.length > max_before_sep) {
+            return "decimal may not contain more than " + max_before_sep + " digits before the decimal mark";
+        }
+
+        var min_after_sep = widget.validate.min_after_sep;
+        if (min_after_sep !== undefined &&
+            after_sep.length < min_after_sep) {
+            return "decimal may not contain more than " + min_after_sep + " digits after the decimal mark";
+        }
+
+        var max_after_sep = widget.validate.max_after_sep;
+        if (max_after_sep != undefined &&
+            after_sep.length > max_after_sep) {
+            return "decimal may not contain more than " + max_after_sep + " digits after the decmial mark";
+        }
+        return undefined;
+    };
+    
+    obviel.view(new module.DecimalWidget());
+
     obviel.iface('boolean_field', 'widget');
 
     module.BooleanWidget = function(settings) {
