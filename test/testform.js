@@ -13,19 +13,21 @@ $(document).ready(function() {
                 {
                     ifaces: ['boolean_field'],
                     name: 'a',
-                    title: 'A',
-                    description: 'What',
-                    defaultvalue: ''
+                    title: 'A'
+                },
+                {
+                    ifaces: ['integer_field'],
+                    name: 'b',
+                    title: 'B'
                 },
                 {
                     ifaces: ['choice_field'],
-                    name: 'b',
-                    title: 'B',
+                    name: 'c',
+                    title: 'C',
                     choices: [
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
-                        ],
-                    defaultvalue: ''
+                        ]
                 }
             ]
         },

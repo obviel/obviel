@@ -861,3 +861,46 @@ test("form error rendering", function() {
     // it's also in the errors object
     equal(errors.text, 'value too short');
 });
+
+test("form error clearing", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            }]
+        },
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-text', form_el);
+    // put in a value that's too short, so should trigger error
+    field_el.val('fo');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    // we now expect the error
+    var error_el = $('.field-error', form_el);
+    equal(error_el.text(), 'value too short');
+    // it's also in the errors object
+    equal(errors.text, 'value too short');
+
+    // now we put in a correct value
+    field_el.val('long enough');
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    // we now expect the error to be gone
+    equal(error_el.text(), '');
+    // the errors object should also be cleared
+    equal(errors.text, '');
+    
+});

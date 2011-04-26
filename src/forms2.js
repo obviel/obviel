@@ -164,6 +164,8 @@ obviel.forms2 = {};
             var result = self.handle_convert(widget, value, source, target);
             if (result.error) {
                 $(errors).setField(widget.name, result.error);
+            } else {
+                $(errors).setField(widget.name, '');
             }
             return result.value;
         };
