@@ -62,8 +62,13 @@ obviel.forms2 = {};
             if (obj.form.disabled) {
                 widget.disabled = true;
             }
+           
             el.render(widget, function(el, view, widget, name) {
-                view.link(el, widget, obj);
+                // add in error area
+                el.append('<div id="field-error-' + widget.name + '" '+
+                          'class="field-error"></div>');
+                // now link everything up
+                view.link(el, widget, obj);                
                 //view.setdefault(el, widget, obj.data, is_new);
             });
         };
@@ -102,7 +107,17 @@ obviel.forms2 = {};
 
         // this renders widget and links data to it
         link(widget, field_el);
+
+        // add in label
+        field_el.prepend('<label for="field-' + widget.name + '">' +
+                         entitize(widget.title) +
+                         '</label>');
         
+        // add in description
+        if (widget.description) {
+            field_el.append('<div class="field-description">' +
+                            entitize(widget.description) + '</div>');
+        }
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
@@ -249,8 +264,6 @@ obviel.forms2 = {};
         var d = {
             iface: 'input_field',
             jsont:
-                '<label for="field-{name}">' +
-                '{title|htmltag}</label>' +
                 '<div class="field-input">' +
                 '<input type="text" name="{name}" id="field-{name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
@@ -262,11 +275,7 @@ obviel.forms2 = {};
                 '{.section disabled}' +
                 'disabled="disabled" ' +
                 '{.end} />' +
-                '</div>' +
-                '<div class="field-error" id="field-error-{name}"></div>' +
-                '{.section description}' +
-                '<div class="field-description">' +
-                '{description|htmltag}</div>{.end}'
+                '</div>'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);        
@@ -358,19 +367,13 @@ obviel.forms2 = {};
         var d = {
             iface: 'text_field',
             jsont:
-            '<label for="field-{name}">' +
-            '{title|htmltag}</label>' +
             '<div class="field-input">' +
             '<textarea name="{name}" id="field-{name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '</textarea>' +
-            '</div>' +
-            '<div class="field-error" id="field-error-{name}"></div>' +
-            '{.section description}' +
-            '<div class="field-description">' +
-            '{description|htmltag}</div>{.end}'
+            '</div>'
         };
         $.extend(d, settings);
         module.TextLineWidget.call(this, d);
@@ -615,19 +618,13 @@ obviel.forms2 = {};
         var d = {
             iface: 'boolean_field',
             jsont:
-            '<label for="field-{name}">' +
-            '{title|htmltag}</label>' +
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
             '<input type="checkbox" name="{name}" id="field-{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
-            '{.end}{.end}</div>' +
-            '<div class="field-error" id="field-error-{name}"></div>' +
-            '{.section description}' +
-            '<div class="field-description">' +
-            '{description|htmltag}</div>{.end}'
+            '{.end}{.end}</div>'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -652,8 +649,6 @@ obviel.forms2 = {};
         var d = {
             iface: 'choice_field',
             jsont:
-            '<label for="field-{name}">' +
-            '{title|htmltag}</label>' +
             '<div class="field-input">' +
             '<select name="{name}" id="field-{name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
@@ -662,11 +657,7 @@ obviel.forms2 = {};
             '<option value="">{empty_option|htmltag}</option>{.end}' +
             '{.repeated section choices}' +
             '<option value="{value|htmltag}">{label|htmltag}</option>' +
-            '{.end}</select></div>' +
-            '<div class="field-error" id="field-error-{name}"></div>' +
-            '{.section description}' +
-            '<div class="field-description">' +
-            '{description|htmltag}</div>{.end}'
+            '{.end}</select></div>'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
