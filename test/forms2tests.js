@@ -647,6 +647,35 @@ test("choice datalink", function() {
     equal(data.a, 'foo');
 });
 
+test("choice datalink empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    
+    field_el.val('');
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, null);
+});
+
 test("choice back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -671,6 +700,33 @@ test("choice back datalink", function() {
 
     $(data).setField('a', 'bar');
     equal(field_el.val(), 'bar');
+});
+
+
+test("choice back datalink empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+
+    $(data).setField('a', null);
+    equal(field_el.val(), '');
 });
 
 test("choice empty", function() {
