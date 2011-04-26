@@ -647,6 +647,133 @@ test("choice datalink", function() {
     equal(data.a, 'foo');
 });
 
+test("choice back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+
+    $(data).setField('a', 'bar');
+    equal(field_el.val(), 'bar');
+});
+
+test("choice empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                empty_option: 'Empty',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    equal($('option', field_el).length, 3);    
+});
+
+test('choice required no empty', function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                    required: true
+                }
+            }]
+        },
+        data: data
+    });
+
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    equal($('option', field_el).length, 2);
+});
+
+test("choice no empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'foo', label: 'Foo'},
+                          {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    equal($('option', field_el).length, 3);
+});
+
+test("choice no empty but own empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [
+                    {value: '', label: 'Missing'},
+                    {value: 'foo', label: 'Foo'},
+                    {value: 'bar', label: 'Bar'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);    
+    equal($('option', field_el).length, 3);
+});
+
 test("form error rendering", function() {
     var el = $('#viewdiv');
     var errors = {};

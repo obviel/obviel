@@ -672,7 +672,15 @@ obviel.forms2 = {};
 
     module.ChoiceWidget.prototype = new module.Widget;
 
-    // XXX need more testing for empty, empty_option when not default handling
+    module.ChoiceWidget.prototype.render = function(el, widget, name) {
+        widget.validate = widget.validate || {};
+        if (!widget.validate.required &&
+            (widget.empty_option === undefined) &&
+            (widget.choices.length && widget.choices[0].value)) {
+            $('select', el).prepend('<option></option>');
+        }
+    };
+    
     module.ChoiceWidget.prototype.convert = function(widget, value) {
         if (!value) {
             return {value: null};
