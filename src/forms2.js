@@ -690,11 +690,7 @@ obviel.forms2 = {};
 
     module.ChoiceWidget.prototype.convert_back = function(widget, value) {
         if (value === null) {
-            if (widget.empty_option !== undefined) {
-                return widget.empty_option;
-            } else {
-                return ''; /// XXX can this ever be reached?
-            }
+            return '';
         }
         return value;
     };
