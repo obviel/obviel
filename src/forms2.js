@@ -73,11 +73,10 @@ obviel.forms2 = {};
                 widgets: obj.form.widgets
             });
         }
-        var link = function(widget, el) {
+        var render_and_link = function(widget, el) {
             if (obj.form.disabled) {
                 widget.disabled = true;
             }
-           
             el.render(widget, function(el, view, widget, name) {
                 // add in error area
                 el.append('<div id="field-error-' + widget.name + '" '+
@@ -88,11 +87,11 @@ obviel.forms2 = {};
             });
         };
         $.each(groups, function(index, group) {
-            fields_el.append(self.render_group(group, link));
+            fields_el.append(self.render_group(group, render_and_link));
         });
     };
 
-    module.Form.prototype.render_group = function(group, link) {
+    module.Form.prototype.render_group = function(group, render_and_link) {
         var self = this;
         var fieldset_el;
         if (group.name) {
@@ -109,19 +108,19 @@ obviel.forms2 = {};
             fieldset_el = $('<div class="form-main-fields"></div>');
         }
         $.each(group.widgets, function(index, widget) {
-            fieldset_el.append(self.render_widget(widget, link));
+            fieldset_el.append(self.render_widget(widget, render_and_link));
         });
         return fieldset_el;
     };
 
-    module.Form.prototype.render_widget = function(widget, link) {
+    module.Form.prototype.render_widget = function(widget, render_and_link) {
         var field_el = $('<div class="form-field"></div>');
         $.each(widget.ifaces, function(index, value) {
             field_el.addClass(value);
         });
 
         // this renders widget and links data to it
-        link(widget, field_el);
+        render_and_link(widget, field_el);
 
         // add in label
         field_el.prepend('<label for="field-' + widget.name + '">' +
