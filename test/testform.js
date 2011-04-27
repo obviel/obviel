@@ -2,10 +2,6 @@
 $(document).ready(function() {
     var data = {};
     
-    $('#a_button').click(function() {
-        $('#output').text(data.b);
-    });
-    
     $('#testform').render({
         ifaces: ['form2'],
         form: {
@@ -29,14 +25,15 @@ $(document).ready(function() {
                         {value: 'bar', label: 'Bar'}
                         ]
                 }
+            ],
+            controls: [
+                {
+                    'label': 'Submit!',
+                    'action': 'http://localhost'
+                }
             ]
         },
         data: data
     });
 
-    var field = $('#field-a');
-    field.attr('checked', true);
-    var ev = new $.Event('change');
-    ev.target = field;
-    field.trigger(ev);
 });

@@ -830,7 +830,7 @@ test("choice no empty but own empty", function() {
     equal($('option', field_el).length, 3);
 });
 
-test("form error rendering", function() {
+test("field error rendering", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
@@ -844,6 +844,10 @@ test("form error rendering", function() {
                 validate: {
                     min_length: 3
                 }
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
             }]
         },
         errors: errors
@@ -860,9 +864,15 @@ test("form error rendering", function() {
     equal(error_el.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
+    // and the form displays that there's an error
+    var form_error_el = $('.form-error', el);
+    equal(form_error_el.text(), '1 field(s) did not validate');
+    // the submit buttons are disabled
+    var control_els = $('button[class="form-control"]', el);
+    equal(control_els.is(':disabled'), true);
 });
 
-test("form error clearing", function() {
+test("field error clearing", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
@@ -876,6 +886,10 @@ test("form error clearing", function() {
                 validate: {
                     min_length: 3
                 }
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
             }]
         },
         errors: errors
@@ -902,5 +916,11 @@ test("form error clearing", function() {
     equal(error_el.text(), '');
     // the errors object should also be cleared
     equal(errors.text, '');
+    // we don't see a form error anymore
+    var form_error_el = $('.form-error', el);
+    equal(form_error_el.text(), '');
+    // the submit button isn't disabled
+    var control_els = $('button[class="form-control"]', el);
+    equal(control_els.is(':disabled'), false);
     
 });

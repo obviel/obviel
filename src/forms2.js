@@ -34,19 +34,34 @@ obviel.forms2 = {};
 
     module.Form.prototype.render = function(el, obj, name) {
         var self = this;
-        self.render_widgets(el, obj, name);
-        self.render_controls(el, obj, name);
+    
+        obj.errors = obj.errors || {};
+        $(el).bind('form-change.obviel', function(ev) {
+            var error_count = 0;
+            $.each(obj.errors, function(key, value) {
+                if (key != '__events__' && value) {
+                    error_count++;
+                }
+            });
+            if (error_count > 0) {
+                $('.form-error', el).text(error_count + ' field(s) did not validate');
+                $('button[class="form-control"]', el).attr('disabled', 'true');
+            } else {
+                $('.form-error', el).text('');
+                $('button[class="form-control"]', el).removeAttr('disabled');
+            }
+        });
+        
+        self.render_widgets(el, obj);
+        self.render_controls(el, obj);
     };
 
-    module.Form.prototype.render_widgets = function(el, obj, name) {
+    module.Form.prototype.render_widgets = function(el, obj) {
         var self = this;
         var is_new = false;
         if (!obj.data) {
             is_new = true;
             obj.data = {};
-        }
-        if (!obj.errors) {
-            obj.errors = {};
         }
 
         var form_el = $('form', el);
@@ -126,19 +141,96 @@ obviel.forms2 = {};
         return field_el;
     };
 
-    module.Form.prototype.render_controls = function(el, obj, name) {
+    module.Form.prototype.render_controls = function(el, obj) {
+        var self = this;
+        
         var form_el = $('form', el);
         var controls_el = $('.form-controls', form_el);
-        var controls = obj.form.controls;
-        if (controls === undefined || controls.length == 0) {
-            // no controls to render
-            return;
-        }
+        var controls = obj.form.controls || [];
+        
         $.each(controls, function(index, control) {
+            var control_el = $('<button class="form-control" type="button" />');
+            control_el.text(control.label || '');
+            if (control['class']) {
+                control_el.addClass(control['class']);
+            }
+            if (control.name) {
+                control_el.attr('name', control.name);
+            }
+            
+            control_el.click(function(ev) {
+                // trigger change event for all widgets
+                self.trigger_changes(obj);
+                
+                // determine whether there are any errors
+                var error_count = 0;
+                $.each(obj.errors, function(key, value) {
+                    if (key != '__events__' && value) {
+                        error_count++;
+                    }
+                });
+                if (error_count > 0) {
+                    control_el.attr('disabled', 'true');
+                    return;
+                }
 
+                // clone the data object removing data link annotations
+                var clone = {};
+                $.each(obj.data, function(key, value) {
+                    if (key != '__events__') {
+                        clone[key] = value;
+                    }
+                });
+                var data = JSON.stringify(clone);
+                
+                var method = control.method || 'POST';
+                var action = control.action;
+                var content_type = control.content_type || 'application/json';
+                var view_name = control.view_name || 'default';
+
+                $.ajax({
+                    type: method,
+                    url: action,
+                    data: data,
+                    processData: false,
+                    contentType: content_type,
+                    dataType: 'json',
+                    success: function(data) {
+                        el.render(data, view_name);
+                    }
+                });
+            });
+
+            controls_el.append(control_el);
         });
     };
 
+    module.Form.prototype.trigger_changes = function(obj) {
+        // XXX this group normalization code should be generalized
+        var groups = obj.form.groups ? obj.form.groups.slice(0) : [];
+        if (obj.form.widgets) {
+            groups.unshift({
+                name: null,
+                widgets: obj.form.widgets
+            });
+        }
+        $.each(groups, function(index, group) {
+            $.each(group.widgets, function(index, widget) {
+                // XXX hack to look up view...
+                var ifaces = obviel.ifaces(widget);
+                for (var i=0; i < ifaces.length; i++) {
+                    var iviews = obviel._views[ifaces[i]];
+                    if (iviews) {
+                        var view = iviews['default'];
+                        // finally trigger change
+                        view.change(widget);
+                        return;
+                    }
+                }
+            });
+        });
+    };
+    
     obviel.view(new module.Form());
 
     obviel.iface('widget');
@@ -171,19 +263,30 @@ obviel.forms2 = {};
         
         var data = obj.data;
         var errors = obj.errors;
-
+        
         var link_context = {};
         var error_link_context = {};
 
         var convert_wrapper = function(value, source, target) {
             var result = self.handle_convert(widget, value, source, target);
+            // XXX if there is an error, we want to disable submit buttons
+            // XXX if there is no more error, we want to re-enable submit buttons
+            // XXX we shouldn't be allowed to press 'submit' if any field is
+            // in an erroring state. this means as soon as submit is pressed
+            // we should have a guard? or can we do it earlier when someone
+            // starts manipulating the form? we don't really know
+            // when convert is triggered...
             if (result.error) {
                 $(errors).setField(widget.name, result.error);
             } else {
                 $(errors).setField(widget.name, '');
             }
+            // for any update to error status, trigger event
+            $(source).trigger('form-change.obviel');
+            
             return result.value;
         };
+        
         var convert_back_wrapper = function(value, source, target) {
             return self.handle_convert_back(widget, value, source, target);
         };
@@ -258,6 +361,15 @@ obviel.forms2 = {};
         return undefined;
     };
 
+    module.Widget.prototype.change = function(widget) {
+        // notify that this widget changed, may need specific implementation
+        // in subclasses but this is fairly generic
+        var field_el = $('#field-' + widget.name);
+        var ev = new $.Event('change');
+        ev.target = field_el;
+        field_el.trigger(ev);
+    };
+    
     obviel.iface('input_field', 'widget');
     module.InputWidget = function(settings) {
         settings = settings || {};
