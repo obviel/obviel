@@ -10,6 +10,18 @@ obviel.onerror = function(e) {
 
 module("Forms2");
 
+// tests to implement still (and to implement in some cases):
+// * absence versus presence of data
+// * a form submit of invalid data without a change event sent first
+// * real submit test by monkey-ing $.ajax
+// * default values: how do we deal with them?
+// * groups rendering
+// * disabled fields
+// * disabling the whole form
+// * autocomplete logic
+// * datepicker logic
+// * view can override template?
+
 test('empty form', function() {
     var el = $('#viewdiv');
     el.render({
