@@ -76,6 +76,107 @@ test('form with two fields', function() {
     equal($('.form-field', form_el).length, 2);
 });
 
+test('form with groups', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            groups: 
+            [{
+                name: 'one',
+                widgets: [
+                    {ifaces: ['textline_field'],
+                     name: 'text1',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    },
+                    {ifaces: ['textline_field'],
+                     name: 'text2',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    }
+                ]
+            },
+             {
+                 name: 'two',
+                 widgets: [
+                     {ifaces: ['textline_field'],
+                      name: 'alpha',
+                      title: 'Alpha'
+                     }
+                 ]
+             }   
+            ]
+        }
+    });
+    equal($('fieldset', el).length, 2);
+    equal($('#form-fieldset-one', el).length, 1);
+    equal($('#form-fieldset-two', el).length, 1);
+});
+
+test('form with group titles', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            groups: 
+            [{
+                name: 'one',
+                title: "One",
+                widgets: [
+                    {ifaces: ['textline_field'],
+                     name: 'text1',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    },
+                    {ifaces: ['textline_field'],
+                     name: 'text2',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    }
+                ]
+            },
+             {
+                 name: 'two',
+                 title: "Two",
+                 widgets: [
+                     {ifaces: ['textline_field'],
+                      name: 'alpha',
+                      title: 'Alpha'
+                     }
+                 ]
+             }   
+            ]
+        }
+    });
+    equal($('#form-fieldset-one>legend', el).text(), 'One');
+    equal($('#form-fieldset-two>legend', el).text(), 'Two');
+});
+
+test('form with controls', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A textline widget'
+            }],
+            controls: [{
+                name: 'foo',
+                'class': 'fooClass',
+                action: 'something'
+            }]
+        }
+    });
+    var form_el = $('form', el);
+    equal($('button', el).length, 1);
+    equal($('button', el).attr('name'), 'foo');
+    equal($('button', el).attr('class'), 'form-control fooClass');
+});
+
 test('text rendering', function() {
     var el = $('#viewdiv');
     el.render({
@@ -308,6 +409,24 @@ test('float convert different separator', function() {
     deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a float'});
 });
 
+test('float validate required', function() {
+    var widget = new obviel.forms2.FloatWidget();
+    
+    widget_data = {
+        validate: {
+            required: true
+        }
+    };
+    equal(widget.validate(widget_data, null), 'this field is required');
+
+    widget_data = {
+        validate: {
+            required: false
+        }
+    };
+    equal(widget.validate(widget_data, null), undefined);
+});
+
 test('float validate negative', function() {
     var widget = new obviel.forms2.FloatWidget();
     var widget_data = {
@@ -411,7 +530,29 @@ test('decimal validate', function() {
           undefined);
     equal(widget.validate(widget_data, '-22.111111'),
           'decimal may not contain more than 5 digits after the decimal mark');
-    
+
+    widget_data = {
+        validate: {
+            allow_negative: true
+        }
+    };
+
+    equal(widget.validate(widget_data, '1'), undefined);
+    equal(widget.validate(widget_data, '.1'), undefined);
+
+    widget_data = {
+        validate: {
+            required: true
+        }
+    };
+    equal(widget.validate(widget_data, null), 'this field is required');
+
+    widget_data = {
+        validate: {
+            required: false
+        }
+    };
+    equal(widget.validate(widget_data, null), undefined);
 });
 
 test("textline datalink", function() {
@@ -461,6 +602,36 @@ test("textline back datalink", function() {
     var field_el = $('#field-a', form_el);
     $(data).setField('a', 'Bar');
     equal(field_el.val(), 'Bar');
+    $(data).setField('a', null);
+    equal(field_el.val(), '');
+});
+
+test("integer datalink conversion error", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('foo'); // not an int
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(errors.a, 'not a number');
 });
 
 test("integer datalink", function() {
@@ -488,6 +659,7 @@ test("integer datalink", function() {
     field_el.trigger(ev);
     equal(data.a, 3);
 });
+
 
 test("integer back datalink", function() {
     var el = $('#viewdiv');
@@ -560,6 +732,106 @@ test("float back datalink", function() {
 
     $(data).setField('a', 3.4);
     equal(field_el.val(), '3.4');
+});
+
+test("float back datalink different sep", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['float_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                    separator: ','
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    $(data).setField('a', 3.4);
+    equal(field_el.val(), '3,4');
+});
+
+test("decimal datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['decimal_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('3.3');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, '3.3');
+});
+
+test("decimal back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['decimal_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    $(data).setField('a', '3.4');
+    equal(field_el.val(), '3.4');
+});
+
+test("decimal back datalink different sep", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['decimal_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                    separator: ','
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+
+    $(data).setField('a', '3.4');
+    equal(field_el.val(), '3,4');
 });
 
 test("boolean datalink", function() {
@@ -935,4 +1207,45 @@ test("field error clearing", function() {
     var control_els = $('button[class="form-control"]', el);
     equal(control_els.is(':disabled'), false);
     
+});
+
+test("field error not seen until submit", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-text', form_el);
+    // put in a value that's too short, so should trigger error
+    field_el.val('fo');
+    // there is no error yet
+    var error_el = $('.field-error', form_el);
+    equal(error_el.text(), '');
+    // don't trigger event but try submitting immediately
+    button_el = $('button', el);
+    button_el.trigger('click');
+    // we now expect the error
+    equal(error_el.text(), 'value too short');
+    // it's also in the errors object
+    equal(errors.text, 'value too short');
+    // and there's a form error
+    var form_error_el = $('.form-error', el);
+    equal(form_error_el.text(), '1 field(s) did not validate');
 });

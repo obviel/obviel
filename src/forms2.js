@@ -410,9 +410,11 @@ obviel.forms2 = {};
 
     module.InputWidget.prototype.validate = function(widget, value) {
         var error = module.Widget.prototype.validate.call(this, widget, value);
-        if (error !== undefined) {
-            return error;
-        }
+        // this can never happen but in subclasses it can, so it's
+        // useful there when deriving from InputWidget
+        //if (error !== undefined) {
+        //    return error;
+        //}
         if (widget.validate.required && value === null) {
             return 'this field is required';
         }
@@ -596,7 +598,7 @@ obviel.forms2 = {};
         widget.validate = widget.validate || {};
         var sep = widget.validate.separator || '.';
         if (sep != '.') {
-            value.replace('.', sep);
+            value = value.replace('.', sep);
         }
         return value;
     };
@@ -662,7 +664,7 @@ obviel.forms2 = {};
         widget.validate = widget.validate || {};
         var sep = widget.validate.separator || '.';
         if (sep != '.') {
-            value.replace('.', sep);
+            value = value.replace('.', sep);
         }
         return value;
     };
