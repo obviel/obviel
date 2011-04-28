@@ -12,15 +12,10 @@ module("Forms2");
 
 // tests to implement still (and to implement in some cases):
 // * absence versus presence of data
-// * a form submit of invalid data without a change event sent first
-// * real submit test by monkey-ing $.ajax
 // * default values: how do we deal with them?
-// * groups rendering
-// * disabled fields
-// * disabling the whole form
+// * submitting disabled fields
 // * autocomplete logic
 // * datepicker logic
-// * view can override template?
 
 test('empty form', function() {
     var el = $('#viewdiv');
@@ -50,6 +45,42 @@ test('form with one field', function() {
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
     equal($('.form-field', form_el).length, 1);
+});
+
+test('form with disabled field', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                disabled: true,
+                description: 'A textline widget'
+            }]
+        }
+    });
+    var form_el = $('form', el);
+    equal($('#field-text', form_el).is(':disabled'), true);
+});
+
+test('whole form disabled', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A textline widget'
+            }],
+            disabled: true
+        }
+    });
+    var form_el = $('form', el);
+    equal($('#field-text', form_el).is(':disabled'), true);
 });
 
 test('form with two fields', function() {
@@ -412,7 +443,7 @@ test('float convert different separator', function() {
 test('float validate required', function() {
     var widget = new obviel.forms2.FloatWidget();
     
-    widget_data = {
+    var widget_data = {
         validate: {
             required: true
         }
@@ -925,7 +956,7 @@ test("choice datalink", function() {
     var field_el = $('#field-a', form_el);    
     
     field_el.val('foo');
-    ev = new $.Event('change');
+    var ev = new $.Event('change');
     ev.target = field_el;
     field_el.trigger(ev);
     equal(data.a, 'foo');
@@ -954,7 +985,7 @@ test("choice datalink empty", function() {
     var field_el = $('#field-a', form_el);    
     
     field_el.val('');
-    ev = new $.Event('change');
+    var ev = new $.Event('change');
     ev.target = field_el;
     field_el.trigger(ev);
     equal(data.a, null);
@@ -1239,7 +1270,7 @@ test("field error not seen until submit", function() {
     var error_el = $('.field-error', form_el);
     equal(error_el.text(), '');
     // don't trigger event but try submitting immediately
-    button_el = $('button', el);
+    var button_el = $('button', el);
     button_el.trigger('click');
     // we now expect the error
     equal(error_el.text(), 'value too short');
@@ -1248,4 +1279,112 @@ test("field error not seen until submit", function() {
     // and there's a form error
     var form_error_el = $('.form-error', el);
     equal(form_error_el.text(), '1 field(s) did not validate');
+});
+
+obviel.iface('success_iface');
+obviel.view({
+    iface: 'success_iface',
+    render: function(el, obj, name) {
+        el.text("success!");
+    }
+});
+
+test("actual submit", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        // to trigger successful result
+        options.success({ifaces: ['success_iface']});
+    };
+    
+    var form_el = $('form', el);
+    var field_el = $('#field-text', form_el);
+    field_el.val('foo');
+
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    $.ajax = original_ajax;
+    equal(ajax_options.data, '{"text":"foo"}');
+
+    // the success_iface should be rendered
+    equal(el.text(), 'success!');
+});
+
+test("actual submit with disabled field", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            },
+            {
+                ifaces: ['textline_field'],
+                name: 'text2',
+                title: 'Text2',
+                disabled: true
+            }
+            ],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        // to trigger successful result
+        options.success({ifaces: ['success_iface']});
+    };
+    
+    var form_el = $('form', el);
+    var field_el = $('#field-text', form_el);
+    field_el.val('foo');
+    var field2_el = $('field-text2', form_el);
+    field2_el.val('bar');
+    
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    $.ajax = original_ajax;
+    // text2 shouldn't show up as it's disabled
+    equal(ajax_options.data, '{"text":"foo"}');
+
+    // the success_iface should be rendered
+    equal(el.text(), 'success!');
 });
