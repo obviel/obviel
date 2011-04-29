@@ -277,15 +277,10 @@ obviel.forms2 = {};
 
         var convert_wrapper = function(value, source, target) {
             var result = self.handle_convert(widget, value, source, target);
-            // XXX if there is an error, we want to disable submit buttons
-            // XXX if there is no more error, we want to re-enable submit buttons
-            // XXX we shouldn't be allowed to press 'submit' if any field is
-            // in an erroring state. this means as soon as submit is pressed
-            // we should have a guard? or can we do it earlier when someone
-            // starts manipulating the form? we don't really know
-            // when convert is triggered...
             if (result.error) {
                 $(errors).setField(widget.name, result.error);
+                // we cannot set the value later, so return undefined
+                result.value = undefined;
             } else {
                 $(errors).setField(widget.name, '');
             }

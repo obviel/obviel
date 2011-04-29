@@ -662,6 +662,8 @@ test("integer datalink conversion error", function() {
     ev.target = field_el;
     field_el.trigger(ev);
     equal(errors.a, 'not a number');
+    // the value is undefined
+    equal(data.a, undefined);
 });
 
 test("integer datalink", function() {
@@ -1386,4 +1388,107 @@ test("actual submit with disabled field", function() {
 
     // the success_iface should be rendered
     equal(el.text(), 'success!');
+});
+
+module("Datepicker");
+
+test('datepicker convert', function() {
+    var widget = new obviel.forms2.DatePickerWidget();
+    var widget_data = {
+    };
+    deepEqual(widget.convert(widget_data, '01/02/10'), {value: '2010-01-02'});
+    deepEqual(widget.convert(widget_data, ''), {value: null});
+    deepEqual(widget.convert(widget_data, '77/02/10'), {error: 'invalid date'});
+    deepEqual(widget.convert(widget_data, 'sarsem'), {error: 'invalid date'});
+});
+
+test('datepicker validate required', function() {
+    var widget = new obviel.forms2.DatePickerWidget();
+    var widget_data = {
+        validate: {
+            required: true
+        }
+    };
+    equal(widget.validate(widget_data, '01/02/10'), undefined);
+    equal(widget.validate(widget_data, null), "this field is required");
+});
+
+test("datepicker datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['datepicker_textline_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('01/02/10');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, '2010-01-02');
+});
+
+test("datepicker back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['datepicker_textline_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    $(data).setField('a', '2010-03-04');
+    equal(field_el.val(), '03/04/2010');
+    $(data).setField('a', null);
+    equal(field_el.val(), '');
+});
+
+test("datepicker datalink conversion error", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['datepicker_textline_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#field-a', form_el);
+    field_el.val('foo'); // not a datetime
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(errors.a, 'invalid date');
+    equal(data.a, undefined);
 });
