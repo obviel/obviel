@@ -24,7 +24,22 @@ $(document).ready(function() {
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
                         ]
+                },
+                {
+                    ifaces: ['datepicker_textline_field'],
+                    name: 'dp',
+                    title: 'Datepicker'
                 }
+                // {
+                //     ifaces: ['autocomplete_textline_field'],
+                //     name: 'd',
+                //     title: 'D',
+                //     data: [
+                //         {value: 'foo', label: 'Foo'},
+                //         {value: 'bar', label: 'Bar'}
+                //     ]
+                // }
+
             ],
             controls: [
                 {
