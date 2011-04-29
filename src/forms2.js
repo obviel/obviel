@@ -10,6 +10,15 @@ obviel.forms2 = {};
         s = s.replace(/"/g, '&quot;');
         return s;
     };
+
+    // a way to determine whether an attribute name is internal
+    // or not. Apparently this varies through versions of jquery
+    // rather messy but I don't know of a reliable to recognize
+    // a jQuery expando...
+    var is_internal = function(attribute_name) {
+        return (attribute_name == '__events__' ||
+                attribute_name.slice(0, 6) == 'jQuery');
+    };
     
     obviel.iface('form2');
 
@@ -39,7 +48,7 @@ obviel.forms2 = {};
         $(el).bind('form-change.obviel', function(ev) {
             var error_count = 0;
             $.each(obj.errors, function(key, value) {
-                if (key != '__events__' && value) {
+                if (!is_internal(key) && value) {
                     error_count++;
                 }
             });
@@ -164,7 +173,7 @@ obviel.forms2 = {};
                 // determine whether there are any errors
                 var error_count = 0;
                 $.each(obj.errors, function(key, value) {
-                    if (key != '__events__' && value) {
+                    if (!is_internal(key) && value) {
                         error_count++;
                     }
                 });
@@ -176,7 +185,7 @@ obviel.forms2 = {};
                 // clone the data object removing data link annotations
                 var clone = {};
                 $.each(obj.data, function(key, value) {
-                    if (key != '__events__') {
+                    if (!is_internal(key)) {
                         clone[key] = value;
                     }
                 });
@@ -757,6 +766,8 @@ obviel.forms2 = {};
     
     obviel.view(new module.BooleanWidget());
 
+    obviel.iface('choice_field', 'widget');
+    
     module.ChoiceWidget = function(settings) {
         settings = settings || {};
         var d = {
