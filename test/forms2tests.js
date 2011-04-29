@@ -13,7 +13,6 @@ module("Forms2");
 // tests to implement still (and to implement in some cases):
 // * absence versus presence of data
 // * default values: how do we deal with them?
-// * submitting disabled fields
 // * autocomplete logic
 // * datepicker logic
 
