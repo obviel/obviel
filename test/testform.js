@@ -26,19 +26,21 @@ $(document).ready(function() {
                         ]
                 },
                 {
+                    ifaces: ['autocomplete_textline_field'],
+                    name: 'da',
+                    title: 'Autocomplete',
+                    data: [
+                        {value: 'foo', label: 'Foo'},
+                        {value: 'bar', label: 'Bar'}
+                    ]
+                },
+                
+                {
                     ifaces: ['datepicker_textline_field'],
                     name: 'dp',
                     title: 'Datepicker'
                 }
-                // {
-                //     ifaces: ['autocomplete_textline_field'],
-                //     name: 'd',
-                //     title: 'D',
-                //     data: [
-                //         {value: 'foo', label: 'Foo'},
-                //         {value: 'bar', label: 'Bar'}
-                //     ]
-                // }
+              
 
             ],
             controls: [
