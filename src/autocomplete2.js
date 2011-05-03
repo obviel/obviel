@@ -102,6 +102,9 @@
             input_el.trigger(change_ev);
         };
         clone_el.autocomplete(autocomplete_options);
+        // when the user blurs away from the field, we want to validate the
+        // field unless we blurred away because we opened the autocomplete
+        // popup
         clone_el.blur(function(ev) {
             if (ignore_blur) {
                 return;
