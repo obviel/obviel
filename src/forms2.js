@@ -1,6 +1,16 @@
 obviel.forms2 = {};
 
 (function($, obviel, module) {
+    // if no json_locale_data can be found, fall back on the default
+    // translations
+    if (json_locale_data === undefined) {
+        var json_locale_data = undefined;
+    };
+    var gt = new Gettext({
+        domain: "obviel_forms",
+        locale_data: json_locale_data});
+    function _(msgid) { return gt.gettext(msgid); };
+    
     var entitize = function(s) {
         /* convert the 4 chars that must not be in XML to 'entities'
         */
@@ -53,7 +63,11 @@ obviel.forms2 = {};
                 }
             });
             if (error_count > 0) {
-                $('.form-error', el).text(error_count + ' field(s) did not validate');
+                var msg = Gettext.strargs(gt.ngettext(
+                    "1 field did not validate",
+                    "%1 fields did not validate",
+                    error_count), [error_count]);
+                $('.form-error', el).text(msg);
                 $('button[class="form-control"]', el).attr('disabled', 'true');
             } else {
                 $('.form-error', el).text('');
@@ -420,7 +434,7 @@ obviel.forms2 = {};
         //    return error;
         //}
         if (widget.validate.required && value === null) {
-            return 'this field is required';
+            return _('this field is required');
         }
         return undefined;
     };
@@ -450,10 +464,10 @@ obviel.forms2 = {};
         
         if (widget.validate.min_length &&
             value.length < widget.validate.min_length) {
-            return 'value too short';
+            return _('value too short');
         } else if (widget.validate.max_length &&
                    value.length > widget.validate.max_length) {
-            return 'value too long';
+            return _('value too long');
         };
 
         if (widget.validate.regs) {
@@ -517,10 +531,10 @@ obviel.forms2 = {};
         }
         var asint = parseInt(value);
         if (isNaN(asint)) {
-            return {error: "not a number"};
+            return {error: _("not a number")};
         }
         if (asint != parseFloat(value)) {
-            return {error: "not an integer number"};
+            return {error: _("not an integer number")};
         }
         return {value: asint};
     };
@@ -541,7 +555,7 @@ obviel.forms2 = {};
         }
 
         if (!widget.validate.allow_negative && value < 0) {
-            return 'negative numbers are not allowed';
+            return _('negative numbers are not allowed');
         }
         if (widget.validate.length !== undefined) {
             var asstring = value.toString();
@@ -549,7 +563,8 @@ obviel.forms2 = {};
                 asstring = asstring.slice(1);
             }
             if (asstring.length != widget.validate.length) {       
-                return 'value must be ' + widget.validate.length + ' digits long';
+                return Gettext.strargs(_('value must be %1 digits long'),
+                                       [widget.validate.length]);
             }
         }
         return undefined;
@@ -584,14 +599,14 @@ obviel.forms2 = {};
         var sep = widget.validate.separator || '.';
 
         if (!is_decimal(sep, value)) {
-            return {error: "not a float"};
+            return {error: _("not a float")};
         }
         if (sep != '.') {
             value = value.replace(sep, '.');
         }
         var asfloat = parseFloat(value);
         if (isNaN(asfloat)) {
-            return {error: "not a float"};
+            return {error: _("not a float")};
         }
         return {value: asfloat};
     };
@@ -618,7 +633,7 @@ obviel.forms2 = {};
         }
 
         if (!widget.validate.allow_negative && value < 0) {
-            return 'negative numbers are not allowed';
+            return _('negative numbers are not allowed');
         }
         return undefined;
     };
@@ -646,7 +661,7 @@ obviel.forms2 = {};
         var sep = widget.validate.separator || '.';
 
         if (!is_decimal(sep, value)) {
-            return {error: "not a decimal"};
+            return {error: _("not a decimal")};
         }
         
         // normalize to . as separator
@@ -656,7 +671,7 @@ obviel.forms2 = {};
         // this may be redunant but can't hurt I think
         var asfloat = parseFloat(value);
         if (isNaN(asfloat)) {
-            return {error: "not a decimal"};
+            return {error: _("not a decimal")};
         }
         // we want to return the string as we don't want to
         // lose precision due to rounding errors
@@ -684,7 +699,7 @@ obviel.forms2 = {};
         }
 
         if (!widget.validate.allow_negative && value[0] == '-') {
-            return 'negative numbers are not allowed';
+            return _('negative numbers are not allowed');
         }
         
         var parts = value.split('.');
@@ -704,24 +719,32 @@ obviel.forms2 = {};
         
         if (min_before_sep !== undefined &&
             before_sep.length < min_before_sep) {
-            return "decimal must contain at least " + min_before_sep + " digits before the decimal mark";
+            return Gettext.strargs(
+                _('decimal must contain at least %1 digits before the decimal mark'),
+                [min_before_sep]);
         }
         var max_before_sep = widget.validate.max_before_sep;
         if (max_before_sep !== undefined &&
             before_sep.length > max_before_sep) {
-            return "decimal may not contain more than " + max_before_sep + " digits before the decimal mark";
+            return Gettext.strargs(
+                _('decimal may not contain more than %1 digits before the decimal mark'),
+                [max_before_sep]);
         }
 
         var min_after_sep = widget.validate.min_after_sep;
         if (min_after_sep !== undefined &&
             after_sep.length < min_after_sep) {
-            return "decimal must contain at least " + min_after_sep + " digits after the decimal mark";
+            return Gettext.strargs(
+                _('decimal must contain at least %1 digits after the decimal mark'),
+                [min_after_sep]);
         }
 
         var max_after_sep = widget.validate.max_after_sep;
         if (max_after_sep != undefined &&
             after_sep.length > max_after_sep) {
-            return "decimal may not contain more than " + max_after_sep + " digits after the decimal mark";
+            return Gettext.strargs(
+                _('decimal may not contain more than %1 digits after the decimal mark'),
+                [max_after_sep]);
         }
         return undefined;
     };

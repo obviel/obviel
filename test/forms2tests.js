@@ -1182,7 +1182,7 @@ test("field error rendering", function() {
     equal(errors.text, 'value too short');
     // and the form displays that there's an error
     var form_error_el = $('.form-error', el);
-    equal(form_error_el.text(), '1 field(s) did not validate');
+    equal(form_error_el.text(), '1 field did not validate');
     // the submit buttons are disabled
     var control_els = $('button[class="form-control"]', el);
     equal(control_els.is(':disabled'), true);
@@ -1279,7 +1279,7 @@ test("field error not seen until submit", function() {
     equal(errors.text, 'value too short');
     // and there's a form error
     var form_error_el = $('.form-error', el);
-    equal(form_error_el.text(), '1 field(s) did not validate');
+    equal(form_error_el.text(), '1 field did not validate');
 });
 
 obviel.iface('success_iface');
