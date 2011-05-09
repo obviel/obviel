@@ -96,6 +96,8 @@ obviel.forms2 = {};
                 widgets: obj.form.widgets
             });
         }
+        var data = $(obj.data);
+        
         var render_and_link = function(widget, el) {
             if (obj.form.disabled) {
                 widget.disabled = true;
@@ -105,8 +107,17 @@ obviel.forms2 = {};
                 el.append('<div id="field-error-' + widget.name + '" '+
                           'class="field-error"></div>');
                 // now link everything up
-                view.link(el, widget, obj);                
-                //view.setdefault(el, widget, obj.data, is_new);
+                view.link(el, widget, obj);
+                // if there is a value, update the widget
+                var existing_value = obj.data[widget.name];
+                if (existing_value !== undefined) {
+                    data.setField(widget.name, existing_value);
+                } else {
+                    // no value, see whether we need to set the default value
+                    if (widget.defaultvalue !== undefined) {
+                        data.setField(widget.name, widget.defaultvalue);
+                    }
+                }
             });
         };
         $.each(groups, function(index, group) {

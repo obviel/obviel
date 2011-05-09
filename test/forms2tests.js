@@ -1390,6 +1390,105 @@ test("actual submit with disabled field", function() {
     equal(el.text(), 'success!');
 });
 
+test("existing values", function() {
+    var el = $('#viewdiv');
+    var data = {a: 'Something already',
+                b: 3};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'a',
+                title: 'A'
+            },
+            {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B'
+            }
+            ],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data
+    });
+      var a_el = $('#field-a', el);
+    equal(a_el.val(), 'Something already');
+    var b_el = $('#field-b', el);
+    equal(b_el.val(), '3');
+});
+
+test("default values", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'a',
+                title: 'A',
+                defaultvalue: 'A default'
+            },
+            {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                defaultvalue: 3
+            }
+            ],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data
+    });
+    equal(data.a, 'A default');
+    equal(data.b, 3);
+    var a_el = $('#field-a', el);
+    equal(a_el.val(), 'A default');
+    var b_el = $('#field-b', el);
+    equal(b_el.val(), '3');
+});
+
+test("default values interacting with existent", function() {
+    var el = $('#viewdiv');
+    var data = {a: 'Something already'};
+    el.render({
+        ifaces: ['form2'],
+        form: {
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'a',
+                title: 'A',
+                defaultvalue: 'A default'
+            },
+            {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                defaultvalue: 3
+            }
+            ],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data
+    });
+    equal(data.a, 'Something already');
+    equal(data.b, 3);
+    var a_el = $('#field-a', el);
+    equal(a_el.val(), 'Something already');
+    var b_el = $('#field-b', el);
+    equal(b_el.val(), '3');
+});
+
 module("Datepicker");
 
 test('datepicker convert', function() {
