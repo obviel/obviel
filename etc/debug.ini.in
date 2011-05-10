@@ -1,0 +1,54 @@
+
+[server:main]
+use = egg:Paste#http
+host = ${:host}
+port = ${:port}
+
+[pipeline:main]
+pipeline = accesslogging fanstatic serf
+
+[filter:accesslogging]
+use = egg:Paste#translogger
+
+[filter:evalexception]
+use = egg:z3c.evalexception#ajax
+
+[filter:fanstatic]
+use = egg:fanstatic#fanstatic
+versioning = true
+recompute_hashes = true
+
+[app:serf]
+use = egg:fanstatic#serf
+resource = js.jquery.jquery
+
+# Logging configuration
+
+# to enable sqlalchemy query logging, add ", sqlalchemy" to the keys
+[loggers]
+keys = root
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_sqlalchemy]
+level = INFO
+handlers = console
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handlers]
+keys = console
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatters]
+keys = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)s [%(name)s] %(message)s
