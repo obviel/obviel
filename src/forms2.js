@@ -107,7 +107,7 @@ obviel.forms2 = {};
                 el.append('<div id="field-error-' + widget.name + '" '+
                           'class="field-error"></div>');
                 // now link everything up
-                view.link(el, widget, obj);
+                view.link(el, widget, obj.data, obj.errors);
                 // if there is a value, update the widget
                 var existing_value = obj.data[widget.name];
                 if (existing_value !== undefined) {
@@ -288,14 +288,11 @@ obviel.forms2 = {};
 
     };
 
-    module.Widget.prototype.link = function(el, widget, obj) {
+    module.Widget.prototype.link = function(el, widget, data, errors) {
         if (widget.disabled) {
             return;
         }
         var self = this;
-        
-        var data = obj.data;
-        var errors = obj.errors;
         
         var link_context = {};
         var error_link_context = {};
@@ -396,6 +393,28 @@ obviel.forms2 = {};
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
+    };
+
+    obviel.iface('composite_widget', 'widget');
+    // base for composite widgets combining other widgets
+    module.CompositeWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'composite_widget'
+        };
+        // horizontal or vertical rendering support?
+        $.extend(d, settings);
+        module.Widget.call(this, d);
+    };
+
+    module.CompositeWidget.prototype = new module.Widget;
+
+    module.CompositeWidget.prototype.render = function(el, obj, name) {
+ 
+    };
+
+    module.CompositeWidget.prototype.link = function(el, widget, obj) {
+
     };
     
     obviel.iface('input_field', 'widget');
