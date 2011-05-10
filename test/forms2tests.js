@@ -19,7 +19,7 @@ module("Forms2");
 test('empty form', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: []
             }
@@ -31,7 +31,7 @@ test('empty form', function() {
 test('form with one field', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -49,7 +49,7 @@ test('form with one field', function() {
 test('form with disabled field', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -67,7 +67,7 @@ test('form with disabled field', function() {
 test('whole form disabled', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -85,7 +85,7 @@ test('whole form disabled', function() {
 test('form with two fields', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [
                 {ifaces: ['textline_field'],
@@ -109,7 +109,7 @@ test('form with two fields', function() {
 test('form with groups', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             groups: 
             [{
@@ -147,7 +147,7 @@ test('form with groups', function() {
 test('form with group titles', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             groups: 
             [{
@@ -186,7 +186,7 @@ test('form with group titles', function() {
 test('form with controls', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -210,7 +210,7 @@ test('form with controls', function() {
 test('text rendering', function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['text_field'],
@@ -227,7 +227,7 @@ test('text rendering', function() {
 test("boolean rendering", function() {
     var el = $('#viewdiv');
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['boolean_field'],
@@ -589,7 +589,7 @@ test("textline datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -615,7 +615,7 @@ test("textline back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -641,7 +641,7 @@ test("integer datalink conversion error", function() {
     var data = {};
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['integer_field'],
@@ -670,7 +670,7 @@ test("integer datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['integer_field'],
@@ -697,7 +697,7 @@ test("integer back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['integer_field'],
@@ -720,7 +720,7 @@ test("float datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['float_field'],
@@ -746,7 +746,7 @@ test("float back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['float_field'],
@@ -770,7 +770,7 @@ test("float back datalink different sep", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['float_field'],
@@ -795,7 +795,7 @@ test("decimal datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['decimal_field'],
@@ -821,7 +821,7 @@ test("decimal back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['decimal_field'],
@@ -845,7 +845,7 @@ test("decimal back datalink different sep", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['decimal_field'],
@@ -870,7 +870,7 @@ test("boolean datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['boolean_field'],
@@ -911,7 +911,7 @@ test("boolean back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['boolean_field'],
@@ -938,7 +938,7 @@ test("choice datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -967,7 +967,7 @@ test("choice datalink empty", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -996,7 +996,7 @@ test("choice back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1023,7 +1023,7 @@ test("choice back datalink empty", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1049,7 +1049,7 @@ test("choice empty", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1074,7 +1074,7 @@ test('choice required no empty', function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1100,7 +1100,7 @@ test("choice no empty", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1124,7 +1124,7 @@ test("choice no empty but own empty", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['choice_field'],
@@ -1150,7 +1150,7 @@ test("field error rendering", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1192,7 +1192,7 @@ test("field error clearing", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1245,7 +1245,7 @@ test("field error not seen until submit", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1294,7 +1294,7 @@ test("actual submit", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1339,7 +1339,7 @@ test("actual submit with disabled field", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1395,7 +1395,7 @@ test("existing values", function() {
     var data = {a: 'Something already',
                 b: 3};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1425,7 +1425,7 @@ test("default values", function() {
     var el = $('#viewdiv');
     var data = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1459,7 +1459,7 @@ test("default values interacting with existent", function() {
     var el = $('#viewdiv');
     var data = {a: 'Something already'};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['textline_field'],
@@ -1516,7 +1516,7 @@ test("datepicker datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
@@ -1542,7 +1542,7 @@ test("datepicker back datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
@@ -1568,7 +1568,7 @@ test("datepicker datalink conversion error", function() {
     var data = {};
     var errors = {};
     el.render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
