@@ -1,0 +1,27 @@
+xgettext -L python -d obviel_forms forms2.js -o obviel_forms.pot
+
+ msginit -l nl_NL -i obviel_forms.pot
+
+then modify result so it says:
+
+json_locale_data = {
+
+}
+
+and turn key into "obviel_forms".
+
+and end the whole thing with ;
+
+Note that the HTML page that includes the JS needs to be encoded as
+UTF-8, to test this with flat HTML, use:
+
+  <meta http-equiv="Content-Type" content="text/html; charset="UTF-8" />
+
+We need some kind of toolchain to do all this automatically. For some
+reason the key is 'nl' in the generated JSON.
+
+What do we do for updating messages? msgmerge nl.po ref.pot
+
+Fanstatic could generate the JSON file automatically potentially,
+using the compilation process.
+ 
