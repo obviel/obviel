@@ -51,6 +51,7 @@ test('form with disabled field', function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -61,7 +62,7 @@ test('form with disabled field', function() {
         }
     });
     var form_el = $('form', el);
-    equal($('#field-text', form_el).is(':disabled'), true);
+    equal($('#test-field-text', form_el).is(':disabled'), true);
 });
 
 test('whole form disabled', function() {
@@ -69,6 +70,7 @@ test('whole form disabled', function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -79,7 +81,7 @@ test('whole form disabled', function() {
         }
     });
     var form_el = $('form', el);
-    equal($('#field-text', form_el).is(':disabled'), true);
+    equal($('#test-field-text', form_el).is(':disabled'), true);
 });
 
 test('form with two fields', function() {
@@ -111,6 +113,7 @@ test('form with groups', function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             groups: 
             [{
                 name: 'one',
@@ -140,8 +143,8 @@ test('form with groups', function() {
         }
     });
     equal($('fieldset', el).length, 2);
-    equal($('#form-fieldset-one', el).length, 1);
-    equal($('#form-fieldset-two', el).length, 1);
+    equal($('#test-form-fieldset-one', el).length, 1);
+    equal($('#test-form-fieldset-two', el).length, 1);
 });
 
 test('form with group titles', function() {
@@ -149,6 +152,7 @@ test('form with group titles', function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             groups: 
             [{
                 name: 'one',
@@ -179,8 +183,8 @@ test('form with group titles', function() {
             ]
         }
     });
-    equal($('#form-fieldset-one>legend', el).text(), 'One');
-    equal($('#form-fieldset-two>legend', el).text(), 'Two');
+    equal($('#test-form-fieldset-one>legend', el).text(), 'One');
+    equal($('#test-form-fieldset-two>legend', el).text(), 'Two');
 });
 
 test('form with controls', function() {
@@ -591,6 +595,7 @@ test("textline datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'a',
@@ -603,7 +608,7 @@ test("textline datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('foo');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -617,6 +622,7 @@ test("textline back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'a',
@@ -629,7 +635,7 @@ test("textline back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     $(data).setField('a', 'Bar');
     equal(field_el.val(), 'Bar');
     $(data).setField('a', null);
@@ -643,6 +649,7 @@ test("integer datalink conversion error", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['integer_field'],
                 name: 'a',
@@ -656,7 +663,7 @@ test("integer datalink conversion error", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('foo'); // not an int
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -672,6 +679,7 @@ test("integer datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['integer_field'],
                 name: 'a',
@@ -684,7 +692,7 @@ test("integer datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -699,6 +707,7 @@ test("integer back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['integer_field'],
                 name: 'a',
@@ -711,7 +720,7 @@ test("integer back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     $(data).setField('a', 1);
     equal(field_el.val(), 1);
 });
@@ -722,6 +731,7 @@ test("float datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['float_field'],
                 name: 'a',
@@ -734,7 +744,7 @@ test("float datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('3.3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -748,6 +758,7 @@ test("float back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['float_field'],
                 name: 'a',
@@ -760,7 +771,7 @@ test("float back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     $(data).setField('a', 3.4);
     equal(field_el.val(), '3.4');
@@ -772,6 +783,7 @@ test("float back datalink different sep", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['float_field'],
                 name: 'a',
@@ -785,7 +797,7 @@ test("float back datalink different sep", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     $(data).setField('a', 3.4);
     equal(field_el.val(), '3,4');
@@ -797,6 +809,7 @@ test("decimal datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['decimal_field'],
                 name: 'a',
@@ -809,7 +822,7 @@ test("decimal datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('3.3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -823,6 +836,7 @@ test("decimal back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['decimal_field'],
                 name: 'a',
@@ -835,7 +849,7 @@ test("decimal back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     $(data).setField('a', '3.4');
     equal(field_el.val(), '3.4');
@@ -847,6 +861,7 @@ test("decimal back datalink different sep", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['decimal_field'],
                 name: 'a',
@@ -860,7 +875,7 @@ test("decimal back datalink different sep", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     $(data).setField('a', '3.4');
     equal(field_el.val(), '3,4');
@@ -872,6 +887,7 @@ test("boolean datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['boolean_field'],
                 name: 'a',
@@ -884,7 +900,7 @@ test("boolean datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     // starts as off
     var ev = new $.Event('change');
@@ -913,6 +929,7 @@ test("boolean back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['boolean_field'],
                 name: 'a',
@@ -925,7 +942,7 @@ test("boolean back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
 
     $(data).setField('a', true);
     equal(field_el.is(':checked'), true);
@@ -940,6 +957,7 @@ test("choice datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -954,7 +972,7 @@ test("choice datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     
     field_el.val('foo');
     var ev = new $.Event('change');
@@ -969,6 +987,7 @@ test("choice datalink empty", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -983,7 +1002,7 @@ test("choice datalink empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     
     field_el.val('');
     var ev = new $.Event('change');
@@ -998,6 +1017,7 @@ test("choice back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1012,7 +1032,7 @@ test("choice back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
 
     $(data).setField('a', 'bar');
     equal(field_el.val(), 'bar');
@@ -1025,6 +1045,7 @@ test("choice back datalink empty", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1039,7 +1060,7 @@ test("choice back datalink empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
 
     $(data).setField('a', null);
     equal(field_el.val(), '');
@@ -1051,6 +1072,7 @@ test("choice empty", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1066,7 +1088,7 @@ test("choice empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     equal($('option', field_el).length, 3);    
 });
 
@@ -1076,6 +1098,7 @@ test('choice required no empty', function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1092,7 +1115,7 @@ test('choice required no empty', function() {
     });
 
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     equal($('option', field_el).length, 2);
 });
 
@@ -1102,6 +1125,7 @@ test("choice no empty", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1116,7 +1140,7 @@ test("choice no empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     equal($('option', field_el).length, 3);
 });
 
@@ -1126,6 +1150,7 @@ test("choice no empty but own empty", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['choice_field'],
                 name: 'a',
@@ -1142,7 +1167,7 @@ test("choice no empty but own empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);    
+    var field_el = $('#test-field-a', form_el);    
     equal($('option', field_el).length, 3);
 });
 
@@ -1152,6 +1177,7 @@ test("field error rendering", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -1169,7 +1195,7 @@ test("field error rendering", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#field-text', form_el);
+    var field_el = $('#test-field-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     var ev = new $.Event('change');
@@ -1194,6 +1220,7 @@ test("field error clearing", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -1211,7 +1238,7 @@ test("field error clearing", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#field-text', form_el);
+    var field_el = $('#test-field-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     var ev = new $.Event('change');
@@ -1247,6 +1274,7 @@ test("field error not seen until submit", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -1264,7 +1292,7 @@ test("field error not seen until submit", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#field-text', form_el);
+    var field_el = $('#test-field-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     // there is no error yet
@@ -1296,6 +1324,7 @@ test("actual submit", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -1322,7 +1351,7 @@ test("actual submit", function() {
     };
     
     var form_el = $('form', el);
-    var field_el = $('#field-text', form_el);
+    var field_el = $('#test-field-text', form_el);
     field_el.val('foo');
 
     var button_el = $('button', el);
@@ -1341,6 +1370,7 @@ test("actual submit with disabled field", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'text',
@@ -1374,7 +1404,7 @@ test("actual submit with disabled field", function() {
     };
     
     var form_el = $('form', el);
-    var field_el = $('#field-text', form_el);
+    var field_el = $('#test-field-text', form_el);
     field_el.val('foo');
     var field2_el = $('field-text2', form_el);
     field2_el.val('bar');
@@ -1397,6 +1427,7 @@ test("existing values", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'a',
@@ -1415,9 +1446,9 @@ test("existing values", function() {
         },
         data: data
     });
-      var a_el = $('#field-a', el);
+      var a_el = $('#test-field-a', el);
     equal(a_el.val(), 'Something already');
-    var b_el = $('#field-b', el);
+    var b_el = $('#test-field-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1427,6 +1458,7 @@ test("default values", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'a',
@@ -1449,9 +1481,9 @@ test("default values", function() {
     });
     equal(data.a, 'A default');
     equal(data.b, 3);
-    var a_el = $('#field-a', el);
+    var a_el = $('#test-field-a', el);
     equal(a_el.val(), 'A default');
-    var b_el = $('#field-b', el);
+    var b_el = $('#test-field-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1461,6 +1493,7 @@ test("default values interacting with existent", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['textline_field'],
                 name: 'a',
@@ -1483,9 +1516,9 @@ test("default values interacting with existent", function() {
     });
     equal(data.a, 'Something already');
     equal(data.b, 3);
-    var a_el = $('#field-a', el);
+    var a_el = $('#test-field-a', el);
     equal(a_el.val(), 'Something already');
-    var b_el = $('#field-b', el);
+    var b_el = $('#test-field-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1518,6 +1551,7 @@ test("datepicker datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
                 name: 'a',
@@ -1530,7 +1564,7 @@ test("datepicker datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('01/02/10');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -1544,6 +1578,7 @@ test("datepicker back datalink", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
                 name: 'a',
@@ -1556,7 +1591,7 @@ test("datepicker back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     $(data).setField('a', '2010-03-04');
     equal(field_el.val(), '03/04/2010');
     $(data).setField('a', null);
@@ -1570,6 +1605,7 @@ test("datepicker datalink conversion error", function() {
     el.render({
         ifaces: ['viewform'],
         form: {
+            name: 'test',
             widgets: [{
                 ifaces: ['datepicker_textline_field'],
                 name: 'a',
@@ -1583,7 +1619,7 @@ test("datepicker datalink conversion error", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#field-a', form_el);
+    var field_el = $('#test-field-a', form_el);
     field_el.val('foo'); // not a datetime
     var ev = new $.Event('change');
     ev.target = field_el;

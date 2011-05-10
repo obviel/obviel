@@ -51,6 +51,8 @@ obviel.forms2 = {};
 
     module.Form.prototype = new obviel.View;
 
+    var auto_name = 0;
+    
     module.Form.prototype.render = function(el, obj, name) {
         var self = this;
     
@@ -74,12 +76,18 @@ obviel.forms2 = {};
                 $('button[class="form-control"]', el).removeAttr('disabled');
             }
         });
-        
-        self.render_widgets(el, obj);
-        self.render_controls(el, obj);
+
+        var form_name = obj.form.name;
+        if (form_name === undefined) {
+            form_name = 'auto-' + auto_name.toString();
+            auto_name++;
+            obj.form.name = form_name;
+        }
+        self.render_widgets(el, obj, form_name);
+        self.render_controls(el, obj, form_name);
     };
 
-    module.Form.prototype.render_widgets = function(el, obj) {
+    module.Form.prototype.render_widgets = function(el, obj, form_name) {
         var self = this;
         var is_new = false;
         if (!obj.data) {
@@ -99,18 +107,18 @@ obviel.forms2 = {};
         
         $.each(groups, function(index, group) {
             fields_el.append(self.render_group(
-                group, obj.data, obj.errors, obj.form.disabled));
+                group, form_name, obj.data, obj.errors, obj.form.disabled));
         });
     };
 
-    module.Form.prototype.render_group = function(group,
+    module.Form.prototype.render_group = function(group, form_name,
                                                   data, errors, disabled) {
         var self = this;
         var fieldset_el;
         if (group.name) {
             fieldset_el = $(
                     '<fieldset class="form-fieldset" ' +
-                    'id="form-fieldset-' + group.name +
+                    'id="' + form_name + '-form-fieldset-' + group.name +
                     '"></fieldset>');
             if (group.title) {
                 fieldset_el.append(
@@ -121,6 +129,7 @@ obviel.forms2 = {};
             fieldset_el = $('<div class="form-main-fields"></div>');
         }
         $.each(group.widgets, function(index, widget) {
+            widget.form_name = form_name;
             fieldset_el.append(self.render_widget(widget,
                                                   data, errors, disabled));
         });
@@ -142,7 +151,7 @@ obviel.forms2 = {};
 
         field_el.render(widget, function(el, view, widget, name) {
             // add in error area
-            el.append('<div id="field-error-' + widget.name + '" '+
+            el.append('<div id="' + widget.form_name + '-field-error-' + widget.name + '" '+
                       'class="field-error"></div>');
             // now link everything up
             view.link(el, widget, data, errors);
@@ -249,6 +258,7 @@ obviel.forms2 = {};
                 widgets: obj.form.widgets
             });
         }
+        
         $.each(groups, function(index, group) {
             $.each(group.widgets, function(index, widget) {
                 // XXX hack to look up view...
@@ -269,11 +279,6 @@ obviel.forms2 = {};
     obviel.view(new module.Form());
 
     obviel.iface('widget');
-
-    // XXX must have a unique per form identifier, otherwise
-    // if we render more than one form the field-error-<foo> ids
-    // will be duplicated. this may also occur in case of repeated or
-    // nested fields
     
     module.Widget = function(settings) {
         settings = settings || {};
@@ -325,7 +330,7 @@ obviel.forms2 = {};
         };
         error_link_context[widget.name] = {
             twoWay: true,
-            name: 'field-error-' + widget.name,
+            name: widget.form_name + '-field-error-' + widget.name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
             }
@@ -391,7 +396,7 @@ obviel.forms2 = {};
     module.Widget.prototype.change = function(widget) {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#field-' + widget.name);
+        var field_el = $('#' + widget.form_name + '-field-' + widget.name);
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
@@ -415,8 +420,8 @@ obviel.forms2 = {};
  
     };
 
-    module.CompositeWidget.prototype.link = function(el, widget, obj) {
-
+    module.CompositeWidget.prototype.link = function(el, widget, data, errors) {
+        
     };
     
     obviel.iface('input_field', 'widget');
@@ -426,7 +431,7 @@ obviel.forms2 = {};
             iface: 'input_field',
             jsont:
                 '<div class="field-input">' +
-                '<input type="text" name="{name}" id="field-{name}" ' +
+                '<input type="text" name="{name}" id="{form_name}-field-{name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
                 '{.section max_length}' +
@@ -531,7 +536,7 @@ obviel.forms2 = {};
             iface: 'text_field',
             jsont:
             '<div class="field-input">' +
-            '<textarea name="{name}" id="field-{name}"' +
+            '<textarea name="{name}" id="{form_name}-field-{name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
@@ -793,7 +798,7 @@ obviel.forms2 = {};
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
-            '<input type="checkbox" name="{name}" id="field-{name}"' +
+            '<input type="checkbox" name="{name}" id="{form_name}-field-{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
             '{.end}{.end}</div>'
@@ -824,7 +829,7 @@ obviel.forms2 = {};
             iface: 'choice_field',
             jsont:
             '<div class="field-input">' +
-            '<select name="{name}" id="field-{name}"' +
+            '<select name="{name}" id="{form_name}-field-{name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '{.section empty_option}' +
