@@ -40,9 +40,9 @@ obviel.forms2 = {};
             html:
                 '<form ' +
                 'method="POST"' +
-                '<div class="form-fields"></div>' +
-                '<div class="form-error"></div>' +
-                '<div class="form-controls"></div>' +
+                '<div class="obviel-fields"></div>' +
+                '<div class="obviel-formerror"></div>' +
+                '<div class="obviel-controls"></div>' +
                 '</form>'
         };
         $.extend(d, settings);
@@ -69,11 +69,11 @@ obviel.forms2 = {};
                     "1 field did not validate",
                     "%1 fields did not validate",
                     error_count), [error_count]);
-                $('.form-error', el).text(msg);
-                $('button[class="form-control"]', el).attr('disabled', 'true');
+                $('.obviel-formerror', el).text(msg);
+                $('button[class="obviel-control"]', el).attr('disabled', 'true');
             } else {
-                $('.form-error', el).text('');
-                $('button[class="form-control"]', el).removeAttr('disabled');
+                $('.obviel-formerror', el).text('');
+                $('button[class="obviel-control"]', el).removeAttr('disabled');
             }
         });
 
@@ -96,7 +96,7 @@ obviel.forms2 = {};
         }
 
         var form_el = $('form', el);
-        var fields_el = $('.form-fields', form_el);
+        var fields_el = $('.obviel-fields', form_el);
         var groups = obj.form.groups ? obj.form.groups.slice(0) : [];
         if (obj.form.widgets) {
             groups.unshift({
@@ -117,8 +117,8 @@ obviel.forms2 = {};
         var fieldset_el;
         if (group.name) {
             fieldset_el = $(
-                    '<fieldset class="form-fieldset" ' +
-                    'id="' + form_name + '-form-fieldset-' + group.name +
+                    '<fieldset class="obviel-fieldset" ' +
+                    'id="obviel-fieldset-' + form_name + '-' + group.name +
                     '"></fieldset>');
             if (group.title) {
                 fieldset_el.append(
@@ -126,7 +126,7 @@ obviel.forms2 = {};
                         '</legend>');  
             }
         } else {
-            fieldset_el = $('<div class="form-main-fields"></div>');
+            fieldset_el = $('<div class="obviel-form-mainfields"></div>');
         }
         $.each(group.widgets, function(index, widget) {
             widget.form_name = form_name;
@@ -138,7 +138,7 @@ obviel.forms2 = {};
 
     module.Form.prototype.render_widget = function(widget,
                                                    data, errors, disabled) {
-        var field_el = $('<div class="form-field"></div>');
+        var field_el = $('<div class="obviel-field"></div>');
         $.each(widget.ifaces, function(index, value) {
             field_el.addClass(value);
         });
@@ -151,8 +151,8 @@ obviel.forms2 = {};
 
         field_el.render(widget, function(el, view, widget, name) {
             // add in error area
-            el.append('<div id="' + widget.form_name + '-field-error-' + widget.name + '" '+
-                      'class="field-error"></div>');
+            el.append('<div id="obviel-field-error-' + widget.form_name + '-' + widget.name + '" '+
+                      'class="obviel-field-error"></div>');
             // now link everything up
             view.link(el, widget, data, errors);
             // if there is a value, update the widget
@@ -174,14 +174,14 @@ obviel.forms2 = {};
         
         // add in description
         if (widget.description) {
-            field_el.append('<div class="field-description">' +
+            field_el.append('<div class="obviel-field-description">' +
                             entitize(widget.description) + '</div>');
         }
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
         field_el.append(
-            '<div class="form-field-clear">&#xa0;</div>');
+            '<div class="obviel-field-clear">&#xa0;</div>');
         return field_el;
     };
 
@@ -189,11 +189,11 @@ obviel.forms2 = {};
         var self = this;
         
         var form_el = $('form', el);
-        var controls_el = $('.form-controls', form_el);
+        var controls_el = $('.obviel-controls', form_el);
         var controls = obj.form.controls || [];
         
         $.each(controls, function(index, control) {
-            var control_el = $('<button class="form-control" type="button" />');
+            var control_el = $('<button class="obviel-control" type="button" />');
             control_el.text(control.label || '');
             if (control['class']) {
                 control_el.addClass(control['class']);
@@ -330,7 +330,7 @@ obviel.forms2 = {};
         };
         error_link_context[widget.name] = {
             twoWay: true,
-            name: widget.form_name + '-field-error-' + widget.name,
+            name: 'obviel-field-error-' + widget.form_name + '-' + widget.name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
             }
@@ -338,7 +338,7 @@ obviel.forms2 = {};
 
         var field_el = $('[name=' + widget.name + ']', el);
         field_el.link(data, link_context);
-        var error_el = $('.field-error', el);
+        var error_el = $('.obviel-field-error', el);
         error_el.link(errors, error_link_context);
     };
 
@@ -396,7 +396,7 @@ obviel.forms2 = {};
     module.Widget.prototype.change = function(widget) {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#' + widget.form_name + '-field-' + widget.name);
+        var field_el = $('#obviel-field-' + widget.form_name + '-' + widget.name);
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
@@ -430,8 +430,8 @@ obviel.forms2 = {};
         var d = {
             iface: 'input_field',
             jsont:
-                '<div class="field-input">' +
-                '<input type="text" name="{name}" id="{form_name}-field-{name}" ' +
+                '<div class="obviel-field-input">' +
+                '<input type="text" name="{name}" id="obviel-field-{form_name}-{name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
                 '{.section max_length}' +
@@ -536,7 +536,7 @@ obviel.forms2 = {};
             iface: 'text_field',
             jsont:
             '<div class="field-input">' +
-            '<textarea name="{name}" id="{form_name}-field-{name}"' +
+            '<textarea name="{name}" id="obviel-field-{form_name}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
@@ -798,7 +798,7 @@ obviel.forms2 = {};
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
-            '<input type="checkbox" name="{name}" id="{form_name}-field-{name}"' +
+            '<input type="checkbox" name="{name}" id="obviel-field-{form_name}-{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
             '{.end}{.end}</div>'
@@ -829,7 +829,7 @@ obviel.forms2 = {};
             iface: 'choice_field',
             jsont:
             '<div class="field-input">' +
-            '<select name="{name}" id="{form_name}-field-{name}"' +
+            '<select name="{name}" id="obviel-field-{form_name}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '{.section empty_option}' +

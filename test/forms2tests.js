@@ -43,7 +43,7 @@ test('form with one field', function() {
     });
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
-    equal($('.form-field', form_el).length, 1);
+    equal($('.obviel-field', form_el).length, 1);
 });
 
 test('form with disabled field', function() {
@@ -62,7 +62,7 @@ test('form with disabled field', function() {
         }
     });
     var form_el = $('form', el);
-    equal($('#test-field-text', form_el).is(':disabled'), true);
+    equal($('#obviel-field-test-text', form_el).is(':disabled'), true);
 });
 
 test('whole form disabled', function() {
@@ -81,7 +81,7 @@ test('whole form disabled', function() {
         }
     });
     var form_el = $('form', el);
-    equal($('#test-field-text', form_el).is(':disabled'), true);
+    equal($('#obviel-field-test-text', form_el).is(':disabled'), true);
 });
 
 test('form with two fields', function() {
@@ -105,7 +105,7 @@ test('form with two fields', function() {
     });
     var form_el = $('form', el);
     ok(form_el.length, 'checking for form element');
-    equal($('.form-field', form_el).length, 2);
+    equal($('.obviel-field', form_el).length, 2);
 });
 
 test('form with groups', function() {
@@ -143,8 +143,8 @@ test('form with groups', function() {
         }
     });
     equal($('fieldset', el).length, 2);
-    equal($('#test-form-fieldset-one', el).length, 1);
-    equal($('#test-form-fieldset-two', el).length, 1);
+    equal($('#obviel-fieldset-test-one', el).length, 1);
+    equal($('#obviel-fieldset-test-two', el).length, 1);
 });
 
 test('form with group titles', function() {
@@ -183,8 +183,8 @@ test('form with group titles', function() {
             ]
         }
     });
-    equal($('#test-form-fieldset-one>legend', el).text(), 'One');
-    equal($('#test-form-fieldset-two>legend', el).text(), 'Two');
+    equal($('#obviel-fieldset-test-one>legend', el).text(), 'One');
+    equal($('#obviel-fieldset-test-two>legend', el).text(), 'Two');
 });
 
 test('form with controls', function() {
@@ -208,7 +208,7 @@ test('form with controls', function() {
     var form_el = $('form', el);
     equal($('button', el).length, 1);
     equal($('button', el).attr('name'), 'foo');
-    equal($('button', el).attr('class'), 'form-control fooClass');
+    equal($('button', el).attr('class'), 'obviel-control fooClass');
 });
 
 test('text rendering', function() {
@@ -608,7 +608,7 @@ test("textline datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -635,7 +635,7 @@ test("textline back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     $(data).setField('a', 'Bar');
     equal(field_el.val(), 'Bar');
     $(data).setField('a', null);
@@ -663,7 +663,7 @@ test("integer datalink conversion error", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not an int
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -692,7 +692,7 @@ test("integer datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -720,7 +720,7 @@ test("integer back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     $(data).setField('a', 1);
     equal(field_el.val(), 1);
 });
@@ -744,7 +744,7 @@ test("float datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3.3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -771,7 +771,7 @@ test("float back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     $(data).setField('a', 3.4);
     equal(field_el.val(), '3.4');
@@ -797,7 +797,7 @@ test("float back datalink different sep", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     $(data).setField('a', 3.4);
     equal(field_el.val(), '3,4');
@@ -822,7 +822,7 @@ test("decimal datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3.3');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -849,7 +849,7 @@ test("decimal back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     $(data).setField('a', '3.4');
     equal(field_el.val(), '3.4');
@@ -875,7 +875,7 @@ test("decimal back datalink different sep", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     $(data).setField('a', '3.4');
     equal(field_el.val(), '3,4');
@@ -900,7 +900,7 @@ test("boolean datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     // starts as off
     var ev = new $.Event('change');
@@ -942,7 +942,7 @@ test("boolean back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
 
     $(data).setField('a', true);
     equal(field_el.is(':checked'), true);
@@ -972,7 +972,7 @@ test("choice datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
     
     field_el.val('foo');
     var ev = new $.Event('change');
@@ -1002,8 +1002,8 @@ test("choice datalink empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
-    
+    var field_el = $('#obviel-field-test-a', form_el);    
+    equal(field_el.length, 1);
     field_el.val('');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -1032,7 +1032,7 @@ test("choice back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
 
     $(data).setField('a', 'bar');
     equal(field_el.val(), 'bar');
@@ -1060,7 +1060,7 @@ test("choice back datalink empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
 
     $(data).setField('a', null);
     equal(field_el.val(), '');
@@ -1088,7 +1088,7 @@ test("choice empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
     equal($('option', field_el).length, 3);    
 });
 
@@ -1115,7 +1115,7 @@ test('choice required no empty', function() {
     });
 
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
     equal($('option', field_el).length, 2);
 });
 
@@ -1140,7 +1140,7 @@ test("choice no empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
     equal($('option', field_el).length, 3);
 });
 
@@ -1167,7 +1167,7 @@ test("choice no empty but own empty", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);    
+    var field_el = $('#obviel-field-test-a', form_el);    
     equal($('option', field_el).length, 3);
 });
 
@@ -1195,22 +1195,22 @@ test("field error rendering", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-text', form_el);
+    var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     var ev = new $.Event('change');
     ev.target = field_el;
     field_el.trigger(ev);
     // we now expect the error
-    var error_el = $('.field-error', form_el);
+    var error_el = $('.obviel-field-error', form_el);
     equal(error_el.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
     // and the form displays that there's an error
-    var form_error_el = $('.form-error', el);
+    var form_error_el = $('.obviel-formerror', el);
     equal(form_error_el.text(), '1 field did not validate');
     // the submit buttons are disabled
-    var control_els = $('button[class="form-control"]', el);
+    var control_els = $('button[class="obviel-control"]', el);
     equal(control_els.is(':disabled'), true);
 });
 
@@ -1238,18 +1238,21 @@ test("field error clearing", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-text', form_el);
+    var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     var ev = new $.Event('change');
     ev.target = field_el;
     field_el.trigger(ev);
     // we now expect the error
-    var error_el = $('.field-error', form_el);
+    var error_el = $('.obviel-field-error', form_el);
     equal(error_el.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
-
+    // there's a form error
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '1 field did not validate');
+    
     // now we put in a correct value
     field_el.val('long enough');
     ev = new $.Event('change');
@@ -1260,10 +1263,9 @@ test("field error clearing", function() {
     // the errors object should also be cleared
     equal(errors.text, '');
     // we don't see a form error anymore
-    var form_error_el = $('.form-error', el);
     equal(form_error_el.text(), '');
     // the submit button isn't disabled
-    var control_els = $('button[class="form-control"]', el);
+    var control_els = $('button[class="obviel-control"]', el);
     equal(control_els.is(':disabled'), false);
     
 });
@@ -1292,11 +1294,11 @@ test("field error not seen until submit", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-text', form_el);
+    var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
     // there is no error yet
-    var error_el = $('.field-error', form_el);
+    var error_el = $('.obviel-field-error', form_el);
     equal(error_el.text(), '');
     // don't trigger event but try submitting immediately
     var button_el = $('button', el);
@@ -1306,7 +1308,7 @@ test("field error not seen until submit", function() {
     // it's also in the errors object
     equal(errors.text, 'value too short');
     // and there's a form error
-    var form_error_el = $('.form-error', el);
+    var form_error_el = $('.obviel-formerror', el);
     equal(form_error_el.text(), '1 field did not validate');
 });
 
@@ -1351,7 +1353,7 @@ test("actual submit", function() {
     };
     
     var form_el = $('form', el);
-    var field_el = $('#test-field-text', form_el);
+    var field_el = $('#obviel-field-test-text', form_el);
     field_el.val('foo');
 
     var button_el = $('button', el);
@@ -1404,9 +1406,9 @@ test("actual submit with disabled field", function() {
     };
     
     var form_el = $('form', el);
-    var field_el = $('#test-field-text', form_el);
+    var field_el = $('#obviel-field-test-text', form_el);
     field_el.val('foo');
-    var field2_el = $('field-text2', form_el);
+    var field2_el = $('#obviel-field-test-text2', form_el);
     field2_el.val('bar');
     
     var button_el = $('button', el);
@@ -1446,9 +1448,9 @@ test("existing values", function() {
         },
         data: data
     });
-      var a_el = $('#test-field-a', el);
+      var a_el = $('#obviel-field-test-a', el);
     equal(a_el.val(), 'Something already');
-    var b_el = $('#test-field-b', el);
+    var b_el = $('#obviel-field-test-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1481,9 +1483,9 @@ test("default values", function() {
     });
     equal(data.a, 'A default');
     equal(data.b, 3);
-    var a_el = $('#test-field-a', el);
+    var a_el = $('#obviel-field-test-a', el);
     equal(a_el.val(), 'A default');
-    var b_el = $('#test-field-b', el);
+    var b_el = $('#obviel-field-test-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1516,9 +1518,9 @@ test("default values interacting with existent", function() {
     });
     equal(data.a, 'Something already');
     equal(data.b, 3);
-    var a_el = $('#test-field-a', el);
+    var a_el = $('#obviel-field-test-a', el);
     equal(a_el.val(), 'Something already');
-    var b_el = $('#test-field-b', el);
+    var b_el = $('#obviel-field-test-b', el);
     equal(b_el.val(), '3');
 });
 
@@ -1564,7 +1566,7 @@ test("datepicker datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('01/02/10');
     var ev = new $.Event('change');
     ev.target = field_el;
@@ -1591,7 +1593,7 @@ test("datepicker back datalink", function() {
         data: data
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     $(data).setField('a', '2010-03-04');
     equal(field_el.val(), '03/04/2010');
     $(data).setField('a', null);
@@ -1619,7 +1621,7 @@ test("datepicker datalink conversion error", function() {
         errors: errors
     });
     var form_el = $('form', el);
-    var field_el = $('#test-field-a', form_el);
+    var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not a datetime
     var ev = new $.Event('change');
     ev.target = field_el;
