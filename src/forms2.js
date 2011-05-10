@@ -30,12 +30,12 @@ obviel.forms2 = {};
                 attribute_name.slice(0, 6) == 'jQuery');
     };
     
-    obviel.iface('form2');
+    obviel.iface('viewform');
 
     module.Form = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'form2',
+            iface: 'viewform',
             name: 'default',
             html:
                 '<form ' +
