@@ -3,7 +3,7 @@ $(document).ready(function() {
     var data = {};
     
     $('#testform').render({
-        ifaces: ['form2'],
+        ifaces: ['viewform'],
         form: {
             widgets: [
                 {
