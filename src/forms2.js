@@ -349,7 +349,7 @@ obviel.forms2 = {};
         var field_el = $('#obviel-field-' + widget.prefixed_name,
                          el);
         field_el.link(data, link_context);
-        var error_el = $('.obviel-field-error', el);
+        var error_el = $('#obviel-field-error-' + widget.prefixed_name, el);
         error_el.link(errors, error_link_context);
         
         // if there is a value, update the widget
@@ -441,6 +441,8 @@ obviel.forms2 = {};
     module.CompositeWidget.prototype = new module.Widget;
 
     module.CompositeWidget.prototype.render = function(el, obj, name) {
+        var errors_at_end = obj.errors_at_end;
+        
         $.each(obj.widgets, function(index, sub_widget) {
             if (obj.disabled) {
                 sub_widget.disabled = true;
@@ -453,12 +455,21 @@ obviel.forms2 = {};
                 sub_el.addClass(value);
             });
             sub_el.render(sub_widget, function(el, view, widget, name) {
-                el.append('<div id="obviel-field-error-' +
-                          sub_widget.prefixed_name + '" '+
-                          'class="obviel-field-error"></div>');
+                if (!errors_at_end) {
+                    el.append('<div id="obviel-field-error-' +
+                              sub_widget.prefixed_name + '" '+
+                              'class="obviel-field-error"></div>');
+                }
             });
             el.append(sub_el);
         });
+        if (errors_at_end) {
+            $.each(obj.widgets, function(index, sub_widget) {
+                el.append('<div id="obviel-field-error-' +
+                          sub_widget.prefixed_name + '" ' +
+                          'class="obviel-field-error"></div>');
+            });
+        }
     };
 
     module.CompositeWidget.prototype.link = function(el, widget, data, errors) {
@@ -471,10 +482,13 @@ obviel.forms2 = {};
             sub_errors = errors[widget.name] = {};
         }
         $.each(widget.widgets, function(index, sub_widget) {
-            // XXX relies on the field being two down from the div
+            // we actually parent all the way up to the composite widget,
+            // which is one higher than should be needed for linking except we
+            // want to have the ability to render errors in the end of
+            // a composite widget
             var sub_el = $(
                 '#obviel-field-' +
-                    sub_widget.prefixed_name, el).parent().parent();
+                    sub_widget.prefixed_name, el).parent().parent().parent();
             var view = get_view(sub_widget);
             view.link(sub_el, sub_widget, sub_data, sub_errors);
         });

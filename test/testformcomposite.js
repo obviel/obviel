@@ -16,6 +16,7 @@ $(document).ready(function() {
                     ifaces: ['composite_field'],
                     name: 'comp',
                     title: "Composite",
+                    errors_at_end: true,
                     widgets: [
                         { ifaces: ['integer_field'],
                           name: 'sub1',
