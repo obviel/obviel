@@ -692,6 +692,80 @@ test("composite back datalink", function() {
     equal(field_a_el.val(), '');
 });
 
+
+test("nested composite datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['composite_field'],
+                    name: 'composite',
+                    widgets: [
+                        {
+                            ifaces: ['composite_field'],
+                            name: 'composite',
+                            widgets: [
+                                {
+                                    ifaces: ['textline_field'],
+                                    name: 'a',
+                                    title: 'A'
+             
+                                },
+                                {
+                                    ifaces: ['integer_field'],
+                                    name: 'b',
+                                    title: 'B'
+                                }
+                                
+                            ]
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+                    ]
+                }
+            ]
+        },           
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+    var field_composite_composite_a_el = $(
+        '#obviel-field-test-composite-composite-a', form_el);
+    var field_composite_composite_b_el = $(
+        '#obviel-field-test-composite-composite-b', form_el);
+    var field_composite_b_el = $(
+        '#obviel-field-test-composite-b', form_el);
+    
+    field_composite_composite_a_el.val('foo');
+    field_composite_composite_b_el.val('3');
+    field_composite_b_el.val('4');
+    
+    var ev = new $.Event('change');
+    ev.target = field_composite_composite_a_el;
+    field_composite_composite_a_el.trigger(ev);
+
+    ev = new $.Event('change');
+    ev.target = field_composite_composite_b_el;
+    field_composite_composite_b_el.trigger(ev);
+    
+    ev = new $.Event('change');
+    ev.target = field_composite_b_el;
+    field_composite_b_el.trigger(ev);
+
+    equal(data.composite.composite.a, 'foo');
+    equal(data.composite.composite.b, 3);
+    equal(data.composite.b, 4);
+});
+
 test("textline datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 

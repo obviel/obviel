@@ -442,6 +442,8 @@ obviel.forms2 = {};
 
     module.CompositeWidget.prototype.render = function(el, obj, name) {
         var errors_at_end = obj.errors_at_end;
+
+        var field_el = $('<div id="obviel-field-' + obj.prefixed_name + '">');
         
         $.each(obj.widgets, function(index, sub_widget) {
             if (obj.disabled) {
@@ -461,15 +463,16 @@ obviel.forms2 = {};
                               'class="obviel-field-error"></div>');
                 }
             });
-            el.append(sub_el);
+            field_el.append(sub_el);
         });
         if (errors_at_end) {
             $.each(obj.widgets, function(index, sub_widget) {
-                el.append('<div id="obviel-field-error-' +
-                          sub_widget.prefixed_name + '" ' +
-                          'class="obviel-field-error"></div>');
+                field_el.append('<div id="obviel-field-error-' +
+                                sub_widget.prefixed_name + '" ' +
+                                'class="obviel-field-error"></div>');
             });
         }
+        el.append(field_el);
     };
 
     module.CompositeWidget.prototype.link = function(el, widget, data, errors) {
