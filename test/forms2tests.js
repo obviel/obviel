@@ -589,6 +589,109 @@ test('decimal validate', function() {
     equal(widget.validate(widget_data, null), undefined);
 });
 
+test("composite datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['composite_field'],
+                    name: 'composite',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-composite-a', form_el);
+    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    
+    field_a_el.val('foo');
+    field_b_el.val('not an int'); // not an int
+    var ev = new $.Event('change');
+    ev.target = field_a_el;
+    field_a_el.trigger(ev);
+    ev = new $.Event('change');
+    ev.target = field_b_el;
+    field_b_el.trigger(ev);
+
+    equal(errors.composite.a, '');
+    equal(errors.composite.b, 'not a number');
+    equal(data.composite.a, 'foo');
+    equal(data.composite.b, undefined); // conversion failed so undefined
+
+    // now put in the right value
+    field_b_el.val('3');
+    ev = new $.Event('change');
+    ev.target = field_b_el;
+    field_b_el.trigger(ev);
+    equals(errors.composite.b, '');
+    equals(data.composite.b, 3);
+});
+
+test("composite back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['composite_field'],
+                    name: 'composite',
+                    title: 'Test',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-composite-a', form_el);
+    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    $(data.composite).setField('a', 'Bar');
+    $(data.composite).setField('b', 3);
+    
+    equal(field_a_el.val(), 'Bar');
+    equal(field_b_el.val(), '3');
+    
+    $(data.composite).setField('a', null);
+    equal(field_a_el.val(), '');
+});
+
 test("textline datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -660,6 +763,7 @@ test("integer datalink conversion error", function() {
             }]
         },
         data: data,
+        
         errors: errors
     });
     var form_el = $('form', el);

@@ -169,6 +169,9 @@ obviel.forms2 = {};
         });
         
         // add in label
+        if (widget.title === undefined) {
+            widget.title = '';
+        }
         field_el.prepend('<label for="obviel-field-' +
                          widget.prefixed_name + '">' +
                          entitize(widget.title) +
@@ -468,7 +471,10 @@ obviel.forms2 = {};
             sub_errors = errors[widget.name] = {};
         }
         $.each(widget.widgets, function(index, sub_widget) {
-            var sub_el = $('#obviel-field-' + sub_widget.prefixed_name, el);
+            // XXX relies on the field being two down from the div
+            var sub_el = $(
+                '#obviel-field-' +
+                    sub_widget.prefixed_name, el).parent().parent();
             var view = get_view(sub_widget);
             view.link(sub_el, sub_widget, sub_data, sub_errors);
         });
