@@ -141,7 +141,7 @@ obviel.forms2 = {};
             fieldset_el = $('<div class="obviel-form-mainfields"></div>');
         }
         $.each(group.widgets, function(index, widget) {
-            widget.prefix = form_name;
+            widget.prefixed_name = form_name + '-' + widget.name;
             fieldset_el.append(self.render_widget(widget,
                                                   data, errors, disabled));
         });
@@ -161,14 +161,16 @@ obviel.forms2 = {};
 
         field_el.render(widget, function(el, view, widget, name) {
             // add in error area
-            el.append('<div id="obviel-field-error-' + widget.prefix + '-' + widget.name + '" '+
+            el.append('<div id="obviel-field-error-' +
+                      widget.prefixed_name + '" '+
                       'class="obviel-field-error"></div>');
             // now link everything up
             view.link(el, widget, data, errors);
         });
         
         // add in label
-        field_el.prepend('<label for="field-' + widget.name + '">' +
+        field_el.prepend('<label for="obviel-field-' +
+                         widget.prefixed_name + '">' +
                          entitize(widget.title) +
                          '</label>');
         
@@ -328,20 +330,20 @@ obviel.forms2 = {};
         
         link_context[widget.name] = {
             twoWay: true,
-            name: 'obviel-field-' + widget.prefix + '-' + widget.name,
+            name: 'obviel-field-' + widget.prefixed_name,
             convert: convert_wrapper,
             convertBack: convert_back_wrapper
         };
         error_link_context[widget.name] = {
             twoWay: true,
-            name: 'obviel-field-error-' + widget.prefix + '-' + widget.name,
+            name: 'obviel-field-error-' + widget.prefixed_name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
             }
         };
 
         // set up actual links
-        var field_el = $('#obviel-field-' + widget.prefix + '-' + widget.name,
+        var field_el = $('#obviel-field-' + widget.prefixed_name,
                          el);
         field_el.link(data, link_context);
         var error_el = $('.obviel-field-error', el);
@@ -415,7 +417,7 @@ obviel.forms2 = {};
     module.Widget.prototype.change = function(widget) {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#obviel-field-' + widget.prefix + '-' + widget.name);
+        var field_el = $('#obviel-field-' + widget.prefixed_name);
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
@@ -440,15 +442,16 @@ obviel.forms2 = {};
             if (obj.disabled) {
                 sub_widget.disabled = true;
             }
-            sub_widget.prefix = obj.prefix + '-' + obj.name;
-            var new_prefix = sub_widget.prefix + '-' + sub_widget.name;
-
+            sub_widget.prefixed_name = (obj.prefixed_name +
+                                        '-' + sub_widget.name);
+            
             var sub_el = $('<div class="obviel-field obviel-subfield">');
             $.each(sub_widget.ifaces, function(i, value) {
                 sub_el.addClass(value);
             });
             sub_el.render(sub_widget, function(el, view, widget, name) {
-                el.append('<div id="obviel-field-error-' + new_prefix + '" '+
+                el.append('<div id="obviel-field-error-' +
+                          sub_widget.prefixed_name + '" '+
                           'class="obviel-field-error"></div>');
             });
             el.append(sub_el);
@@ -465,8 +468,7 @@ obviel.forms2 = {};
             sub_errors = errors[widget.name] = {};
         }
         $.each(widget.widgets, function(index, sub_widget) {
-            var sub_el = $('#obviel-field-' + sub_widget.prefix +
-                           '-' + sub_widget.name, el);
+            var sub_el = $('#obviel-field-' + sub_widget.prefixed_name, el);
             var view = get_view(sub_widget);
             view.link(sub_el, sub_widget, sub_data, sub_errors);
         });
@@ -488,7 +490,7 @@ obviel.forms2 = {};
             iface: 'input_field',
             jsont:
                 '<div class="obviel-field-input">' +
-                '<input type="text" name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}" ' +
+                '<input type="text" name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
                 '{.section max_length}' +
@@ -593,7 +595,7 @@ obviel.forms2 = {};
             iface: 'text_field',
             jsont:
             '<div class="field-input">' +
-            '<textarea name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
+            '<textarea name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
@@ -855,7 +857,7 @@ obviel.forms2 = {};
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
-            '<input type="checkbox" name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
+            '<input type="checkbox" name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
             '{.end}{.end}</div>'
@@ -886,7 +888,7 @@ obviel.forms2 = {};
             iface: 'choice_field',
             jsont:
             '<div class="field-input">' +
-            '<select name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
+            '<select name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '{.section empty_option}' +
