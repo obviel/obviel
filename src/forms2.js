@@ -83,11 +83,11 @@ obviel.forms2 = {};
             auto_name++;
             obj.form.name = form_name;
         }
-        self.render_widgets(el, obj, form_name);
-        self.render_controls(el, obj, form_name);
+        self.render_widgets(el, obj);
+        self.render_controls(el, obj);
     };
 
-    module.Form.prototype.render_widgets = function(el, obj, form_name) {
+    module.Form.prototype.render_widgets = function(el, obj) {
         var self = this;
         var is_new = false;
         if (!obj.data) {
@@ -107,7 +107,7 @@ obviel.forms2 = {};
         
         $.each(groups, function(index, group) {
             fields_el.append(self.render_group(
-                group, form_name, obj.data, obj.errors, obj.form.disabled));
+                group, obj.form.name, obj.data, obj.errors, obj.form.disabled));
         });
     };
 
@@ -129,7 +129,7 @@ obviel.forms2 = {};
             fieldset_el = $('<div class="obviel-form-mainfields"></div>');
         }
         $.each(group.widgets, function(index, widget) {
-            widget.form_name = form_name;
+            widget.prefix = form_name;
             fieldset_el.append(self.render_widget(widget,
                                                   data, errors, disabled));
         });
@@ -147,24 +147,12 @@ obviel.forms2 = {};
             widget.disabled = true;
         }
 
-        var linked_data = $(data);
-
         field_el.render(widget, function(el, view, widget, name) {
             // add in error area
-            el.append('<div id="obviel-field-error-' + widget.form_name + '-' + widget.name + '" '+
+            el.append('<div id="obviel-field-error-' + widget.prefix + '-' + widget.name + '" '+
                       'class="obviel-field-error"></div>');
             // now link everything up
             view.link(el, widget, data, errors);
-            // if there is a value, update the widget
-            var existing_value = data[widget.name];
-            if (existing_value !== undefined) {
-                linked_data.setField(widget.name, existing_value);
-            } else {
-                // no value, see whether we need to set the default value
-                if (widget.defaultvalue !== undefined) {
-                    linked_data.setField(widget.name, widget.defaultvalue);
-                }
-            }
         });
         
         // add in label
@@ -290,7 +278,7 @@ obviel.forms2 = {};
     };
 
     module.Widget.prototype = new obviel.View;
-
+    
     module.Widget.prototype.render = function(el, obj, name) {
 
     };
@@ -300,10 +288,10 @@ obviel.forms2 = {};
             return;
         }
         var self = this;
-        
+
+        // prepare converters and back converters
         var link_context = {};
         var error_link_context = {};
-
         var convert_wrapper = function(value, source, target) {
             var result = self.handle_convert(widget, value, source, target);
             if (result.error) {
@@ -330,16 +318,30 @@ obviel.forms2 = {};
         };
         error_link_context[widget.name] = {
             twoWay: true,
-            name: 'obviel-field-error-' + widget.form_name + '-' + widget.name,
+            name: 'obviel-field-error-' + widget.prefix + '-' + widget.name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
             }
         };
 
+        // set up actual links
         var field_el = $('[name=' + widget.name + ']', el);
         field_el.link(data, link_context);
         var error_el = $('.obviel-field-error', el);
         error_el.link(errors, error_link_context);
+        
+        // if there is a value, update the widget
+        var linked_data = $(data);
+        var existing_value = data[widget.name];
+        if (existing_value !== undefined) {
+            linked_data.setField(widget.name, existing_value);
+        } else {
+            // no value, see whether we need to set the default value
+            if (widget.defaultvalue !== undefined) {
+                linked_data.setField(widget.name, widget.defaultvalue);
+            }
+        }
+
     };
 
     module.Widget.prototype.handle_convert = function(widget, value,
@@ -396,7 +398,7 @@ obviel.forms2 = {};
     module.Widget.prototype.change = function(widget) {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#obviel-field-' + widget.form_name + '-' + widget.name);
+        var field_el = $('#obviel-field-' + widget.prefix + '-' + widget.name);
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
@@ -417,11 +419,53 @@ obviel.forms2 = {};
     module.CompositeWidget.prototype = new module.Widget;
 
     module.CompositeWidget.prototype.render = function(el, obj, name) {
- 
+        $.each(this.widgets, function(index, sub_widget) {
+            var sub_el = $('<div class="obviel-sub-field">');
+            var sub_widget_data = obj[widget.name] || {};
+            sub_widget_data.prefix = widget.prefix + '-' + widget.name;
+            var new_prefix = sub_widget_data.prefix + '-' + sub_widget.name;
+            sub_el.render(sub_widget_data, function(el, view, widget, name) {
+                el.append('<div id="obviel-field-error-' + new_prefix + '" '+
+                          'class="obviel-field-error"></div>');
+                // XXX how? treat sub-data as single value?
+                // convert & back convert of dictionary?
+                // XXX move more widget rendering logic from form to
+                // widget?
+                // XXX how to get data?
+                // if there is a value, update the widget
+                // var sub_name = sub_widget_data.name;
+                // var existing_value = data[sub_name];
+                // if (existing_value !== undefined) {
+                //     // this won't work, we want to do setField for each
+                //     // entry?
+                //     linked_data.setField(sub_name, existing_value);
+                // } else {
+                //     // no value, see whether we need to set the default value
+                //     if (widget.defaultvalue !== undefined) {
+                //         linked_data.setField(sub_name, widget.defaultvalue);
+                //     }
+                // }
+            });
+            el.append(sub_el);
+        });
     };
 
     module.CompositeWidget.prototype.link = function(el, widget, data, errors) {
-        
+        var sub_data = data[widget.name];
+        var sub_errors = errors[widget.name];
+        if (sub_data === undefined) {
+            sub_data = data[widget.name] = {};
+        }
+        if (sub_errors === undefined) {
+            sub_errors = errors[widget.name] = {};
+        }
+        $.each(this.widgets, function(index, sub_widget) {
+            var sub_widget_data = widget[widget.name] || {};
+            sub_widget_data.prefix = widget.prefix + '-' + widget.name;
+            var sub_el = $('#obviel-form-' + sub_widget_data.prefix + '-' +
+                           sub_widget_data.name);
+            sub_widget.link(sub_el, sub_widget_data, sub_data, sub_errors);
+        });
     };
     
     obviel.iface('input_field', 'widget');
@@ -431,7 +475,7 @@ obviel.forms2 = {};
             iface: 'input_field',
             jsont:
                 '<div class="obviel-field-input">' +
-                '<input type="text" name="{name}" id="obviel-field-{form_name}-{name}" ' +
+                '<input type="text" name="{name}" id="obviel-field-{prefix}-{name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
                 '{.section max_length}' +
@@ -536,7 +580,7 @@ obviel.forms2 = {};
             iface: 'text_field',
             jsont:
             '<div class="field-input">' +
-            '<textarea name="{name}" id="obviel-field-{form_name}-{name}"' +
+            '<textarea name="{name}" id="obviel-field-{prefix}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
@@ -798,7 +842,7 @@ obviel.forms2 = {};
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
-            '<input type="checkbox" name="{name}" id="obviel-field-{form_name}-{name}"' +
+            '<input type="checkbox" name="{name}" id="obviel-field-{prefix}-{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
             '{.end}{.end}</div>'
@@ -829,7 +873,7 @@ obviel.forms2 = {};
             iface: 'choice_field',
             jsont:
             '<div class="field-input">' +
-            '<select name="{name}" id="obviel-field-{form_name}-{name}"' +
+            '<select name="{name}" id="obviel-field-{prefix}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '{.section empty_option}' +
