@@ -52,18 +52,30 @@ obviel.forms2 = {};
     module.Form.prototype = new obviel.View;
 
     var auto_name = 0;
+
+    module.Form.prototype.count_errors = function(errors) {
+        var self = this;
+        var result = 0;
+        $.each(errors, function(key, value) {
+            if (is_internal(key)) {
+                return true;
+            }
+            if ($.isPlainObject(value)) {
+                result += self.count_errors(value);
+            } else if (value) {
+                result++;
+            }
+            return true;
+        });
+        return result;
+    };
     
     module.Form.prototype.render = function(el, obj, name) {
         var self = this;
     
         obj.errors = obj.errors || {};
         $(el).bind('form-change.obviel', function(ev) {
-            var error_count = 0;
-            $.each(obj.errors, function(key, value) {
-                if (!is_internal(key) && value) {
-                    error_count++;
-                }
-            });
+            var error_count = self.count_errors(obj.errors);
             if (error_count > 0) {
                 var msg = Gettext.strargs(gt.ngettext(
                     "1 field did not validate",
@@ -79,7 +91,7 @@ obviel.forms2 = {};
 
         var form_name = obj.form.name;
         if (form_name === undefined) {
-            form_name = 'auto-' + auto_name.toString();
+            form_name = 'auto' + auto_name.toString();
             auto_name++;
             obj.form.name = form_name;
         }
@@ -249,19 +261,22 @@ obviel.forms2 = {};
         
         $.each(groups, function(index, group) {
             $.each(group.widgets, function(index, widget) {
-                // XXX hack to look up view...
-                var ifaces = obviel.ifaces(widget);
-                for (var i=0; i < ifaces.length; i++) {
-                    var iviews = obviel._views[ifaces[i]];
-                    if (iviews) {
-                        var view = iviews['default'];
-                        // finally trigger change
-                        view.change(widget);
-                        return;
-                    }
-                }
+                var view = get_view(widget);
+                view.change(widget);
             });
         });
+    };
+
+    // XXX hack to look up view for widget, should go to obviel somehow
+    var get_view = function(widget) {
+        var ifaces = obviel.ifaces(widget);
+        for (var i=0; i < ifaces.length; i++) {
+            var iviews = obviel._views[ifaces[i]];
+            if (iviews) {
+                return iviews['default'];
+            }
+        }
+        return null;
     };
     
     obviel.view(new module.Form());
@@ -313,6 +328,7 @@ obviel.forms2 = {};
         
         link_context[widget.name] = {
             twoWay: true,
+            name: 'obviel-field-' + widget.prefix + '-' + widget.name,
             convert: convert_wrapper,
             convertBack: convert_back_wrapper
         };
@@ -325,7 +341,8 @@ obviel.forms2 = {};
         };
 
         // set up actual links
-        var field_el = $('[name=' + widget.name + ']', el);
+        var field_el = $('#obviel-field-' + widget.prefix + '-' + widget.name,
+                         el);
         field_el.link(data, link_context);
         var error_el = $('.obviel-field-error', el);
         error_el.link(errors, error_link_context);
@@ -404,12 +421,12 @@ obviel.forms2 = {};
         field_el.trigger(ev);
     };
 
-    obviel.iface('composite_widget', 'widget');
+    obviel.iface('composite_field', 'widget');
     // base for composite widgets combining other widgets
     module.CompositeWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'composite_widget'
+            iface: 'composite_field'
         };
         // horizontal or vertical rendering support?
         $.extend(d, settings);
@@ -419,32 +436,20 @@ obviel.forms2 = {};
     module.CompositeWidget.prototype = new module.Widget;
 
     module.CompositeWidget.prototype.render = function(el, obj, name) {
-        $.each(this.widgets, function(index, sub_widget) {
-            var sub_el = $('<div class="obviel-sub-field">');
-            var sub_widget_data = obj[widget.name] || {};
-            sub_widget_data.prefix = widget.prefix + '-' + widget.name;
-            var new_prefix = sub_widget_data.prefix + '-' + sub_widget.name;
-            sub_el.render(sub_widget_data, function(el, view, widget, name) {
+        $.each(obj.widgets, function(index, sub_widget) {
+            if (obj.disabled) {
+                sub_widget.disabled = true;
+            }
+            sub_widget.prefix = obj.prefix + '-' + obj.name;
+            var new_prefix = sub_widget.prefix + '-' + sub_widget.name;
+
+            var sub_el = $('<div class="obviel-field obviel-subfield">');
+            $.each(sub_widget.ifaces, function(i, value) {
+                sub_el.addClass(value);
+            });
+            sub_el.render(sub_widget, function(el, view, widget, name) {
                 el.append('<div id="obviel-field-error-' + new_prefix + '" '+
                           'class="obviel-field-error"></div>');
-                // XXX how? treat sub-data as single value?
-                // convert & back convert of dictionary?
-                // XXX move more widget rendering logic from form to
-                // widget?
-                // XXX how to get data?
-                // if there is a value, update the widget
-                // var sub_name = sub_widget_data.name;
-                // var existing_value = data[sub_name];
-                // if (existing_value !== undefined) {
-                //     // this won't work, we want to do setField for each
-                //     // entry?
-                //     linked_data.setField(sub_name, existing_value);
-                // } else {
-                //     // no value, see whether we need to set the default value
-                //     if (widget.defaultvalue !== undefined) {
-                //         linked_data.setField(sub_name, widget.defaultvalue);
-                //     }
-                // }
             });
             el.append(sub_el);
         });
@@ -459,15 +464,23 @@ obviel.forms2 = {};
         if (sub_errors === undefined) {
             sub_errors = errors[widget.name] = {};
         }
-        $.each(this.widgets, function(index, sub_widget) {
-            var sub_widget_data = widget[widget.name] || {};
-            sub_widget_data.prefix = widget.prefix + '-' + widget.name;
-            var sub_el = $('#obviel-form-' + sub_widget_data.prefix + '-' +
-                           sub_widget_data.name);
-            sub_widget.link(sub_el, sub_widget_data, sub_data, sub_errors);
+        $.each(widget.widgets, function(index, sub_widget) {
+            var sub_el = $('#obviel-field-' + sub_widget.prefix +
+                           '-' + sub_widget.name, el);
+            var view = get_view(sub_widget);
+            view.link(sub_el, sub_widget, sub_data, sub_errors);
+        });
+    };
+
+    module.CompositeWidget.prototype.change = function(widget) {
+        $.each(widget.widgets, function(index, sub_widget) {
+            var view = get_view(sub_widget);
+            view.change(sub_widget);
         });
     };
     
+    obviel.view(new module.CompositeWidget());
+
     obviel.iface('input_field', 'widget');
     module.InputWidget = function(settings) {
         settings = settings || {};
@@ -475,7 +488,7 @@ obviel.forms2 = {};
             iface: 'input_field',
             jsont:
                 '<div class="obviel-field-input">' +
-                '<input type="text" name="{name}" id="obviel-field-{prefix}-{name}" ' +
+                '<input type="text" name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
                 '{.section max_length}' +
@@ -490,7 +503,7 @@ obviel.forms2 = {};
         $.extend(d, settings);
         module.Widget.call(this, d);        
     };
-    
+
     module.InputWidget.prototype = new module.Widget;
 
     module.InputWidget.prototype.convert = function(widget, value) {
@@ -580,7 +593,7 @@ obviel.forms2 = {};
             iface: 'text_field',
             jsont:
             '<div class="field-input">' +
-            '<textarea name="{name}" id="obviel-field-{prefix}-{name}"' +
+            '<textarea name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
@@ -842,7 +855,7 @@ obviel.forms2 = {};
             '<div class="field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
-            '<input type="checkbox" name="{name}" id="obviel-field-{prefix}-{name}"' +
+            '<input type="checkbox" name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
             '{.section disabled} disabled="disabled"{.end} />' +
             '{.section label}{.section label_before_input}{.or}{label}' +
             '{.end}{.end}</div>'
@@ -873,7 +886,7 @@ obviel.forms2 = {};
             iface: 'choice_field',
             jsont:
             '<div class="field-input">' +
-            '<select name="{name}" id="obviel-field-{prefix}-{name}"' +
+            '<select name="obviel-field-{prefix}-{name}" id="obviel-field-{prefix}-{name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
             '{.section empty_option}' +
