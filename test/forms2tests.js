@@ -926,6 +926,125 @@ test("repeating back datalink", function() {
 });
 
 
+var change = function(el) {
+    var ev = new $.Event('change');
+    ev.target = el;
+    el.trigger(ev);
+};
+
+test("repeating remove item", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+    add_button.trigger('click');
+    add_button.trigger('click');
+    
+    equal(data.repeating.length, 3);
+    equal(errors.repeating.length, 3);
+    
+    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+
+    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
+    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    
+    var field_2_a_el = $('#obviel-field-test-repeating-2-a', form_el);
+    var field_2_b_el = $('#obviel-field-test-repeating-2-b', form_el);
+    
+    
+    field_0_a_el.val('foo');
+    field_0_b_el.val('10');
+    field_1_a_el.val('bar');
+    field_1_b_el.val('20');
+    field_2_a_el.val('baz');
+    field_2_b_el.val('30');
+
+    change(field_0_a_el);
+    change(field_0_b_el);
+    change(field_1_a_el);
+    change(field_1_b_el);
+    change(field_2_a_el);
+    change(field_2_b_el);
+    
+    equal(data.repeating[0].a, 'foo');
+    equal(data.repeating[0].b, 10);
+    equal(data.repeating[1].a, 'bar');
+    equal(data.repeating[1].b, 20);
+    equal(data.repeating[2].a, 'baz');
+    equal(data.repeating[2].b, 30);
+
+    // now remove entry indexed 1
+    var remove_button = $('.obviel-repeat-remove-button',
+                          field_1_a_el.parent().parent().parent().parent());
+    remove_button.trigger('click');
+
+    equals(data.repeating.length, 2);
+    equals(errors.repeating.length, 2);
+
+    equal(data.repeating[0].a, 'foo');
+    equal(data.repeating[0].b, 10);
+    equal(data.repeating[1].a, 'baz');
+    equal(data.repeating[1].b, 30);
+
+    // do some modifications, should end up in the right place
+    field_0_a_el.val('qux');
+    field_0_b_el.val('11');
+    field_2_a_el.val('hoi');
+    field_2_b_el.val('44');
+
+    change(field_0_a_el);
+    change(field_0_b_el);
+    change(field_2_a_el);
+    change(field_2_b_el);
+
+    equal(data.repeating[0].a, 'qux');
+    equal(data.repeating[0].b, 11);
+    equal(data.repeating[1].a, 'hoi');
+    equal(data.repeating[1].b, 44);
+
+    // now add a field again, new entry should show up with higher number
+    // than seen before, to avoid overlap
+    add_button.trigger('click');
+    var field_3_a_el = $('#obviel-field-test-repeating-3-a', form_el);
+    var field_3_b_el = $('#obviel-field-test-repeating-3-b', form_el);
+    equal(field_3_a_el.length, 1);
+    equal(field_3_b_el.length, 1);
+    equal(data.repeating.length, 3);
+});
+
+
 test("textline datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 

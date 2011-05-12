@@ -527,7 +527,8 @@ obviel.forms2 = {};
     };
 
     module.RepeatingWidget.prototype.add_item = function(widget,
-                                                         data, errors, index) {
+                                                         data, errors, index,
+                                                         remove_func) {
         var repeat_el = $('<div class="obviel-field obviel-repeatfield">');
         var composite_widget = {
             ifaces: ['composite_field'],
@@ -540,9 +541,7 @@ obviel.forms2 = {};
         var remove_button = $('<button class="obviel-repeat-remove-button" ' +
                               'type="button">-</button>');
         remove_button.click(function() {
-            // XXX does this remove data link? what if something with
-            // same id gets added later?
-            remove_button.parent().remove();
+            remove_func($(this));
         });
         repeat_el.append(remove_button);
         var view = get_view(composite_widget);
@@ -551,17 +550,33 @@ obviel.forms2 = {};
         view.link(repeat_el, composite_widget, {dummy: data}, {dummy: errors});
         return repeat_el;
     };
+
+    var remove_func_helper = function(remove_button, data, errors,
+                                      name, items, error_items,
+                                      new_item, new_error_item) {
+        remove_button.parent().remove();
+        var new_items = [];
+        var new_error_items = [];
+        $.each(items, function(index, item) {
+            if (item === new_item) {
+                return;
+            }
+            new_items.push(item);
+            return;
+        });
+        $.each(error_items, function(index, item) {
+            if (item === new_error_item) {
+                return;
+            }
+            new_error_items.push(item);
+            return;
+        });
+        data[name] = new_items;
+        errors[name] = new_error_items;
+    };
     
     module.RepeatingWidget.prototype.link = function(el, widget, data, errors) {
         var self = this;
-        var items = data[widget.name];
-        var error_items = errors[widget.name];
-        if (items === undefined) {
-            items = data[widget.name] = [];
-        }
-        if (error_items == undefined) {
-            error_items = errors[widget.name] = [];
-        }
         
         // XXX needs better UI
         var field_el = $('#obviel-field-' + widget.prefixed_name, el);
@@ -574,23 +589,45 @@ obviel.forms2 = {};
             var new_error_item = {};
             // XXX length calculation will fail after removing is enabled
             var new_index = field_el.data('obviel.repeat-index');
-            items.push(new_item);
-            error_items.push(new_error_item);
+            data[widget.name].push(new_item);
+            errors[widget.name].push(new_error_item);
+            var remove_func = function(remove_button) {
+                remove_func_helper(remove_button,
+                                   data, errors, widget.name,
+                                   data[widget.name], errors[widget.name],
+                                   new_item, new_error_item);
+            };
             var new_el = self.add_item(widget, new_item, new_error_item,
-                                       new_index);
+                                       new_index, remove_func);
             repeat_button.before(new_el);
             field_el.data('obviel.repeat-index', new_index + 1);
         });
         
         // XXX need to actually manipulate the contents as only here
         // do we know the data?
+        var items = data[widget.name];
+        var error_items = errors[widget.name];
+        if (items === undefined) {
+            items = data[widget.name] = [];
+        }
+        if (error_items == undefined) {
+            error_items = errors[widget.name] = [];
+        }
+
         $.each(items, function(index, item) {
             var error_item = error_items[index];
             if (error_item === undefined) {
                 error_item = {};
                 error_items.push(error_item);
             }
-            var new_el = self.add_item(widget, item, error_item, index);
+            var remove_func = function(remove_button) {
+                remove_func_helper(remove_button,
+                                   data, errors, widget.name,
+                                   items, error_items,
+                                   item, error_item);
+            };
+            var new_el = self.add_item(widget, item, error_item,
+                                       index, remove_func);
             repeat_button.before(new_el);
         });
         field_el.data('obviel.repeat-index', items.length);
