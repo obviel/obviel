@@ -527,20 +527,31 @@ obviel.forms2 = {};
         var repeat_el = $('<div class="obviel-field obviel-repeatfield">');
         var composite_widget = {
             ifaces: ['composite_field'],
+            name: 'dummy',
             widgets: widget.widgets,
-            disabled:widget.disabled,
+            disabled: widget.disabled,
             prefixed_name: widget.prefixed_name + '-' + index.toString()
         };
         repeat_el.render(composite_widget);
+        var remove_button = $('<button class="obviel-repeat-remove-button" ' +
+                              'type="button">-</button>');
+        remove_button.click(function() {
+            // XXX does this remove data link? what if something with
+            // same id gets added later?
+            remove_button.parent().remove();
+        });
+        repeat_el.append(remove_button);
         var view = get_view(composite_widget);
-        view.link(repeat_el, composite_widget, data, errors);
+        // XXX a hack to make sure the composite widget gets out
+        // the data and errors in question
+        view.link(repeat_el, composite_widget, {dummy: data}, {dummy: errors});
         return repeat_el;
     };
     
     module.RepeatingWidget.prototype.link = function(el, widget, data, errors) {
         var self = this;
         var items = data[widget.name];
-        var error_items = data[widget.name];
+        var error_items = errors[widget.name];
         if (items === undefined) {
             items = data[widget.name] = [];
         }
@@ -549,9 +560,8 @@ obviel.forms2 = {};
         }
         
         // XXX needs better UI
-        // XXX need way to remove items
         var field_el = $('#obviel-field-' + widget.prefixed_name, el);
-        var repeat_button = $('<button class="obviel-repeat-button" ' +
+        var repeat_button = $('<button class="obviel-repeat-add-button" ' +
                               'type="button">+</button>');
         field_el.append(repeat_button);
         
@@ -559,21 +569,27 @@ obviel.forms2 = {};
             var new_item = {};
             var new_error_item = {};
             // XXX length calculation will fail after removing is enabled
-            var new_index = items.length;
+            var new_index = field_el.data('obviel.repeat-index');
             items.push(new_item);
             error_items.push(new_error_item);
             var new_el = self.add_item(widget, new_item, new_error_item,
                                        new_index);
             repeat_button.before(new_el);
+            field_el.data('obviel.repeat-index', new_index + 1);
         });
         
         // XXX need to actually manipulate the contents as only here
         // do we know the data?
         $.each(items, function(index, item) {
             var error_item = error_items[index];
+            if (error_item === undefined) {
+                error_item = {};
+                error_items.push(error_item);
+            }
             var new_el = self.add_item(widget, item, error_item, index);
             repeat_button.before(new_el);
         });
+        field_el.data('obviel.repeat-index', items.length);
     };
 
     module.RepeatingWidget.prototype.change = function(widget) {
@@ -581,6 +597,13 @@ obviel.forms2 = {};
         // find outer element by id and then find sub-elements by class?
         // what about nesting situation though? means class needs to
         // have iteration depth in it?
+        var field_el = $('#obviel-field-' + widget.prefixed_name, el);
+        field_el.each(function(index, el) {
+            if (el.hasClass('obviel-repeatfield')) {
+                var viewstack = el.data('obviel.viewstack');
+                var data = viewstack[viewstack.length - 1];
+            }
+        });
     };
     
     obviel.view(new module.RepeatingWidget());

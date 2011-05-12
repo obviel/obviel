@@ -766,6 +766,166 @@ test("nested composite datalink", function() {
     equal(data.composite.b, 4);
 });
 
+test("repeating entries show up", function() {
+    var el = $('#viewdiv');
+    var data = {repeating: [{a: 'foo', b: 1}, {a: 'bar', b: 2}]}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
+    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+
+    equal(field_0_a_el.val(), 'foo');
+    equal(field_0_b_el.val(), '1');
+    equal(field_1_a_el.val(), 'bar');
+    equal(field_1_b_el.val(), '2');
+
+});
+
+test("repeating datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+
+    equal(data.repeating.length, 1);
+    equal(errors.repeating.length, 1);
+    
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    
+    field_a_el.val('foo');
+    field_b_el.val('not an int'); // not an int
+    var ev = new $.Event('change');
+    ev.target = field_a_el;
+    field_a_el.trigger(ev);
+    ev = new $.Event('change');
+    ev.target = field_b_el;
+    field_b_el.trigger(ev);
+
+    equal(errors.repeating[0].a, '');
+    equal(errors.repeating[0].b, 'not a number');
+    equal(data.repeating[0].a, 'foo');
+    equal(data.repeating[0].b, undefined); // conversion failed so undefined
+
+    // now put in the right value
+    field_b_el.val('3');
+    ev = new $.Event('change');
+    ev.target = field_b_el;
+    field_b_el.trigger(ev);
+    equals(errors.repeating[0].b, '');
+    equals(data.repeating[0].b, 3);
+});
+
+test("repeating back datalink", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    title: 'Test',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+    
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    
+    $(data.repeating[0]).setField('a', 'Bar');
+    $(data.repeating[0]).setField('b', 3);
+    
+    equal(field_a_el.val(), 'Bar');
+    equal(field_b_el.val(), '3');
+    
+    $(data.repeating[0]).setField('a', null);
+    equal(field_a_el.val(), '');
+});
+
+
 test("textline datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
