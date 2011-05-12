@@ -1049,6 +1049,122 @@ test("repeating remove item", function() {
     equal(data.repeating.length, 3);
 });
 
+test("repeating removing added item from data", function() {
+    var el = $('#viewdiv');
+    var data = {repeating: [
+        {a: 'foo', b: 10},
+        {a: 'bar', b: 20},
+        {a: 'baz', b: 30}
+    ]}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+    
+    equal(data.repeating.length, 3);
+    equal(errors.repeating.length, 3);
+    
+    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+
+    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
+    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    
+    var field_2_a_el = $('#obviel-field-test-repeating-2-a', form_el);
+    var field_2_b_el = $('#obviel-field-test-repeating-2-b', form_el);
+    
+    field_0_a_el.val('foo-changed');
+    field_0_b_el.val('11');
+    field_1_a_el.val('bar-changed');
+    field_1_b_el.val('21');
+    field_2_a_el.val('baz-changed');
+    field_2_b_el.val('31');
+
+    change(field_0_a_el);
+    change(field_0_b_el);
+    change(field_1_a_el);
+    change(field_1_b_el);
+    change(field_2_a_el);
+    change(field_2_b_el);
+    
+    equal(data.repeating[0].a, 'foo-changed');
+    equal(data.repeating[0].b, 11);
+    equal(data.repeating[1].a, 'bar-changed');
+    equal(data.repeating[1].b, 21);
+    equal(data.repeating[2].a, 'baz-changed');
+    equal(data.repeating[2].b, 31);
+
+    // now remove entry indexed 1
+    var remove_button = $('.obviel-repeat-remove-button',
+                          field_1_a_el.parent().parent().parent().parent());
+    remove_button.trigger('click');
+
+    equals(data.repeating.length, 2);
+    equals(errors.repeating.length, 2);
+
+    field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
+    field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    equal(field_1_a_el.length, 0);
+    equal(field_1_b_el.length, 0);
+    
+    equal(data.repeating[0].a, 'foo-changed');
+    equal(data.repeating[0].b, 11);
+    equal(data.repeating[1].a, 'baz-changed');
+    equal(data.repeating[1].b, 31);
+
+    // do some modifications, should end up in the right place
+    field_0_a_el.val('qux');
+    field_0_b_el.val('12');
+    field_2_a_el.val('hoi');
+    field_2_b_el.val('42');
+
+    change(field_0_a_el);
+    change(field_0_b_el);
+    change(field_2_a_el);
+    change(field_2_b_el);
+
+    equal(data.repeating[0].a, 'qux');
+    equal(data.repeating[0].b, 12);
+    equal(data.repeating[1].a, 'hoi');
+    equal(data.repeating[1].b, 42);
+
+    // now add a field again, new entry should show up with higher number
+    // than seen before, to avoid overlap
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+    var field_3_a_el = $('#obviel-field-test-repeating-3-a', form_el);
+    var field_3_b_el = $('#obviel-field-test-repeating-3-b', form_el);
+    equal(field_3_a_el.length, 1);
+    equal(field_3_b_el.length, 1);
+    equal(data.repeating.length, 3);
+});
+
 
 test("textline datalink", function() {
     var el = $('#viewdiv');
@@ -1833,6 +1949,73 @@ test("composite field error not seen until submit", function() {
     var form_error_el = $('.obviel-formerror', el);
     equal(form_error_el.text(), '2 fields did not validate');
 });
+
+test("repeating field error not seen until submit", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['repeating_field'],
+                name: 'repeating',
+                title: 'Repeating',
+                widgets: [
+                    {
+                        ifaces: ['textline_field'],
+                        name: 'a',
+                        title: 'A',
+                        validate: {
+                            min_length: 3
+                        }
+                    },
+                    {
+                        ifaces: ['integer_field'],
+                        name: 'b',
+                        title: 'B'
+                    }
+                ]
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    // put in a value that's too short, so should trigger error
+    field_a_el.val('fo');
+    // put in a non integer
+    field_b_el.val('not integer');
+    // there is no error yet
+    var error_a_el = $('#obviel-field-error-test-repeating-0-a', form_el);
+    var error_b_el = $('#obviel-field-error-test-repeating-0-b', form_el);
+    equal(error_a_el.text(), '');
+    equal(error_b_el.text(), '');
+    // don't trigger event but try submitting immediately
+    var button_el = $('button[class="obviel-control"]', el);
+    button_el.trigger('click');
+    // we now expect the error
+    equal(error_a_el.text(), 'value too short');
+    equal(error_b_el.text(), 'not a number');
+    // it's also in the errors object
+    equal(errors.repeating[0].a, 'value too short');
+    equal(errors.repeating[0].b, 'not a number');
+    // and there's a form error
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '2 fields did not validate');
+});
+
 
 obviel.iface('success_iface');
 obviel.view({

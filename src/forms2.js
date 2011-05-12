@@ -629,16 +629,19 @@ obviel.forms2 = {};
     };
 
     module.RepeatingWidget.prototype.change = function(widget) {
-        // XXX how to trigger change for sub-elements?
-        // find outer element by id and then find sub-elements by class?
-        // what about nesting situation though? means class needs to
-        // have iteration depth in it?
-        var field_el = $('#obviel-field-' + widget.prefixed_name, el);
-        field_el.each(function(index, el) {
-            if (el.hasClass('obviel-repeatfield')) {
-                var viewstack = el.data('obviel.viewstack');
-                var data = viewstack[viewstack.length - 1];
-            }
+        var field_el = $('#obviel-field-' + widget.prefixed_name);
+        field_el.each(function(index, sub_el) {
+            $('div', sub_el).each(function(index1, el) {
+                var my_el = $(el);
+                if (my_el.hasClass('obviel-repeatfield')) {
+                    // XXX crazy obviel internal hackery, indicating
+                    // obviel view internals are wrong
+                    var viewstack = my_el.data('obviel.viewstack');
+                    var widget_data = viewstack[viewstack.length - 1][0];
+                    var view = get_view(widget_data);
+                    view.change(widget_data);
+                }
+            });
         });
     };
     
