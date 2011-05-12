@@ -1490,6 +1490,66 @@ test("field error not seen until submit", function() {
     equal(form_error_el.text(), '1 field did not validate');
 });
 
+test("composite field error not seen until submit", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['composite_field'],
+                name: 'composite',
+                title: 'Composite',
+                widgets: [
+                    {
+                        ifaces: ['textline_field'],
+                        name: 'a',
+                        title: 'A',
+                        validate: {
+                            min_length: 3
+                        }
+                    },
+                    {
+                        ifaces: ['integer_field'],
+                        name: 'b',
+                        title: 'B'
+                    }
+                ]
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-composite-a', form_el);
+    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    // put in a value that's too short, so should trigger error
+    field_a_el.val('fo');
+    // put in a non integer
+    field_b_el.val('not integer');
+    // there is no error yet
+    var error_a_el = $('#obviel-field-error-test-composite-a', form_el);
+    var error_b_el = $('#obviel-field-error-test-composite-b', form_el);
+    equal(error_a_el.text(), '');
+    equal(error_b_el.text(), '');
+    // don't trigger event but try submitting immediately
+    var button_el = $('button', el);
+    button_el.trigger('click');
+    // we now expect the error
+    equal(error_a_el.text(), 'value too short');
+    equal(error_b_el.text(), 'not a number');
+    // it's also in the errors object
+    equal(errors.composite.a, 'value too short');
+    equal(errors.composite.b, 'not a number');
+    // and there's a form error
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '2 fields did not validate');
+});
+
 obviel.iface('success_iface');
 obviel.view({
     iface: 'success_iface',
@@ -1667,6 +1727,48 @@ test("default values", function() {
     equal(b_el.val(), '3');
 });
 
+test("default values with composite", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['composite_field'],
+                    name: 'composite',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A',
+                            defaultvalue: 'A default'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B',
+                            defaultvalue: 3
+                        }
+                    ]
+                }
+            ],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data
+    });
+    equal(data.composite.a, 'A default');
+    equal(data.composite.b, 3);
+    var a_el = $('#obviel-field-test-composite-a', el);
+    equal(a_el.val(), 'A default');
+    var b_el = $('#obviel-field-test-composite-b', el);
+    equal(b_el.val(), '3');
+});
+
 test("default values interacting with existent", function() {
     var el = $('#viewdiv');
     var data = {a: 'Something already'};
@@ -1699,6 +1801,47 @@ test("default values interacting with existent", function() {
     var a_el = $('#obviel-field-test-a', el);
     equal(a_el.val(), 'Something already');
     var b_el = $('#obviel-field-test-b', el);
+    equal(b_el.val(), '3');
+});
+
+
+test("default values in composite interacting with existent", function() {
+    var el = $('#viewdiv');
+    var data = {composite: {a: 'Something already'}};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['composite_field'],
+                name: 'composite',
+                widgets: [
+                    {
+                        ifaces: ['textline_field'],
+                        name: 'a',
+                        title: 'A',
+                        defaultvalue: 'A default'
+                    },
+                    {
+                        ifaces: ['integer_field'],
+                        name: 'b',
+                        title: 'B',
+                        defaultvalue: 3
+                    }
+                ]
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        data: data
+    });
+    equal(data.composite.a, 'Something already');
+    equal(data.composite.b, 3);
+    var a_el = $('#obviel-field-test-composite-a', el);
+    equal(a_el.val(), 'Something already');
+    var b_el = $('#obviel-field-test-composite-b', el);
     equal(b_el.val(), '3');
 });
 
