@@ -62,6 +62,10 @@ obviel.forms2 = {};
             }
             if ($.isPlainObject(value)) {
                 result += self.count_errors(value);
+            } else if ($.isArray(value)) {
+                $.each(value, function(index, item) {
+                    result += self.count_errors(item);
+                });
             } else if (value) {
                 result++;
             }
