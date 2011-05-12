@@ -1013,6 +1013,11 @@ test("repeating remove item", function() {
     equals(data.repeating.length, 2);
     equals(errors.repeating.length, 2);
 
+    field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
+    field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    equal(field_1_a_el.length, 0);
+    equal(field_1_b_el.length, 0);
+    
     equal(data.repeating[0].a, 'foo');
     equal(data.repeating[0].b, 10);
     equal(data.repeating[1].a, 'baz');
