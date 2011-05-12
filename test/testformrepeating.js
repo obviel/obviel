@@ -12,11 +12,11 @@ $(document).ready(function() {
                     name: 'repeating',
                     title: 'Repeating',
                     
-                    widget: {
+                    widgets: [{
                         ifaces: ['integer_field'],
                         name: 'b',
                         title: 'B'
-                    }
+                    }]
                 }
             ]
         }

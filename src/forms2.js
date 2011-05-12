@@ -518,36 +518,22 @@ obviel.forms2 = {};
 
     module.RepeatingWidget.prototype.render = function(el, obj, name) {
         var self = this;
-        var field_el = $('<div id="obviel-field-' + obj.prefixed_name + '">');
-
-        var sub_widget = obj.widget;
-
-        if (obj.disabled) {
-            sub_widget.disabled = true;
-        }
-
-        sub_widget.prefixed_name = (obj.prefixed_name +
-                                    '-' + sub_widget.name);
-        
+        var field_el = $('<div id="obviel-field-' + obj.prefixed_name + '">');    
         el.append(field_el);
     };
 
-    module.RepeatingWidget.prototype.add_item = function(sub_widget,
-                                                         data, errors) {
+    module.RepeatingWidget.prototype.add_item = function(widget,
+                                                         data, errors, index) {
         var repeat_el = $('<div class="obviel-field obviel-repeatfield">');
-        $.each(sub_widget.ifaces, function(i, value) {
-            repeat_el.addClass(value);
-            });
-        
-        repeat_el.render(sub_widget, function(el, view, widget, name) {
-            el.append('<div id="obviel-field-error-' +
-                      sub_widget.prefixed_name + '" '+
-                          'class="obviel-field-error"></div>');
-        });
-
-        var view = get_view(sub_widget);
-        view.link(repeat_el, sub_widget, data, errors);
-
+        var composite_widget = {
+            ifaces: ['composite_field'],
+            widgets: widget.widgets,
+            disabled:widget.disabled,
+            prefixed_name: widget.prefixed_name + '-' + index.toString()
+        };
+        repeat_el.render(composite_widget);
+        var view = get_view(composite_widget);
+        view.link(repeat_el, composite_widget, data, errors);
         return repeat_el;
     };
     
@@ -561,20 +547,23 @@ obviel.forms2 = {};
         if (error_items == undefined) {
             error_items = errors[widget.name] = [];
         }
-        var sub_widget = widget.widget;
-
+        
         // XXX needs better UI
         // XXX need way to remove items
         var field_el = $('#obviel-field-' + widget.prefixed_name, el);
-        field_el.append('<button class="obviel-repeat-button" type="button">+</button>');
-        var repeat_button = $('.obviel-repeat-button', field_el);
-
+        var repeat_button = $('<button class="obviel-repeat-button" ' +
+                              'type="button">+</button>');
+        field_el.append(repeat_button);
+        
         repeat_button.click(function() {
             var new_item = {};
             var new_error_item = {};
+            // XXX length calculation will fail after removing is enabled
+            var new_index = items.length;
             items.push(new_item);
             error_items.push(new_error_item);
-            var new_el = self.add_item(sub_widget, new_item, new_error_item);
+            var new_el = self.add_item(widget, new_item, new_error_item,
+                                       new_index);
             repeat_button.before(new_el);
         });
         
@@ -582,13 +571,12 @@ obviel.forms2 = {};
         // do we know the data?
         $.each(items, function(index, item) {
             var error_item = error_items[index];
-            var new_el = self.add_item(sub_widget, item, error_item);
+            var new_el = self.add_item(widget, item, error_item, index);
             repeat_button.before(new_el);
         });
     };
 
     module.RepeatingWidget.prototype.change = function(widget) {
-        var sub_widget = widget.widget;
         // XXX how to trigger change for sub-elements?
         // find outer element by id and then find sub-elements by class?
         // what about nesting situation though? means class needs to
