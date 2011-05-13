@@ -130,44 +130,57 @@ var obviel = {};
     };
 
     module.View.prototype.cleanup = function(el, obj, name) {
+    };
 
+    module.View.prototype.render = function(el, obj, name,
+                                            callback, errback) {
     };
     
-    module.View.prototype.do_render = function(el, obj, name, callback, errback) {
+    module.View.prototype.do_render = function(el, obj, name,
+                                               callback, errback) {
+        var self = this;
         // run cleanup for any previous view
         var previous_view = get_stack_top(el);
         if (previous_view !== null) {
             previous_view.cleanup(el, obj, name);
         }
         // XXX render template, etc if necessary
-        // XXX sub views
-        this.render(el, obj, name, callback, errback);
-        if (!this.ephemeral) {
-            // attach rendered view to stack if not ephemeral
-            var stack = get_stack(el);
-            stack.push(this);
-            // event handler here to render it next time
-            el.one(
-                'render.obviel',
-                function(ev) {
-                    var view = ev.view;
-                    // only re-render view if a previous view here worked
-                    // for that iface
-                    var previous_view = get_stack_top($(this));
-                    if ((view.iface != previous_view.iface) ||
-                        (view.name != previous_view.name)) {
-                        return;
-                    }
-                    view.do_render(el, view.obj, view.name,
-                                   view.callback, view.errback);
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                }
-            );
-        }
+        
+        self.render(el, obj, name, callback, errback);
+        
+        self.store_view(el);
+        
         if (callback !== undefined) {
-            callback(el, this, obj);
+            callback(el, self, obj);
         }
+    };
+
+    module.View.prototype.store_view = function(el) {
+        var self = this;
+        if (self.ephemeral) {
+            return;
+        }
+        // attach rendered view to stack if not ephemeral
+        var stack = get_stack(el);
+        stack.push(self);
+        // event handler here to render it next time
+        el.one(
+            'render.obviel',
+            function(ev) {
+                var view = ev.view;
+                // only re-render view if a previous view here worked
+                // for that iface
+                var previous_view = get_stack_top($(this));
+                if ((view.iface != previous_view.iface) ||
+                    (view.name != previous_view.name)) {
+                    return;
+                }
+                view.do_render(el, view.obj, view.name,
+                               view.callback, view.errback);
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+        );
     };
     
     module.Registry = function() {
@@ -200,9 +213,9 @@ var obviel = {};
         return null;
     };
 
-    module.Registry.prototype.render_obj = function(el, obj, name, callback, errback) {
-        var self = this;
-        var view_prototype = self.lookup(obj, name);
+    module.Registry.prototype.clone_view = function(obj, name,
+                                                    callback, errback) {
+        var view_prototype = this.lookup(obj, name);
         // prototypical inheritance
         var F = function() {};
         F.prototype = view_prototype;
@@ -210,21 +223,33 @@ var obviel = {};
         view.obj = obj;
         view.callback = callback;
         view.errback = errback;
-        
+        return view;
+    };
+
+    module.Registry.prototype.trigger_render = function(el, view) {
         var ev = $.Event('render.obviel');
         ev.target = el;
-        ev.view = view; // XXX can we add our own stuff to event objects?
+        ev.view = view; // XXX can we add our own attributes to event objects?
         el.trigger(ev);
     };
     
-    module.Registry.prototype.render_url = function(el, url, name, callback, errback) {
-        var self= this;
+    module.Registry.prototype.render_obj = function(el, obj, name,
+                                                    callback, errback) {
+        var view = this.clone_view(obj, name, callback, errback);
+        this.trigger_render(el, view);
+    };
+    
+    module.Registry.prototype.render_url = function(el, url, name,
+                                                    callback, errback) {
+        var self = this;
         $.ajax({
             type: 'GET',
             url: url,
             dataType: 'json',
             success: function(obj) {
-                self.render_obj(el, obj, name, callback, errback);
+                var view = self.clone_view(obj, name, callback, errback);
+                view.from_url = url;
+                self.trigger_render(el, view);
             }
         });
     };
