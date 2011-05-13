@@ -141,10 +141,13 @@ var obviel = {};
         // run cleanup for any previous view
         var previous_view = get_stack_top(self.el);
         if (previous_view !== null) {
+            // BBB arguments for backwards compatibility
             previous_view.cleanup(self.el, self.obj, self.name);
         }
         // XXX render template, etc if necessary
-        
+
+        // BBB passing the arguments is really for backwards compatibility only:
+        // all these are accessible on the view object itself too
         self.render(self.el, self.obj, self.name, self.callback, self.errback);
 
         var subviews_rendered = self.render_subviews();
@@ -352,7 +355,7 @@ var obviel = {};
 
     $.fn.rerender = function(callback) {
         var el = $(this);
-        var previous_view = get_stack_top(el);
+        var previous_view = el.view();
         if (previous_view === null) {
             // XXX what is there is no previous view to render?
             return;
