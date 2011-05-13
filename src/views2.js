@@ -152,7 +152,7 @@ var obviel = {};
         self.store_view();
 
         // if we rendered no subviews, we want to finalize rendering now
-        // if we did render subviews that will have taken care of finalization
+        // if we did render subviews that will take care of finalization
         if (subviews_rendered == 0) {
             self.finalize_rendering();
         }
