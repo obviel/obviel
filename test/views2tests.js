@@ -533,40 +533,60 @@ asyncTest('renderPrevious url', function() {
 });
 
 test('rerender context object', function() {
+    obviel.iface('rerender');
+    obviel.view({
+        iface: 'rerender',
+        render: function() {
+            var self = this;
+            var numrenders = self.numrenders || 1;
+            self.el.text(numrenders);
+            self.numrenders = numrenders + 1;
+        }
+    });
+    
     var el = $('#viewdiv');
-    el.html('');
     el.render({ifaces: ['rerender']});
     equals(el.text(), '1');
     el.rerender();
     equals(el.text(), '2');
-    el.unbind();
 });
 
 test('no content, empty render', function() {
+    obviel.view({
+        render: function() {}
+    });
     var el = $('#viewdiv');
     el.html('<span>foo</span>');
-    el.render({}, 'noop');
+    el.render({});
     equals(el.text(), 'foo');
-    el.unbind();
 });
 
 test('no content no render', function() {
+    obviel.view({
+    });
     var el = $('#viewdiv');
     el.html('<span>foo</span>');
-    el.render({}, 'norender');
-    equals(el.text(), 'foo');
-    el.unbind();
-            });
+    el.render({});
+    equals(el.text(), 'foo');   
+});
 
-// XXX not sure about this one yet... should it throw an exception
-// after all?
+
+// XXX is this correct?
 test('rerender without viewstack', function() {
-    var newel = document.createElement('div');
-                // no checking, should just not throw an exception
+    var newel = $('div');
+    // no checking, should just not throw an exception
     $(newel).rerender();
 });
 
 test('rerender ephemeral', function() {
+    obviel.view({
+        render: render_text
+    });
+    obviel.view({
+        name: 'ephemeral',
+        ephemeral: true,
+        render: render_text
+    });
     var el = $('#viewdiv');
     el.render({text: 'foo'});
     equals(el.text(), 'foo');
@@ -574,60 +594,103 @@ test('rerender ephemeral', function() {
     equals(el.text(), 'bar');
     el.rerender();
     equals(el.text(), 'foo');
-    el.unbind();
 });
 
 asyncTest('render subviews', function() {
+    obviel.view({
+        iface: 'subviews',
+        render: function() {
+            el.html('<div id="sub1"></div><div id="sub2"></div>' +
+                    '<div id="sub3"></div>');
+        },
+        subviews: {
+            '#sub1': 'sub_url',
+            '#sub2': 'sub_html',
+            '#sub3': ['sub_named', 'foo']
+        }
+    });
+
+    obviel.view({
+        render: render_text
+    });
+
+    obviel.view({
+        name: 'foo',
+        render: function() {
+            this.el.text('named');
+        }
+    });
     var el = $('#viewdiv');
-    el.html('');
     el.render({
-        sub_url: 'default.json', // string -> renderUrl(attr)
-        sub_html: {text: 'bar'}, // structure - render(attr)
-        sub_named: {text2: 'baz'} // is registered by name
-    }, 'subviews', function() {
+        ifaces: ['subviews'],
+        sub_url: 'default.json', // url
+        sub_html: {text: 'bar'}, //  obj
+        sub_named: {text2: 'baz'} // is registered by name foo
+    }, function() {
         equals($('#sub1', el).text(), 'foo');
         equals($('#sub2', el).text(), 'bar');
-        equals($('#sub3', el).text(), 'baz');
+        equals($('#sub3', el).text(), 'named');
         start();
-        el.unbind();
     });
 });
 
 test('render subview false argument', function() {
+    obviel.view({
+        render: function() {
+            this.el.html('<div id="sub1"></div>');
+        },
+        subviews: {
+            '#sub1': 'sub_content'
+        }
+    });
     // should just not render the sub view
     var el = $('#viewdiv');
-    el.html('');
     el.render({
         sub_content: false
-    }, 'subviews_single');
+    });
     equals($('#sub1', el).text(), '');
-    el.unbind();
 });
 
 test('render subview undefined argument', function() {
+    obviel.view({
+        render: function() {
+            this.el.html('<div id="sub1"></div>');
+        },
+        subviews: {
+            '#sub1': 'sub_content'
+        }
+    });
+    
     // should also not render the sub view
     var el = $('#viewdiv');
-    el.html('');
-    el.render({}, 'subviews_single');
+    el.render({});
     equals($('#sub1', el).text(), '');
-    el.unbind();
 });
 
 test('renderPrevious', function() {
+    obviel.view({
+        render: render_text
+    });
+    
     var el = $('#viewdiv');
-    el.html('');
-    el.render({text: 'foo'}); // default name and iface
+    el.render({text: 'foo'});
     equals(el.text(), 'foo');
     el.render({text: 'bar'});
     equals(el.text(), 'bar');
     el.renderPrevious();
     equals(el.text(), 'foo');
-    el.unbind();
 });
 
 test('renderPrevious with ephemeral', function() {
+    obviel.view({
+        render: render_text
+    });
+    obviel.view({
+        name: 'ephemeral',
+        ephemeral: true,
+        render: render_text
+    });
     var el = $('#viewdiv');
-    el.html('');
     el.render({text: 'foo'});
     equals(el.text(), 'foo');
     el.render({text: 'bar'}, 'ephemeral');
@@ -636,7 +699,6 @@ test('renderPrevious with ephemeral', function() {
     equals(el.text(), 'baz');
     el.renderPrevious();
     equals(el.text(), 'foo');
-    el.unbind();
 });
 
 // asyncTest('render into iframe', function() {
@@ -804,13 +866,13 @@ test('view override on iface', function() {
 
 module('Events on render');
 
-obviel.view({
-    iface: 'foo',
-    name: 'render-event',
-    render: function(el, obj, name) {
-        el.text(obj.text);
-    }
-});
+// obviel.view({
+//     iface: 'foo',
+//     name: 'render-event',
+//     render: function(el, obj, name) {
+//         el.text(obj.text);
+//     }
+// });
 
 // test('render on other element', function() {
 //     $('#jsview-area').bind(
