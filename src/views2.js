@@ -136,22 +136,21 @@ var obviel = {};
                                             callback, errback) {
     };
     
-    module.View.prototype.do_render = function(el, obj, name,
-                                               callback, errback) {
+    module.View.prototype.do_render = function(el) {
         var self = this;
         // run cleanup for any previous view
         var previous_view = get_stack_top(el);
         if (previous_view !== null) {
-            previous_view.cleanup(el, obj, name);
+            previous_view.cleanup(el, self.obj, self.name);
         }
         // XXX render template, etc if necessary
         
-        self.render(el, obj, name, callback, errback);
+        self.render(el, self.obj, self.name, self.callback, self.errback);
         
         self.store_view(el);
         
-        if (callback !== undefined) {
-            callback(el, self, obj);
+        if (self.callback !== undefined) {
+            self.callback(el, self, self.obj);
         }
     };
 
@@ -175,8 +174,7 @@ var obviel = {};
                     (view.name != previous_view.name)) {
                     return;
                 }
-                view.do_render(el, view.obj, view.name,
-                               view.callback, view.errback);
+                view.do_render(el);
                 ev.stopPropagation();
                 ev.preventDefault();
             }
@@ -335,8 +333,7 @@ var obviel = {};
     $(document).bind(
         'render.obviel',
         function(ev) {
-            ev.view.do_render($(ev.target), ev.view.obj, ev.view.name,
-                              ev.view.callback, ev.view.errback);
+            ev.view.do_render($(ev.target));
             ev.stopPropagation();
             ev.preventDefault();
         }
