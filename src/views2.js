@@ -129,7 +129,16 @@ var obviel = {};
         $.extend(this, d);
     };
 
+    module.View.prototype.cleanup = function(el, obj, name) {
+
+    };
+    
     module.View.prototype.do_render = function(el, obj, name, callback, errback) {
+        // run cleanup for any previous view
+        var previous_view = get_stack_top(el);
+        if (previous_view !== null) {
+            previous_view.cleanup(el, obj, name);
+        }
         // XXX render template, etc if necessary
         // XXX sub views
         this.render(el, obj, name, callback, errback);
@@ -156,7 +165,9 @@ var obviel = {};
                 }
             );
         }
-        callback(el, this, obj);
+        if (callback !== undefined) {
+            callback(el, this, obj);
+        }
     };
     
     module.Registry = function() {
@@ -167,15 +178,16 @@ var obviel = {};
         if (!(view instanceof module.View)) {
             view = new module.View(view);
         }
-        if (!this._views[view.iface]) {
-            this._views[view.iface] = {};
+        if (!this.views[view.iface]) {
+            this.views[view.iface] = {};
         }
         this.views[view.iface][view.name] = view;
     };
 
     module.Registry.prototype.lookup = function(obj, name) {
         var ifaces = module.ifaces(obj);
-
+        name = name || 'default';
+        
         for (var i=0; i < ifaces.length; i++) {
             var matching_views = this.views[ifaces[i]];
             if (matching_views) {
@@ -206,11 +218,23 @@ var obviel = {};
     };
     
     module.Registry.prototype.render_url = function(el, url, name, callback, errback) {
-        
+        var self= this;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'json',
+            success: function(obj) {
+                self.render_obj(el, obj, name, callback, errback);
+            }
+        });
     };
 
-    var registry = new Registry();
+    var registry = new module.Registry();
 
+    module.view = function(view) {
+        registry.register(view);
+    };
+    
     var get_stack = function(el) {
         var stack = el.data('obviel.stack');
         if (stack === undefined) {
@@ -231,8 +255,9 @@ var obviel = {};
     $.fn.render = function(obj, name, callback, errback) {
         // reshuffle arguments if possible
         if ($.isFunction(name)) {
-            callback = name;
             errback = callback;
+            callback = name;
+            name = 'default';
         }
 
         var el = $(this);
@@ -255,6 +280,10 @@ var obviel = {};
             // XXX what is there is no previous view to render?
             return;
         }
+        // XXX don't want to modify callback on existing view; can we create
+        // a new clone of the view instead?
+        previous_view.callback = callback;
+        
         var ev = $.Event('render.obviel');
         ev.target = el;
         ev.view = previous_view; // XXX can we add our own stuff to event objects?
@@ -270,7 +299,7 @@ var obviel = {};
             return;
         }
         stack.pop();
-        $.rerender(callback);
+        el.rerender(callback);
     };
     
     $.fn.view = function() {
@@ -281,7 +310,7 @@ var obviel = {};
     $(document).bind(
         'render.obviel',
         function(ev) {
-            ev.view.do_render(ev.target, ev.view.obj, ev.view.name,
+            ev.view.do_render($(ev.target), ev.view.obj, ev.view.name,
                               ev.view.callback, ev.view.errback);
             ev.stopPropagation();
             ev.preventDefault();
