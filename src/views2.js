@@ -136,45 +136,49 @@ var obviel = {};
                                             callback, errback) {
     };
     
-    module.View.prototype.do_render = function(el) {
+    module.View.prototype.do_render = function() {
         var self = this;
         // run cleanup for any previous view
-        var previous_view = get_stack_top(el);
+        var previous_view = get_stack_top(self.el);
         if (previous_view !== null) {
-            previous_view.cleanup(el, self.obj, self.name);
+            previous_view.cleanup(self.el, self.obj, self.name);
         }
         // XXX render template, etc if necessary
         
-        self.render(el, self.obj, self.name, self.callback, self.errback);
+        self.render(self.el, self.obj, self.name, self.callback, self.errback);
         
-        self.store_view(el);
+        self.store_view();
         
         if (self.callback !== undefined) {
-            self.callback(el, self, self.obj);
+            self.callback(self.el, self, self.obj);
         }
     };
 
-    module.View.prototype.store_view = function(el) {
+    module.View.prototype.store_view = function() {
         var self = this;
         if (self.ephemeral) {
             return;
         }
         // attach rendered view to stack if not ephemeral
-        var stack = get_stack(el);
+        var stack = get_stack(self.el);
         stack.push(self);
         // event handler here to render it next time
-        el.one(
+        self.el.one(
             'render.obviel',
             function(ev) {
                 var view = ev.view;
                 // only re-render view if a previous view here worked
                 // for that iface
-                var previous_view = get_stack_top($(this));
+                var el = $(this);
+                var previous_view = get_stack_top(el);
                 if ((view.iface != previous_view.iface) ||
                     (view.name != previous_view.name)) {
                     return;
                 }
-                view.do_render(el);
+                // the el with which we get called gets replaced
+                // by this one, where the view is actually rendered
+                view.el = el;
+                view.do_render();
                 ev.stopPropagation();
                 ev.preventDefault();
             }
@@ -211,30 +215,30 @@ var obviel = {};
         return null;
     };
 
-    module.Registry.prototype.clone_view = function(obj, name,
+    module.Registry.prototype.clone_view = function(el, obj, name,
                                                     callback, errback) {
         var view_prototype = this.lookup(obj, name);
         // prototypical inheritance
         var F = function() {};
         F.prototype = view_prototype;
         var view = new F();
+        view.el = el;
         view.obj = obj;
         view.callback = callback;
         view.errback = errback;
         return view;
     };
 
-    module.Registry.prototype.trigger_render = function(el, view) {
+    module.Registry.prototype.trigger_render = function(view) {
         var ev = $.Event('render.obviel');
-        ev.target = el;
         ev.view = view; // XXX can we add our own attributes to event objects?
-        el.trigger(ev);
+        view.el.trigger(ev);
     };
     
     module.Registry.prototype.render_obj = function(el, obj, name,
                                                     callback, errback) {
-        var view = this.clone_view(obj, name, callback, errback);
-        this.trigger_render(el, view);
+        var view = this.clone_view(el, obj, name, callback, errback);
+        this.trigger_render(view);
     };
     
     module.Registry.prototype.render_url = function(el, url, name,
@@ -245,9 +249,9 @@ var obviel = {};
             url: url,
             dataType: 'json',
             success: function(obj) {
-                var view = self.clone_view(obj, name, callback, errback);
+                var view = self.clone_view(el, obj, name, callback, errback);
                 view.from_url = url;
-                self.trigger_render(el, view);
+                self.trigger_render(view);
             }
         });
     };
