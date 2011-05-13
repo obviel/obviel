@@ -4,6 +4,18 @@ var obviel = {};
     module._ifaces = {
         'base': []
     };
+
+    module.LookupError = function(obj, name) {
+        this.obj = obj;
+        this.name = name;
+    };
+
+    module.LookupError.prototype.toString = function() {
+        var ifaces = module.ifaces(this.obj);
+        var ifaces_s = ifaces.join(', ');
+        return ("view lookup error for ifaces [" + ifaces_s +
+                "] and name '" + this.name + "'");
+    };
     
     /**
      * Register an interface (iface)
@@ -164,6 +176,7 @@ var obviel = {};
     module.View.prototype.finalize_rendering = function() {
         var self = this;
         if (self.callback !== undefined) {
+            // BBB arguments are for backwards compatibility only
             self.callback(self.el, self, self.obj);
         }
     };
@@ -247,7 +260,6 @@ var obviel = {};
 
     module.Registry.prototype.lookup = function(obj, name) {
         var ifaces = module.ifaces(obj);
-        name = name || 'default';
         
         for (var i=0; i < ifaces.length; i++) {
             var matching_views = this.views[ifaces[i]];
@@ -263,7 +275,11 @@ var obviel = {};
 
     module.Registry.prototype.clone_view = function(el, obj, name,
                                                     callback, errback) {
+        name = name || 'default';
         var view_prototype = this.lookup(obj, name);
+        if (view_prototype === null) {
+            throw new module.LookupError(obj, name);
+        }
         // prototypical inheritance
         var F = function() {};
         F.prototype = view_prototype;
@@ -317,10 +333,14 @@ var obviel = {};
         });
     };
 
-    var registry = new module.Registry();
+    module.registry = new module.Registry();
 
+    module.clear_registry = function() {
+        module.registry = new module.Registry();
+    };
+    
     module.view = function(view) {
-        registry.register(view);
+        module.registry.register(view);
     };
     
     var get_stack = function(el) {
@@ -350,7 +370,7 @@ var obviel = {};
 
         var el = $(this);
 
-        registry.render(el, obj, name, callback, errback);
+        module.registry.render(el, obj, name, callback, errback);
     };
 
     $.fn.rerender = function(callback) {

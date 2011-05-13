@@ -152,145 +152,154 @@ test('error on recursion', function() {
     ok(exc);
 });
 
-module('Obviel Views');
+module('Obviel Views', {
+    setup: function() {
+        $('#viewdiv').html('');
+    },
+    teardown: function() {
+        $('#viewdiv').unbind();
+        obviel.clear_registry();
+    }
+});
 
 // register using default name
-obviel.view((new obviel.View({
-    render: function(el, obj) {
-        $(el).text(obj.text);
-    }})));
+// obviel.view({
+//     render: function(el, obj) {
+//         $(el).text(obj.text);
+//     }
+// });
 
-// register using non-default name
-obviel.view((new obviel.View({
-    name: 'foo',
-    render: function(el, obj) {
-        $(el).text(obj.text2);
-    }})));
+// // register using non-default name
+// obviel.view((new obviel.View({
+//     name: 'foo',
+//     render: function(el, obj) {
+//         $(el).text(obj.text2);
+//     }})));
 
-// register by iface
-obviel.iface('ifoo');
-obviel.view((new obviel.View({
-    iface: 'ifoo',
-    render: function(el, obj) {
-        $(el).text(obj.text3);
-    }})));
+// // register by iface
+// obviel.iface('ifoo');
+// obviel.view((new obviel.View({
+//     iface: 'ifoo',
+//     render: function(el, obj) {
+//         $(el).text(obj.text3);
+//     }})));
 
-// register by iface and name
-obviel.view((new obviel.View({
-    name: 'foo',
-    iface: 'ifoo',
-    render: function(el, obj) {
-        $(el).text(obj.text4);
-    }})));
+// // register by iface and name
+// obviel.view((new obviel.View({
+//     name: 'foo',
+//     iface: 'ifoo',
+//     render: function(el, obj) {
+//         $(el).text(obj.text4);
+//     }})));
 
-// short-hand registration from options
-obviel.iface('ibar');
-obviel.view({
-    name: 'bar',
-    iface: 'ibar',
-    render: function(el, obj) {
-        $(el).text(obj.text5);
-    }});
+// // short-hand registration from options
+// obviel.iface('ibar');
+// obviel.view({
+//     name: 'bar',
+//     iface: 'ibar',
+//     render: function(el, obj) {
+//         $(el).text(obj.text5);
+//     }});
 
-// view for testing cleanups, has a cleanup hook
-obviel.iface('cleanup');
-obviel.view({
-    iface: 'cleanup',
-    render: function(element, obj, name) {
-        window._cleanup_called = false;
-        $(element).text(obj.foo);
-    },
-    cleanup: function() {
-        window._cleanup_called = true;
-    }});
+// // view for testing cleanups, has a cleanup hook
+// obviel.iface('cleanup');
+// obviel.view({
+//     iface: 'cleanup',
+//     render: function(element, obj, name) {
+//         window._cleanup_called = false;
+//         $(element).text(obj.foo);
+//     },
+//     cleanup: function() {
+//         window._cleanup_called = true;
+//     }});
 
-// test for re-rendering views
-obviel.iface('rerender');
-obviel.view({
-    iface: 'rerender',
-    render: function(element, obj, name) {
-            var numrenders = obj.numrenders || 1;
-        element.text(numrenders);
-        obj.numrenders = numrenders + 1;
-    }
-});
+// // test for re-rendering views
+// obviel.iface('rerender');
+// obviel.view({
+//     iface: 'rerender',
+//     render: function(element, obj, name) {
+//             var numrenders = obj.numrenders || 1;
+//         element.text(numrenders);
+//         obj.numrenders = numrenders + 1;
+//     }
+// });
 
-// used to test render - uses interface 'ifoo' but expects
-// different data
-obviel.view({
-    name: 'error',
-    iface: 'ifoo',
-    render: function(element, obj, name) {
-        throw('some error');
-    }
-});
+// // used to test render - uses interface 'ifoo' but expects
+// // different data
+// obviel.view({
+//     name: 'error',
+//     iface: 'ifoo',
+//     render: function(element, obj, name) {
+//         throw('some error');
+//     }
+// });
 
-// view that doesn't do anything
-obviel.view({
-    name: 'noop',
-    render: function(element, obj, name) {
-    }
-});
+// // view that doesn't do anything
+// obviel.view({
+//     name: 'noop',
+//     render: function(element, obj, name) {
+//     }
+// });
 
-// view that doesn't (even ;) provide a render method
-obviel.view({name: 'norender'});
+// // view that doesn't (even ;) provide a render method
+// obviel.view({name: 'norender'});
 
-// view that doesn't get added to the view stack (ephemeral)
-obviel.view({
-    name: 'ephemeral',
-    ephemeral: true,
-        render: function(el, obj) {
-            $(el).text(obj.text);
-        }
-});
+// // view that doesn't get added to the view stack (ephemeral)
+// obviel.view({
+//     name: 'ephemeral',
+//     ephemeral: true,
+//         render: function(el, obj) {
+//             $(el).text(obj.text);
+//         }
+// });
 
-// view with subviews declared
-obviel.view({
-    name: 'subviews',
-    render: function(el, obj) {
-        el.html(
-            '<div id="sub1"></div><div id="sub2">' +
-                '</div><div id="sub3"></div>');
-    },
-    subviews: { // mapping from jq selector to obj attr
-        '#sub1': 'sub_url',
-        '#sub2': 'sub_html',
-        // register for a named view
-        '#sub3': ['sub_named', 'foo']
-    }
-});
+// // view with subviews declared
+// obviel.view({
+//     name: 'subviews',
+//     render: function(el, obj) {
+//         el.html(
+//             '<div id="sub1"></div><div id="sub2">' +
+//                 '</div><div id="sub3"></div>');
+//     },
+//     subviews: { // mapping from jq selector to obj attr
+//         '#sub1': 'sub_url',
+//         '#sub2': 'sub_html',
+//         // register for a named view
+//         '#sub3': ['sub_named', 'foo']
+//     }
+// });
 
-// view with a single subview
-obviel.view({
-    name: 'subviews_single',
-    render: function(el, obj) {
-        el.html('<div id="sub1"></div>');
-    },
-    subviews: {
-        '#sub1': 'sub_content'
-    }
-});
+// // view with a single subview
+// obviel.view({
+//     name: 'subviews_single',
+//     render: function(el, obj) {
+//         el.html('<div id="sub1"></div>');
+//     },
+//     subviews: {
+//         '#sub1': 'sub_content'
+//     }
+// });
 
-// view that adds iframe
-obviel.view({
-    name: 'iframeview',
-    iframe: true,
-    render: function(el, obj) {
-            // let's add some content to the html
-        var iframe = el[0].getElementsByTagName('iframe')[0];
-        var body = iframe.contentWindow.document.getElementsByTagName(
-            'body')[0];
-        body.appendChild(
-            iframe.contentWindow.document.createTextNode('foo'));
-    }
-});
+// // view that adds iframe
+// obviel.view({
+//     name: 'iframeview',
+//     iframe: true,
+//     render: function(el, obj) {
+//             // let's add some content to the html
+//         var iframe = el[0].getElementsByTagName('iframe')[0];
+//         var body = iframe.contentWindow.document.getElementsByTagName(
+//             'body')[0];
+//         body.appendChild(
+//             iframe.contentWindow.document.createTextNode('foo'));
+//     }
+// });
 
-obviel.view({
-    iface: 'inline_html',
-    html: '<span></span>',
-    render: function(el, obj, name) {
-        $('span', el).text(obj.text);
-    }});
+// obviel.view({
+//     iface: 'inline_html',
+//     html: '<span></span>',
+//     render: function(el, obj, name) {
+//         $('span', el).text(obj.text);
+//     }});
 
 // special views
 // obviel.formView({
@@ -318,152 +327,206 @@ obviel.view({
 //     }});
 
 // actual tests
+
+var render_text = function() {
+    this.el.text(this.obj.text);
+};
+
 test('view with default name', function() {
-    $('#viewdiv').html('');
+    obviel.view({
+        render: render_text
+    });
     $('#viewdiv').render({text: 'foo'});
     equals($('#viewdiv').text(), 'foo');
-    $('#viewdiv').unbind();
 });
 
-test('named view, no name provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text2: 'bar'});
-    equals($('#viewdiv').text(), '');
-    $('#viewdiv').unbind();
+test('named view, no name provided results in error', function() {
+    obviel.view({
+        name: 'foo',
+        render: render_text
+    });
+
+    raises(function() {
+        $('#viewdiv').render({text: 'bar'});
+    }, obviel.LookupError);
 });
 
 test('named view with name provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text2: 'bar'}, 'foo');
+    obviel.view({
+        name: 'foo',
+        render: render_text
+    });
+    $('#viewdiv').render({text: 'bar'}, 'foo');
     equals($('#viewdiv').text(), 'bar');
-    $('#viewdiv').unbind();
 });
 
 test('iface view, no iface provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text3: 'baz'});
-    equals($('#viewdiv').text(), '');
-    $('#viewdiv').unbind();
+    obviel.view({
+        iface: 'ifoo',
+        render: render_text
+    });
+    raises(function() {
+        $('#viewdiv').render({text: 'bar'});
+    }, obviel.LookupError);    
 });
 
 test('iface view with iface provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text3: 'baz', ifaces: ['ifoo']});
+    obviel.view({
+        iface: 'ifoo',
+        render: render_text
+    });
+    $('#viewdiv').render({text: 'baz', ifaces: ['ifoo']});
     equals($('#viewdiv').text(), 'baz');
-    $('#viewdiv').unbind();
 });
 
 test('iface/named view, no name provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text4: 'qux', ifaces: ['ifoo']});
-    equals($('#viewdiv').text(), '');
-    $('#viewdiv').unbind();
+    obviel.view({
+        iface: 'ifoo',
+        name: 'foo',
+        render: render_text
+    });
+    raises(function() {
+        $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
+    }, obviel.LookupError);
 });
 
 test('iface/named view, no iface provided', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render({text4: 'qux'}, 'foo');
-    equals($('#viewdiv').text(), '');
-    $('#viewdiv').unbind();
+    obviel.view({
+        iface: 'ifoo',
+        name: 'foo',
+        render: render_text
+    });
+    raises(function() {
+        $('#viewdiv').render({text: 'qux'}, 'foo');
+    }, obviel.LookupError); 
 });
 
-test('iface/named view, both iface and name provided',
-     function() {
-         $('#viewdiv').html('');
-         $('#viewdiv').render(
-             {text4: 'qux', ifaces: ['ifoo']},
-             'foo');
-         equals($('#viewdiv').text(), 'qux');
-         $('#viewdiv').unbind();
-     });
+test('iface/named view, both iface and name provided', function() {
+    obviel.view({
+        iface: 'ifoo',
+        name: 'foo',
+        render: render_text
+    });
+    
+    $('#viewdiv').render(
+        {text: 'qux', ifaces: ['ifoo']},
+        'foo');
+    equals($('#viewdiv').text(), 'qux');
+});
 
-test('iface/named view, short-hand reg from options',
-     function() {
-         $('#viewdiv').html('');
-         $('#viewdiv').render(
-             {text5: 'quux', ifaces: ['ibar']},
-             'bar');
-         equals($('#viewdiv').text(), 'quux');
-         $('#viewdiv').unbind();
-     });
+test('explicit view instance', function() {
+    obviel.view(new obviel.View({
+        iface: 'ifoo',
+        render: render_text
+    }));
+
+    $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
+    equals($('#viewdiv').text(), 'qux');
+});
 
 test('cleanup', function() {
-    $('#viewdiv').html('');
+    var cleanup_called = false;
+    obviel.view({
+        iface: 'cleanup',
+        render: render_text,
+        cleanup: function() { cleanup_called = true; }
+    });
+    obviel.view({
+        ifaces: 'another',
+        render: render_text
+    });
     $('#viewdiv').render(
-        {foo: 'bar', ifaces: ['cleanup']},
-        function(element, obj, name) {
-            equals(element.text(), 'bar');
-            $('#viewdiv').render({text: 'foo'});
-            equals(element.text(), 'foo');
-            ok(window._cleanup_called);
+        {text: 'bar', ifaces: ['cleanup']},
+        function() {
+            equals(this.el.text(), 'bar');
+            $('#viewdiv').render({text: 'foo', ifaces: ['another']});
+            equals(this.el.text(), 'foo');
+            ok(cleanup_called);
         });
-    $('#viewdiv').unbind();
 });
 
-asyncTest('renderURL, default name', function() {
-    $('#viewdiv').html('');
+asyncTest('render url, default name', function() {
+    obviel.view({
+        render: render_text
+    });
     $('#viewdiv').render(
-        'default.json', function(element, view, context) {
+        'default.json', function() {
             equals($('#viewdiv').text(), 'foo');
             start();
         });
-    $('#viewdiv').unbind();
 });
 
-asyncTest('renderURL with name', function() {
-    $('#viewdiv').html('');
+asyncTest('render url with name', function() {
+    obviel.view({
+        render: render_text,
+        name: 'foo'
+    });
     $('#viewdiv').render(
-        'named.json', 'foo', function(element, view, context) {
+        'named.json', 'foo', function() {
             equals($('#viewdiv').text(), 'bar');
             start();
         });
-    $('#viewdiv').unbind();
 });
 
-asyncTest('renderURL with iface', function() {
-    $('#viewdiv').html('');
+asyncTest('render url with iface', function() {
+    obviel.view({
+        render: render_text,
+        iface: 'ifoo'
+    });
+    
     $('#viewdiv').render(
-        'interfaced.json',  function(element, view, context) {
+        'interfaced.json',  function() {
             equals($('#viewdiv').text(), 'baz');
             start();
-            $('#viewdiv').unbind();
         });
 });
 
-asyncTest('renderURL with name and iface', function() {
-    $('#viewdiv').html('');
+asyncTest('render url with name and iface', function() {
+    obviel.view({
+        render: render_text,
+        iface: 'ifoo',
+        name: 'foo'
+    });
+    
     $('#viewdiv').render(
         'named_interfaced.json',  'foo',
-        function(element, view, context) {
+        function() {
             equals($('#viewdiv').text(), 'qux');
             start();
-            $('#viewdiv').unbind();
         });
 });
 
-asyncTest('rerender URL', function() {
+// XXX should do test with fake ajax giving different response each time
+// rendering happens, otherwise we only test object re-rendering
+asyncTest('rerender url', function() {
+    obviel.view({
+        render: render_text
+    });
     var el = $('#viewdiv');
     el.render(
         'default.json', function() {
-            equals(el.text(), 'foo');
-            // if this test freezes, it never re-rendered... :\
+            equals(this.el.text(), 'foo');
+            // if this test freezes, it never re-rendered...
             el.rerender(function() {
                 start();
-                el.unbind();
             });
         });
 });
 
-asyncTest('renderPrevious URL', function() {
+// XXX need to test this with fake ajax
+asyncTest('renderPrevious url', function() {
     var el = $('#viewdiv');
+    obviel.view({
+        render: render_text
+    });
     el.render(
         'default.json', function() {
             el.render(
                 'interfaced.json', function() {
+                    equals(this.el.text(), 'baz');
                     el.renderPrevious(function() {
-                        equals(el.text(), 'foo');
+                        equals(this.el.text(), 'foo');
                         start();
-                        el.unbind();
                     });
                 });
         });
