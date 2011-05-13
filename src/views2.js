@@ -146,14 +146,57 @@ var obviel = {};
         // XXX render template, etc if necessary
         
         self.render(self.el, self.obj, self.name, self.callback, self.errback);
+
+        var subviews_rendered = self.render_subviews();
         
         self.store_view();
-        
+
+        // if we rendered no subviews, we want to finalize rendering now
+        // if we did render subviews that will have taken call of finalization
+        if (subviews_rendered == 0) {
+            self.finalize_rendering();
+        }
+    };
+
+    module.View.prototype.finalize_rendering = function() {
+        var self = this;
         if (self.callback !== undefined) {
             self.callback(self.el, self, self.obj);
         }
     };
-
+    
+    module.View.prototype.render_subviews = function() {
+        var self = this;
+        var running = 0;
+        var amount = 0;
+        
+        // clever trick taken from Guido: the view's callback will
+        // be called as soon as the last subview is done rendering
+        var callback = function() {
+            running--;
+            if (running > 0) {
+                return;
+            }
+            self.finalize_rendering();
+        };
+        $.each(self.subviews, function(selector, attr) {
+            var el = $(selector, self.el);
+            var name = 'default';
+            if ($.isArray(attr)) {
+                name = attr[1];
+                attr = attr[0];
+            }
+            var obj = self.obj[attr];
+            if (obj === undefined) {
+                return;
+            }
+            running++; 
+            amount++;
+            self.registry.render(el, obj, name, callback);
+        });
+        return amount;
+    };
+    
     module.View.prototype.store_view = function() {
         var self = this;
         if (self.ephemeral) {
@@ -226,6 +269,7 @@ var obviel = {};
         view.obj = obj;
         view.callback = callback;
         view.errback = errback;
+        view.registry = this;
         return view;
     };
 
@@ -233,6 +277,20 @@ var obviel = {};
         var ev = $.Event('render.obviel');
         ev.view = view; // XXX can we add our own attributes to event objects?
         view.el.trigger(ev);
+    };
+
+    module.Registry.prototype.render = function(el, obj, name,
+                                                callback, errback) {        
+        var self = this;
+        var url = null;
+        if (typeof obj == 'string') {
+            url = obj;
+        };
+        if (url !== null) {
+            self.render_url(el, url, name, callback, errback);
+        } else {
+            self.render_obj(el, obj, name, callback, errback); 
+        }
     };
     
     module.Registry.prototype.render_obj = function(el, obj, name,
@@ -289,15 +347,7 @@ var obviel = {};
 
         var el = $(this);
 
-        var url = null;
-        if (typeof obj == 'string') {
-            url = obj;
-        };
-        if (url !== null) {
-            registry.render_url(el, url, name, callback, errback);
-        } else {
-            registry.render_obj(el, obj, name, callback, errback); 
-        }
+        registry.render(el, obj, name, callback, errback);
     };
 
     $.fn.rerender = function(callback) {
