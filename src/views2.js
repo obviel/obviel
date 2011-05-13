@@ -152,7 +152,7 @@ var obviel = {};
         self.store_view();
 
         // if we rendered no subviews, we want to finalize rendering now
-        // if we did render subviews that will have taken call of finalization
+        // if we did render subviews that will have taken care of finalization
         if (subviews_rendered == 0) {
             self.finalize_rendering();
         }
@@ -170,8 +170,8 @@ var obviel = {};
         var running = 0;
         var amount = 0;
         
-        // clever trick taken from Guido: the view's callback will
-        // be called as soon as the last subview is done rendering
+        // clever trick taken from Guido Wesdorp: the view's callback will
+        // be called as soon as the last subview's callback is called
         var callback = function() {
             running--;
             if (running > 0) {
@@ -187,7 +187,7 @@ var obviel = {};
                 attr = attr[0];
             }
             var obj = self.obj[attr];
-            if (obj === undefined) {
+            if ((obj === undefined) || !obj) {
                 return;
             }
             running++; 

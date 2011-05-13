@@ -542,16 +542,11 @@ test('render subview false argument', function() {
 });
 
 test('render subview undefined argument', function() {
-    // should throw an error
+    // should also not render the sub view
     var el = $('#viewdiv');
     el.html('');
-    var exception;
-    try {
-        el.render({}, 'subviews_single');
-    } catch(e) {
-        exception = e;
-    };
-    ok(exception);
+    el.render({}, 'subviews_single');
+    equals($('#sub1', el).text(), '');
     el.unbind();
 });
 
@@ -581,151 +576,151 @@ test('renderPrevious with ephemeral', function() {
     el.unbind();
 });
 
-asyncTest('render into iframe', function() {
-    var el = $('#viewdiv');
-    el.html('');
-    el.render({
-        html:
-        '<html><head><title>test doc</title></head>' +
-            '<body></body></html>'
-    }, 'iframeview', function(el, obj, name) {
-        var iframe = $(
-            $('iframe', el)[0].contentWindow.document
-                .documentElement);
-        equals($('body', iframe).text(), 'foo');
-        // for some reason, .text() seems to fail on ie?!?
-        equals($('title', iframe).html_lower(), 'test doc');
-        start();
-    });
-    el.unbind();
-});
+// asyncTest('render into iframe', function() {
+//     var el = $('#viewdiv');
+//     el.html('');
+//     el.render({
+//         html:
+//         '<html><head><title>test doc</title></head>' +
+//             '<body></body></html>'
+//     }, 'iframeview', function(el, obj, name) {
+//         var iframe = $(
+//             $('iframe', el)[0].contentWindow.document
+//                 .documentElement);
+//         equals($('body', iframe).text(), 'foo');
+//         // for some reason, .text() seems to fail on ie?!?
+//         equals($('title', iframe).html_lower(), 'test doc');
+//         start();
+//     });
+//     el.unbind();
+// });
 
-asyncTest('formView', function() {
-    $('#viewdiv').html('').unbind();
-    $('#viewdiv').render(
-            'foo.form',
-        function(element, view, context) {
-            // XXX test re-post on unsuccessful submit
-            if (context.action) {
-                element.find('form').submit();
-            } else {
-                // after successful form post
-                equals(element.text(), 'foo');
-                start();
-                $('#viewdiv').unbind();
-            };
-        });
-});
+// asyncTest('formView', function() {
+//     $('#viewdiv').html('').unbind();
+//     $('#viewdiv').render(
+//             'foo.form',
+//         function(element, view, context) {
+//             // XXX test re-post on unsuccessful submit
+//             if (context.action) {
+//                 element.find('form').submit();
+//             } else {
+//                 // after successful form post
+//                 equals(element.text(), 'foo');
+//                 start();
+//                 $('#viewdiv').unbind();
+//             };
+//         });
+// });
 
-asyncTest('formView with iframe', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv').render(
-        'foo.form',
-        'iframeformview',
-        function(element, view, context) {
-            // XXX would it be nice to have 'element' point to
-            // the iframe body instead? not sure...
-            var iframe = $(
-                $('iframe', element)[0].contentWindow.document
-                    .documentElement)
-            if (context.action) {
-                $('form', iframe).submit();
-            } else {
-                equals($('body', iframe).text(), 'foo');
-                start();
-                $('#viewdiv').unbind();
-            };
-        });
-});
+// asyncTest('formView with iframe', function() {
+//     $('#viewdiv').html('');
+//     $('#viewdiv').render(
+//         'foo.form',
+//         'iframeformview',
+//         function(element, view, context) {
+//             // XXX would it be nice to have 'element' point to
+//             // the iframe body instead? not sure...
+//             var iframe = $(
+//                 $('iframe', element)[0].contentWindow.document
+//                     .documentElement)
+//             if (context.action) {
+//                 $('form', iframe).submit();
+//             } else {
+//                 equals($('body', iframe).text(), 'foo');
+//                 start();
+//                 $('#viewdiv').unbind();
+//             };
+//         });
+// });
 
-asyncTest('htmlView', function() {
-    $('#viewdiv').html('').unbind();
-    $('#viewdiv').render(
-        {ifaces: ['html']},
-        function(element, view, context) {
-            equals($.trim($('#viewdiv').text()), 'foo');
-            equals(window._render_html_calls, 1);
-            start();
-            $('#viewdiv').unbind();
-        });
-});
+// asyncTest('htmlView', function() {
+//     $('#viewdiv').html('').unbind();
+//     $('#viewdiv').render(
+//         {ifaces: ['html']},
+//         function(element, view, context) {
+//             equals($.trim($('#viewdiv').text()), 'foo');
+//             equals(window._render_html_calls, 1);
+//             start();
+//             $('#viewdiv').unbind();
+//         });
+// });
 
-asyncTest(
-    'html context attribute overrides html_url view one',
-    function() {
-        $('#viewdiv').html('');
-        $('#viewdiv').render(
-            {ifaces: ['html'],
-             html: '<span>spam!</span>'},
-            function(element, view, context) {
-                equals($.trim($('#viewdiv').text()), 'spam!');
-                equals(window._render_html_calls, 2);
-                start();
-                $('#viewdiv').unbind();
-            });
-    });
+// asyncTest(
+//     'html context attribute overrides html_url view one',
+//     function() {
+//         $('#viewdiv').html('');
+//         $('#viewdiv').render(
+//             {ifaces: ['html'],
+//              html: '<span>spam!</span>'},
+//             function(element, view, context) {
+//                 equals($.trim($('#viewdiv').text()), 'spam!');
+//                 equals(window._render_html_calls, 2);
+//                 start();
+//                 $('#viewdiv').unbind();
+//             });
+//     });
 
-asyncTest(
-    'html_url context attr ovverides html view one',
-    function() {
-        $('#viewdiv').html('');
-        $('#viewdiv').render(
-            {ifaces: ['inline_html'],
-             html_url: 'test1.html',
-             text: 'spam'},
-            function(element, view, context) {
-                equals($.trim($('#viewdiv').text()), 'foo');
-                start();
-                $('#viewdiv').unbind();
-            });
-    });
+// asyncTest(
+//     'html_url context attr ovverides html view one',
+//     function() {
+//         $('#viewdiv').html('');
+//         $('#viewdiv').render(
+//             {ifaces: ['inline_html'],
+//              html_url: 'test1.html',
+//              text: 'spam'},
+//             function(element, view, context) {
+//                 equals($.trim($('#viewdiv').text()), 'foo');
+//                 start();
+//                 $('#viewdiv').unbind();
+//             });
+//     });
 
-asyncTest('jsontView', function() {
-    $('#viewdiv').render(
-        {foo: 'bar', ifaces: ['jt']},
-        function(element, view, context) {
-            equals($.trim($('#viewdiv').text()), 'bar');
-            equals(window._render_jt_calls, 1);
-            // the jsont cache should hold the url now
-            ok(obviel._jsont_cache['test1.jt'] !== undefined);
-            equals(
-                $.trim(
-                    obviel._jsont_cache['test1.jt']
-                        .expand({foo: 'bar'})),
-                $.trim($('#viewdiv').html_lower()));
-                        start();
-            $('#viewdiv').unbind();
-        });
-});
+// asyncTest('jsontView', function() {
+//     $('#viewdiv').render(
+//         {foo: 'bar', ifaces: ['jt']},
+//         function(element, view, context) {
+//             equals($.trim($('#viewdiv').text()), 'bar');
+//             equals(window._render_jt_calls, 1);
+//             // the jsont cache should hold the url now
+//             ok(obviel._jsont_cache['test1.jt'] !== undefined);
+//             equals(
+//                 $.trim(
+//                     obviel._jsont_cache['test1.jt']
+//                         .expand({foo: 'bar'})),
+//                 $.trim($('#viewdiv').html_lower()));
+//                         start();
+//             $('#viewdiv').unbind();
+//         });
+// });
 
-asyncTest('error handling', function() {
-    var element = $('#viewdiv');
-    element.html('');
-    element.render('interfaced.json', 'error', function() {
-        ok(false);
-        start();
-    }, function(e) {
-        same(e, 'some error');
-        start();
-    });
-    element.unbind();
-});
+// asyncTest('error handling', function() {
+//     var element = $('#viewdiv');
+//     element.html('');
+//     element.render('interfaced.json', 'error', function() {
+//         ok(false);
+//         start();
+//     }, function(e) {
+//         same(e, 'some error');
+//         start();
+//     });
+//     element.unbind();
+// });
 
-asyncTest('viewparent', function() {
-    var el = $('#viewdiv');
-    el.html('');
-    el.render({
-        sub_url: 'default.json', // string -> renderUrl(attr)
-        sub_html: {text: 'bar'}, // structure - render(attr)
-        sub_named: {text2: 'baz'} // is registered by name
-    }, 'subviews', function() {
-        var parent = $('#sub3', el).viewParent();
-        same(parent.length, 1);
-        same(parent[0], el[0]);
-        start();
-    });
-    el.unbind();
-});
+// asyncTest('viewparent', function() {
+//     var el = $('#viewdiv');
+//     el.html('');
+//     el.render({
+//         sub_url: 'default.json', // string -> renderUrl(attr)
+//         sub_html: {text: 'bar'}, // structure - render(attr)
+//         sub_named: {text2: 'baz'} // is registered by name
+//     }, 'subviews', function() {
+//         var parent = $('#sub3', el).viewParent();
+//         same(parent.length, 1);
+//         same(parent[0], el[0]);
+//         start();
+//     });
+//     el.unbind();
+// });
 
 test('view override on iface', function() {
     var el = $('#viewdiv');
@@ -754,117 +749,117 @@ obviel.view({
     }
 });
 
-test('render on other element', function() {
-    $('#jsview-area').bind(
-        'obviel-render',
-        function(ev, view, orgel, obj, name, callback, errback) {
-            var newel = $('#viewdiv2');
-            if (!obviel.provides(obj, 'foo') || orgel == newel) {
-                return;
-            };
-            view.doRender(newel, obj, name, callback, errback);
-            ev.preventDefault();
-            ev.stopPropagation();
-        });
-    $('#viewdiv').render({
-        ifaces: ['foo'],
-        text: 'eggs'
-    }, 'render-event');
-    equals($('#viewdiv2').text(), 'eggs');
-});
+// test('render on other element', function() {
+//     $('#jsview-area').bind(
+//         'obviel-render',
+//         function(ev, view, orgel, obj, name, callback, errback) {
+//             var newel = $('#viewdiv2');
+//             if (!obviel.provides(obj, 'foo') || orgel == newel) {
+//                 return;
+//             };
+//             view.doRender(newel, obj, name, callback, errback);
+//             ev.preventDefault();
+//             ev.stopPropagation();
+//         });
+//     $('#viewdiv').render({
+//         ifaces: ['foo'],
+//         text: 'eggs'
+//     }, 'render-event');
+//     equals($('#viewdiv2').text(), 'eggs');
+// });
 
-test('re-render a view', function() {
-    $('#viewdiv').html('');
-    $('#viewdiv2').html('');
+// test('re-render a view', function() {
+//     $('#viewdiv').html('');
+//     $('#viewdiv2').html('');
     
-    obviel.view({
-        iface: 'foo',
-        jsont: '<div>{foo}</div>'
-    });
+//     obviel.view({
+//         iface: 'foo',
+//         jsont: '<div>{foo}</div>'
+//     });
     
-    $('#viewdiv').render({
-        ifaces: ['foo'],
-        foo: 'bar'
-    });
+//     $('#viewdiv').render({
+//         ifaces: ['foo'],
+//         foo: 'bar'
+//     });
     
-    equals($('#viewdiv').html_lower(), '');
-    equals($('#viewdiv2').html_lower(), '<div>bar</div>');
+//     equals($('#viewdiv').html_lower(), '');
+//     equals($('#viewdiv2').html_lower(), '<div>bar</div>');
     
-    $('#viewdiv2 div').render({
-        ifaces: ['foo'],
-        foo: 'baz'
-    });
+//     $('#viewdiv2 div').render({
+//         ifaces: ['foo'],
+//         foo: 'baz'
+//     });
     
-    // rendering the structure on 
-    equals($('#viewdiv2').html_lower(), '<div>baz</div>');
-});
+//     // rendering the structure on 
+//     equals($('#viewdiv2').html_lower(), '<div>baz</div>');
+// });
 
-test('re-render parent', function() {
-    $('#viewdiv').html('').unbind();
-    $('#viewdiv2').html('').unbind();
+// test('re-render parent', function() {
+//     $('#viewdiv').html('').unbind();
+//     $('#viewdiv2').html('').unbind();
     
-    obviel.view({
-        iface: 'evfoo',
-        name: 'outer',
-        html: '<div class="ifoo"></div>',
-        render: function(el, obj, name) {
-            $('.ifoo', el).render(obj.ifoo, 'inner');
-        }
-    });
+//     obviel.view({
+//         iface: 'evfoo',
+//         name: 'outer',
+//         html: '<div class="ifoo"></div>',
+//         render: function(el, obj, name) {
+//             $('.ifoo', el).render(obj.ifoo, 'inner');
+//         }
+//     });
     
-    obviel.view({
-        iface: 'evfoo',
-        name: 'inner',
-        render: function(el, obj, name) {
-            el.text(obj.bar);
-        }
-    });
+//     obviel.view({
+//         iface: 'evfoo',
+//         name: 'inner',
+//         render: function(el, obj, name) {
+//             el.text(obj.bar);
+//         }
+//     });
     
-    $('body').unbind();
-    $('body').bind('obviel-render', function(ev, view, el, obj, name) {
-        if (!obviel.provides(obj, 'evfoo') || name != 'outer') {
-            return;
-        };
-        view.doRender($('#viewdiv2'), obj, name);
-        ev.preventDefault();
-        ev.stopPropagation();
-    });
+//     $('body').unbind();
+//     $('body').bind('obviel-render', function(ev, view, el, obj, name) {
+//         if (!obviel.provides(obj, 'evfoo') || name != 'outer') {
+//             return;
+//         };
+//         view.doRender($('#viewdiv2'), obj, name);
+//         ev.preventDefault();
+//         ev.stopPropagation();
+//     });
     
-    $('#viewdiv').unbind();
-    $('#viewdiv').render({
-        ifaces: ['evfoo'],
-        ifoo: {
-            ifaces: ['evfoo'],
-                    bar: 'baz'
-        }
-    }, 'outer');
+//     $('#viewdiv').unbind();
+//     $('#viewdiv').render({
+//         ifaces: ['evfoo'],
+//         ifoo: {
+//             ifaces: ['evfoo'],
+//                     bar: 'baz'
+//         }
+//     }, 'outer');
     
-    equals($('#viewdiv').html_lower(), '');
-    equals($('#viewdiv2').html_lower(), '<div class=ifoo>baz</div>');
+//     equals($('#viewdiv').html_lower(), '');
+//     equals($('#viewdiv2').html_lower(), '<div class=ifoo>baz</div>');
     
-    // now triggering an outer structure render on an inner element
-    // will cause viewdiv2 to be updated again
-    $('.ifoo').render({
-                ifaces: ['evfoo'],
-        ifoo: {
-            ifaces: ['evfoo'],
-            bar: 'qux'
-        }
-    }, 'outer');
+//     // now triggering an outer structure render on an inner element
+//     // will cause viewdiv2 to be updated again
+//     $('.ifoo').render({
+//                 ifaces: ['evfoo'],
+//         ifoo: {
+//             ifaces: ['evfoo'],
+//             bar: 'qux'
+//         }
+//     }, 'outer');
     
-    equals($('#viewdiv').html_lower(), '');
-    equals($('#viewdiv2').html_lower(), '<div class=ifoo>qux</div>');
-            $('body').unbind();
-});
+//     equals($('#viewdiv').html_lower(), '');
+//     equals($('#viewdiv2').html_lower(), '<div class=ifoo>qux</div>');
+//             $('body').unbind();
+// });
 
-test('basic re-render of structure handled by parent', function() {
-    var el = $('#viewdiv');
-    obviel.view({
-        iface: 'parenttest',
-        jsont: '<div>{foo}</div>'
-    });
-    el.render({ifaces: ['parenttest'], foo: 'bar'});
-    equals(el.html_lower(), '<div>bar</div>');
-    $('div', el).render({ifaces: ['parenttest'], foo: 'baz'});
-            equals(el.html_lower(), '<div>baz</div>');
-});
+// test('basic re-render of structure handled by parent', function() {
+//     var el = $('#viewdiv');
+//     obviel.view({
+//         iface: 'parenttest',
+//         jsont: '<div>{foo}</div>'
+//     });
+//     el.render({ifaces: ['parenttest'], foo: 'bar'});
+//     equals(el.html_lower(), '<div>bar</div>');
+//     $('div', el).render({ifaces: ['parenttest'], foo: 'baz'});
+//             equals(el.html_lower(), '<div>baz</div>');
+// });
