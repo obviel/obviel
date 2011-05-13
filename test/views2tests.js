@@ -450,7 +450,7 @@ asyncTest('render url, default name', function() {
         render: render_text
     });
     $('#viewdiv').render(
-        'default.json', function() {
+        'fixtures/default.json', function() {
             equals($('#viewdiv').text(), 'foo');
             start();
         });
@@ -462,7 +462,7 @@ asyncTest('render url with name', function() {
         name: 'foo'
     });
     $('#viewdiv').render(
-        'named.json', 'foo', function() {
+        'fixtures/named.json', 'foo', function() {
             equals($('#viewdiv').text(), 'bar');
             start();
         });
@@ -475,7 +475,7 @@ asyncTest('render url with iface', function() {
     });
     
     $('#viewdiv').render(
-        'interfaced.json',  function() {
+        'fixtures/interfaced.json',  function() {
             equals($('#viewdiv').text(), 'baz');
             start();
         });
@@ -489,7 +489,7 @@ asyncTest('render url with name and iface', function() {
     });
     
     $('#viewdiv').render(
-        'named_interfaced.json',  'foo',
+        'fixtures/named_interfaced.json',  'foo',
         function() {
             equals($('#viewdiv').text(), 'qux');
             start();
@@ -504,7 +504,7 @@ asyncTest('rerender url', function() {
     });
     var el = $('#viewdiv');
     el.render(
-        'default.json', function() {
+        'fixtures/default.json', function() {
             equals(this.el.text(), 'foo');
             // if this test freezes, it never re-rendered...
             el.rerender(function() {
@@ -520,9 +520,9 @@ asyncTest('renderPrevious url', function() {
         render: render_text
     });
     el.render(
-        'default.json', function() {
+        'fixtures/default.json', function() {
             el.render(
-                'interfaced.json', function() {
+                'fixtures/interfaced.json', function() {
                     equals(this.el.text(), 'baz');
                     el.renderPrevious(function() {
                         equals(this.el.text(), 'foo');
@@ -623,7 +623,7 @@ asyncTest('render subviews', function() {
     var el = $('#viewdiv');
     el.render({
         ifaces: ['subviews'],
-        sub_url: 'default.json', // url
+        sub_url: 'fixtures/default.json', // url
         sub_html: {text: 'bar'}, //  obj
         sub_named: {text2: 'baz'} // is registered by name foo
     }, function() {
@@ -821,7 +821,7 @@ test('renderPrevious with ephemeral', function() {
 // asyncTest('error handling', function() {
 //     var element = $('#viewdiv');
 //     element.html('');
-//     element.render('interfaced.json', 'error', function() {
+//     element.render('fixtures/interfaced.json', 'error', function() {
 //         ok(false);
 //         start();
 //     }, function(e) {
@@ -835,7 +835,7 @@ test('renderPrevious with ephemeral', function() {
 //     var el = $('#viewdiv');
 //     el.html('');
 //     el.render({
-//         sub_url: 'default.json', // string -> renderUrl(attr)
+//         sub_url: 'fixtures/default.json', // string -> renderUrl(attr)
 //         sub_html: {text: 'bar'}, // structure - render(attr)
 //         sub_named: {text2: 'baz'} // is registered by name
 //     }, 'subviews', function() {
