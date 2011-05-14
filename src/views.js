@@ -412,9 +412,9 @@ var obviel = {};
                         jsont, this.template_options);
                     module._jsont_cache[jsont] = t;
                 };
-                html = t.expand(obj);
+                var html = t.expand(obj);
             } else {
-                html = obj.html || this.html;
+                var html = obj.html || this.html;
             };
             callback(html);
         } else if (obj.html_url || this.html_url || obj.jsont_url ||
@@ -423,7 +423,7 @@ var obviel = {};
             var jsonturl = (obj.jsont_url || this.jsont_url);
             var cached = module._jsont_cache[jsonturl];
             if (cached) {
-                html = cached.expand(obj);
+                var html = cached.expand(obj);
                 callback(html);
                 return;
             };
