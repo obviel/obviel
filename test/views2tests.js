@@ -832,34 +832,60 @@ test('renderPrevious with ephemeral', function() {
 // });
 
 // asyncTest('viewparent', function() {
+//     obviel.view({
+//         iface: 'subviews',
+//         render: function() {
+//             el.html('<div id="sub1"></div><div id="sub2"></div>' +
+//                     '<div id="sub3"></div>');
+//         },
+//         subviews: {
+//             '#sub1': 'sub_url',
+//             '#sub2': 'sub_html',
+//             '#sub3': ['sub_named', 'foo']
+//         }
+//     });
+
+//     obviel.view({
+//         render: render_text
+//     });
+
+//     obviel.view({
+//         name: 'foo',
+//         render: function() {
+//             this.el.text('named');
+//         }
+//     });
+    
 //     var el = $('#viewdiv');
-//     el.html('');
 //     el.render({
-//         sub_url: 'fixtures/default.json', // string -> renderUrl(attr)
-//         sub_html: {text: 'bar'}, // structure - render(attr)
+//         sub_url: 'fixtures/default.json', // url
+//         sub_html: {text: 'bar'}, // obj
 //         sub_named: {text2: 'baz'} // is registered by name
-//     }, 'subviews', function() {
+//     }, function() {
 //         var parent = $('#sub3', el).viewParent();
 //         same(parent.length, 1);
 //         same(parent[0], el[0]);
 //         start();
 //     });
-//     el.unbind();
 // });
+
 
 test('view override on iface', function() {
     var el = $('#viewdiv');
     obviel.view({
         iface: 'ifoo',
-        render: function(el, obj, name) {
-            el.text('spam: ' + obj.text3);
+        render: render_text
+    });
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.text('spam: ' + this.obj.text);
         }
     });
     el.render({
         ifaces: ['ifoo'],
-        text3: 'eggs'});
+        text: 'eggs'});
     equals(el.text(), 'spam: eggs');
-                el.unbind();
 });
 
 
