@@ -157,7 +157,15 @@ var obviel = {};
             previous_view.cleanup(self.el, self.obj, self.name);
         }
         // XXX render template, etc if necessary
-
+        // strategy: loop through template languages by key
+        // look for key in obj first, then view
+        // also look for url variety of keys
+        // look up value doing a get request; cache should already kick in
+        // compile & store under URL but how to obey caching headers? is
+        // there a clever trick to let it expire etc? a library?
+        // then render the value and store it
+        // the rest of the function needs to be in a callback to this
+        
         // BBB passing the arguments is really for backwards compatibility only:
         // all these are accessible on the view object itself too
         self.render(self.el, self.obj, self.name, self.callback, self.errback);
@@ -188,6 +196,7 @@ var obviel = {};
         
         // clever trick taken from Guido Wesdorp: the view's callback will
         // be called as soon as the last subview's callback is called
+        // XXX but does this really work?
         var callback = function() {
             running--;
             if (running > 0) {
@@ -226,7 +235,7 @@ var obviel = {};
             'render.obviel',
             function(ev) {
                 var view = ev.view;
-                // only re-render view if a previous view here worked
+                // only render view if a previous view here worked
                 // for that iface
                 var el = $(this);
                 var previous_view = get_stack_top(el);
