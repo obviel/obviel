@@ -170,20 +170,18 @@ var obviel = {};
         // all these are accessible on the view object itself too
         self.render(self.el, self.obj, self.name, self.callback, self.errback);
 
-        var subviews_rendered = self.render_subviews();
+        var promise = self.render_subviews();
         
-        self.store_view();
-
-        // if we rendered no subviews, we want to finalize rendering now
-        // if we did render subviews that will take care of finalization
-        if (subviews_rendered == 0) {
+        promise.done(function() {
+            self.store_view(); 
             self.finalize_rendering();
-        }
+        });
     };
 
     module.View.prototype.finalize_rendering = function() {
         var self = this;
         if (self.callback !== undefined) {
+            console.log(self.el.attr('id'));
             // BBB arguments are for backwards compatibility only
             self.callback(self.el, self, self.obj);
         }
@@ -191,19 +189,8 @@ var obviel = {};
     
     module.View.prototype.render_subviews = function() {
         var self = this;
-        var running = 0;
-        var amount = 0;
+        var promises = [];
         
-        // clever trick taken from Guido Wesdorp: the view's callback will
-        // be called as soon as the last subview's callback is called
-        // XXX but does this really work?
-        var callback = function() {
-            running--;
-            if (running > 0) {
-                return;
-            }
-            self.finalize_rendering();
-        };
         $.each(self.subviews, function(selector, attr) {
             var el = $(selector, self.el);
             var name = 'default';
@@ -212,16 +199,26 @@ var obviel = {};
                 attr = attr[0];
             }
             var obj = self.obj[attr];
-            if ((obj === undefined) || !obj) {
+            if ((obj == undefined) || !obj) {
                 return;
             }
-            running++; 
-            amount++;
-            self.registry.render(el, obj, name, callback);
+            var promise = self.render_subview(el, obj, name);
+            promises.push(promise);
         });
-        return amount;
+
+        // this is how to pass an array to $.when!
+        return $.when.apply(null, promises);
     };
-    
+
+    module.View.prototype.render_subview = function(el, obj, name) {
+        var self = this;
+        var defer = $.Deferred();
+        self.registry.render(el, obj, name, function() {
+            defer.resolve();
+        });
+        return defer.promise();
+    };
+ 
     module.View.prototype.store_view = function() {
         var self = this;
         if (self.ephemeral) {
@@ -231,7 +228,7 @@ var obviel = {};
         var stack = get_stack(self.el);
         stack.push(self);
         // event handler here to render it next time
-        self.el.one(
+        self.el.bind(
             'render.obviel',
             function(ev) {
                 var view = ev.view;
@@ -249,6 +246,7 @@ var obviel = {};
                 view.do_render();
                 ev.stopPropagation();
                 ev.preventDefault();
+                self.el.unbind(ev);
             }
         );
     };
@@ -314,22 +312,30 @@ var obviel = {};
         if (typeof obj == 'string') {
             url = obj;
         };
+        var promise;
         if (url !== null) {
-            self.render_url(el, url, name, callback, errback);
+            promise = self.view_for_url(el, url, name, callback, errback);
         } else {
-            self.render_obj(el, obj, name, callback, errback); 
+            promise = self.view_for_obj(el, obj, name, callback, errback); 
         }
+        
+        promise.done(function(view) {
+            self.trigger_render(view);
+        });
     };
     
-    module.Registry.prototype.render_obj = function(el, obj, name,
-                                                    callback, errback) {
+    module.Registry.prototype.view_for_obj = function(el, obj, name,
+                                                      callback, errback) {
+        var defer = $.Deferred();
         var view = this.clone_view(el, obj, name, callback, errback);
-        this.trigger_render(view);
+        defer.resolve(view);
+        return defer.promise();
     };
     
-    module.Registry.prototype.render_url = function(el, url, name,
-                                                    callback, errback) {
+    module.Registry.prototype.view_for_url = function(el, url, name,
+                                                      callback, errback) {
         var self = this;
+        var defer = $.Deferred();
         $.ajax({
             type: 'GET',
             url: url,
@@ -337,9 +343,10 @@ var obviel = {};
             success: function(obj) {
                 var view = self.clone_view(el, obj, name, callback, errback);
                 view.from_url = url;
-                self.trigger_render(view);
+                defer.resolve(view);
             }
         });
+        return defer.promise();
     };
 
     module.registry = new module.Registry();

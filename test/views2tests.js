@@ -625,7 +625,7 @@ asyncTest('render subviews', function() {
         ifaces: ['subviews'],
         sub_url: 'fixtures/default.json', // url
         sub_html: {text: 'bar'}, //  obj
-        sub_named: {text2: 'baz'} // is registered by name foo
+        sub_named: {} // is registered by name foo
     }, function() {
         equals($('#sub1', el).text(), 'foo');
         equals($('#sub2', el).text(), 'bar');
