@@ -156,38 +156,34 @@ var obviel = {};
             // BBB arguments for backwards compatibility
             previous_view.cleanup(self.el, self.obj, self.name);
         }
-        // XXX render template, etc if necessary
-        // strategy: loop through template languages by key
-        // look for key in obj first, then view
-        // also look for url variety of keys
-        // look up value doing a get request; cache should already kick in
-        // compile & store under URL but how to obey caching headers? is
-        // there a clever trick to let it expire etc? a library?
-        // then render the value and store it
-        // the rest of the function needs to be in a callback to this
-        // BBB passing the arguments is really for backwards compatibility only:
-        // all these are accessible on the view object itself too
-        self.render(self.el, self.obj, self.name, self.callback, self.errback);
-
-        // XXX provide a way for render to return a promise too, and
-        // only let the subviews rendering start when the render promise is
-        // done
-        var promise = self.render_subviews();
         
-        promise.done(function() {
-            self.store_view(); 
-            self.finalize_rendering();
+        var template_promise = module.compilers.render(self, self.obj);
+        
+        template_promise.done(function(html) {
+            if (html !== null) {
+                self.el.html(html);
+            }
+            
+            // BBB passing the arguments is really for backwards compatibility
+            // only: all these are accessible on the view object itself too
+            self.render(self.el, self.obj, self.name,
+                        self.callback, self.errback);
+        
+            // XXX provide a way for render to return a promise too, and
+            // only let the subviews rendering start when the render promise is
+            // done
+            var subviews_promise = self.render_subviews();
+            
+            subviews_promise.done(function() {
+                self.store_view(); 
+                if (self.callback) {
+                    /// BBB arguments are for backwards compatibility only
+                    self.callback(self.el, self, self.obj);
+                }
+            });
         });
     };
 
-    module.View.prototype.finalize_rendering = function() {
-        var self = this;
-        if (self.callback !== undefined) {
-            // BBB arguments are for backwards compatibility only
-            self.callback(self.el, self, self.obj);
-        }
-    };
-    
     module.View.prototype.render_subviews = function() {
         var self = this;
         var promises = [];
@@ -356,6 +352,140 @@ var obviel = {};
         module.registry = new module.Registry();
     };
     
+    
+    module.Compilers = function() {
+        this.compilers = {};
+        this.cache = {};
+    };
+
+    module.Compilers.prototype.register = function(identifier, compiler) {
+        this.compilers[identifier] = compiler;
+    };
+    
+    module.Compilers.prototype.render = function(view, obj) {
+        var self = this;
+
+        var source = null;
+        var source_url = null;
+
+        var found_compiler = null;
+        $.each(self.compilers, function(identifier, compiler) {
+            source = obj[identifier];
+            if (source !== undefined) {
+                found_compiler = compiler;
+                return false;
+            }
+
+            source_url = obj[identifier + '_url'];
+            if (source_url !== undefined) {
+                found_compiler = compiler;
+                return false;
+            }
+
+            source = view[identifier];
+            if (source !== undefined) {
+                found_compiler = compiler;
+                return false;
+            }
+
+            source_url = view[identifier + '_url'];
+            if (source_url !== undefined) {
+                found_compiler = compiler;
+                return false;
+            }
+            
+            return true;
+        });
+
+        var defer = $.Deferred();
+        
+        if (found_compiler === null) {
+            defer.resolve(null);
+            return defer.promise();
+        }
+        
+        if (source !== undefined) {
+            defer.resolve(found_compiler.compile(source).render(obj));
+            return defer.promise();
+        }
+
+        var compiled = self.cache[source_url];
+        if (compiled !== undefined) {
+            defer.resolve(compiled.render(obj));
+            return defer.promise();
+        }
+
+        // XXX does this obey server caching?
+        var source_promise = $.ajax({
+            type: 'GET',
+            url: source_url,
+            dataType: 'text'
+        }).success(function(source) { 
+            var compiled = found_compiler.compile(source);
+            self.cache[source_url] = compiled;
+            defer.resolve(compiled.render(obj));
+        });
+        
+        return defer.promise();
+    };
+
+    
+    module.Compiler = function() {
+
+    };
+
+    module.Compiler.prototype.compile = function(source) {
+
+    };
+
+    module.HtmlCompiler = function() {
+    };
+
+    module.HtmlCompiler.prototype = new module.Compiler();
+    
+    module.HtmlCompiler.prototype.compile = function(source) {
+        return new module.HtmlCompiled(source);
+    };
+
+    module.HtmlCompiled = function(source) {
+        this.source = source;
+    };
+
+    module.HtmlCompiled.prototype.render = function(obj) {
+        return this.source;
+    };
+    
+    module.JsontCompiler = function() {
+        
+    };
+
+    module.JsontCompiler.prototype = new module.Compiler();
+
+    module.JsontCompiler.prototype.compile = function(source) {
+        return new module.JsontCompiled(source);
+    };
+
+    module.JsontCompiled = function(source) {
+        this.compiled = new jsontemplate.Template(source);
+    };
+    
+
+    module.JsontCompiled.prototype.render = function(obj) {
+        return this.compiled.expand(obj);
+    };
+    
+    module.compilers = new module.Compilers();
+
+    module.clear_compiled_cache = function() {
+        module.compilers.cache = {};
+    };
+    
+    module.compilers.register('html', new module.HtmlCompiler());
+    
+    if (jsontemplate !== undefined) {
+        module.compilers.register('jsont', new module.JsontCompiler());
+    }
+    
     module.view = function(view) {
         module.registry.register(view);
     };
@@ -433,4 +563,4 @@ var obviel = {};
         }
     );
     
-})(jQuery, obviel);
+})(jQuery, obviel, jsontemplate);
