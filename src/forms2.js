@@ -278,6 +278,10 @@ obviel.forms2 = {};
 
     // XXX hack to look up view for widget, should go to obviel somehow
     var get_view = function(widget) {
+        // views2.js
+        return obviel.registry.lookup(widget, 'default');
+        
+        // views.js
         var ifaces = obviel.ifaces(widget);
         for (var i=0; i < ifaces.length; i++) {
             var iviews = obviel._views[ifaces[i]];
@@ -634,12 +638,18 @@ obviel.forms2 = {};
             $('div', sub_el).each(function(index1, el) {
                 var my_el = $(el);
                 if (my_el.hasClass('obviel-repeatfield')) {
+
+                    // with views2.js
+                    var view = $(my_el).view();
+                    view.change(view.obj);
+
+                    // with views.js
                     // XXX crazy obviel internal hackery, indicating
-                    // obviel view internals are wrong
-                    var viewstack = my_el.data('obviel.viewstack');
-                    var widget_data = viewstack[viewstack.length - 1][0];
-                    var view = get_view(widget_data);
-                    view.change(widget_data);
+                    // obviel view internals are wrong           
+                    //var viewstack = my_el.data('obviel.viewstack');
+                    //var widget_data = viewstack[viewstack.length - 1][0];
+                    //var view = get_view(widget_data);
+                    // view.change(widget_data);
                 }
             });
         });
