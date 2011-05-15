@@ -165,11 +165,13 @@ var obviel = {};
         // there a clever trick to let it expire etc? a library?
         // then render the value and store it
         // the rest of the function needs to be in a callback to this
-        
         // BBB passing the arguments is really for backwards compatibility only:
         // all these are accessible on the view object itself too
         self.render(self.el, self.obj, self.name, self.callback, self.errback);
 
+        // XXX provide a way for render to return a promise too, and
+        // only let the subviews rendering start when the render promise is
+        // done
         var promise = self.render_subviews();
         
         promise.done(function() {
@@ -181,7 +183,6 @@ var obviel = {};
     module.View.prototype.finalize_rendering = function() {
         var self = this;
         if (self.callback !== undefined) {
-            console.log(self.el.attr('id'));
             // BBB arguments are for backwards compatibility only
             self.callback(self.el, self, self.obj);
         }
