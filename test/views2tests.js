@@ -164,172 +164,6 @@ module('Obviel Views', {
     }
 });
 
-// register using default name
-// obviel.view({
-//     render: function(el, obj) {
-//         $(el).text(obj.text);
-//     }
-// });
-
-// // register using non-default name
-// obviel.view((new obviel.View({
-//     name: 'foo',
-//     render: function(el, obj) {
-//         $(el).text(obj.text2);
-//     }})));
-
-// // register by iface
-// obviel.iface('ifoo');
-// obviel.view((new obviel.View({
-//     iface: 'ifoo',
-//     render: function(el, obj) {
-//         $(el).text(obj.text3);
-//     }})));
-
-// // register by iface and name
-// obviel.view((new obviel.View({
-//     name: 'foo',
-//     iface: 'ifoo',
-//     render: function(el, obj) {
-//         $(el).text(obj.text4);
-//     }})));
-
-// // short-hand registration from options
-// obviel.iface('ibar');
-// obviel.view({
-//     name: 'bar',
-//     iface: 'ibar',
-//     render: function(el, obj) {
-//         $(el).text(obj.text5);
-//     }});
-
-// // view for testing cleanups, has a cleanup hook
-// obviel.iface('cleanup');
-// obviel.view({
-//     iface: 'cleanup',
-//     render: function(element, obj, name) {
-//         window._cleanup_called = false;
-//         $(element).text(obj.foo);
-//     },
-//     cleanup: function() {
-//         window._cleanup_called = true;
-//     }});
-
-// // test for re-rendering views
-// obviel.iface('rerender');
-// obviel.view({
-//     iface: 'rerender',
-//     render: function(element, obj, name) {
-//             var numrenders = obj.numrenders || 1;
-//         element.text(numrenders);
-//         obj.numrenders = numrenders + 1;
-//     }
-// });
-
-// // used to test render - uses interface 'ifoo' but expects
-// // different data
-// obviel.view({
-//     name: 'error',
-//     iface: 'ifoo',
-//     render: function(element, obj, name) {
-//         throw('some error');
-//     }
-// });
-
-// // view that doesn't do anything
-// obviel.view({
-//     name: 'noop',
-//     render: function(element, obj, name) {
-//     }
-// });
-
-// // view that doesn't (even ;) provide a render method
-// obviel.view({name: 'norender'});
-
-// // view that doesn't get added to the view stack (ephemeral)
-// obviel.view({
-//     name: 'ephemeral',
-//     ephemeral: true,
-//         render: function(el, obj) {
-//             $(el).text(obj.text);
-//         }
-// });
-
-// // view with subviews declared
-// obviel.view({
-//     name: 'subviews',
-//     render: function(el, obj) {
-//         el.html(
-//             '<div id="sub1"></div><div id="sub2">' +
-//                 '</div><div id="sub3"></div>');
-//     },
-//     subviews: { // mapping from jq selector to obj attr
-//         '#sub1': 'sub_url',
-//         '#sub2': 'sub_html',
-//         // register for a named view
-//         '#sub3': ['sub_named', 'foo']
-//     }
-// });
-
-// // view with a single subview
-// obviel.view({
-//     name: 'subviews_single',
-//     render: function(el, obj) {
-//         el.html('<div id="sub1"></div>');
-//     },
-//     subviews: {
-//         '#sub1': 'sub_content'
-//     }
-// });
-
-// // view that adds iframe
-// obviel.view({
-//     name: 'iframeview',
-//     iframe: true,
-//     render: function(el, obj) {
-//             // let's add some content to the html
-//         var iframe = el[0].getElementsByTagName('iframe')[0];
-//         var body = iframe.contentWindow.document.getElementsByTagName(
-//             'body')[0];
-//         body.appendChild(
-//             iframe.contentWindow.document.createTextNode('foo'));
-//     }
-// });
-
-// obviel.view({
-//     iface: 'inline_html',
-//     html: '<span></span>',
-//     render: function(el, obj, name) {
-//         $('span', el).text(obj.text);
-//     }});
-
-// special views
-// obviel.formView({
-//     render: function() {}});
-
-// obviel.formView({
-//     name: 'iframeformview',
-//     iframe: true
-// });
-
-// obviel.htmlView({
-//     iface: 'html',
-//     html_url: 'test1.html',
-//     render: function(element, obj, name) {
-//         window._render_html_calls = (
-//             window._render_html_calls || 0) + 1;
-//     }});
-
-// obviel.jsontView({
-//     iface: 'jt',
-//     jsont_url: 'test1.jt',
-//     render: function() {
-//         window._render_jt_calls = (
-//             window._render_jt_calls || 0) + 1;
-//     }});
-
-// actual tests
-
 var render_text = function() {
     this.el.text(this.obj.text);
 };
@@ -424,6 +258,17 @@ test('explicit view instance', function() {
 
     $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
     equals($('#viewdiv').text(), 'qux');
+});
+
+test('init', function() {
+    obviel.view({
+        iface: 'ifoo',
+        init: function() {
+            this.whatever = true;
+        }
+    });
+    $('#viewdiv').render({ifaces: ['ifoo']});
+    equals($('#viewdiv').view().whatever, true);
 });
 
 test('cleanup', function() {
@@ -720,63 +565,6 @@ test('renderPrevious with ephemeral', function() {
     el.renderPrevious();
     equals(el.text(), 'foo');
 });
-
-// asyncTest('render into iframe', function() {
-//     var el = $('#viewdiv');
-//     el.html('');
-//     el.render({
-//         html:
-//         '<html><head><title>test doc</title></head>' +
-//             '<body></body></html>'
-//     }, 'iframeview', function(el, obj, name) {
-//         var iframe = $(
-//             $('iframe', el)[0].contentWindow.document
-//                 .documentElement);
-//         equals($('body', iframe).text(), 'foo');
-//         // for some reason, .text() seems to fail on ie?!?
-//         equals($('title', iframe).html_lower(), 'test doc');
-//         start();
-//     });
-//     el.unbind();
-// });
-
-// asyncTest('formView', function() {
-//     $('#viewdiv').html('').unbind();
-//     $('#viewdiv').render(
-//             'foo.form',
-//         function(element, view, context) {
-//             // XXX test re-post on unsuccessful submit
-//             if (context.action) {
-//                 element.find('form').submit();
-//             } else {
-//                 // after successful form post
-//                 equals(element.text(), 'foo');
-//                 start();
-//                 $('#viewdiv').unbind();
-//             };
-//         });
-// });
-
-// asyncTest('formView with iframe', function() {
-//     $('#viewdiv').html('');
-//     $('#viewdiv').render(
-//         'foo.form',
-//         'iframeformview',
-//         function(element, view, context) {
-//             // XXX would it be nice to have 'element' point to
-//             // the iframe body instead? not sure...
-//             var iframe = $(
-//                 $('iframe', element)[0].contentWindow.document
-//                     .documentElement)
-//             if (context.action) {
-//                 $('form', iframe).submit();
-//             } else {
-//                 equals($('body', iframe).text(), 'foo');
-//                 start();
-//                 $('#viewdiv').unbind();
-//             };
-//         });
-// });
 
 test('view with html', function() {
     var render_called = 0;
