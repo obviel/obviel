@@ -159,20 +159,12 @@ var obviel = {};
             // BBB arguments for backwards compatibility
             previous_view.cleanup(self.el, self.obj, self.name);
         }
-
-        var compiled_template_promise = null;
-        if (self.compiled_template !== undefined) {
-            var compiled_template_defer = $.Deferred();
-            compiled_template_defer.resolve(self.compiled_template);
-            compiled_template_promise = compiled_template_defer.promise();
-        } else {
-            compiled_template_promise = module.compilers.get_compiled(
-                self, self.obj);
-        }
+        
+        var compiled_template_promise = module.compilers.get_compiled(
+            self, self.obj);
         
         compiled_template_promise.done(function(compiled_template) {
             if (compiled_template !== null) {
-                self.compiled_template = compiled_template;
                 var html = compiled_template.render(self.obj);
                 self.el.html(html);
             }
@@ -369,11 +361,16 @@ var obviel = {};
     
     module.Compilers = function() {
         this.compilers = {};
-        this.cache = {};
     };
 
     module.Compilers.prototype.register = function(identifier, compiler) {
         this.compilers[identifier] = compiler;
+    };
+
+    module.Compilers.prototype.clear_cache = function() {
+        $.each(this.compilers, function(identifier, compiler) {
+            compiler.clear_cache();
+        });
     };
     
     module.Compilers.prototype.get_compiled = function(view, obj) {
@@ -419,48 +416,77 @@ var obviel = {};
         }
         
         if (source !== undefined) {
-            defer.resolve(found_compiler.compile(source));
-            return defer.promise();
-        }
-
-        var compiled = self.cache[source_url];
-        if (compiled !== undefined) {
-            defer.resolve(compiled);
-            return defer.promise();
-        }
-
-        // XXX does this obey server caching?
-        var source_promise = $.ajax({
-            type: 'GET',
-            url: source_url,
-            dataType: 'text'
-        }).success(function(source) { 
             var compiled = found_compiler.compile(source);
-            self.cache[source_url] = compiled;
             defer.resolve(compiled);
-        });
+            return defer.promise();
+        }
         
-        return defer.promise();
+        return found_compiler.compile_url(source_url);
     };
 
     
     module.Compiler = function() {
-
+        this.url_cache = {};
+        this.source_cache = {};
     };
 
+    module.Compiler.prototype.get_compiled = function(source) {
+        
+    };
+
+    module.Compiler.prototype.clear_cache = function() {
+        this.url_cache = {};
+        this.source_cache = {};
+    };
+    
     module.Compiler.prototype.compile = function(source) {
-
+        var self = this;
+        var cached_compiled = self.source_cache[source];
+        if (cached_compiled !== undefined) {
+            return cached_compiled;
+        }
+        var compiled = self.get_compiled(source);
+        self.source_cache[source] = compiled;
+        return compiled;
     };
 
+    module.Compiler.prototype.compile_url = function(url) {
+        var self = this;
+        var defer = $.Deferred();
+        var cached_compiled = self.url_cache[url];
+
+        if (cached_compiled !== undefined) {
+            defer.resolve(cached_compiled);
+            return defer.promise();
+        }
+        
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'text'
+        }).success(function(source) {
+            var compiled = self.get_compiled(source);
+            self.url_cache[url] = compiled;
+            defer.resolve(compiled);
+        });
+        return defer.promise();
+    };
+    
     module.HtmlCompiler = function() {
     };
 
     module.HtmlCompiler.prototype = new module.Compiler();
     
-    module.HtmlCompiler.prototype.compile = function(source) {
+    module.HtmlCompiler.prototype.get_compiled = function(source) {
         return new module.HtmlCompiled(source);
     };
 
+    module.HtmlCompiler.prototype.compile = function(source) {
+        // don't need source-level caching for HtmlCompiler, as
+        // compilation takes no time and this would only waste storage
+        return this.get_compiled(source);
+    };
+    
     module.HtmlCompiled = function(source) {
         this.source = source;
     };
@@ -470,12 +496,11 @@ var obviel = {};
     };
     
     module.JsontCompiler = function() {
-        
     };
 
     module.JsontCompiler.prototype = new module.Compiler();
 
-    module.JsontCompiler.prototype.compile = function(source) {
+    module.JsontCompiler.prototype.get_compiled = function(source) {
         return new module.JsontCompiled(source);
     };
 
@@ -489,10 +514,6 @@ var obviel = {};
     };
     
     module.compilers = new module.Compilers();
-
-    module.clear_compiled_cache = function() {
-        module.compilers.cache = {};
-    };
     
     module.compilers.register('html', new module.HtmlCompiler());
     

@@ -160,7 +160,7 @@ module('Obviel Views', {
     teardown: function() {
         $('#viewdiv').unbind();
         obviel.clear_registry();
-        obviel.clear_compiled_cache();
+        obviel.compilers.clear_cache();
     }
 });
 
@@ -880,14 +880,17 @@ asyncTest('jsont view', function() {
          jsont_url: 'fixtures/test1.jsont'
      });
 
-    equals(obviel.compilers.cache['fixtures/test1.jsont'], undefined);
+    // a bit of implementation detail to get the cache
+    var cache = obviel.compilers.compilers['jsont'].url_cache;
+    
+    equals(cache['fixtures/test1.jsont'], undefined);
           
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['jt']},
         function(element, view, context) {
             equals($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
-            ok(obviel.compilers.cache['fixtures/test1.jsont']);
+            ok(cache['fixtures/test1.jsont']);
             start();
         });
 });
