@@ -142,7 +142,6 @@ var obviel = {};
     };
 
     module.View.prototype.init = function() {
-
     };
     
     module.View.prototype.cleanup = function(el, obj, name) {
@@ -160,11 +159,21 @@ var obviel = {};
             // BBB arguments for backwards compatibility
             previous_view.cleanup(self.el, self.obj, self.name);
         }
+
+        var compiled_template_promise = null;
+        if (self.compiled_template !== undefined) {
+            var compiled_template_defer = $.Deferred();
+            compiled_template_defer.resolve(self.compiled_template);
+            compiled_template_promise = compiled_template_defer.promise();
+        } else {
+            compiled_template_promise = module.compilers.get_compiled(
+                self, self.obj);
+        }
         
-        var template_promise = module.compilers.render(self, self.obj);
-        
-        template_promise.done(function(html) {
-            if (html !== null) {
+        compiled_template_promise.done(function(compiled_template) {
+            if (compiled_template !== null) {
+                self.compiled_template = compiled_template;
+                var html = compiled_template.render(self.obj);
                 self.el.html(html);
             }
             
@@ -367,7 +376,7 @@ var obviel = {};
         this.compilers[identifier] = compiler;
     };
     
-    module.Compilers.prototype.render = function(view, obj) {
+    module.Compilers.prototype.get_compiled = function(view, obj) {
         var self = this;
 
         var source = null;
@@ -410,13 +419,13 @@ var obviel = {};
         }
         
         if (source !== undefined) {
-            defer.resolve(found_compiler.compile(source).render(obj));
+            defer.resolve(found_compiler.compile(source));
             return defer.promise();
         }
 
         var compiled = self.cache[source_url];
         if (compiled !== undefined) {
-            defer.resolve(compiled.render(obj));
+            defer.resolve(compiled);
             return defer.promise();
         }
 
@@ -428,7 +437,7 @@ var obviel = {};
         }).success(function(source) { 
             var compiled = found_compiler.compile(source);
             self.cache[source_url] = compiled;
-            defer.resolve(compiled.render(obj));
+            defer.resolve(compiled);
         });
         
         return defer.promise();
