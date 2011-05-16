@@ -154,8 +154,8 @@ test('error on recursion', function() {
 
 module('Obviel Views', {
     setup: function() {
-        $('#viewdiv').html('');
-        $('#viewdiv').unbind();
+        $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
+        $('#jsview-area').unbind();
     },
     teardown: function() {
         $('#viewdiv').unbind();
@@ -763,24 +763,56 @@ test('view override on iface', function() {
 //     }
 // });
 
-// test('render on other element', function() {
-//     $('#jsview-area').bind(
-//         'obviel-render',
-//         function(ev, view, orgel, obj, name, callback, errback) {
-//             var newel = $('#viewdiv2');
-//             if (!obviel.provides(obj, 'foo') || orgel == newel) {
-//                 return;
-//             };
-//             view.doRender(newel, obj, name, callback, errback);
-//             ev.preventDefault();
-//             ev.stopPropagation();
-//         });
-//     $('#viewdiv').render({
-//         ifaces: ['foo'],
-//         text: 'eggs'
-//     }, 'render-event');
-//     equals($('#viewdiv2').text(), 'eggs');
-// });
+test('render on ancestor', function() {
+    var called = 0;
+    
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.append('<div>' + this.obj.text + '</div>');
+            called++;
+        }
+    });
+
+    // first render on ancestor
+    $('#jsview-area').render({
+        ifaces: ['ifoo'],
+        text: 'eggs'
+    });
+    // we now have a div appended
+    equals($('#jsview-area').children().last().text(), 'eggs');
+    equals(called, 1);
+    
+    // then render on viewdiv, descendant of ancestor. but because
+    // we have rendered this iface on ancestor, it will bubble up
+    $('#viewdiv').render({
+        ifaces: ['ifoo'],
+        text: 'ham'
+    });
+    equals(called, 2);
+    // nothing added to viewdiv
+    equals($('#viewdiv').children().length, 0);
+    // instead it got added to jsview-area
+    equals($('#jsview-area').children().last().text(), 'ham');
+    // this does apply directly to viewdiv
+    obviel.view({
+        iface: 'ibar',
+        render: render_text
+    });
+    $('#viewdiv').render({
+        ifaces: ['ibar'],
+        text: 'spam'
+    });
+    equals($('#viewdiv').text(), 'spam');
+    equals(called, 2);
+    // but rendering an ifoo again brings us back to jsview-area
+    $('#viewdiv').render({
+        ifaces: ['ifoo'],
+        text: 'breakfast'
+    });
+    equals(called, 3);
+    equals($('#jsview-area').children().last().text(), 'breakfast');
+});
 
 // test('re-render a view', function() {
 //     $('#viewdiv').html('');
