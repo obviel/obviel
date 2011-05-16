@@ -283,22 +283,6 @@ obviel.forms2 = {};
         });
         
     };
-
-    // XXX hack to look up view for widget, should go to obviel somehow
-    var get_view = function(widget) {
-        // views2.js
-        return obviel.registry.lookup(widget, 'default');
-        
-        // views.js
-        var ifaces = obviel.ifaces(widget);
-        for (var i=0; i < ifaces.length; i++) {
-            var iviews = obviel._views[ifaces[i]];
-            if (iviews) {
-                return iviews['default'];
-            }
-        }
-        return null;
-    };
     
     obviel.view(new module.Form());
 
