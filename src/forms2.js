@@ -276,23 +276,12 @@ obviel.forms2 = {};
     };
 
     module.Form.prototype.trigger_changes = function() {
-        // XXX this group normalization code should be generalized
         var self = this;
-        var obj = self.obj;
-        var groups = obj.form.groups ? obj.form.groups.slice(0) : [];
-        if (obj.form.widgets) {
-            groups.unshift({
-                name: null,
-                widgets: obj.form.widgets
-            });
-        }
         
-        $.each(groups, function(index, group) {
-            $.each(group.widgets, function(index, widget) {
-                var view = get_view(widget);
-                view.change(widget);
-            });
+        $.each(self.widget_views, function(index, view) {
+            view.change();
         });
+        
     };
 
     // XXX hack to look up view for widget, should go to obviel somehow
@@ -447,10 +436,10 @@ obviel.forms2 = {};
         return undefined;
     };
 
-    module.Widget.prototype.change = function(widget) {
+    module.Widget.prototype.change = function() {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#obviel-field-' + widget.prefixed_name);
+        var field_el = $('#obviel-field-' + this.obj.prefixed_name);
         var ev = new $.Event('change');
         ev.target = field_el;
         field_el.trigger(ev);
@@ -529,10 +518,10 @@ obviel.forms2 = {};
         });
     };
 
-    module.CompositeWidget.prototype.change = function(widget) {
-        $.each(widget.widgets, function(index, sub_widget) {
-            var view = get_view(sub_widget);
-            view.change(sub_widget);
+    module.CompositeWidget.prototype.change = function() {
+        var self = this;
+        $.each(self.widget_views, function(index, view) {
+            view.change();
         });
     };
     
@@ -550,6 +539,10 @@ obviel.forms2 = {};
 
     module.RepeatingWidget.prototype = new module.Widget;
 
+    module.RepeatingWidget.prototype.init = function() {
+        this.widget_views = [];
+    };
+    
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
         var field_el = $('<div id="obviel-field-' + self.obj.prefixed_name + '">');    
@@ -569,11 +562,22 @@ obviel.forms2 = {};
             prefixed_name: self.obj.prefixed_name + '-' + index.toString()
         };
         repeat_el.render(composite_widget);
+        var new_widget_view = repeat_el.view();
+        self.widget_views.push(new_widget_view);
         var remove_button = $('<button class="obviel-repeat-remove-button" ' +
                               'type="button">-</button>');
         remove_button.click(function() {
             $(this).parent().remove();
             remove_func();
+            // remove the widget view we added from the list too
+            var new_widget_views = [];
+            $.each(self.widget_views, function(index, widget_view) {
+                if (widget_view === new_widget_view) {
+                    return;
+                };
+                new_widget_views.push(widget_view);
+            });
+            self.widget_views = new_widget_views;
         });
         repeat_el.append(remove_button);
 
@@ -594,6 +598,7 @@ obviel.forms2 = {};
         var old_error_items = errors[name];
         var new_items = [];
         var new_error_items = [];
+        
         $.each(old_items, function(index, item) {
             if (item === remove_item) {
                 return;
@@ -662,16 +667,10 @@ obviel.forms2 = {};
         field_el.data('obviel.repeat-index', items.length);
     };
 
-    module.RepeatingWidget.prototype.change = function(widget) {
-        var field_el = $('#obviel-field-' + widget.prefixed_name);
-        field_el.each(function(index, sub_el) {
-            $('div', sub_el).each(function(index1, el) {
-                var my_el = $(el);
-                if (my_el.hasClass('obviel-repeatfield')) {
-                    var view = $(my_el).view();
-                    view.change(view.obj);
-                }
-            });
+    module.RepeatingWidget.prototype.change = function() {
+        var self = this;
+        $.each(self.widget_views, function(index, view) {
+            view.change();
         });
     };
     
