@@ -245,348 +245,390 @@ test("boolean rendering", function() {
     equal($('input[type="checkbox"]', form_el).length, 1);
 });
 
+// note that in these conversion and validation tests the widget is
+// created with an 'obj' attribute directly. in practice the view
+// system will actually set these for you when you render the view
 test('textline convert', function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, 'foo'), {value: 'foo'});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj: {}
+    });
+    
+    deepEqual(widget.convert('foo'), {value: 'foo'});
+    deepEqual(widget.convert(''), {value: null});
 });
 
 test('textline validate required', function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-        validate: {
-            required: true
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj: {
+            validate: {
+                required: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, 'foo'), undefined);
-    equal(widget.validate(widget_data, null), "this field is required");
+    });
+    equal(widget.validate('foo'), undefined);
+    equal(widget.validate(null), "this field is required");
 });
 
 test("textline validate not required", function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-    };
-    equal(widget.validate(widget_data, 'foo'), undefined);
-    equal(widget.validate(widget_data, null), undefined);
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj: {}
+    });
+        
+    equal(widget.validate('foo'), undefined);
+    equal(widget.validate(null), undefined);
 });
 
 test("textline validate min_length", function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-        validate: {
-            min_length: 3
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj:  {
+            validate: {
+                min_length: 3
+            }
         }
-    };
-    equal(widget.validate(widget_data, 'fooa'), undefined);
-    equal(widget.validate(widget_data, 'fo'), "value too short");
+    });
+    equal(widget.validate('foo'), undefined);
+    equal(widget.validate('fo'), "value too short");
 });
 
 test("textline validate max_length", function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-        validate: {
-            max_length: 3
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj: {
+            validate: {
+                max_length: 3
+            }
         }
-    };
-    equal(widget.validate(widget_data, 'foo'), undefined);
-    equal(widget.validate(widget_data, 'fooo'), "value too long");
+    });
+    equal(widget.validate('foo'), undefined);
+    equal(widget.validate('fooo'), "value too long");
 });
 
 test("textline validate regular expression", function() {
-    var widget = new obviel.forms2.TextLineWidget();
-    var widget_data = {
-        validate: {
-            regs: [{
-                reg:  '^a*$',
-                message: "Should all be letter a"
-            }]
+    var widget = new obviel.forms2.TextLineWidget().clone({
+        obj: {
+            validate: {
+                regs: [{
+                    reg:  '^a*$',
+                    message: "Should all be letter a"
+                }]
+            }
         }
-    };
-    equal(widget.validate(widget_data, 'aaa'), undefined);
-    equal(widget.validate(widget_data, 'bbb'), "Should all be letter a");
+    });
+    equal(widget.validate('aaa'), undefined);
+    equal(widget.validate('bbb'), "Should all be letter a");
 });
 
 // this would duplicate the textline tests, so just do a few for sampling
 test("text convert", function() {
-    var widget = new obviel.forms2.TextWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, 'foo'), {value: 'foo'});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
+    var widget = new obviel.forms2.TextWidget().clone({
+        obj: { }
+    });
+    
+    deepEqual(widget.convert('foo'), {value: 'foo'});
+    deepEqual(widget.convert(''), {value: null});
 });
 
 test("text validate regular expression", function() {
-    var widget = new obviel.forms2.TextWidget();
-    var widget_data = {
-        validate: {
-            regs: [{
-                reg:  '^a*$',
-                message: "Should all be letter a"
-            }]
+    var widget = new obviel.forms2.TextWidget().clone({
+        obj: {
+            validate: {
+                regs: [{
+                    reg:  '^a*$',
+                    message: "Should all be letter a"
+                }]
+            }
         }
-    };
-    equal(widget.validate(widget_data, 'aaa'), undefined);
-    equal(widget.validate(widget_data, 'bbb'), "Should all be letter a");
+    });
+    equal(widget.validate('aaa'), undefined);
+    equal(widget.validate('bbb'), "Should all be letter a");
 });
 
 test("integer convert not an integer", function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, 'foo'), {'error': 'not a number'});
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {}
+    });
+    
+    deepEqual(widget.convert('foo'), {'error': 'not a number'});
 });
 
 test("integer convert not an integer but float", function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, '1.5'), {'error': 'not an integer number'});
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {}
+    });
+    deepEqual(widget.convert('1.5'), {'error': 'not an integer number'});
 });
 
 test("integer convert but empty", function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, ''), {value: null});
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {}
+    });
+    deepEqual(widget.convert(''), {value: null});
 });
 
 test('integer validate required', function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-        validate: {
-            required: true
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {
+            validate: {
+                required: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, 1), undefined);
-    equal(widget.validate(widget_data, null), 'this field is required');
+    });
+    equal(widget.validate(1), undefined);
+    equal(widget.validate(null), 'this field is required');
 });
 
 test('integer validate not required', function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-        validate: {
-            required: false
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {
+            validate: {
+                required: false
+            }
         }
-    };
-    equal(widget.validate(widget_data, 1), undefined);
-    equal(widget.validate(widget_data, null), undefined);
+    });
+    equal(widget.validate(1), undefined);
+    equal(widget.validate(null), undefined);
 });
 
 test('integer validate negative', function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-        validate: {
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {
+            validate: {
+            }
         }
-    };
-    equal(widget.validate(widget_data, -1), 'negative numbers are not allowed');
+    });
+    equal(widget.validate(-1), 'negative numbers are not allowed');
 });
 
 test('integer validate allow negative', function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-        validate: {
-            allow_negative: true
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj: {
+            validate: {
+                allow_negative: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, -1), undefined);
+    });
+    equal(widget.validate(-1), undefined);
 });
 
 test('integer validate lengths in digits', function() {
-    var widget = new obviel.forms2.IntegerWidget();
-    var widget_data = {
-        validate: {
-            length: 3,
-            allow_negative: true
+    var widget = new obviel.forms2.IntegerWidget().clone({
+        obj:  {
+            validate: {
+                length: 3,
+                allow_negative: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, 111), undefined);
-    equal(widget.validate(widget_data, 1111), 'value must be 3 digits long');
-    equal(widget.validate(widget_data, 11), 'value must be 3 digits long');
-    equal(widget.validate(widget_data, -111), undefined);
-    equal(widget.validate(widget_data, -1111), 'value must be 3 digits long');
-    equal(widget.validate(widget_data, -11), 'value must be 3 digits long');
+    });
+    equal(widget.validate(111), undefined);
+    equal(widget.validate(1111), 'value must be 3 digits long');
+    equal(widget.validate(11), 'value must be 3 digits long');
+    equal(widget.validate(-111), undefined);
+    equal(widget.validate(-1111), 'value must be 3 digits long');
+    equal(widget.validate(-11), 'value must be 3 digits long');
 });
 
 test('float convert', function() {
-    var widget = new obviel.forms2.FloatWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, '1.2'), {value: 1.2});
-    deepEqual(widget.convert(widget_data, '1'), {value: 1});
-    deepEqual(widget.convert(widget_data, '-1.2'), {value: -1.2});
-    deepEqual(widget.convert(widget_data, '.2'), {value: .2});
-    deepEqual(widget.convert(widget_data, '-1'), {value: -1});
-    deepEqual(widget.convert(widget_data, '-1.2'), {value: -1.2});
-    deepEqual(widget.convert(widget_data, '-.2'), {value: -.2});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
-    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});
-    deepEqual(widget.convert(widget_data, '1.2.3'), {error: 'not a float'});
-    deepEqual(widget.convert(widget_data, '1,2'), {error: 'not a float'});
-    deepEqual(widget.convert(widget_data, '-'), {error: 'not a float'});
-    deepEqual(widget.convert(widget_data, '.'), {error: 'not a float'});
+    var widget = new obviel.forms2.FloatWidget().clone({
+        obj: {}
+    });
+    
+    deepEqual(widget.convert('1.2'), {value: 1.2});
+    deepEqual(widget.convert('1'), {value: 1});
+    deepEqual(widget.convert('-1.2'), {value: -1.2});
+    deepEqual(widget.convert('.2'), {value: .2});
+    deepEqual(widget.convert('-1'), {value: -1});
+    deepEqual(widget.convert('-1.2'), {value: -1.2});
+    deepEqual(widget.convert('-.2'), {value: -.2});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('foo'), {error: 'not a float'});
+    deepEqual(widget.convert('1.2.3'), {error: 'not a float'});
+    deepEqual(widget.convert('1,2'), {error: 'not a float'});
+    deepEqual(widget.convert('-'), {error: 'not a float'});
+    deepEqual(widget.convert('.'), {error: 'not a float'});
 });
 
 test('float convert different separator', function() {
-    var widget = new obviel.forms2.FloatWidget();
-    var widget_data = {
-        validate: {
-            separator: ','
+    var widget = new obviel.forms2.FloatWidget().clone({
+        obj:  {
+            validate: {
+                separator: ','
+            }
         }
-    };
-    deepEqual(widget.convert(widget_data, '1,2'), {value: 1.2});
-    deepEqual(widget.convert(widget_data, '1'), {value: 1});
-    deepEqual(widget.convert(widget_data, '-1,2'), {value: -1.2});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
-    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a float'});    
-    deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a float'});
+    });
+    deepEqual(widget.convert('1,2'), {value: 1.2});
+    deepEqual(widget.convert('1'), {value: 1});
+    deepEqual(widget.convert('-1,2'), {value: -1.2});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('foo'), {error: 'not a float'});    
+    deepEqual(widget.convert('1.2'), {error: 'not a float'});
 });
 
 test('float validate required', function() {
-    var widget = new obviel.forms2.FloatWidget();
-    
-    var widget_data = {
-        validate: {
-            required: true
+    var widget = new obviel.forms2.FloatWidget().clone({
+        obj: {
+            validate: {
+                required: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, null), 'this field is required');
+    });
+    equal(widget.validate(null), 'this field is required');
 
-    widget_data = {
-        validate: {
-            required: false
+
+    widget = new obviel.forms2.FloatWidget().clone({
+        obj: {
+            validate: {
+                required: false
+            }
         }
-    };
-    equal(widget.validate(widget_data, null), undefined);
+    });
+    
+    equal(widget.validate(null), undefined);
 });
 
 test('float validate negative', function() {
-    var widget = new obviel.forms2.FloatWidget();
-    var widget_data = {
-        validate: {
+    var widget = new obviel.forms2.FloatWidget().clone({
+        obj: {
+            validate: {
+            }
         }
-    };
-    equal(widget.validate(widget_data, -1.2), 'negative numbers are not allowed');
+    });
+    equal(widget.validate(-1.2), 'negative numbers are not allowed');
 });
 
 test('decimal convert', function() {
-    var widget = new obviel.forms2.DecimalWidget();
-    var widget_data = {
-        validate: {
+    var widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+            }
         }
-    };
-    deepEqual(widget.convert(widget_data, '1.2'), {value: '1.2'});
-    deepEqual(widget.convert(widget_data, '1'), {value: '1'});
-    deepEqual(widget.convert(widget_data, '.2'), {value: '.2'});
-    deepEqual(widget.convert(widget_data, '-1'), {value: '-1'});
-    deepEqual(widget.convert(widget_data, '-1.2'), {value: '-1.2'});
-    deepEqual(widget.convert(widget_data, '-.2'), {value: '-.2'});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
-    deepEqual(widget.convert(widget_data, '1.2.3'), {error: 'not a decimal'});
-    deepEqual(widget.convert(widget_data, '.'), {error: 'not a decimal'});
-    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});
-    deepEqual(widget.convert(widget_data, '-'), {error: 'not a decimal'});
+    });
+    deepEqual(widget.convert('1.2'), {value: '1.2'});
+    deepEqual(widget.convert('1'), {value: '1'});
+    deepEqual(widget.convert('.2'), {value: '.2'});
+    deepEqual(widget.convert('-1'), {value: '-1'});
+    deepEqual(widget.convert('-1.2'), {value: '-1.2'});
+    deepEqual(widget.convert('-.2'), {value: '-.2'});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('1.2.3'), {error: 'not a decimal'});
+    deepEqual(widget.convert('.'), {error: 'not a decimal'});
+    deepEqual(widget.convert('foo'), {error: 'not a decimal'});
+    deepEqual(widget.convert('-'), {error: 'not a decimal'});
 });
 
 test('decimal convert different separator', function() {
-    var widget = new obviel.forms2.DecimalWidget();
-    var widget_data = {
-        validate: {
-            separator: ','
+    var widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                separator: ','
+            }
         }
-    };
-    deepEqual(widget.convert(widget_data, '1,2'), {value: '1.2'});
-    deepEqual(widget.convert(widget_data, '1'), {value: '1'});
-    deepEqual(widget.convert(widget_data, '-1,2'), {value: '-1.2'});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
-    deepEqual(widget.convert(widget_data, 'foo'), {error: 'not a decimal'});    
-    deepEqual(widget.convert(widget_data, '1.2'), {error: 'not a decimal'});
+    });
+    deepEqual(widget.convert('1,2'), {value: '1.2'});
+    deepEqual(widget.convert('1'), {value: '1'});
+    deepEqual(widget.convert('-1,2'), {value: '-1.2'});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('foo'), {error: 'not a decimal'});    
+    deepEqual(widget.convert('1.2'), {error: 'not a decimal'});
 });
 
 test('decimal validate', function() {
-    var widget = new obviel.forms2.DecimalWidget();
-    var widget_data = {
-        validate: {
+    var widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+            }
         }
-    };
+    });
 
-    equal(widget.validate(widget_data, '1.2'), undefined);
-    equal(widget.validate(widget_data, '-1.2'), 'negative numbers are not allowed');
+    equal(widget.validate('1.2'), undefined);
+    equal(widget.validate('-1.2'), 'negative numbers are not allowed');
 
-    widget_data = {
-        validate: {
-            allow_negative: true
+    widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                allow_negative: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, '-1.2'), undefined);
+    });
+    
+    equal(widget.validate('-1.2'), undefined);
 
-    widget_data = {
-        validate: {
-            allow_negative: true,
-            min_before_sep: 2,
-            max_before_sep: 5,
-            min_after_sep: 2,
-            max_after_sep: 5
+    widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                allow_negative: true,
+                min_before_sep: 2,
+                max_before_sep: 5,
+                min_after_sep: 2,
+                max_after_sep: 5
+            }
         }
-    };
+    });
+    
 
-    equal(widget.validate(widget_data, '1.22'),
+    equal(widget.validate('1.22'),
           'decimal must contain at least 2 digits before the decimal mark');
-    equal(widget.validate(widget_data, '11.22'),
+    equal(widget.validate('11.22'),
           undefined);
-    equal(widget.validate(widget_data, '11111.22'),
+    equal(widget.validate('11111.22'),
           undefined);
-    equal(widget.validate(widget_data, '111111.22'),
+    equal(widget.validate('111111.22'),
           'decimal may not contain more than 5 digits before the decimal mark');
-    equal(widget.validate(widget_data, '22.1'),
+    equal(widget.validate('22.1'),
           'decimal must contain at least 2 digits after the decimal mark');
-    equal(widget.validate(widget_data, '22.11'),
+    equal(widget.validate('22.11'),
           undefined);
-    equal(widget.validate(widget_data, '22.11111'),
+    equal(widget.validate('22.11111'),
                           undefined);
-    equal(widget.validate(widget_data, '22.111111'),
+    equal(widget.validate('22.111111'),
           'decimal may not contain more than 5 digits after the decimal mark');
 
-    equal(widget.validate(widget_data, '-1.22'),
+    equal(widget.validate('-1.22'),
           'decimal must contain at least 2 digits before the decimal mark');
-    equal(widget.validate(widget_data, '-11.22'),
+    equal(widget.validate('-11.22'),
           undefined);
-    equal(widget.validate(widget_data, '-11111.22'),
+    equal(widget.validate('-11111.22'),
           undefined);
-    equal(widget.validate(widget_data, '-111111.22'),
+    equal(widget.validate('-111111.22'),
           'decimal may not contain more than 5 digits before the decimal mark');
-    equal(widget.validate(widget_data, '-22.1'),
+    equal(widget.validate('-22.1'),
           'decimal must contain at least 2 digits after the decimal mark');
-    equal(widget.validate(widget_data, '-22.11'),
+    equal(widget.validate('-22.11'),
           undefined);
-    equal(widget.validate(widget_data, '-22.11111'),
+    equal(widget.validate('-22.11111'),
           undefined);
-    equal(widget.validate(widget_data, '-22.111111'),
+    equal(widget.validate('-22.111111'),
           'decimal may not contain more than 5 digits after the decimal mark');
-
-    widget_data = {
-        validate: {
-            allow_negative: true
+    
+    widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                allow_negative: true
+            }
         }
-    };
+    });
 
-    equal(widget.validate(widget_data, '1'), undefined);
-    equal(widget.validate(widget_data, '.1'), undefined);
+    
+    equal(widget.validate('1'), undefined);
+    equal(widget.validate('.1'), undefined);
 
-    widget_data = {
-        validate: {
-            required: true
+    widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                required: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, null), 'this field is required');
+    });
+    
+    equal(widget.validate(null), 'this field is required');
 
-    widget_data = {
-        validate: {
-            required: false
+    widget = new obviel.forms2.DecimalWidget().clone({
+        obj: {
+            validate: {
+                required: false
+            }
         }
-    };
-    equal(widget.validate(widget_data, null), undefined);
+    });
+    
+    equal(widget.validate(null), undefined);
 });
 
 test("composite datalink", function() {
@@ -2315,24 +2357,26 @@ test("default values in composite interacting with existent", function() {
 module("Datepicker");
 
 test('datepicker convert', function() {
-    var widget = new obviel.forms2.DatePickerWidget();
-    var widget_data = {
-    };
-    deepEqual(widget.convert(widget_data, '01/02/10'), {value: '2010-01-02'});
-    deepEqual(widget.convert(widget_data, ''), {value: null});
-    deepEqual(widget.convert(widget_data, '77/02/10'), {error: 'invalid date'});
-    deepEqual(widget.convert(widget_data, 'sarsem'), {error: 'invalid date'});
+    var widget = new obviel.forms2.DatePickerWidget().clone({
+        obj: {}
+    });
+    
+    deepEqual(widget.convert('01/02/10'), {value: '2010-01-02'});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('77/02/10'), {error: 'invalid date'});
+    deepEqual(widget.convert('sarsem'), {error: 'invalid date'});
 });
 
 test('datepicker validate required', function() {
-    var widget = new obviel.forms2.DatePickerWidget();
-    var widget_data = {
-        validate: {
-            required: true
+    var widget = new obviel.forms2.DatePickerWidget().clone({
+        obj: {
+            validate: {
+                required: true
+            }
         }
-    };
-    equal(widget.validate(widget_data, '01/02/10'), undefined);
-    equal(widget.validate(widget_data, null), "this field is required");
+    });
+    equal(widget.validate('01/02/10'), undefined);
+    equal(widget.validate(null), "this field is required");
 });
 
 test("datepicker datalink", function() {

@@ -315,7 +315,7 @@ obviel.forms2 = {};
         var link_context = {};
         var error_link_context = {};
         var convert_wrapper = function(value, source, target) {
-            var result = self.handle_convert(obj, value, source, target);
+            var result = self.handle_convert(value, source, target);
             if (result.error) {
                 $(errors).setField(obj.name, result.error);
                 // we cannot set the value later, so return undefined
@@ -330,7 +330,7 @@ obviel.forms2 = {};
         };
         
         var convert_back_wrapper = function(value, source, target) {
-            return self.handle_convert_back(obj, value, source, target);
+            return self.handle_convert_back(value, source, target);
         };
         
         link_context[obj.name] = {
@@ -369,11 +369,10 @@ obviel.forms2 = {};
 
     };
 
-    module.Widget.prototype.handle_convert = function(widget, value,
-                                                      source, target) {
+    module.Widget.prototype.handle_convert = function(value, source, target) {
         var self = this;
         // try to convert original form value
-        var result = self.convert(widget, value, source, target);
+        var result = self.convert(value, source, target);
         if (result.error !== undefined) {
             // conversion error, so bail out
             return {
@@ -384,7 +383,7 @@ obviel.forms2 = {};
 
         // this is the converted value, now validate it
         value = result.value;
-        var error = self.validate(widget, value);
+        var error = self.validate(value);
         if (error !== undefined) {
             // validation error, so bail out
             return {
@@ -399,23 +398,23 @@ obviel.forms2 = {};
         };
     };
 
-    module.Widget.prototype.handle_convert_back = function(widget, value,
+    module.Widget.prototype.handle_convert_back = function(value,
                                                           source, target) {
         var self = this;
-        return self.convert_back(widget, value, source, target);
+        return self.convert_back(value, source, target);
     };
     
-    module.Widget.prototype.convert = function(widget, value) {
+    module.Widget.prototype.convert = function(value) {
         return {value: value};
     };
 
-    module.Widget.prototype.convert_back = function(widget, value) {
+    module.Widget.prototype.convert_back = function(value) {
         return value;
     };
 
-    module.Widget.prototype.validate = function(widget, value) {
-        if (!widget.validate) {
-            widget.validate = {};
+    module.Widget.prototype.validate = function(value) {
+        if (!this.obj.validate) {
+            this.obj.validate = {};
         }
         return undefined;
     };
@@ -685,28 +684,29 @@ obviel.forms2 = {};
 
     module.InputWidget.prototype = new module.Widget;
 
-    module.InputWidget.prototype.convert = function(widget, value) {
+    module.InputWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
         }
-        return module.Widget.prototype.convert.call(this, widget, value);
+        return module.Widget.prototype.convert.call(this, value);
     };
 
-    module.InputWidget.prototype.convert_back = function(widget, value) {
+    module.InputWidget.prototype.convert_back = function(value) {
         if (value === null) {
             return '';
         }
-        return module.Widget.prototype.convert_back.call(this, widget, value);
+        return module.Widget.prototype.convert_back.call(this, value);
     };
 
-    module.InputWidget.prototype.validate = function(widget, value) {
-        var error = module.Widget.prototype.validate.call(this, widget, value);
+    module.InputWidget.prototype.validate = function(value) {
+        var self = this;
+        var error = module.Widget.prototype.validate.call(this, value);
         // this can never happen but in subclasses it can, so it's
         // useful there when deriving from InputWidget
         //if (error !== undefined) {
         //    return error;
         //}
-        if (widget.validate.required && value === null) {
+        if (self.obj.validate.required && value === null) {
             return _('this field is required');
         }
         return undefined;
@@ -725,26 +725,29 @@ obviel.forms2 = {};
 
     module.TextLineWidget.prototype = new module.InputWidget;
 
-    module.TextLineWidget.prototype.validate = function(widget, value) {
-        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+    module.TextLineWidget.prototype.validate = function(value) {
+        var self = this;
+        var obj = self.obj;
+        
+        var error = module.InputWidget.prototype.validate.call(this, value);
         if (error !== undefined) {
             return error;
         }
         // if the value is empty and isn't required we're done
-        if (value === null && !widget.validate.required) {
+        if (value === null && !obj.validate.required) {
             return undefined;
         }
         
-        if (widget.validate.min_length &&
-            value.length < widget.validate.min_length) {
+        if (obj.validate.min_length &&
+            value.length < obj.validate.min_length) {
             return _('value too short');
-        } else if (widget.validate.max_length &&
-                   value.length > widget.validate.max_length) {
+        } else if (obj.validate.max_length &&
+                   value.length > obj.validate.max_length) {
             return _('value too long');
         };
 
-        if (widget.validate.regs) {
-            $.each(widget.validate.regs, function(index, reg) {
+        if (obj.validate.regs) {
+            $.each(obj.validate.regs, function(index, reg) {
                 var regexp = RegExp(reg.reg); // no flags?
                 var result = regexp.exec(value);
                 if (!result) {
@@ -798,7 +801,7 @@ obviel.forms2 = {};
 
     module.IntegerWidget.prototype = new module.InputWidget;
 
-    module.IntegerWidget.prototype.convert = function(widget, value) {
+    module.IntegerWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
         }
@@ -812,38 +815,41 @@ obviel.forms2 = {};
         return {value: asint};
     };
 
-    module.IntegerWidget.prototype.convert_back = function(widget, value) {
-        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
+    module.IntegerWidget.prototype.convert_back = function(value) {
+        value = module.InputWidget.prototype.convert_back.call(this, value);
         return value.toString();
     };
  
-    module.IntegerWidget.prototype.validate = function(widget, value) {
-        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+    module.IntegerWidget.prototype.validate = function(value) {
+        var self = this;
+        var obj = self.obj;
+        
+        var error = module.InputWidget.prototype.validate.call(this, value);
         if (error !== undefined) {
             return error;
         }
         // if the value is empty and isn't required we're done
-        if (value === null && !widget.validate.required) {
+        if (value === null && !obj.validate.required) {
             return undefined;
         }
 
-        if (!widget.validate.allow_negative && value < 0) {
+        if (!obj.validate.allow_negative && value < 0) {
             return _('negative numbers are not allowed');
         }
-        if (widget.validate.length !== undefined) {
+        if (obj.validate.length !== undefined) {
             var asstring = value.toString();
             if (asstring[0] == '-') {
                 asstring = asstring.slice(1);
             }
-            if (asstring.length != widget.validate.length) {       
+            if (asstring.length != obj.validate.length) {       
                 return Gettext.strargs(_('value must be %1 digits long'),
-                                       [widget.validate.length]);
+                                       [obj.validate.length]);
             }
         }
         return undefined;
     };
-    obviel.view(new module.IntegerWidget());
 
+    obviel.view(new module.IntegerWidget());
     
     var is_decimal = function(sep, value) {
         var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
@@ -862,14 +868,16 @@ obviel.forms2 = {};
 
     module.FloatWidget.prototype = new module.InputWidget;
 
-    module.FloatWidget.prototype.convert = function(widget, value) {
+    module.FloatWidget.prototype.convert = function(value) {
+        var self = this;
+        var obj = self.obj;
         if (value === '') {
             return {value: null};
         }
         // XXX converter is getting information from validate,
         // but keep this for backwards compatibility
-        widget.validate = widget.validate || {};
-        var sep = widget.validate.separator || '.';
+        obj.validate = obj.validate || {};
+        var sep = obj.validate.separator || '.';
 
         if (!is_decimal(sep, value)) {
             return {error: _("not a float")};
@@ -884,28 +892,33 @@ obviel.forms2 = {};
         return {value: asfloat};
     };
 
-    module.FloatWidget.prototype.convert_back = function(widget, value) {
-        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
+    module.FloatWidget.prototype.convert_back = function(value) {
+        var self = this;
+        var obj = self.obj;
+        
+        value = module.InputWidget.prototype.convert_back.call(this, value);
         value = value.toString();
-        widget.validate = widget.validate || {};
-        var sep = widget.validate.separator || '.';
+        obj.validate = obj.validate || {};
+        var sep = obj.validate.separator || '.';
         if (sep != '.') {
             value = value.replace('.', sep);
         }
         return value;
     };
  
-    module.FloatWidget.prototype.validate = function(widget, value) {
-        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+    module.FloatWidget.prototype.validate = function(value) {
+        var self = this;
+        var obj = self.obj;
+        var error = module.InputWidget.prototype.validate.call(this, value);
         if (error !== undefined) {
             return error;
         }
         // if the value is empty and isn't required we're done
-        if (value === null && !widget.validate.required) {
+        if (value === null && !obj.validate.required) {
             return undefined;
         }
 
-        if (!widget.validate.allow_negative && value < 0) {
+        if (!obj.validate.allow_negative && value < 0) {
             return _('negative numbers are not allowed');
         }
         return undefined;
@@ -924,14 +937,16 @@ obviel.forms2 = {};
 
     module.DecimalWidget.prototype = new module.InputWidget;
     
-    module.DecimalWidget.prototype.convert = function(widget, value) {
+    module.DecimalWidget.prototype.convert = function(value) {
+        var self = this;
+        var obj = self.obj;
         if (value === '') {
             return {value: null};
         }
         // XXX converter is getting information from validate,
         // but keep this for backwards compatibility
-        widget.validate = widget.validate || {};
-        var sep = widget.validate.separator || '.';
+        obj.validate = obj.validate || {};
+        var sep = obj.validate.separator || '.';
 
         if (!is_decimal(sep, value)) {
             return {error: _("not a decimal")};
@@ -951,27 +966,31 @@ obviel.forms2 = {};
         return {value: value};
     };
 
-    module.DecimalWidget.prototype.convert_back = function(widget, value) {
-        value = module.InputWidget.prototype.convert_back.call(this, widget, value);
-        widget.validate = widget.validate || {};
-        var sep = widget.validate.separator || '.';
+    module.DecimalWidget.prototype.convert_back = function(value) {
+        var self = this;
+        var obj = self.obj;
+        value = module.InputWidget.prototype.convert_back.call(this, value);
+        obj.validate = obj.validate || {};
+        var sep = obj.validate.separator || '.';
         if (sep != '.') {
             value = value.replace('.', sep);
         }
         return value;
     };
  
-    module.DecimalWidget.prototype.validate = function(widget, value) {
-        var error = module.InputWidget.prototype.validate.call(this, widget, value);
+    module.DecimalWidget.prototype.validate = function(value) {
+        var self = this;
+        var obj = self.obj;
+        var error = module.InputWidget.prototype.validate.call(this, value);
         if (error !== undefined) {
             return error;
         }
         // if the value is empty and isn't required we're done
-        if (value === null && !widget.validate.required) {
+        if (value === null && !obj.validate.required) {
             return undefined;
         }
 
-        if (!widget.validate.allow_negative && value[0] == '-') {
+        if (!obj.validate.allow_negative && value[0] == '-') {
             return _('negative numbers are not allowed');
         }
         
@@ -988,7 +1007,7 @@ obviel.forms2 = {};
             before_sep = before_sep.slice(1);
         }
 
-        var min_before_sep = widget.validate.min_before_sep;
+        var min_before_sep = obj.validate.min_before_sep;
         
         if (min_before_sep !== undefined &&
             before_sep.length < min_before_sep) {
@@ -996,7 +1015,7 @@ obviel.forms2 = {};
                 _('decimal must contain at least %1 digits before the decimal mark'),
                 [min_before_sep]);
         }
-        var max_before_sep = widget.validate.max_before_sep;
+        var max_before_sep = obj.validate.max_before_sep;
         if (max_before_sep !== undefined &&
             before_sep.length > max_before_sep) {
             return Gettext.strargs(
@@ -1004,7 +1023,7 @@ obviel.forms2 = {};
                 [max_before_sep]);
         }
 
-        var min_after_sep = widget.validate.min_after_sep;
+        var min_after_sep = obj.validate.min_after_sep;
         if (min_after_sep !== undefined &&
             after_sep.length < min_after_sep) {
             return Gettext.strargs(
@@ -1012,7 +1031,7 @@ obviel.forms2 = {};
                 [min_after_sep]);
         }
 
-        var max_after_sep = widget.validate.max_after_sep;
+        var max_after_sep = obj.validate.max_after_sep;
         if (max_after_sep != undefined &&
             after_sep.length > max_after_sep) {
             return Gettext.strargs(
@@ -1045,13 +1064,12 @@ obviel.forms2 = {};
 
     module.BooleanWidget.prototype = new module.Widget;
 
-    module.BooleanWidget.prototype.convert = function(widget, value,
-                                                      source, target) {
+    module.BooleanWidget.prototype.convert = function(value, source, target) {
         return {value:$(source).is(':checked')};
     };
 
-    module.BooleanWidget.prototype.convert_back = function(widget, value,
-                                                           source, target) {
+    module.BooleanWidget.prototype.convert_back = function(
+        value, source, target) {
         $(target).attr('checked', value);
     };
     
@@ -1089,14 +1107,14 @@ obviel.forms2 = {};
         }
     };
     
-    module.ChoiceWidget.prototype.convert = function(widget, value) {
+    module.ChoiceWidget.prototype.convert = function(value) {
         if (!value) {
             return {value: null};
         }
         return {value: value};
     };
 
-    module.ChoiceWidget.prototype.convert_back = function(widget, value) {
+    module.ChoiceWidget.prototype.convert_back = function(value) {
         if (value === null) {
             return '';
         }

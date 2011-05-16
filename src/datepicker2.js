@@ -20,44 +20,45 @@
         options.constrainInput = options.constrainInput || false;
     };
     
-    module.DatePickerWidget.prototype.render = function(el, obj, name) {
-        module.TextLineWidget.prototype.render.call(this, el, obj, name);
+    module.DatePickerWidget.prototype.render = function() {
+        module.TextLineWidget.prototype.render.call(this);
         
-        var input_el = $('[name=' + obj.name + ']', el);
+        var input_el = $('[name=' + this.obj.name + ']', this.el);
 
-        ensure_options(obj);
+        ensure_options(this.obj);
         
-        input_el.datepicker(obj.datepicker_options);
+        input_el.datepicker(this.obj.datepicker_options);
     };
 
-    module.DatePickerWidget.prototype.convert = function(widget, value) {
+    module.DatePickerWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
         }
         var result = module.TextLineWidget.prototype.convert.call(
-            this, widget, value);
+            this, value);
 
-        ensure_options(widget);
+        ensure_options(this.obj);
         
         try {
-            var date = $.datepicker.parseDate(widget.datepicker_options.dateFormat,
-                                              result.value);
+            var date = $.datepicker.parseDate(
+                this.obj.datepicker_options.dateFormat,
+                result.value);
         } catch(e) {
             return {error: 'invalid date'};
         };
         return {value: $.datepicker.formatDate('yy-mm-dd', date)};
     };
 
-    module.DatePickerWidget.prototype.convert_back = function(widget, value) {
+    module.DatePickerWidget.prototype.convert_back = function(value) {
         value = module.TextLineWidget.prototype.convert_back.call(
-            this, widget, value);
+            this, value);
         if (value == '') {
             return '';
         }
-        ensure_options(widget);
+        ensure_options(this.obj);
         
         var date = $.datepicker.parseDate('yy-mm-dd', value);
-        return $.datepicker.formatDate(widget.datepicker_options.dateFormat,
+        return $.datepicker.formatDate(this.obj.datepicker_options.dateFormat,
                                        date);
     };
     

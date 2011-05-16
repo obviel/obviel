@@ -13,10 +13,11 @@
 
     module.AutocompleteWidget.prototype = new module.TextLineWidget;
 
-    module.AutocompleteWidget.prototype.render = function(el, obj, name) {
+    module.AutocompleteWidget.prototype.render = function() {
         var self = this;
-        module.TextLineWidget.prototype.render.call(
-            this, el, obj, name);
+        var obj = self.obj;
+        var el = self.el;
+        module.TextLineWidget.prototype.render.call(this);
         
         var autocomplete_options = obj.autocomplete_options || {};
         var input_el = $('[name=' + obj.name + ']', el);
@@ -116,37 +117,35 @@
         });
     };
     
-    module.AutocompleteWidget.prototype.validate = function(widget, value) {
-        var result = module.TextLineWidget.prototype.validate.call(this, widget, value);
+    module.AutocompleteWidget.prototype.validate = function(value) {
+        var result = module.TextLineWidget.prototype.validate.call(this);
         if (result !== undefined) {
             return result;
         }
         return undefined;
     };
 
-    module.AutocompleteWidget.prototype.convert = function(widget, value) {
-        var result = module.TextLineWidget.prototype.convert.call(
-            this, widget, value);
+    module.AutocompleteWidget.prototype.convert = function(value) {
+        var result = module.TextLineWidget.prototype.convert.call(this);
         if (result.error !== undefined) {
             return result;
         }
         if (result.value === null) {
             return result;
         }
-        value = widget.label_to_value[result.value];
+        value = this.obj.label_to_value[result.value];
         if (value === undefined) {
             return {error: 'unknown value'};
         }
         return {value: value};
     };
 
-    module.AutocompleteWidget.prototype.convert_back = function(widget, value) {
-        var result = module.TextLineWidget.prototype.convert_back.call(
-            this, widget, value);
+    module.AutocompleteWidget.prototype.convert_back = function(value) {
+        var result = module.TextLineWidget.prototype.convert_back.call(this);
         if (result === null) {
             return '';
         }
-        value = widget.value_to_label[result];
+        value = this.obj.value_to_label[result];
         if (value === undefined) {
             return null; // XXX should never happen?
         }
