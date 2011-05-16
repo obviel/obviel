@@ -48,11 +48,15 @@ obviel.forms2 = {};
         $.extend(d, settings);
         obviel.View.call(this, d);
     };
-
-    module.Form.prototype = new obviel.View;
-
+ 
     var auto_name = 0;
-
+ 
+    module.Form.prototype = new obviel.View;
+ 
+    module.Form.prototype.init = function() {
+        this.widget_views = [];
+    };
+ 
     module.Form.prototype.count_errors = function(errors) {
         var self = this;
         var result = 0;
@@ -160,6 +164,7 @@ obviel.forms2 = {};
 
     module.Form.prototype.render_widget = function(widget,
                                                    data, errors, disabled) {
+        var self = this;
         var field_el = $('<div class="obviel-field"></div>');
         $.each(widget.ifaces, function(index, value) {
             field_el.addClass(value);
@@ -178,6 +183,8 @@ obviel.forms2 = {};
             // now link everything up
             view.link(data, errors);
         });
+
+        self.widget_views.push(field_el.view());
         
         // add in label
         if (widget.title === undefined) {
@@ -461,6 +468,10 @@ obviel.forms2 = {};
 
     module.CompositeWidget.prototype = new module.Widget;
 
+    module.CompositeWidget.prototype.init = function() {
+        this.widget_views = [];
+    };
+    
     module.CompositeWidget.prototype.render = function() {
         var self = this;
         
@@ -488,6 +499,8 @@ obviel.forms2 = {};
                               'class="obviel-field-error"></div>');
                 }
             });
+            self.widget_views.push(sub_el.view());
+            
             field_el.append(sub_el);
         });
         if (errors_at_end) {
@@ -498,22 +511,6 @@ obviel.forms2 = {};
             });
         }
         el.append(field_el);
-    };
-
-    module.CompositeWidget.prototype.compositeviews = function() {
-        var self = this;
-        var result = [];
-        var field_el = $('#obviel-field-' + self.obj.prefixed_name, self.el);
-        
-        field_el.children().each(function(index, sub_el) {
-            sub_el = $(sub_el);
-            if (!sub_el.hasClass('obviel-subfield')) {
-                return true;
-            }
-            result.push(sub_el.view());
-            return true;
-        });
-        return result;
     };
     
     module.CompositeWidget.prototype.link = function(data, errors) {
@@ -527,11 +524,7 @@ obviel.forms2 = {};
         if (sub_errors === undefined) {
             sub_errors = errors[widget.name] = {};
         }
-        $.each(self.compositeviews(), function(index, view) {
-            //var sub_el = $(
-            //    '#obviel-field-' +
-            //        sub_widget.prefixed_name, self.el).parent().parent().parent();
-            //var view = get_view(sub_widget);
+        $.each(self.widget_views, function(index, view) {
             view.link(sub_data, sub_errors);
         });
     };
@@ -675,18 +668,8 @@ obviel.forms2 = {};
             $('div', sub_el).each(function(index1, el) {
                 var my_el = $(el);
                 if (my_el.hasClass('obviel-repeatfield')) {
-
-                    // with views2.js
                     var view = $(my_el).view();
                     view.change(view.obj);
-
-                    // with views.js
-                    // XXX crazy obviel internal hackery, indicating
-                    // obviel view internals are wrong           
-                    //var viewstack = my_el.data('obviel.viewstack');
-                    //var widget_data = viewstack[viewstack.length - 1][0];
-                    //var view = get_view(widget_data);
-                    // view.change(widget_data);
                 }
             });
         });

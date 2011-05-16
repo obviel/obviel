@@ -141,6 +141,10 @@ var obviel = {};
         $.extend(this, d);
     };
 
+    module.View.prototype.init = function() {
+
+    };
+    
     module.View.prototype.cleanup = function(el, obj, name) {
     };
 
@@ -293,6 +297,7 @@ var obviel = {};
         view.callback = callback;
         view.errback = errback;
         view.registry = this;
+        view.init();
         return view;
     };
 
