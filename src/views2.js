@@ -143,6 +143,16 @@ var obviel = {};
 
     module.View.prototype.init = function() {
     };
+
+    module.View.prototype.clone = function(settings) {
+        // prototypical inheritance
+        var F = function() {};
+        F.prototype = this;
+        var clone = new F();
+        $.extend(clone, settings);
+        clone.init();
+        return clone;
+    };
     
     module.View.prototype.cleanup = function(el, obj, name) {
     };
@@ -289,17 +299,13 @@ var obviel = {};
         if (view_prototype === null) {
             throw new module.LookupError(obj, name);
         }
-        // prototypical inheritance
-        var F = function() {};
-        F.prototype = view_prototype;
-        var view = new F();
-        view.el = el;
-        view.obj = obj;
-        view.callback = callback;
-        view.errback = errback;
-        view.registry = this;
-        view.init();
-        return view;
+        return view_prototype.clone({
+            el: el,
+            obj: obj,
+            callback: callback,
+            errback: errback,
+            registry: this
+        });
     };
 
     module.Registry.prototype.trigger_render = function(view) {
