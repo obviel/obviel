@@ -249,7 +249,7 @@ test("boolean rendering", function() {
 // created with an 'obj' attribute directly. in practice the view
 // system will actually set these for you when you render the view
 test('textline convert', function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj: {}
     });
     
@@ -258,7 +258,7 @@ test('textline convert', function() {
 });
 
 test('textline validate required', function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj: {
             validate: {
                 required: true
@@ -270,7 +270,7 @@ test('textline validate required', function() {
 });
 
 test("textline validate not required", function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj: {}
     });
         
@@ -279,7 +279,7 @@ test("textline validate not required", function() {
 });
 
 test("textline validate min_length", function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj:  {
             validate: {
                 min_length: 3
@@ -291,7 +291,7 @@ test("textline validate min_length", function() {
 });
 
 test("textline validate max_length", function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj: {
             validate: {
                 max_length: 3
@@ -303,7 +303,7 @@ test("textline validate max_length", function() {
 });
 
 test("textline validate regular expression", function() {
-    var widget = new obviel.forms2.TextLineWidget().clone({
+    var widget = new obviel.forms.TextLineWidget().clone({
         obj: {
             validate: {
                 regs: [{
@@ -319,7 +319,7 @@ test("textline validate regular expression", function() {
 
 // this would duplicate the textline tests, so just do a few for sampling
 test("text convert", function() {
-    var widget = new obviel.forms2.TextWidget().clone({
+    var widget = new obviel.forms.TextWidget().clone({
         obj: { }
     });
     
@@ -328,7 +328,7 @@ test("text convert", function() {
 });
 
 test("text validate regular expression", function() {
-    var widget = new obviel.forms2.TextWidget().clone({
+    var widget = new obviel.forms.TextWidget().clone({
         obj: {
             validate: {
                 regs: [{
@@ -343,7 +343,7 @@ test("text validate regular expression", function() {
 });
 
 test("integer convert not an integer", function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {}
     });
     
@@ -351,21 +351,21 @@ test("integer convert not an integer", function() {
 });
 
 test("integer convert not an integer but float", function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {}
     });
     deepEqual(widget.convert('1.5'), {'error': 'not an integer number'});
 });
 
 test("integer convert but empty", function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {}
     });
     deepEqual(widget.convert(''), {value: null});
 });
 
 test('integer validate required', function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {
             validate: {
                 required: true
@@ -377,7 +377,7 @@ test('integer validate required', function() {
 });
 
 test('integer validate not required', function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {
             validate: {
                 required: false
@@ -389,7 +389,7 @@ test('integer validate not required', function() {
 });
 
 test('integer validate negative', function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {
             validate: {
             }
@@ -399,7 +399,7 @@ test('integer validate negative', function() {
 });
 
 test('integer validate allow negative', function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj: {
             validate: {
                 allow_negative: true
@@ -410,7 +410,7 @@ test('integer validate allow negative', function() {
 });
 
 test('integer validate lengths in digits', function() {
-    var widget = new obviel.forms2.IntegerWidget().clone({
+    var widget = new obviel.forms.IntegerWidget().clone({
         obj:  {
             validate: {
                 length: 3,
@@ -427,7 +427,7 @@ test('integer validate lengths in digits', function() {
 });
 
 test('float convert', function() {
-    var widget = new obviel.forms2.FloatWidget().clone({
+    var widget = new obviel.forms.FloatWidget().clone({
         obj: {}
     });
     
@@ -447,7 +447,7 @@ test('float convert', function() {
 });
 
 test('float convert different separator', function() {
-    var widget = new obviel.forms2.FloatWidget().clone({
+    var widget = new obviel.forms.FloatWidget().clone({
         obj:  {
             validate: {
                 separator: ','
@@ -463,7 +463,7 @@ test('float convert different separator', function() {
 });
 
 test('float validate required', function() {
-    var widget = new obviel.forms2.FloatWidget().clone({
+    var widget = new obviel.forms.FloatWidget().clone({
         obj: {
             validate: {
                 required: true
@@ -473,7 +473,7 @@ test('float validate required', function() {
     equal(widget.validate(null), 'this field is required');
 
 
-    widget = new obviel.forms2.FloatWidget().clone({
+    widget = new obviel.forms.FloatWidget().clone({
         obj: {
             validate: {
                 required: false
@@ -485,7 +485,7 @@ test('float validate required', function() {
 });
 
 test('float validate negative', function() {
-    var widget = new obviel.forms2.FloatWidget().clone({
+    var widget = new obviel.forms.FloatWidget().clone({
         obj: {
             validate: {
             }
@@ -495,7 +495,7 @@ test('float validate negative', function() {
 });
 
 test('decimal convert', function() {
-    var widget = new obviel.forms2.DecimalWidget().clone({
+    var widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
             }
@@ -515,7 +515,7 @@ test('decimal convert', function() {
 });
 
 test('decimal convert different separator', function() {
-    var widget = new obviel.forms2.DecimalWidget().clone({
+    var widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 separator: ','
@@ -531,7 +531,7 @@ test('decimal convert different separator', function() {
 });
 
 test('decimal validate', function() {
-    var widget = new obviel.forms2.DecimalWidget().clone({
+    var widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
             }
@@ -541,7 +541,7 @@ test('decimal validate', function() {
     equal(widget.validate('1.2'), undefined);
     equal(widget.validate('-1.2'), 'negative numbers are not allowed');
 
-    widget = new obviel.forms2.DecimalWidget().clone({
+    widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 allow_negative: true
@@ -551,7 +551,7 @@ test('decimal validate', function() {
     
     equal(widget.validate('-1.2'), undefined);
 
-    widget = new obviel.forms2.DecimalWidget().clone({
+    widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 allow_negative: true,
@@ -598,7 +598,7 @@ test('decimal validate', function() {
     equal(widget.validate('-22.111111'),
           'decimal may not contain more than 5 digits after the decimal mark');
     
-    widget = new obviel.forms2.DecimalWidget().clone({
+    widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 allow_negative: true
@@ -610,7 +610,7 @@ test('decimal validate', function() {
     equal(widget.validate('1'), undefined);
     equal(widget.validate('.1'), undefined);
 
-    widget = new obviel.forms2.DecimalWidget().clone({
+    widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 required: true
@@ -620,7 +620,7 @@ test('decimal validate', function() {
     
     equal(widget.validate(null), 'this field is required');
 
-    widget = new obviel.forms2.DecimalWidget().clone({
+    widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
                 required: false
@@ -2357,7 +2357,7 @@ test("default values in composite interacting with existent", function() {
 module("Datepicker");
 
 test('datepicker convert', function() {
-    var widget = new obviel.forms2.DatePickerWidget().clone({
+    var widget = new obviel.forms.DatePickerWidget().clone({
         obj: {}
     });
     
@@ -2368,7 +2368,7 @@ test('datepicker convert', function() {
 });
 
 test('datepicker validate required', function() {
-    var widget = new obviel.forms2.DatePickerWidget().clone({
+    var widget = new obviel.forms.DatePickerWidget().clone({
         obj: {
             validate: {
                 required: true

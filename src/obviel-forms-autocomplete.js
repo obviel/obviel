@@ -156,4 +156,4 @@
     
     obviel.view(new module.AutocompleteWidget);
 
-}(jQuery, obviel, obviel.forms2));
+}(jQuery, obviel, obviel.forms));

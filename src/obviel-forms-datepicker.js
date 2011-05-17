@@ -64,4 +64,4 @@
     
     obviel.view((new module.DatePickerWidget()));
     
-}(jQuery, obviel, obviel.forms2));
+}(jQuery, obviel, obviel.forms));

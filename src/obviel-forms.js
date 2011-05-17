@@ -1,4 +1,4 @@
-obviel.forms2 = {};
+obviel.forms = {};
 
 (function($, obviel, module) {
     // if no json_locale_data can be found, fall back on the default
@@ -1123,4 +1123,4 @@ obviel.forms2 = {};
     
     obviel.view(new module.ChoiceWidget());
     
-})(jQuery, obviel, obviel.forms2);
+})(jQuery, obviel, obviel.forms);
