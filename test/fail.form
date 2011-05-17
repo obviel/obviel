@@ -1,1 +1,0 @@
-{"html": "<form method=\"post\" action=\"success.form\"><input type=\"text\" name=\"foo\" /><input type=\"submit\" /></form>", "ifaces": ["form"], "action": "success.form", "error": "some error"}

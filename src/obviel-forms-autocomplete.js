@@ -20,10 +20,10 @@
         module.TextLineWidget.prototype.render.call(this);
         
         var autocomplete_options = obj.autocomplete_options || {};
-        var input_el = $('[name=' + obj.name + ']', el);
+        var input_el = $('#obviel-field-' + obj.prefixed_name, el);
         var clone_el = input_el.clone();
         clone_el.attr('id', null);
-        clone_el.attr('name', 'cloned-' + obj.name);
+        clone_el.attr('name', 'obviel-field-cloned-' + obj.prefixed_name);
         input_el.hide();
         input_el.after(clone_el);
         
@@ -126,7 +126,8 @@
     };
 
     module.AutocompleteWidget.prototype.convert = function(value) {
-        var result = module.TextLineWidget.prototype.convert.call(this);
+        var result = module.TextLineWidget.prototype.convert.call(
+            this, value);
         if (result.error !== undefined) {
             return result;
         }
@@ -141,7 +142,8 @@
     };
 
     module.AutocompleteWidget.prototype.convert_back = function(value) {
-        var result = module.TextLineWidget.prototype.convert_back.call(this);
+        var result = module.TextLineWidget.prototype.convert_back.call(
+            this, value);
         if (result === null) {
             return '';
         }
