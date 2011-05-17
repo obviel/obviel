@@ -1,4 +1,4 @@
-// this is just some test code to play with forms2
+
 $(document).ready(function() {
     var data = {};
     
