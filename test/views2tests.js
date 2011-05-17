@@ -814,6 +814,57 @@ test('render on ancestor', function() {
     equals($('#jsview-area').children().last().text(), 'breakfast');
 });
 
+asyncTest('render-done.obviel event without subviews', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: 'something'
+    });
+    var el = $('#viewdiv');
+    var called = 0;
+    el.bind('render-done.obviel', function(ev) {
+        called++;
+        // this is called only once
+        equals(called, 1);
+        equals(el.text(), 'something');
+        start();
+    });
+    el.render({ifaces: ['ifoo']});
+});
+
+asyncTest('render-done.obviel event with subviews', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="sub1"></div><div id="sub2"></div>',
+        subviews: {
+            '#sub1': 'sub1',
+            '#sub2': 'sub2'
+        }
+    });
+    obviel.view({
+        render: render_text
+    });
+    // hook in event handler
+    var el = $('#viewdiv');
+    var called = 0;
+    el.bind('render-done.obviel', function(ev) {
+        called++;
+        if (ev.view.iface == 'ifoo') {
+            equals(called, 3);
+            equals($('#sub1').text(), 'foo');
+            equals($('#sub2').text(), 'sub2 text');
+            start();
+        };
+    });
+    
+
+    el.render({
+        ifaces: ['ifoo'],
+        sub1: 'fixtures/default.json',
+        sub2: {'text': 'sub2 text'}
+    });
+    
+});
+
 // test('re-render a view', function() {
 //     $('#viewdiv').html('');
 //     $('#viewdiv2').html('');

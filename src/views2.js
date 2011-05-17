@@ -190,19 +190,24 @@ var obviel = {};
             var subviews_promise = self.render_subviews();
             
             subviews_promise.done(function() {
-                self.store_view(); 
+                self.finalize();
+                // the callback needs to be the last thing called
                 if (self.callback) {
                     /// BBB arguments are for backwards compatibility only
                     self.callback(self.el, self, self.obj);
                 }
             });
-
-            // XXX once render returns a promise too, this should be done only
-            // after the render promise is done
-            self.el.trigger('render-done.obviel');
         });
     };
 
+    module.View.prototype.finalize = function() {
+        var self = this;
+        self.store_view();
+        var ev = $.Event('render-done.obviel');
+        ev.view = self;
+        self.el.trigger(ev);
+    };
+    
     module.View.prototype.render_subviews = function() {
         var self = this;
         var promises = [];
