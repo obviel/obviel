@@ -656,7 +656,9 @@ var obviel = {};
                     if (view.ephemeral) {
                         // remove the view from the stack
                         var viewstack = element.data('obviel.viewstack');
-                        viewstack.pop();
+                        if (viewstack) {
+                            viewstack.pop();
+                        }
                     };
                     return;
                 };
