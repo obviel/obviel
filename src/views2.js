@@ -196,6 +196,10 @@ var obviel = {};
                     self.callback(self.el, self, self.obj);
                 }
             });
+
+            // XXX once render returns a promise too, this should be done only
+            // after the render promise is done
+            self.el.trigger('render-done.obviel');
         });
     };
 
