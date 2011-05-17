@@ -135,7 +135,8 @@ var obviel = {};
         var d = {
             name: 'default',
             iface: 'object',
-            subviews: {}
+            subviews: {},
+            events: {}
         };
         $.extend(d, settings);
         $.extend(this, d);
@@ -166,6 +167,7 @@ var obviel = {};
         // run cleanup for any previous view
         var previous_view = get_stack_top(self.el);
         if (previous_view !== null) {
+            previous_view.unbind_events();
             // BBB arguments for backwards compatibility
             previous_view.cleanup(self.el, self.obj, self.name);
         }
@@ -190,6 +192,8 @@ var obviel = {};
             var subviews_promise = self.render_subviews();
             
             subviews_promise.done(function() {
+                self.bind_events();
+                
                 self.finalize();
                 // the callback needs to be the last thing called
                 if (self.callback) {
@@ -200,6 +204,39 @@ var obviel = {};
         });
     };
 
+    module.View.prototype.bind_events = function() {
+        var self = this;
+        self.bound_handlers = {};
+        $.each(self.events, function(selector, event_info) {
+            var el = $(selector, self.el);
+            if (typeof event_info.handler == 'string') {
+                var handler = function(ev) {
+                    ev.view = self;
+                    self[event_info.handler].call(self, ev);
+                };
+            } else {
+                var handler = function(ev) {
+                    ev.view = self;
+                    event_info.handler(ev);
+                };
+            }
+            el.bind(event_info.name, handler);
+            self.bound_handlers[selector] = {name: event_info.name,
+                                             handler: handler};
+        });
+    };
+    
+    module.View.prototype.unbind_events = function() {
+        var self = this;
+        if (self.bound_handlers === undefined) {
+            return;
+        }
+        $.each(self.bound_handlers, function(selector, event_info) {
+            var el = $(selector, self.el);
+            el.unbind(event_info.name, event_info.handler);
+        });
+    };
+        
     module.View.prototype.finalize = function() {
         var self = this;
         self.store_view();

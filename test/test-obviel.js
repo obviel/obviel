@@ -495,10 +495,6 @@ asyncTest('render subviews', function() {
     });
 });
 
-asyncTest('the next', function() {
-    start();
-});
-
 test('render subview false argument', function() {
     obviel.view({
         render: function() {
@@ -683,58 +679,6 @@ asyncTest('jsont view', function() {
         });
 });
 
-// asyncTest('error handling', function() {
-//     var element = $('#viewdiv');
-//     element.html('');
-//     element.render('fixtures/interfaced.json', 'error', function() {
-//         ok(false);
-//         start();
-//     }, function(e) {
-//         same(e, 'some error');
-//         start();
-//     });
-//     element.unbind();
-// });
-
-// asyncTest('viewparent', function() {
-//     obviel.view({
-//         iface: 'subviews',
-//         render: function() {
-//             el.html('<div id="sub1"></div><div id="sub2"></div>' +
-//                     '<div id="sub3"></div>');
-//         },
-//         subviews: {
-//             '#sub1': 'sub_url',
-//             '#sub2': 'sub_html',
-//             '#sub3': ['sub_named', 'foo']
-//         }
-//     });
-
-//     obviel.view({
-//         render: render_text
-//     });
-
-//     obviel.view({
-//         name: 'foo',
-//         render: function() {
-//             this.el.text('named');
-//         }
-//     });
-    
-//     var el = $('#viewdiv');
-//     el.render({
-//         sub_url: 'fixtures/default.json', // url
-//         sub_html: {text: 'bar'}, // obj
-//         sub_named: {text2: 'baz'} // is registered by name
-//     }, function() {
-//         var parent = $('#sub3', el).viewParent();
-//         same(parent.length, 1);
-//         same(parent[0], el[0]);
-//         start();
-//     });
-// });
-
-
 test('view override on iface', function() {
     var el = $('#viewdiv');
     obviel.view({
@@ -752,16 +696,6 @@ test('view override on iface', function() {
         text: 'eggs'});
     equals(el.text(), 'spam: eggs');
 });
-
-
-
-// obviel.view({
-//     iface: 'foo',
-//     name: 'render-event',
-//     render: function(el, obj, name) {
-//         el.text(obj.text);
-//     }
-// });
 
 test('render on ancestor', function() {
     var called = 0;
@@ -865,98 +799,99 @@ asyncTest('render-done.obviel event with subviews', function() {
     
 });
 
-// test('re-render a view', function() {
-//     $('#viewdiv').html('');
-//     $('#viewdiv2').html('');
-    
-//     obviel.view({
-//         iface: 'foo',
-//         jsont: '<div>{foo}</div>'
-//     });
-    
-//     $('#viewdiv').render({
-//         ifaces: ['foo'],
-//         foo: 'bar'
-//     });
-    
-//     equals($('#viewdiv').html_lower(), '');
-//     equals($('#viewdiv2').html_lower(), '<div>bar</div>');
-    
-//     $('#viewdiv2 div').render({
-//         ifaces: ['foo'],
-//         foo: 'baz'
-//     });
-    
-//     // rendering the structure on 
-//     equals($('#viewdiv2').html_lower(), '<div>baz</div>');
-// });
+asyncTest('view events', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        events: {
+            '#id1': {
+                name: 'custom',
+                handler: function(ev) {
+                    equals(ev.view.iface, 'ifoo');
+                    ok(true, "event triggered");
+                    start();
+                }
+            }
+        }
+    });
+    var el = $('#viewdiv');
+    el.render({ifaces: ['ifoo']});
+    $('#id1').trigger('custom');
+});
 
-// test('re-render parent', function() {
-//     $('#viewdiv').html('').unbind();
-//     $('#viewdiv2').html('').unbind();
-    
-//     obviel.view({
-//         iface: 'evfoo',
-//         name: 'outer',
-//         html: '<div class="ifoo"></div>',
-//         render: function(el, obj, name) {
-//             $('.ifoo', el).render(obj.ifoo, 'inner');
-//         }
-//     });
-    
-//     obviel.view({
-//         iface: 'evfoo',
-//         name: 'inner',
-//         render: function(el, obj, name) {
-//             el.text(obj.bar);
-//         }
-//     });
-    
-//     $('body').unbind();
-//     $('body').bind('obviel-render', function(ev, view, el, obj, name) {
-//         if (!obviel.provides(obj, 'evfoo') || name != 'outer') {
-//             return;
-//         };
-//         view.doRender($('#viewdiv2'), obj, name);
-//         ev.preventDefault();
-//         ev.stopPropagation();
-//     });
-    
-//     $('#viewdiv').unbind();
-//     $('#viewdiv').render({
-//         ifaces: ['evfoo'],
-//         ifoo: {
-//             ifaces: ['evfoo'],
-//                     bar: 'baz'
-//         }
-//     }, 'outer');
-    
-//     equals($('#viewdiv').html_lower(), '');
-//     equals($('#viewdiv2').html_lower(), '<div class=ifoo>baz</div>');
-    
-//     // now triggering an outer structure render on an inner element
-//     // will cause viewdiv2 to be updated again
-//     $('.ifoo').render({
-//                 ifaces: ['evfoo'],
-//         ifoo: {
-//             ifaces: ['evfoo'],
-//             bar: 'qux'
-//         }
-//     }, 'outer');
-    
-//     equals($('#viewdiv').html_lower(), '');
-//     equals($('#viewdiv2').html_lower(), '<div class=ifoo>qux</div>');
-//             $('body').unbind();
-// });
+asyncTest('view events handler string', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        custom: function(ev) {
+            var self = this;
+            equals(self.iface, 'ifoo');
+            ok(ev.view === self);
+            ok(true, "event triggered");
+            start();
+        },
+        events: {
+            '#id1': {
+                name: 'custom',
+                handler: 'custom'
+            }
+        }
+    });
+    var el = $('#viewdiv');
+    el.render({ifaces: ['ifoo']});
+    $('#id1').trigger('custom');
+});
 
-// test('basic re-render of structure handled by parent', function() {
-//     var el = $('#viewdiv');
-//     obviel.view({
-//         iface: 'parenttest',
-//         jsont: '<div>{foo}</div>'
-//     });
-//     el.render({ifaces: ['parenttest'], foo: 'bar'});
-//     equals(el.html_lower(), '<div>bar</div>');
-//     $('div', el).render({ifaces: ['parenttest'], foo: 'baz'});
-//             equals(el.html_lower(), '<div>baz</div>');
-// });
+asyncTest('view events cleanup', function() {
+    var called = 0;
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        events: {
+            '#id1': {
+                name: 'custom',
+                handler: function(ev) {
+                    called++;
+                }
+            }
+        }
+    });
+    obviel.view({
+        iface: 'ibar'
+    });
+    var el = $('#viewdiv');
+    el.render({ifaces: ['ifoo']});
+    // rendering ibar will clean up the events for ifoo, so the
+    // event shouldn't have been triggered
+    el.render({ifaces: ['ibar']});
+    $('#id1').trigger('custom');
+    equals(called, 0);
+    start();
+});
+
+asyncTest('view events cleanup handler string', function() {
+    var called = 0;
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        custom: function(ev) {
+            called++;
+        },
+        events: {
+            '#id1': {
+                name: 'custom'
+            }
+        }
+    });
+    obviel.view({
+        iface: 'ibar'
+    });
+    var el = $('#viewdiv');
+    el.render({ifaces: ['ifoo']});
+    // rendering ibar will clean up the events for ifoo, so the
+    // event shouldn't have been triggered
+    el.render({ifaces: ['ibar']});
+    $('#id1').trigger('custom');
+    equals(called, 0);
+    start();
+});
