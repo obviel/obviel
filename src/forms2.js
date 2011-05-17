@@ -39,7 +39,7 @@ obviel.forms2 = {};
             name: 'default',
             html:
                 '<form ' +
-                'method="POST"' +
+                'method="POST"> ' +
                 '<div class="obviel-fields"></div>' +
                 '<div class="obviel-formerror"></div>' +
                 '<div class="obviel-controls"></div>' +
