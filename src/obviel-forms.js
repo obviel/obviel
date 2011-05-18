@@ -232,7 +232,7 @@ obviel.forms = {};
         }
         
         control_el.click(function(ev) {
-            self.handle_control(control_el, control);
+            self.submit_control(control_el, control);
         });
 
         return control_el;
@@ -264,19 +264,39 @@ obviel.forms = {};
         return clean_data(this.obj.data);
     };
     
-    module.Form.prototype.handle_control = function(control_el, control) {
+    module.Form.prototype.submit_control = function(control_el, control) {
         var self = this;
         
+        if (self.has_errors()) {
+            control_el.attr('disabled', 'true');
+            return;
+        }
+        self.direct_submit(control);
+    };
+
+    module.Form.prototype.has_errors = function() {
+        var self = this;
         // trigger change event for all widgets
         self.trigger_changes();
             
         // determine whether there are any errors
         var error_count = self.count_errors(self.obj.errors);
+
+        return (error_count > 0);
+    };
+
+    module.Form.prototype.submit = function(control) {
+        var self = this;
         
-        if (error_count > 0) {
-            control_el.attr('disabled', 'true');
+        if (self.has_errors()) {
             return;
         }
+
+        self.direct_submit(control);
+    };
+    
+    module.Form.prototype.direct_submit = function(control) {
+        var self = this;
         
         // if there is no action, we just leave: we assume that
         // some event handler is hooked up to the control, for instance
@@ -287,7 +307,7 @@ obviel.forms = {};
         }
 
         var data = JSON.stringify(self.clean_data());
-            
+
         var method = control.method || 'POST';
         var content_type = control.content_type || 'application/json';
         var view_name = control.view_name || 'default';
@@ -295,7 +315,7 @@ obviel.forms = {};
         $.ajax({
             type: method,
             url: action,
-                data: data,
+            data: data,
             processData: false,
             contentType: content_type,
             dataType: 'json',
