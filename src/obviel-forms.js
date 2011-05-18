@@ -94,10 +94,10 @@ obviel.forms = {};
                     "%1 fields did not validate",
                     error_count), [error_count]);
                 $('.obviel-formerror', el).text(msg);
-                $('button[class="obviel-control"]', el).attr('disabled', 'true');
+                $('button.obviel-control', el).attr('disabled', 'true');
             } else {
                 $('.obviel-formerror', el).text('');
-                $('button[class="obviel-control"]', el).removeAttr('disabled');
+                $('button.obviel-control', el).removeAttr('disabled');
             }
         });
 
