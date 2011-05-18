@@ -4,20 +4,21 @@ Obviel: Object/View/Element for jQuery
 Introduction
 ------------
 
-Obviel is an extension to jQuery that tries to help in improving the
-structure of JavaScript applications. It is especially geared towards
-'RESTful' rich-client applications, but should work for any website that uses
+Obviel is an extension to jQuery helps you improve the structure of
+JavaScript applications. It is especially geared towards 'RESTful'
+rich client applications, but should work for any website that uses
 JavaScript.
 
-Obviel provides you with a model/view architecture on the client side, with
-dynamic view lookup based on a data descriptor (called 'iface' in Obviel,
-though it is just a marker rather than an interface that describes the whole
-data structure). In Obviel, a model is simply a JavaScript object,
-typically retrieved through JSON, an Obviel view is an object that knows how
-to represent such a model object into the browser DOM.
+Obviel provides you with a model/view architecture on the client side,
+with dynamic view lookup based on the type (or in Obviel terminology,
+the *iface) of a JavaScript object.
 
-Some options are made available to help with common use cases, such as form
-handling, client-side templating, and iframe embedding of content.
+In Obviel, a *model* is a JavaScript object, typically retrieved
+through JSON. An Obviel *view* is an object that knows how to
+represent such a model object into the browser DOM.
+
+In addition to its basic architecture, Obviel provides support for
+client-side templating and client-side form construction.
 
 Rendering a view
 ----------------

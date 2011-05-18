@@ -804,9 +804,8 @@ asyncTest('view events', function() {
         iface: 'ifoo',
         html: '<div id="id1"></div>',
         events: {
-            '#id1': {
-                name: 'custom',
-                handler: function(ev) {
+            'custom': {
+                '#id1': function(ev) {
                     equals(ev.view.iface, 'ifoo');
                     ok(true, "event triggered");
                     start();
@@ -831,10 +830,9 @@ asyncTest('view events handler string', function() {
             start();
         },
         events: {
-            '#id1': {
-                name: 'custom',
-                handler: 'custom'
-            }
+            'custom': {
+                '#id1': 'custom'
+                }
         }
     });
     var el = $('#viewdiv');
@@ -848,9 +846,8 @@ asyncTest('view events cleanup', function() {
         iface: 'ifoo',
         html: '<div id="id1"></div>',
         events: {
-            '#id1': {
-                name: 'custom',
-                handler: function(ev) {
+            'custom': {
+                '#id1': function(ev) {
                     called++;
                 }
             }
@@ -878,8 +875,8 @@ asyncTest('view events cleanup handler string', function() {
             called++;
         },
         events: {
-            '#id1': {
-                name: 'custom'
+            'custom': {
+                '#id1': 'custom'
             }
         }
     });
