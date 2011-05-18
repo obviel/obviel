@@ -148,11 +148,13 @@
             this, value);
         target = $(target);
         if (result === null) {
-            $target.val('');
+            target.val('');
+            this.clone_el.val('');
         }
         value = this.obj.value_to_label[result];
         if (value === undefined) {
             target.val(''); // XXX should never happen?
+            this.clone_el.val('');
         }
         // set the value in the input
         target.val(value);
