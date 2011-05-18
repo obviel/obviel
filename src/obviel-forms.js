@@ -94,10 +94,10 @@ obviel.forms = {};
                     "%1 fields did not validate",
                     error_count), [error_count]);
                 $('.obviel-formerror', el).text(msg);
-                $('button[class="obviel-control"]', el).attr('disabled', 'true');
+                $('button.form-submit-button', el).attr('disabled', 'true');
             } else {
                 $('.obviel-formerror', el).text('');
-                $('button[class="obviel-control"]', el).removeAttr('disabled');
+                $('button.form-submit-button', el).removeAttr('disabled');
             }
         });
 
@@ -227,45 +227,48 @@ obviel.forms = {};
             if (control.name) {
                 control_el.attr('name', control.name);
             }
-            
-            control_el.click(function(ev) {
-                // trigger change event for all widgets
-                self.trigger_changes();
-                 
-                // determine whether there are any errors
-                var error_count = self.count_errors(obj.errors);
 
-                if (error_count > 0) {
-                    control_el.attr('disabled', 'true');
-                    return;
-                }
-
-                // clone the data object removing data link annotations
-                var clone = {};
-                $.each(obj.data, function(key, value) {
-                    if (!is_internal(key)) {
-                        clone[key] = value;
+            if (index == 0) {
+                control_el.addClass('form-submit-button');
+                control_el.click(function(ev) {
+                    // trigger change event for all widgets
+                    self.trigger_changes();
+                     
+                    // determine whether there are any errors
+                    var error_count = self.count_errors(obj.errors);
+    
+                    if (error_count > 0) {
+                        control_el.attr('disabled', 'true');
+                        return;
                     }
+    
+                    // clone the data object removing data link annotations
+                    var clone = {};
+                    $.each(obj.data, function(key, value) {
+                        if (!is_internal(key)) {
+                            clone[key] = value;
+                        }
+                    });
+                    var data = JSON.stringify(clone);
+                    
+                    var method = control.method || 'POST';
+                    var action = control.action;
+                    var content_type = control.content_type || 'application/json';
+                    var view_name = control.view_name || 'default';
+    
+                    $.ajax({
+                        type: method,
+                        url: action,
+                        data: data,
+                        processData: false,
+                        contentType: content_type,
+                        dataType: 'json',
+                        success: function(data) {
+                            el.render(data, view_name);
+                        }
+                    });
                 });
-                var data = JSON.stringify(clone);
-                
-                var method = control.method || 'POST';
-                var action = control.action;
-                var content_type = control.content_type || 'application/json';
-                var view_name = control.view_name || 'default';
-
-                $.ajax({
-                    type: method,
-                    url: action,
-                    data: data,
-                    processData: false,
-                    contentType: content_type,
-                    dataType: 'json',
-                    success: function(data) {
-                        el.render(data, view_name);
-                    }
-                });
-            });
+            }
 
             controls_el.append(control_el);
         });

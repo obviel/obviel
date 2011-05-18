@@ -208,7 +208,7 @@ test('form with controls', function() {
     var form_el = $('form', el);
     equal($('button', el).length, 1);
     equal($('button', el).attr('name'), 'foo');
-    equal($('button', el).attr('class'), 'obviel-control fooClass');
+    equal($('button', el).attr('class'), 'obviel-control fooClass form-submit-button');
 });
 
 test('text rendering', function() {
@@ -1830,7 +1830,7 @@ test("field error rendering", function() {
     var form_error_el = $('.obviel-formerror', el);
     equal(form_error_el.text(), '1 field did not validate');
     // the submit buttons are disabled
-    var control_els = $('button[class="obviel-control"]', el);
+    var control_els = $('button.form-submit-button', el);
     equal(control_els.is(':disabled'), true);
 });
 
@@ -1885,7 +1885,7 @@ test("field error clearing", function() {
     // we don't see a form error anymore
     equal(form_error_el.text(), '');
     // the submit button isn't disabled
-    var control_els = $('button[class="obviel-control"]', el);
+    var control_els = $('button.form-submit-button', el);
     equal(control_els.is(':disabled'), false);
     
 });
@@ -2045,7 +2045,7 @@ test("repeating field error not seen until submit", function() {
     equal(error_a_el.text(), '');
     equal(error_b_el.text(), '');
     // don't trigger event but try submitting immediately
-    var button_el = $('button[class="obviel-control"]', el);
+    var button_el = $('button.form-submit-button', el);
     button_el.trigger('click');
     // we now expect the error
     equal(error_a_el.text(), 'value too short');
