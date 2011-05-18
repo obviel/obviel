@@ -193,6 +193,7 @@ var obviel = {};
             
             subviews_promise.done(function() {
                 self.bind_events();
+                self.datalinks();
                 
                 self.finalize();
                 // the callback needs to be the last thing called
@@ -236,7 +237,52 @@ var obviel = {};
             el.unbind(event_info.name, event_info.handler);
         });
     };
+
+    module.View.prototype.datalinks = function() {
+        var self = this;
+        $.each(self.links, function(selector, datalink_info) {
+            self.datalink(selector, datalink_info);
+        });
+    };
+
+    var auto_id = 0;
+    
+    module.View.prototype.datalink = function(selector, datalink_info) {
+        var self = this;
+        var els = $(selector, self.el);
+
+        if (els.length == 0) {
+            return;
+        }
         
+        var link_context = {};
+
+        // XXX goes wrong with multiple els?
+        var linked_obj = $(self.obj);
+        els.each(function(index, el) {
+            el = $(el);
+            var id = el.attr('id');
+            if (id === undefined) {
+                id = 'auto-id-' + auto_id.toString();
+                el.attr('id', id);
+                auto_id++;
+            }
+            link_context[datalink_info] = {
+                twoWay: true,
+                name: id,
+                convertBack: function(value, source, target) {
+                    $(target).text(value);
+                }
+            };
+            el.link(self.obj, link_context);
+            var existing_value = self.obj[datalink_info];
+            if (existing_value !== undefined) {
+                linked_obj.setField(datalink_info, existing_value);
+            }
+        });
+        self.liveobj = linked_obj;
+    };
+    
     module.View.prototype.finalize = function() {
         var self = this;
         self.store_view();
