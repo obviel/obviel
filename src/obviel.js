@@ -206,23 +206,28 @@ var obviel = {};
 
     module.View.prototype.bind_events = function() {
         var self = this;
-        self.bound_handlers = {};
-        $.each(self.events, function(selector, event_info) {
-            var el = $(selector, self.el);
-            if (typeof event_info.handler == 'string') {
-                var handler = function(ev) {
-                    ev.view = self;
-                    self[event_info.handler].call(self, ev);
-                };
-            } else {
-                var handler = function(ev) {
-                    ev.view = self;
-                    event_info.handler(ev);
-                };
-            }
-            el.bind(event_info.name, handler);
-            self.bound_handlers[selector] = {name: event_info.name,
-                                             handler: handler};
+        self.bound_handlers = [];
+        $.each(self.events, function(event_name, events) {
+            $.each(events, function(selector, handler) {
+                var el = $(selector, self.el);
+                if (typeof handler == 'string') {
+                    var wrapped_handler = function(ev) {
+                        ev.view = self;
+                        self[handler].call(self, ev);
+                    };
+                } else {
+                    var wrapped_handler = function(ev) {
+                        ev.view = self;
+                        handler(ev);
+                    };
+                }
+                el.bind(event_name, wrapped_handler);
+                self.bound_handlers.push({
+                    name: event_name,
+                    selector: selector,
+                    handler: wrapped_handler
+                });
+            });
         });
     };
     
@@ -231,8 +236,8 @@ var obviel = {};
         if (self.bound_handlers === undefined) {
             return;
         }
-        $.each(self.bound_handlers, function(selector, event_info) {
-            var el = $(selector, self.el);
+        $.each(self.bound_handlers, function(index, event_info) {
+            var el = $(event_info.selector, self.el);
             el.unbind(event_info.name, event_info.handler);
         });
     };
