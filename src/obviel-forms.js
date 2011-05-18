@@ -210,67 +210,94 @@ obviel.forms = {};
 
     module.Form.prototype.render_controls = function() {
         var self = this;
-
-        var obj = self.obj;
-        var el = self.el;
         
-        var form_el = $('form', el);
+        var form_el = $('form', self.el);
         var controls_el = $('.obviel-controls', form_el);
-        var controls = obj.form.controls || [];
+        var controls = self.obj.form.controls || [];
         
         $.each(controls, function(index, control) {
-            var control_el = $('<button class="obviel-control" type="button" />');
-            control_el.text(control.label || '');
-            if (control['class']) {
-                control_el.addClass(control['class']);
-            }
-            if (control.name) {
-                control_el.attr('name', control.name);
-            }
-            
-            control_el.click(function(ev) {
-                // trigger change event for all widgets
-                self.trigger_changes();
-                 
-                // determine whether there are any errors
-                var error_count = self.count_errors(obj.errors);
-
-                if (error_count > 0) {
-                    control_el.attr('disabled', 'true');
-                    return;
-                }
-
-                // clone the data object removing data link annotations
-                var clone = {};
-                $.each(obj.data, function(key, value) {
-                    if (!is_internal(key)) {
-                        clone[key] = value;
-                    }
-                });
-                var data = JSON.stringify(clone);
-                
-                var method = control.method || 'POST';
-                var action = control.action;
-                var content_type = control.content_type || 'application/json';
-                var view_name = control.view_name || 'default';
-
-                $.ajax({
-                    type: method,
-                    url: action,
-                    data: data,
-                    processData: false,
-                    contentType: content_type,
-                    dataType: 'json',
-                    success: function(data) {
-                        el.render(data, view_name);
-                    }
-                });
-            });
-
-            controls_el.append(control_el);
+            controls_el.append(self.render_control(control));
         });
     };
 
+    module.Form.prototype.render_control = function(control) {
+        var self = this;
+        var control_el = $('<button class="obviel-control" type="button" />');
+        control_el.text(control.label || '');
+        if (control['class']) {
+            control_el.addClass(control['class']);
+        }
+        if (control.name) {
+            control_el.attr('name', control.name);
+        }
+        
+        control_el.click(function(ev) {
+            self.handle_control(control_el, control);
+        });
+
+        return control_el;
+    };
+
+    var clean_data = function(data) {
+        // clone the data object removing data link annotations
+        if ($.isPlainObject(data)) {
+            var clone = {};
+            $.each(data, function(key, value) {
+                if (!is_internal(key)) {
+                    clone[key] = clean_data(value);
+                }
+            });
+            return clone;
+        } else if ($.isArray(data)) {
+            var clone = [];
+            $.each(data, function(index, value) {
+                clone.push(clean_data(value));
+            });
+            return clone;
+            
+        } else {
+            return data;
+        }
+    };
+    
+    module.Form.prototype.clean_data = function() {
+        return clean_data(this.obj.data);
+    };
+    
+    module.Form.prototype.handle_control = function(control_el, control) {
+        var self = this;
+        
+        // trigger change event for all widgets
+        self.trigger_changes();
+            
+        // determine whether there are any errors
+        var error_count = self.count_errors(self.obj.errors);
+        
+        if (error_count > 0) {
+            control_el.attr('disabled', 'true');
+            return;
+        }
+        
+        var data = JSON.stringify(self.clean_data());
+            
+        var method = control.method || 'POST';
+        var action = control.action;
+        var content_type = control.content_type || 'application/json';
+        var view_name = control.view_name || 'default';
+        
+        $.ajax({
+            type: method,
+            url: action,
+            data: data,
+            processData: false,
+            contentType: content_type,
+            dataType: 'json',
+            success: function(data) {
+                self.el.render(data, view_name);
+            }
+        });
+    };
+    
     module.Form.prototype.trigger_changes = function() {
         var self = this;
         
