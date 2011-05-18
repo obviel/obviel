@@ -1,12 +1,13 @@
 Obviel: Object/View/Element for Javascript
 ==========================================
 
-Obviel is a framework that helps structuring your rich-client web-applications.
-It's designed for web-applications where the server provides simple JSON
-data structures, and the client is entirely responsible for presenting those
-structures, though it's relatively versatile and unobtrusive and may be of
-assistence in improving the design of many types of applications where
-JavaScript is used.
+Obviel is a framework to help structure rich-client web
+applications. With Obviel, the client provides simple JSON data
+structures and the client then provides Obviel views to render
+them. Obviel also provides a powerful JSON-driven form library.
+
+Obviel is built on jQuery. It is versatile and unobtrusive, and should
+help in improving the design of many types of web applications.
 
 Contents:
 
