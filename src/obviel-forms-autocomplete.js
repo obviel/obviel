@@ -21,11 +21,6 @@
         
         var autocomplete_options = obj.autocomplete_options || {};
         var input_el = $('#obviel-field-' + obj.prefixed_name, el);
-        var clone_el = input_el.clone();
-        clone_el.attr('id', null);
-        clone_el.attr('name', 'obviel-field-cloned-' + obj.prefixed_name);
-        input_el.hide();
-        input_el.after(clone_el);
         
         var autocomplete_data = obj.data;
         // obj.data can point to a list of mappings with keys 'label'
@@ -97,20 +92,18 @@
             // selection but an immediate blur (by pressing tab).
             // since we ignored the blur, we want to trigger
             // a change explicitly so we can report errors
-            input_el.val(clone_el.val());
             var change_ev = $.Event('change');
             change_ev.target = input_el;
             input_el.trigger(change_ev);
         };
-        clone_el.autocomplete(autocomplete_options);
+        input_el.autocomplete(autocomplete_options);
         // when the user blurs away from the field, we want to validate the
         // field unless we blurred away because we opened the autocomplete
         // popup
-        clone_el.blur(function(ev) {
+        input_el.blur(function(ev) {
             if (ignore_blur) {
                 return;
             }
-            input_el.val(clone_el.val());
             var change_ev = $.Event('change');
             change_ev.target = input_el;
             input_el.trigger(change_ev);
