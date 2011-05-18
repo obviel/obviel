@@ -231,14 +231,10 @@ obviel.forms = {};
             control_el.click(function(ev) {
                 // trigger change event for all widgets
                 self.trigger_changes();
-                
+                 
                 // determine whether there are any errors
-                var error_count = 0;
-                $.each(obj.errors, function(key, value) {
-                    if (!is_internal(key) && value) {
-                        error_count++;
-                    }
-                });
+                var error_count = self.count_errors(obj.errors);
+
                 if (error_count > 0) {
                     control_el.attr('disabled', 'true');
                     return;

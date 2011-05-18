@@ -2169,6 +2169,63 @@ test("actual submit with disabled field", function() {
     equal(el.text(), 'success!');
 });
 
+test("actual submit with composite field", function () {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['composite_field'],
+                name: 'composite',
+                title: 'Composite',
+                widgets: [
+                    {
+                        ifaces: ['textline_field'],
+                        name: 'a',
+                        title: 'A',
+                        validate: {
+                            min_length: 3
+                        }
+                    },
+                    {
+                        ifaces: ['integer_field'],
+                        name: 'b',
+                        title: 'B'
+                    }
+                ]
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        // to trigger successful result
+        options.success({ifaces: ['success_iface']});
+    };
+
+    var form_el = $('form', el);
+
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    $.ajax = original_ajax;
+    equal(ajax_options.data, '{"composite":{"a":null,"b":null}}');
+    // the success_iface should be rendered
+    equal(el.text(), 'success!');
+
+});
+
+
 test("existing values", function() {
     var el = $('#viewdiv');
     var data = {a: 'Something already',
