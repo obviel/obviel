@@ -2225,6 +2225,49 @@ test("actual submit with composite field", function () {
 
 });
 
+test("control without action", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            }],
+            controls: [{
+                'label': 'Do something!',
+                'class': 'do_something'
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+
+    
+    // monkey patch jquery's ajax(): but this shouldn't be called
+    // in the end
+    var original_ajax = $.ajax;
+    var called = 0;
+    $.ajax = function(options) {
+        called++;
+    };
+
+    var form_el = $('form', el);
+
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    $.ajax = original_ajax;
+    equals(called, 0);
+});
 
 test("existing values", function() {
     var el = $('#viewdiv');

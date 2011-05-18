@@ -278,17 +278,24 @@ obviel.forms = {};
             return;
         }
         
+        // if there is no action, we just leave: we assume that
+        // some event handler is hooked up to the control, for instance
+        // using the class
+        var action = control.action;
+        if (action === undefined) {
+            return;
+        }
+
         var data = JSON.stringify(self.clean_data());
             
         var method = control.method || 'POST';
-        var action = control.action;
         var content_type = control.content_type || 'application/json';
         var view_name = control.view_name || 'default';
-        
+
         $.ajax({
             type: method,
             url: action,
-            data: data,
+                data: data,
             processData: false,
             contentType: content_type,
             dataType: 'json',
