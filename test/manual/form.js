@@ -1,8 +1,12 @@
 
 $(document).ready(function() {
-    var data = {};
+    var data = {
+        'da': 'foo'
+    };
+
+    var el = $('#testform');
     
-    $('#testform').render({
+    el.render({
         ifaces: ['viewform'],
         form: {
             widgets: [
@@ -32,7 +36,8 @@ $(document).ready(function() {
                     data: [
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
-                    ]
+                    ],
+                    defaultvalue: 'foo'
                 },
                 
                 {
@@ -45,12 +50,25 @@ $(document).ready(function() {
             ],
             controls: [
                 {
-                    'label': 'Submit!',
-                    'action': 'http://localhost'
+                    'label': 'Examine',
+                    'class': 'examine'
+                },
+                {
+                    'label': 'Change',
+                    'class': 'change'
                 }
+
             ]
         },
         data: data
     });
 
+    $('.examine', el).click(function(ev) {
+        console.log(data.da);
+    });
+    
+    $('.change', el).click(function(ev) {
+        $(data).setField('da', 'bar');
+    });
+    
 });
