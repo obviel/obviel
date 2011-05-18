@@ -22,6 +22,7 @@
         var autocomplete_options = obj.autocomplete_options || {};
         var input_el = $('#obviel-field-' + obj.prefixed_name, el);
         var clone_el = input_el.clone();
+        self.clone_el = clone_el;
         clone_el.attr('id', null);
         clone_el.attr('name', 'obviel-field-cloned-' + obj.prefixed_name);
         input_el.hide();
@@ -141,17 +142,22 @@
         return {value: value};
     };
 
-    module.AutocompleteWidget.prototype.convert_back = function(value) {
+    module.AutocompleteWidget.prototype.convert_back = function(value,
+                                                                source, target) {
         var result = module.TextLineWidget.prototype.convert_back.call(
             this, value);
+        target = $(target);
         if (result === null) {
-            return '';
+            $target.val('');
         }
         value = this.obj.value_to_label[result];
         if (value === undefined) {
-            return null; // XXX should never happen?
+            target.val(''); // XXX should never happen?
         }
-        return value;
+        // set the value in the input
+        target.val(value);
+        // set the value in the cloned element too
+        this.clone_el.val(value);
     };
     
     obviel.view(new module.AutocompleteWidget);
