@@ -501,7 +501,8 @@ obviel.forms = {};
         var obj = self.obj;
         var errors_at_end = obj.errors_at_end;
 
-        var field_el = $('<div id="obviel-field-' + obj.prefixed_name + '">');
+        var field_el = $('<div class="field-input" ' + 
+                            'id="obviel-field-' + obj.prefixed_name + '">');
         
         $.each(obj.widgets, function(index, sub_widget) {
             if (obj.disabled) {
@@ -715,7 +716,7 @@ obviel.forms = {};
         var d = {
             iface: 'input_field',
             jsont:
-                '<div class="obviel-field-input">' +
+                '<div class="field-input">' +
                 '<input type="text" name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
