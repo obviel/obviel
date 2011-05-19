@@ -579,7 +579,8 @@ obviel.forms = {};
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var field_el = $('<div id="obviel-field-' + self.obj.prefixed_name + '">');    
+        var field_el = $('<div class="field-input" ' + 
+                            'id="obviel-field-' + self.obj.prefixed_name + '">');    
         self.el.append(field_el);
     };
 
