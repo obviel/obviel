@@ -605,21 +605,21 @@ var obviel = {};
         module.registry.render(el, obj, name, callback, errback);
     };
 
-    $.fn.rerender = function(callback) {
+    $.fn.rerender = function(callback, errback) {
         var el = $(this);
         var previous_view = el.view();
         if (!previous_view) {
-            // XXX what is there is no previous view to render?
             return;
         }
-        // XXX don't want to modify callback on existing view; can we create
-        // a new clone of the view instead?
-        previous_view.callback = callback;
         
-        var ev = $.Event('render.obviel');
-        ev.target = el;
-        ev.view = previous_view; // XXX can we add our own stuff to event objects?
-        el.trigger(ev);
+        if (previous_view.from_url) {
+            var obj = previous_view.from_url;
+        } else {
+            var obj = previous_view.obj;
+        }
+        
+        previous_view.registry.render(el, obj, previous_view.name,
+                                      callback, errback);
     };
     
     $.fn.view = function() {

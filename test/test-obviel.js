@@ -344,33 +344,48 @@ asyncTest('render url with name and iface', function() {
         });
 });
 
-// XXX should do test with fake ajax giving different response each time
-// rendering happens, otherwise we only test object re-rendering
 asyncTest('rerender url', function() {
     obviel.view({
-        render: render_text
+        iface: 'ifoo',
+        render: function() {
+            this.el.text(this.obj.text);
+        }
     });
+    
+    var original_ajax = $.ajax;
 
+    var called = 0;
+    
+    $.ajax = function(options) {
+        if (options.url == 'testifoo') {
+            called++;
+            options.success({ifaces: ['ifoo'], text: called.toString()});
+        }
+    };
+    
     var el = $('#viewdiv');
     el.render(
-        'fixtures/default.json', function() {
-            equals(this.el.text(), 'foo');
-            // if this test freezes, it never re-rendered...
+        'testifoo', function() {
+            equals(this.el.text(), '1');
             el.rerender(function() {
+                // this should call the URL again
+                equals(this.el.text(), '2');
                 start();
             });
         });
+
+    $.ajax = original_ajax;
 });
 
 test('rerender context object', function() {
     obviel.iface('rerender');
+    var numrenders = 0;
     obviel.view({
         iface: 'rerender',
         render: function() {
             var self = this;
-            var numrenders = self.numrenders || 1;
-            self.el.text(numrenders);
-            self.numrenders = numrenders + 1;
+            numrenders++;
+            self.el.text(numrenders.toString());
         }
     });
     
