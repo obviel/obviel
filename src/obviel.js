@@ -161,15 +161,22 @@ var obviel = {};
     module.View.prototype.render = function(el, obj, name,
                                             callback, errback) {
     };
+
+    module.View.prototype.do_cleanup = function() {
+        var self = this;
+        
+        self.unbind_events();
+        // BBB arguments for backwards compatibility
+        self.cleanup(self.el, self.obj, self.name);
+    
+    };
     
     module.View.prototype.do_render = function() {
         var self = this;
         // run cleanup for any previous view
-        var previous_view = get_stack_top(self.el);
-        if (previous_view !== null) {
-            previous_view.unbind_events();
-            // BBB arguments for backwards compatibility
-            previous_view.cleanup(self.el, self.obj, self.name);
+        var previous_view = self.el.data('obviel.rendered_view');
+        if (previous_view) {
+            previous_view.do_cleanup();
         }
         
         var compiled_template_promise = module.compilers.get_compiled(
@@ -287,9 +294,8 @@ var obviel = {};
         if (self.ephemeral) {
             return;
         }
-        // attach rendered view to stack if not ephemeral
-        var stack = get_stack(self.el);
-        stack.push(self);
+        // attach rendered view to element if not ephemeral
+        self.el.data('obviel.rendered_view', self);
         // event handler here to render it next time
         self.el.bind(
             'render.obviel',
@@ -298,7 +304,7 @@ var obviel = {};
                 // only render view if a previous view here worked
                 // for that iface
                 var el = $(this);
-                var previous_view = get_stack_top(el);
+                var previous_view = el.data('obviel.rendered_view');
                 if ((view.iface != previous_view.iface) ||
                     (view.name != previous_view.name)) {
                     return;
@@ -309,7 +315,7 @@ var obviel = {};
                 view.do_render();
                 ev.stopPropagation();
                 ev.preventDefault();
-                self.el.unbind(ev);
+                el.unbind(ev);
             }
         );
     };
@@ -582,23 +588,6 @@ var obviel = {};
         module.registry.register(view);
     };
     
-    var get_stack = function(el) {
-        var stack = el.data('obviel.stack');
-        if (stack === undefined) {
-            stack = [];
-            el.data('obviel.stack', stack);
-        }
-        return stack;
-    };
-
-    var get_stack_top = function(el) {
-        var stack = get_stack(el);
-        if (stack.length == 0) {
-            return null;
-        }
-        return stack[stack.length - 1];
-    };
-
     $.fn.render = function(obj, name, callback, errback) {
         // reshuffle arguments if possible
         if ($.isFunction(name)) {
@@ -615,7 +604,7 @@ var obviel = {};
     $.fn.rerender = function(callback) {
         var el = $(this);
         var previous_view = el.view();
-        if (previous_view === null) {
+        if (!previous_view) {
             // XXX what is there is no previous view to render?
             return;
         }
@@ -631,7 +620,7 @@ var obviel = {};
     
     $.fn.view = function() {
         var el = $(this);
-        return get_stack_top(el);
+        return el.data('obviel.rendered_view');
     };
 
     $(document).bind(
