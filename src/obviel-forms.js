@@ -889,10 +889,10 @@ obviel.forms = {};
         }
         if (obj.validate.length !== undefined) {
             var asstring = value.toString();
-            if (asstring[0] == '-') {
+            if (asstring.charAt(0) == '-') {
                 asstring = asstring.slice(1);
             }
-            if (asstring.length != obj.validate.length) {       
+            if (asstring.length != obj.validate.length) {     
                 return Gettext.strargs(_('value must be %1 digits long'),
                                        [obj.validate.length]);
             }
@@ -1041,7 +1041,7 @@ obviel.forms = {};
             return undefined;
         }
 
-        if (!obj.validate.allow_negative && value[0] == '-') {
+        if (!obj.validate.allow_negative && value.charAt(0) == '-') {
             return _('negative numbers are not allowed');
         }
         
@@ -1054,7 +1054,7 @@ obviel.forms = {};
             after_sep = '';
         };
 
-        if (before_sep[0] == '-') {
+        if (before_sep.charAt(0) == '-') {
             before_sep = before_sep.slice(1);
         }
 
