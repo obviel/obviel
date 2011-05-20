@@ -1,8 +1,10 @@
-
-$.fn.html_lower = function() {
-    // some nasty normalization for IE
-    var html = this.html();
-    return html.toLowerCase().replace(/"/g, '');
+var html_lower = function(html) {
+    // some nasty normalization for browser compatibility
+    // Firefox & IE give different cases for html, and
+    // also sometimes Firefox includes a \n where IE does not.
+    // I would use trimRight instead of a regular expression but
+    // IE 7 at least doesn't support it yet
+    return html.toLowerCase().replace(/\s+$/, '');
 };
 
 // ifaces
@@ -526,7 +528,7 @@ test('view with html', function() {
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equals($('#viewdiv').html(), '<div>foo!</div>');
+            equals(html_lower($('#viewdiv').html()), '<div>foo!</div>');
             equals(render_called, 1);
         });
 });
@@ -544,7 +546,7 @@ asyncTest('view with html_url', function() {
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equals($('#viewdiv').html(), '<div>foo</div>\n');
+            equals(html_lower($('#viewdiv').html()), '<div>foo</div>');
             equals(render_called, 1);
             start();
         });
@@ -564,7 +566,7 @@ asyncTest('html context attribute overrides html_url view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equals($('#viewdiv').html(), '<span>spam!</span>');
+            equals(html_lower($('#viewdiv').html()), '<span>spam!</span>');
             equals(render_called, 1);
             start();
         });
@@ -584,7 +586,7 @@ asyncTest('html context attribute overrides html view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equals($('#viewdiv').html(), '<span>spam!</span>');
+            equals(html_lower($('#viewdiv').html()), '<span>spam!</span>');
             equals(render_called, 1);
             start();
         });
@@ -604,7 +606,7 @@ asyncTest('html_url context attr overrides html view one', function() {
          html_url: 'fixtures/test1.html',
          text: 'spam'},
         function() {
-            equals($('#viewdiv').html(), '<div>foo</div>\n');
+            equals(html_lower($('#viewdiv').html()), '<div>foo</div>');
             start();
         });
 });
