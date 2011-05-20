@@ -187,14 +187,13 @@ obviel.forms = {};
         self.widget_views.push(field_el.view());
         
         // add in label
-        if (widget.title === undefined) {
-            widget.title = '';
-        }
-        field_el.prepend('<label for="obviel-field-' +
-                         widget.prefixed_name + '">' +
-                         entitize(widget.title) +
-                         '</label>');
-        
+        if (widget.title !== null && widget.title !== undefined) {
+            field_el.prepend('<label for="obviel-field-' +
+                             widget.prefixed_name + '">' +
+                             entitize(widget.title) +
+                             '</label>');
+        } 
+
         // add in description
         if (widget.description) {
             field_el.append('<div class="obviel-field-description">' +
