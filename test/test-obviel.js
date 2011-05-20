@@ -828,3 +828,117 @@ asyncTest('view events cleanup handler string', function() {
     equals(called, 0);
     start();
 });
+
+test('element bind', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.append('<div class="added">/div>');
+        }
+    });
+
+    obviel.view({
+        iface: 'ibar'
+    });
+
+    var el = $('#viewdiv');
+    // render a view on el
+    el.render({ifaces: ['ifoo']});
+    // should see single added div
+    equals($('.added', el).length, 1);
+    
+    // render the original object again, in a sub el
+    el.append('<div id="sub">nothing</div>');
+    var sub_el = $('#sub', el);
+    sub_el.render({ifaces: ['ifoo']});
+
+    // the sub el should be unchanged
+    equals(sub_el.text(), 'nothing');
+    equals(sub_el.children().length, 0);
+    
+    // the original el should have a second div added
+    equals($('.added', el).length, 2);
+});
+
+test('element bind cleanup', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.append('<div class="added"></div>');
+        }
+    });
+
+    obviel.view({
+        iface: 'ibar'
+    });
+
+    var el = $('#viewdiv');
+    // render a view on el
+    el.render({ifaces: ['ifoo']});
+    // we expect a single added div
+    equals($('.added', el).length, 1);
+    
+    // render another view on el, wiping out the previous one
+    el.render({ifaces: ['ibar']});
+
+    // render the original object again, on a sub object
+    el.append('<div id="sub"></div>');
+    var sub_el = $('#sub', el);
+    sub_el.render({ifaces: ['ifoo']});
+    
+    // since we've cleaned up the original ifoo view for 'el' by
+    // rendering the ibar view, we should render it on the subobject,
+    // not the original el
+    equals($('.added', sub_el).length, 1);
+
+    // in total we've added two things
+    equals($('.added', el).length, 2);
+    
+});
+
+test('unview', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.append('<div class="added">/div>');
+        }
+    });
+
+    obviel.view({
+        iface: 'ibar'
+    });
+
+    var el = $('#viewdiv');
+    // render a view on el
+    el.render({ifaces: ['ifoo']});
+    // should see single added div
+    equals($('.added', el).length, 1);
+    
+    // render the original object again, in a sub el
+    el.append('<div id="sub">nothing</div>');
+    var sub_el = $('#sub', el);
+    sub_el.render({ifaces: ['ifoo']});
+
+    // the sub el should be unchanged
+    equals(sub_el.text(), 'nothing');
+    equals(sub_el.children().length, 0);
+    
+    // the original el should have a second div added
+    equals($('.added', el).length, 2);
+
+    // try it again, should see another div added
+    sub_el.render({ifaces: ['ifoo']});
+    equals($('.added', el).length, 3);
+
+    // still nothing on sub el
+    equals(sub_el.children().length, 0);
+    
+    // now we unview the original view
+    el.unview();
+
+    // if we render on subview now, we should see a div added there
+    sub_el.render({ifaces: ['ifoo']});
+    equals($('.added', sub_el).length, 1);
+    // and 1 more in total
+    equals($('.added', el).length, 4);
+});

@@ -164,6 +164,8 @@ var obviel = {};
 
     module.View.prototype.do_cleanup = function() {
         var self = this;
+        self.el.data('obviel.rendered_view', null);
+        self.el.unbind('render.obviel');
         
         self.unbind_events();
         // BBB arguments for backwards compatibility
@@ -173,10 +175,12 @@ var obviel = {};
     
     module.View.prototype.do_render = function() {
         var self = this;
-        // run cleanup for any previous view
-        var previous_view = self.el.data('obviel.rendered_view');
-        if (previous_view) {
-            previous_view.do_cleanup();
+        // run cleanup for any previous view if this view isn't ephemeral
+        if (!self.ephemeral) {
+            var previous_view = self.el.data('obviel.rendered_view');
+            if (previous_view) {
+                previous_view.do_cleanup();
+            }
         }
         
         var compiled_template_promise = module.compilers.get_compiled(
@@ -621,6 +625,11 @@ var obviel = {};
     $.fn.view = function() {
         var el = $(this);
         return el.data('obviel.rendered_view');
+    };
+
+    $.fn.unview = function() {
+        var view = $(this).view();
+        view.do_cleanup();
     };
 
     $(document).bind(
