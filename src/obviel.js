@@ -629,18 +629,6 @@ var obviel = {};
         el.trigger(ev);
     };
     
-    $.fn.renderPrevious = function(callback) {
-        var el = $(this);
-        var stack = get_stack(el);
-        if (stack.length <= 1) {
-            // XXX rendering a previous view while there is no
-            // previous view, what to do?
-            return;
-        }
-        stack.pop();
-        el.rerender(callback);
-    };
-    
     $.fn.view = function() {
         var el = $(this);
         return get_stack_top(el);

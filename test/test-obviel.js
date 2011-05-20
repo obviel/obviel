@@ -362,36 +362,6 @@ asyncTest('rerender url', function() {
         });
 });
 
-// XXX need to test this with fake ajax
-// this test causes trouble, polluting future ajax test states,
-// as for mysterious reasons the inner
-// callback gets called *twice* instead of once. Why? I don't know.
-// asyncTest('renderPrevious url', function() {
-//     obviel.view({
-//         render: render_text
-//     });
-
-//     obviel.view({
-//         iface: 'ifoo',
-//         render: render_text
-//     });
-    
-//     var el = $('#viewdiv');
-    
-//     el.render('fixtures/default.json',
-//               function() {
-//                   el.render('fixtures/interfaced.json',
-//                             function() {
-//                                 equals(this.el.text(), 'baz');
-//                                 el.renderPrevious(
-//                                     function() {
-//                                         equals(this.el.text(), 'foo');
-//                                         start();
-//                                 });
-//                             });
-//               });
-// });
-
 test('rerender context object', function() {
     obviel.iface('rerender');
     obviel.view({
@@ -526,40 +496,6 @@ test('render subview undefined argument', function() {
     var el = $('#viewdiv');
     el.render({});
     equals($('#sub1', el).text(), '');
-});
-
-test('renderPrevious', function() {
-    obviel.view({
-        render: render_text
-    });
-    
-    var el = $('#viewdiv');
-    el.render({text: 'foo'});
-    equals(el.text(), 'foo');
-    el.render({text: 'bar'});
-    equals(el.text(), 'bar');
-    el.renderPrevious();
-    equals(el.text(), 'foo');
-});
-
-test('renderPrevious with ephemeral', function() {
-    obviel.view({
-        render: render_text
-    });
-    obviel.view({
-        name: 'ephemeral',
-        ephemeral: true,
-        render: render_text
-    });
-    var el = $('#viewdiv');
-    el.render({text: 'foo'});
-    equals(el.text(), 'foo');
-    el.render({text: 'bar'}, 'ephemeral');
-    equals(el.text(), 'bar');
-    el.render({text: 'baz'});
-    equals(el.text(), 'baz');
-    el.renderPrevious();
-    equals(el.text(), 'foo');
 });
 
 test('view with html', function() {
