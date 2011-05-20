@@ -501,7 +501,7 @@ obviel.forms = {};
         var obj = self.obj;
         var errors_at_end = obj.errors_at_end;
 
-        var field_el = $('<div class="field-input" ' + 
+        var field_el = $('<div class="obviel-field-input" ' + 
                             'id="obviel-field-' + obj.prefixed_name + '">');
         
         $.each(obj.widgets, function(index, sub_widget) {
@@ -579,7 +579,7 @@ obviel.forms = {};
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var field_el = $('<div class="field-input" ' + 
+        var field_el = $('<div class="obviel-field-input" ' + 
                             'id="obviel-field-' + self.obj.prefixed_name + '">');    
         self.el.append(field_el);
     };
@@ -717,7 +717,7 @@ obviel.forms = {};
         var d = {
             iface: 'input_field',
             jsont:
-                '<div class="field-input">' +
+                '<div class="obviel-field-input">' +
                 '<input type="text" name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}" ' +
                 'style="{.section width}width: {width}em;{.end}" ' +
                 '{.section validate}' +
@@ -826,7 +826,7 @@ obviel.forms = {};
         var d = {
             iface: 'text_field',
             jsont:
-            '<div class="field-input">' +
+            '<div class="obviel-field-input">' +
             '<textarea name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
             ' style="{.section width}width: {width}em;{.end}' +
             '{.section height}height: {height}em;{.end}"' +
@@ -1102,7 +1102,7 @@ obviel.forms = {};
         var d = {
             iface: 'boolean_field',
             jsont:
-            '<div class="field-input">' +
+            '<div class="obviel-field-input">' +
             '{.section label}{.section label_before_input}{label}' +
             '{.end}{.end}' +
             '<input type="checkbox" name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
@@ -1134,7 +1134,7 @@ obviel.forms = {};
         var d = {
             iface: 'choice_field',
             jsont:
-            '<div class="field-input">' +
+            '<div class="obviel-field-input">' +
             '<select name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"' +
             ' style="{.section width}width: {width}em;{.end}"' +
             '{.section disabled} disabled="disabled"{.end}>' +
