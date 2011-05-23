@@ -176,10 +176,7 @@ obviel.forms = {};
 
         field_el.render(widget, function() {
             var view = this;
-            // add in error area
-            view.el.append('<div id="obviel-field-error-' +
-                           view.obj.prefixed_name + '" '+
-                           'class="obviel-field-error"></div>');
+            view.render_error_area();
             // now link everything up
             view.link(data, errors);
         });
@@ -352,6 +349,13 @@ obviel.forms = {};
 
     };
 
+    module.Widget.prototype.render_error_area = function() {
+        // add in error area
+        this.el.append('<div id="obviel-field-error-' +
+                       this.obj.prefixed_name + '" '+
+                       'class="obviel-field-error"></div>');
+    };
+    
     module.Widget.prototype.link = function(data, errors) {
         var self = this;
         var obj = self.obj;
@@ -498,8 +502,7 @@ obviel.forms = {};
         
         var el = self.el;
         var obj = self.obj;
-        var errors_at_end = obj.errors_at_end;
-
+        
         var field_el = $('<div class="obviel-field-input" ' + 
                             'id="obviel-field-' + obj.prefixed_name + '">');
         
@@ -515,23 +518,12 @@ obviel.forms = {};
                 sub_el.addClass(value);
             });
             sub_el.render(sub_widget, function(el, view, widget, name) {
-                if (!errors_at_end) {
-                    el.append('<div id="obviel-field-error-' +
-                              sub_widget.prefixed_name + '" '+
-                              'class="obviel-field-error"></div>');
-                }
+                view.render_error_area();
             });
             self.widget_views.push(sub_el.view());
             
             field_el.append(sub_el);
         });
-        if (errors_at_end) {
-            $.each(obj.widgets, function(index, sub_widget) {
-                field_el.append('<div id="obviel-field-error-' +
-                                sub_widget.prefixed_name + '" ' +
-                                'class="obviel-field-error"></div>');
-            });
-        }
         el.append(field_el);
     };
     
