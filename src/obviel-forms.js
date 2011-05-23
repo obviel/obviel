@@ -85,7 +85,8 @@ obviel.forms = {};
         var el = self.el;
         
         obj.errors = obj.errors || {};
-
+        obj.global_errors = obj.global_errors || {};
+        
         $(el).bind('form-change.obviel', function(ev) {
             var error_count = self.count_errors(obj.errors);
             if (error_count > 0) {
@@ -133,12 +134,14 @@ obviel.forms = {};
         
         $.each(groups, function(index, group) {
             fields_el.append(self.render_group(
-                group, obj.form.name, obj.data, obj.errors, obj.form.disabled));
+                group, obj.form.name, obj.data, obj.errors, obj.global_errors,
+                obj.form.disabled));
         });
     };
 
     module.Form.prototype.render_group = function(group, form_name,
-                                                  data, errors, disabled) {
+                                                  data, errors, global_errors,
+                                                  disabled) {
         var self = this;
         var fieldset_el;
         if (group.name) {
@@ -157,13 +160,17 @@ obviel.forms = {};
         $.each(group.widgets, function(index, widget) {
             widget.prefixed_name = form_name + '-' + widget.name;
             fieldset_el.append(self.render_widget(widget,
-                                                  data, errors, disabled));
+                                                  data, errors, global_errors,
+                                                  disabled));
         });
         return fieldset_el;
     };
 
     module.Form.prototype.render_widget = function(widget,
-                                                   data, errors, disabled) {
+                                                   data,
+                                                   errors,
+                                                   global_errors,
+                                                   disabled) {
         var self = this;
         var field_el = $('<div class="obviel-field"></div>');
         $.each(widget.ifaces, function(index, value) {
@@ -178,7 +185,7 @@ obviel.forms = {};
             var view = this;
             view.render_error_area();
             // now link everything up
-            view.link(data, errors);
+            view.link(data, errors, global_errors);
         });
 
         self.widget_views.push(field_el.view());
@@ -350,13 +357,18 @@ obviel.forms = {};
     };
 
     module.Widget.prototype.render_error_area = function() {
-        // add in error area
+        // add in field validation or conversion failing error area
         this.el.append('<div id="obviel-field-error-' +
-                       this.obj.prefixed_name + '" '+
+                       this.obj.prefixed_name + '" ' +
                        'class="obviel-field-error"></div>');
+        // add in form-level validation failure error area
+        this.el.append('<div id="obviel-global-error-' +
+                       this.obj.prefixed_name + '" ' +
+                       'class="obviel-global-error"></div>');
     };
+
     
-    module.Widget.prototype.link = function(data, errors) {
+    module.Widget.prototype.link = function(data, errors, global_errors) {
         var self = this;
         var obj = self.obj;
         
@@ -367,6 +379,8 @@ obviel.forms = {};
         // prepare converters and back converters
         var link_context = {};
         var error_link_context = {};
+        var global_error_link_context = {};
+        
         var convert_wrapper = function(value, source, target) {
             var result = self.handle_convert(value, source, target);
             if (result.error) {
@@ -399,7 +413,14 @@ obviel.forms = {};
                 $(target).text(value);
             }
         };
-
+        global_error_link_context[obj.name] = {
+            twoWay: true,
+            name: 'obviel-global-error-' + obj.prefixed_name,
+            convertBack: function(value, source, target) {
+                $(target).text(value);
+            }
+        };
+        
         // set up actual links
         var field_el = $('#obviel-field-' + obj.prefixed_name,
                          self.el);
@@ -407,6 +428,10 @@ obviel.forms = {};
         var error_el = $('#obviel-field-error-' + obj.prefixed_name,
                          self.el);
         error_el.link(errors, error_link_context);
+        var global_error_el = $('obviel-global-error-' + obj.prefixed_name,
+                                self.el);
+        global_error_el.link(global_errors,
+                             global_error_link_context);
         
         // if there is a value, update the widget
         var linked_data = $(data);
@@ -527,19 +552,24 @@ obviel.forms = {};
         el.append(field_el);
     };
     
-    module.CompositeWidget.prototype.link = function(data, errors) {
+    module.CompositeWidget.prototype.link = function(data, errors,
+                                                     global_errors) {
         var self = this;
-        var widget = self.obj;
-        var sub_data = data[widget.name];
-        var sub_errors = errors[widget.name];
+        var name = self.obj.name;
+        var sub_data = data[name];
+        var sub_errors = errors[name];
+        var sub_global_errors = global_errors[name];
         if (sub_data === undefined) {
-            sub_data = data[widget.name] = {};
+            sub_data = data[name] = {};
         }
         if (sub_errors === undefined) {
-            sub_errors = errors[widget.name] = {};
+            sub_errors = errors[name] = {};
+        }
+        if (sub_global_errors === undefined) {
+            sub_global_errors = global_errors[name] = {};
         }
         $.each(self.widget_views, function(index, view) {
-            view.link(sub_data, sub_errors);
+            view.link(sub_data, sub_errors, sub_global_errors);
         });
     };
 
@@ -576,7 +606,10 @@ obviel.forms = {};
     };
 
     // receives data and error, the objects being linked
-    module.RepeatingWidget.prototype.add_item = function(data, errors, index,
+    module.RepeatingWidget.prototype.add_item = function(data,
+                                                         errors,
+                                                         global_errors,
+                                                         index,
                                                          remove_func) {
         var self = this;
         var repeat_el = $('<div class="obviel-field obviel-repeatfield">');
@@ -610,38 +643,50 @@ obviel.forms = {};
         var view = repeat_el.view();
         // XXX a hack to make sure the composite widget gets out
         // the data and errors in question
-        view.link({dummy: data}, {dummy: errors});
+        view.link({dummy: data}, {dummy: errors}, {dummy: global_errors});
         return repeat_el;
     };
 
     // receives data and errors which contain the lists to manipulate
     // not the objects being linked
     module.RepeatingWidget.prototype.remove_item = function(
-        data, errors, remove_item, remove_error_item) {
+        data, errors, global_errors,
+        remove_item, remove_error_item, remove_global_error_item) {
         var self = this;
         var name = self.obj.name;
         var old_items = data[name];
         var old_error_items = errors[name];
+        var old_global_error_items = global_errors[name];
         var new_items = [];
         var new_error_items = [];
+        var new_global_error_items = [];
         
         $.each(old_items, function(index, item) {
             if (item === remove_item) {
                 return;
-            };
+            }
             new_items.push(item);
         });
         $.each(old_error_items, function(index, error_item) {
             if (error_item === remove_error_item) {
                 return;
-            };
+            }
             new_error_items.push(error_item);
+        });
+
+        $.each(old_global_error_items, function(index, global_error_item) {
+            if (global_error_item === remove_global_error_item) {
+                return;
+            }
+            new_global_error_items.push(global_error_item);
         });
         data[name] = new_items;
         errors[name] = new_error_items;
+        global_errors[name] = new_global_error_items;
     };
     
-    module.RepeatingWidget.prototype.link = function(data, errors) {
+    module.RepeatingWidget.prototype.link = function(data, errors,
+                                                     global_errors) {
         var self = this;
 
         var obj = this.obj;
@@ -654,14 +699,16 @@ obviel.forms = {};
         repeat_button.click(function() {
             var new_data = {};
             var new_errors = {};
+            var new_global_errors = {};
             var new_index = field_el.data('obviel.repeat-index');
             data[obj.name].push(new_data);
             errors[obj.name].push(new_errors);
+            global_errors[obj.name].push(new_global_errors);
             var remove_func = function() {
-                self.remove_item(data, errors,
-                                 new_data, new_errors);
+                self.remove_item(data, errors, global_errors,
+                                 new_data, new_errors, new_global_errors);
             };
-            var new_el = self.add_item(new_data, new_errors,
+            var new_el = self.add_item(new_data, new_errors, new_global_errors,
                                        new_index, remove_func);
             repeat_button.before(new_el);
             field_el.data('obviel.repeat-index', new_index + 1);
@@ -669,24 +716,33 @@ obviel.forms = {};
 
         var items = data[obj.name];
         var error_items = errors[obj.name];
+        var global_error_items = global_errors[obj.name];
         if (items === undefined) {
             items = data[obj.name] = [];
         }
         if (error_items == undefined) {
             error_items = errors[obj.name] = [];
         }
-
+        if (global_error_items === undefined) {
+            global_error_items = global_errors[obj.name] = [];
+        }
+        
         $.each(items, function(index, new_data) {
             var new_errors = error_items[index];
             if (new_errors === undefined) {
                 new_errors = {};
                 error_items.push(new_errors);
             }
+            var new_global_errors = global_error_items[index];
+            if (new_global_errors === undefined) {
+                new_global_errors = {};
+                global_error_items.push(new_global_errors);
+            }
             var remove_func = function() {
-                self.remove_item(data, errors,
+                self.remove_item(data, errors, global_errors,
                                  new_data, new_errors);
             };
-            var new_el = self.add_item(new_data, new_errors,
+            var new_el = self.add_item(new_data, new_errors, new_global_errors,
                                        index, remove_func);
             repeat_button.before(new_el);
         });
