@@ -57,18 +57,17 @@ obviel.forms = {};
         this.widget_views = [];
     };
  
-    module.Form.prototype.count_errors = function(errors) {
-        var self = this;
+    var count_errors = function(errors) {
         var result = 0;
         $.each(errors, function(key, value) {
             if (is_internal(key)) {
                 return true;
             }
             if ($.isPlainObject(value)) {
-                result += self.count_errors(value);
+                result += count_errors(value);
             } else if ($.isArray(value)) {
                 $.each(value, function(index, item) {
-                    result += self.count_errors(item);
+                    result += count_errors(item);
                 });
             } else if (value) {
                 result++;
@@ -76,6 +75,11 @@ obviel.forms = {};
             return true;
         });
         return result;
+    };
+
+    module.Form.prototype.total_errors = function() {
+        return (count_errors(this.obj.errors) +
+                count_errors(this.obj.global_errors));
     };
     
     module.Form.prototype.render = function() {
@@ -88,7 +92,7 @@ obviel.forms = {};
         obj.global_errors = obj.global_errors || {};
         
         $(el).bind('form-change.obviel', function(ev) {
-            var error_count = self.count_errors(obj.errors);
+            var error_count = self.total_errors();
             if (error_count > 0) {
                 var msg = Gettext.strargs(gt.ngettext(
                     "1 field did not validate",
@@ -262,6 +266,50 @@ obviel.forms = {};
             return data;
         }
     };
+
+    var clear_linked_data = function(obj) {
+        var linked_obj = $(obj);
+        $.each(obj, function(key, value) {
+            if (is_internal(key)) {
+                return;
+            }
+            if ($.isPlainObject(value)) {
+                clear_linked_data(value);
+            } else if ($.isArray(value)) {
+                $.each(value, function(index, array_value) {
+                    clear_linked_data(array_value);
+                });
+            } else {
+                linked_obj.setField(key, '');
+            };
+            return;
+        });
+    };
+    
+    // use setField to set values in target according to source
+    // source and target must have same structure
+    var set_linked_data = function(source, target) {
+        var linked_target = $(target);
+        clear_linked_data(target);
+        $.each(source, function(key, source_value) {
+            if (is_internal(key)) {
+                return;
+            }
+            if ($.isPlainObject(source_value)) {
+                var target_value = target[key];
+                set_linked_data(source_value, target_value);
+            } else if ($.isArray(source_value)) {
+                var target_value = target[key];
+                $.each(source_value, function(index, array_value) {
+                    var target_array_value = target_value[index];
+                    set_linked_data(array_value, target_array_value);
+                });
+            } else {
+                linked_target.setField(key, source_value);
+            }
+            return;
+        });
+    };
     
     module.Form.prototype.clean_data = function() {
         return clean_data(this.obj.data);
@@ -281,13 +329,45 @@ obviel.forms = {};
         var self = this;
         // trigger change event for all widgets
         self.trigger_changes();
-            
+        // trigger global validation
+        self.validate();
+
         // determine whether there are any errors
-        var error_count = self.count_errors(self.obj.errors);
+        var error_count = self.total_errors();
 
         return (error_count > 0);
     };
 
+    module.Form.prototype.set_global_errors = function(data) {
+        set_linked_data(data, this.obj.global_errors);
+    };
+    
+    module.Form.prototype.validate = function() {
+        var self = this;
+        var url = self.obj.validation_url;
+        // no global validation
+        if (url === undefined) {
+            return;
+        }
+        var data = self.json_data();
+        
+        // otherwise do global validation and set errors accordingly
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: data,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(data) {
+                self.set_global_errors(data);
+                // for any update to error status due to validate, trigger event
+                var form_el = $('form', self.el);
+                form_el.trigger('form-change.obviel');
+            }
+        });
+    };
+    
     module.Form.prototype.submit = function(control) {
         var self = this;
         
@@ -296,6 +376,10 @@ obviel.forms = {};
         }
 
         self.direct_submit(control);
+    };
+
+    module.Form.prototype.json_data = function() {
+        return JSON.stringify(this.clean_data());
     };
     
     module.Form.prototype.direct_submit = function(control) {
@@ -309,8 +393,8 @@ obviel.forms = {};
             return;
         }
 
-        var data = JSON.stringify(self.clean_data());
-
+        var data = self.json_data();
+        
         var method = control.method || 'POST';
         var content_type = control.content_type || 'application/json';
         var view_name = control.view_name || 'default';
@@ -428,7 +512,7 @@ obviel.forms = {};
         var error_el = $('#obviel-field-error-' + obj.prefixed_name,
                          self.el);
         error_el.link(errors, error_link_context);
-        var global_error_el = $('obviel-global-error-' + obj.prefixed_name,
+        var global_error_el = $('#obviel-global-error-' + obj.prefixed_name,
                                 self.el);
         global_error_el.link(global_errors,
                              global_error_link_context);

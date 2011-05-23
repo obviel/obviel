@@ -2454,6 +2454,176 @@ test("default values in composite interacting with existent", function() {
     equal(b_el.val(), '3');
 });
 
+
+test("global errors", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        if (options.url == 'validate') {
+            var data = $.parseJSON(options.data);
+            if (data.a > data.b) {
+                options.success({
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                });
+            } else {
+                options.success({});
+            }
+        }
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A'
+            }, {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                description: 'B'
+            }]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-a', form_el);
+    var field_b_el = $('#obviel-field-test-b', form_el);
+
+    field_a_el.val('1');
+    field_b_el.val('10');
+
+    // submitting this, everything should be fine
+    var view = el.view();
+    // no action defined, so submit will succeed quietly
+    view.submit({});
+
+    equal(global_errors.a, undefined);
+    equal(global_errors.b, undefined);
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '');
+    
+    field_a_el.val('10');
+    field_b_el.val('1');
+    view.submit({});
+
+    equal(global_errors.a, 'must be smaller than b');
+    equal(global_errors.b, 'must be greater than a');
+
+    // it also shows up in the element
+    var field_global_a = $('#obviel-global-error-test-a', form_el);
+    equal(field_global_a.text(), 'must be smaller than b');
+    equal(form_error_el.text(), '2 fields did not validate');
+    
+    
+    // make the global validation problem go away again
+    field_b_el.val('100');
+    view.submit({});
+    equal(global_errors.a, '');
+    equal(global_errors.b, '');
+    equal(field_global_a.text(), '');
+    equal(form_error_el.text(), '');
+});
+
+
+test("global errors with repeating", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        if (options.url == 'validate') {
+            var data = $.parseJSON(options.data);
+            if (data.repeating[0].a == 'trigger_error') {
+                options.success({'repeating': [{'a': 'error'}]});
+            } else {
+                options.success({});
+            }
+        }
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+    var form_el = $('form', el);
+
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+ 
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    field_a_el.val('foo');
+    field_b_el.val('10');
+
+    // submitting this, everything should be fine
+    var view = el.view();
+    // no action defined, so submit will succeed quietly
+    view.submit({});
+
+    equal(global_errors.repeating[0].a, undefined);
+    equal(global_errors.repeating[0].b, undefined);
+    
+    field_a_el.val('trigger_error');
+    field_b_el.val('1');
+    view.submit({});
+
+    equal(global_errors.repeating[0].a, 'error');
+    equal(global_errors.repeating[0].b, undefined);
+    
+    // make the global validation problem go away again
+    field_a_el.val('nothing');
+    
+    view.submit({});
+    equal(global_errors.repeating[0].a, '');
+    equal(global_errors.repeating[0].b, undefined);
+
+});
+
 module("Datepicker");
 
 test('datepicker convert', function() {
