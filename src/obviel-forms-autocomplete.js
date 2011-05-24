@@ -50,6 +50,7 @@
                     type: 'GET',
                     url: url,
                     data: {
+                        identifier: data.identifier,
                         term: data.term,
                         limit: autocomplete_options.limit || 10
                     },
@@ -58,13 +59,15 @@
                         label_to_value = {};
                         value_to_label = {};
                         labels = [];
+
+                        self.label_to_value = self.label_to_value || {};
+                        self.value_to_label = self.label_to_value || {};
+
                         $.each(data, function(index, item) {
-                            label_to_value[item.label] = item.value;
-                            value_to_label[item.value] = item.label;
+                            self.label_to_value[item.label] = item.value;
+                            self.value_to_label[item.value] = item.label;
                             labels.push(item.label);
                         });
-                        obj.label_to_value = label_to_value;
-                        obj.value_to_label = value_to_label;
                         autocomplete_callback(labels);
                     },
                     error: function(xhr, status, error) {
@@ -82,10 +85,12 @@
                 value_to_label[item.value] = item.label;
                 labels.push(item.label);
             });
-            obj.label_to_value = label_to_value;
-            obj.value_to_label = value_to_label;
+            self.label_to_value = label_to_value;
+            self.value_to_label = value_to_label;
             source = labels;
         };
+
+        self.source = source;
         
         autocomplete_options.source = source;
         var ignore_blur = false;
@@ -135,7 +140,7 @@
         if (result.value === null) {
             return result;
         }
-        value = this.obj.label_to_value[result.value];
+        value = this.label_to_value[result.value];
         if (value === undefined) {
             return {error: 'unknown value'};
         }
@@ -144,6 +149,7 @@
 
     module.AutocompleteWidget.prototype.convert_back = function(value,
                                                                 source, target) {
+        var self = this;
         var result = module.TextLineWidget.prototype.convert_back.call(
             this, value);
         target = $(target);
@@ -151,15 +157,27 @@
             target.val('');
             this.clone_el.val('');
         }
-        value = this.obj.value_to_label[result];
-        if (value === undefined) {
-            target.val(''); // XXX should never happen?
-            this.clone_el.val('');
+
+        var set_value = function() {
+            value = self.value_to_label[result];
+            if (value === undefined) {
+                target.val(''); // XXX should never happen?
+                self.clone_el.val('');
+            }
+            // set the value in the input
+            target.val(value);
+            // set the value in the cloned element too
+            self.clone_el.val(value);
         }
-        // set the value in the input
-        target.val(value);
-        // set the value in the cloned element too
-        this.clone_el.val(value);
+
+        if (!$.isFunction(this.source)) {
+            set_value();
+        } else if (this.value_to_label === undefined || 
+                    this.value_to_label[value] === undefined) {
+            this.source.call(this, {identifier: value}, set_value);
+        } else {
+            set_value();
+        } 
     };
     
     obviel.view(new module.AutocompleteWidget);

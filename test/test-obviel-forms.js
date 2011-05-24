@@ -2731,3 +2731,104 @@ test("datepicker datalink conversion error", function() {
     equal(errors.a, 'invalid date');
     equal(data.a, undefined);
 });
+
+module("Autocomplete");
+
+test("autocomplete set values", function () {
+    var el=$('#viewdiv');
+    var data = {}
+    var errors = {}
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['autocomplete_textline_field'],
+                name: 'a',
+                title: 'Autocomplete',
+                data: [
+                    {value: 'foo', label: 'Foo'},
+                    {value: 'bar', label: 'Bar'}
+                ],
+                defaultvalue: 'foo'
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+    field_el.val('Qux'); // invalid value
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(errors.a, 'unknown value');
+    equal(data.a, 'foo');
+
+    field_el.val('Bar');
+    field_el.trigger(ev);
+    equal(errors.a, '');
+    equal(data.a, 'bar');
+});
+
+test("autocomplete url set values", function () {
+    var el=$('#viewdiv');
+    var data = {}
+    var errors = {}
+
+    var orig_ajax = $.ajax;
+    $.ajax = function(settings) {
+        var key = settings.data.identifier || settings.data.term || '';
+        key = key.toLowerCase();
+        if ('foo'.indexOf(key) >= 0) {
+            settings.success([{value: 'foo', label: 'Foo'}]);
+        } else if ('bar'.indexOf(key) >= 0) {
+            settings.success([{value: 'bar', label: 'Bar'}]);
+        } else if ('qux'.indexOf(key) >= 0) {
+            settings.success([{value: 'qux', label: 'Qux'}]);
+        }
+    }
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['autocomplete_textline_field'],
+                name: 'a',
+                title: 'Autocomplete',
+                data: 'http://url',
+                defaultvalue: 'foo'
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+    field_el.val('Doo'); // invalid value
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(errors.a, 'unknown value');
+    equal(data.a, 'foo');
+
+    // cache value for autocomplete
+    var view = field_el.closest('.obviel-field').view();
+    view.source({term: 'Bar'}, function () {});
+    view.source({term: 'Qux'}, function () {});
+
+    field_el.val('Bar');
+    field_el.trigger(ev);
+    equal(errors.a, '');
+    equal(data.a, 'bar');
+
+    $(data).setField('a', 'qux');
+    equal(field_el.val(), 'Qux');
+
+    // restore old ajax
+    $.ajax = orig_ajax;
+});
+
