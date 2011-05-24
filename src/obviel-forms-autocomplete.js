@@ -147,7 +147,6 @@
 
     module.AutocompleteWidget.prototype.convert_back = function(value,
                                                                 source, target) {
-
         var self = this;
         var result = module.TextLineWidget.prototype.convert_back.call(
             this, value);
@@ -169,11 +168,15 @@
             self.clone_el.val(value);
         }
 
-        if (this.value_to_label === undefined && $.isFunction(this.source)) {
+        if (!$.isFunction(this.source)) {
+            set_value();
+        } else if (this.value_to_label === undefined || 
+                    this.value_to_label[value] === undefined) {
             this.source.call(this, {identifier: value}, set_value);
         } else {
-            set_value();
-        }
+            // XXX do nothing , as this condition happens when
+            // value is being set to a new one by autocomplete
+        } 
     };
     
     obviel.view(new module.AutocompleteWidget);

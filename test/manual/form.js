@@ -10,8 +10,8 @@ $(document).ready(function() {
 
     var orig_ajax = $.ajax;
     $.ajax = function(settings) {
-        var key = settings.data.identifier || settings.data.term;
-        var key = key.toLowerCase();
+        var key = settings.data.identifier || settings.data.term || '';
+        key = key.toLowerCase();
         if ('foo'.indexOf(key) >= 0) {
             settings.success([{value: 'foo', label: 'Foo'}]);
         } else if ('bar'.indexOf(key) >= 0) {
@@ -55,7 +55,7 @@ $(document).ready(function() {
                 {
                     ifaces: ['autocomplete_textline_field'],
                     name: 'dau',
-                    title: 'Autocomplete',
+                    title: 'Autocomplete URL',
                     data: 'autocomplete_url',
                     defaultvalue: 'foo'
                 },
