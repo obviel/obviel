@@ -61,7 +61,7 @@ $(document).ready(function() {
                 },
                
                 {
-                    ifaces: ['datepicker_textline_field'],
+                    ifaces: ['datepicker_field'],
                     name: 'dp',
                     title: 'Datepicker'
                 }

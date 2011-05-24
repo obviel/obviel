@@ -1,9 +1,9 @@
 (function($, obviel, module) {
-    obviel.iface('datepicker_textline_field', 'textline_field');
+    obviel.iface('datepicker_field', 'textline_field');
     module.DatePickerWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'datepicker_textline_field'
+            iface: 'datepicker_field'
         };
         $.extend(d, settings);
         module.TextLineWidget.call(this, d);

@@ -2657,7 +2657,7 @@ test("datepicker datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_textline_field'],
+                ifaces: ['datepicker_field'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -2684,7 +2684,7 @@ test("datepicker back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_textline_field'],
+                ifaces: ['datepicker_field'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -2711,7 +2711,7 @@ test("datepicker datalink conversion error", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_textline_field'],
+                ifaces: ['datepicker_field'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
