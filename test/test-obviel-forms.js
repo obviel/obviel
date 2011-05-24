@@ -2736,8 +2736,8 @@ module("Autocomplete");
 
 test("autocomplete set values", function () {
     var el=$('#viewdiv');
-    var data = {}
-    var errors = {}
+    var data = {};
+    var errors = {};
 
     el.render({
         ifaces: ['viewform'],
@@ -2775,8 +2775,8 @@ test("autocomplete set values", function () {
 
 test("autocomplete url set values", function () {
     var el=$('#viewdiv');
-    var data = {}
-    var errors = {}
+    var data = {};
+    var errors = {};
 
     var orig_ajax = $.ajax;
     $.ajax = function(settings) {
@@ -2789,7 +2789,7 @@ test("autocomplete url set values", function () {
         } else if ('qux'.indexOf(key) >= 0) {
             settings.success([{value: 'qux', label: 'Qux'}]);
         }
-    }
+    };
 
     el.render({
         ifaces: ['viewform'],
