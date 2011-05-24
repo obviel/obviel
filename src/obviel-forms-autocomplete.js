@@ -174,8 +174,7 @@
                     this.value_to_label[value] === undefined) {
             this.source.call(this, {identifier: value}, set_value);
         } else {
-            // XXX do nothing , as this condition happens when
-            // value is being set to a new one by autocomplete
+            set_value();
         } 
     };
     
