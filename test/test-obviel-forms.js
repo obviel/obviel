@@ -1571,6 +1571,49 @@ test("boolean back datalink", function() {
     equal(field_el.is(':checked'), false);
 });
 
+test("boolean null", function() {
+    var el = $('#viewdiv');
+    var data = {a: null}; 
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['boolean_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data
+    });
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+
+    // starts as off
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, false);
+    
+    // set to on
+    field_el.attr('checked', true);
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, true);
+
+    // turn off again
+    field_el.attr('checked', false);
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(data.a, false);
+});
+
+
 test("choice datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 

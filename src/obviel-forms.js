@@ -1253,7 +1253,7 @@ obviel.forms = {};
 
     module.BooleanWidget.prototype.convert_back = function(
         value, source, target) {
-        $(target).attr('checked', value);
+        $(target).attr('checked', value || false);
     };
     
     obviel.view(new module.BooleanWidget());
