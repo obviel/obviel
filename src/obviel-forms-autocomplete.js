@@ -59,13 +59,15 @@
                         label_to_value = {};
                         value_to_label = {};
                         labels = [];
+
+                        self.label_to_value = self.label_to_value || {};
+                        self.value_to_label = self.label_to_value || {};
+
                         $.each(data, function(index, item) {
-                            label_to_value[item.label] = item.value;
-                            value_to_label[item.value] = item.label;
+                            self.label_to_value[item.label] = item.value;
+                            self.value_to_label[item.value] = item.label;
                             labels.push(item.label);
                         });
-                        self.label_to_value = label_to_value;
-                        self.value_to_label = value_to_label;
                         autocomplete_callback(labels);
                     },
                     error: function(xhr, status, error) {

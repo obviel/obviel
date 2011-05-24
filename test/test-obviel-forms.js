@@ -2786,6 +2786,8 @@ test("autocomplete url set values", function () {
             settings.success([{value: 'foo', label: 'Foo'}]);
         } else if ('bar'.indexOf(key) >= 0) {
             settings.success([{value: 'bar', label: 'Bar'}]);
+        } else if ('qux'.indexOf(key) >= 0) {
+            settings.success([{value: 'qux', label: 'Qux'}]);
         }
     }
 
@@ -2806,7 +2808,7 @@ test("autocomplete url set values", function () {
     });
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('Qux'); // invalid value
+    field_el.val('Doo'); // invalid value
     var ev = new $.Event('change');
     ev.target = field_el;
     field_el.trigger(ev);
@@ -2816,11 +2818,17 @@ test("autocomplete url set values", function () {
     // cache value for autocomplete
     var view = field_el.closest('.obviel-field').view();
     view.source({term: 'Bar'}, function () {});
+    view.source({term: 'Qux'}, function () {});
 
     field_el.val('Bar');
     field_el.trigger(ev);
     equal(errors.a, '');
     equal(data.a, 'bar');
+
+    $(data).setField('a', 'qux');
+    equal(field_el.val(), 'Qux');
+
+    // restore old ajax
     $.ajax = orig_ajax;
 });
 
