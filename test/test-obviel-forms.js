@@ -2744,7 +2744,7 @@ test("autocomplete set values", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_textline_field'],
+                ifaces: ['autocomplete_field'],
                 name: 'a',
                 title: 'Autocomplete',
                 data: [
@@ -2796,7 +2796,7 @@ test("autocomplete url set values", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_textline_field'],
+                ifaces: ['autocomplete_field'],
                 name: 'a',
                 title: 'Autocomplete',
                 data: 'http://url',

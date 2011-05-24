@@ -43,7 +43,7 @@ $(document).ready(function() {
                         ]
                 },
                 {
-                    ifaces: ['autocomplete_textline_field'],
+                    ifaces: ['autocomplete_field'],
                     name: 'da',
                     title: 'Autocomplete',
                     data: [
@@ -53,7 +53,7 @@ $(document).ready(function() {
                     defaultvalue: 'foo'
                 },
                 {
-                    ifaces: ['autocomplete_textline_field'],
+                    ifaces: ['autocomplete_field'],
                     name: 'dau',
                     title: 'Autocomplete URL',
                     data: 'autocomplete_url',

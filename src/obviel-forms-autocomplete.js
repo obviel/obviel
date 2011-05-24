@@ -1,11 +1,11 @@
 (function($, obviel, module) {
 
-    obviel.iface('autocomplete_textline_field', 'textline_field');
+    obviel.iface('autocomplete_field', 'textline_field');
 
     module.AutocompleteWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'autocomplete_textline_field'
+            iface: 'autocomplete_field'
         };
         $.extend(d, settings);
         module.TextLineWidget.call(this, d);
