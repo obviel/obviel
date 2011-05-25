@@ -1305,5 +1305,35 @@ obviel.forms = {};
     };
     
     obviel.view(new module.ChoiceWidget());
+
+    module.DisplayWidget = function (settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'display_field',
+            jsont:
+                '<div class="obviel-field-input">' +
+                '<span name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"> ' +
+                '</span>' +
+                '</div>',
+        };
+        $.extend(d, settings);
+        module.Widget.call(this, d);
+    }
+
+    module.DisplayWidget.prototype = new module.Widget;
+
+    module.DisplayWidget.prototype.convert = function (value) {
+        return value;
+    }
+
+    module.DisplayWidget.prototype.convert_back = function(value) {
+        var self = this;
+        var display_value = self.obj['label'] || value || self.obj.null_value;
+        $('#obviel-field-' + self.obj.prefixed_name,  self.el).html(
+                display_value
+        );
+    }
+
+    obviel.view(new module.DisplayWidget());
     
 })(jQuery, obviel, obviel.forms);

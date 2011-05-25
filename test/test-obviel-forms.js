@@ -2832,3 +2832,60 @@ test("autocomplete url set values", function () {
     $.ajax = orig_ajax;
 });
 
+module("Display");
+
+test('display value', function () {
+    var el=$('#viewdiv');
+    var data = {
+        a: null
+    };
+    var errors = {};
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['display_field'],
+                null_value: '?',
+                name: 'a',
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+
+    equal(field_el.text(), '?');
+
+    $(data).setField('a', 'alpha');
+    equal(field_el.text(), 'alpha');
+});
+
+test('display label', function () {
+    var el=$('#viewdiv');
+    var data = {
+        a: 'a'
+    };
+    var errors = {};
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['display_field'],
+                null_value: '?',
+                name: 'a',
+                label: 'Alpha'
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+
+    equal(field_el.text(), 'Alpha');
+});
