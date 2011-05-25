@@ -1328,7 +1328,9 @@ obviel.forms = {};
 
     module.DisplayWidget.prototype.convert_back = function(value) {
         var self = this;
-        var display_value = self.obj['label'] || value || self.obj.null_value;
+        var value_to_label = self.obj.value_to_label || {};
+        var display_value = (value_to_label[value] || value || 
+                            self.obj.null_value);
         $('#obviel-field-' + self.obj.prefixed_name,  self.el).html(
                 display_value
         );

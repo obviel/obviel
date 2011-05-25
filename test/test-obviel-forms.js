@@ -2866,7 +2866,7 @@ test('display value', function () {
 test('display label', function () {
     var el=$('#viewdiv');
     var data = {
-        a: 'a'
+        a: 'alpha'
     };
     var errors = {};
 
@@ -2878,7 +2878,9 @@ test('display label', function () {
                 ifaces: ['display_field'],
                 null_value: '?',
                 name: 'a',
-                label: 'Alpha'
+                value_to_label: {
+                    'alpha': 'Alpha'
+                }
             }]
         },
         data: data,
