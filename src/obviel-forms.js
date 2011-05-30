@@ -644,7 +644,11 @@ obviel.forms = {};
         });
         el.append(field_el);
     };
-    
+
+    module.CompositeWidget.prototype.render_error_area = function() {
+        // no error area
+    };
+
     module.CompositeWidget.prototype.link = function(data, errors,
                                                      global_errors) {
         var self = this;
@@ -699,6 +703,10 @@ obviel.forms = {};
 
     module.GroupWidget.prototype.render_label = function() {
         // don't render label for group, fieldset already does this
+    };
+
+    module.GroupWidget.prototype.render_error_area = function() {
+        // no error area
     };
     
     module.GroupWidget.prototype.render = function() {
@@ -777,12 +785,22 @@ obviel.forms = {};
     module.RepeatingWidget.prototype.init = function() {
         this.widget_views = [];
     };
+
+    module.RepeatingWidget.prototype.cleanup = function() {
+        $.each(this.widget_views, function(index, view) {
+            view.cleanup();
+        });
+    };
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
         var field_el = $('<div class="obviel-field-input" ' + 
                             'id="obviel-field-' + self.obj.prefixed_name + '">');    
         self.el.append(field_el);
+    };
+
+    module.RepeatingWidget.prototype.render_error_area = function() {
+        // no error area
     };
 
     // receives data and error, the objects being linked
@@ -812,6 +830,7 @@ obviel.forms = {};
             var new_widget_views = [];
             $.each(self.widget_views, function(index, widget_view) {
                 if (widget_view === new_widget_view) {
+                    widget_view.cleanup();
                     return;
                 };
                 new_widget_views.push(widget_view);
