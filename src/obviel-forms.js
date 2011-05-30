@@ -90,6 +90,7 @@ obviel.forms = {};
         
         obj.errors = obj.errors || {};
         obj.global_errors = obj.global_errors || {};
+        obj.data = obj.data || {};
         
         $(el).bind('form-change.obviel', function(ev) {
             var error_count = self.total_errors();
@@ -118,56 +119,17 @@ obviel.forms = {};
 
     module.Form.prototype.render_widgets = function() {
         var self = this;
-        var is_new = false;
         var obj = self.obj;
-        
-        if (!obj.data) {
-            is_new = true;
-            obj.data = {};
-        }
 
         var form_el = $('form', self.el);
         var fields_el = $('.obviel-fields', form_el);
-        var groups = obj.form.groups ? obj.form.groups.slice(0) : [];
-        if (obj.form.widgets) {
-            groups.unshift({
-                name: null,
-                widgets: obj.form.widgets
-            });
-        }
         
-        $.each(groups, function(index, group) {
-            fields_el.append(self.render_group(
-                group, obj.form.name, obj.data, obj.errors, obj.global_errors,
+        $.each(obj.form.widgets, function(index, widget) {
+            widget.prefixed_name = obj.form.name + '-' + widget.name;
+            fields_el.append(self.render_widget(
+                widget, obj.data, obj.errors, obj.global_errors,
                 obj.form.disabled));
         });
-    };
-
-    module.Form.prototype.render_group = function(group, form_name,
-                                                  data, errors, global_errors,
-                                                  disabled) {
-        var self = this;
-        var fieldset_el;
-        if (group.name) {
-            fieldset_el = $(
-                    '<fieldset class="obviel-fieldset" ' +
-                    'id="obviel-fieldset-' + form_name + '-' + group.name +
-                    '"></fieldset>');
-            if (group.title) {
-                fieldset_el.append(
-                       '<legend>' + entitize(group.title) +
-                        '</legend>');  
-            }
-        } else {
-            fieldset_el = $('<div class="obviel-form-mainfields"></div>');
-        }
-        $.each(group.widgets, function(index, widget) {
-            widget.prefixed_name = form_name + '-' + widget.name;
-            fieldset_el.append(self.render_widget(widget,
-                                                  data, errors, global_errors,
-                                                  disabled));
-        });
-        return fieldset_el;
     };
 
     module.Form.prototype.render_widget = function(widget,
