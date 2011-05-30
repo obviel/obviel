@@ -187,6 +187,89 @@ test('form with group titles', function() {
     equal($('#obviel-fieldset-test-two>legend', el).text(), 'Two');
 });
 
+test('form with groups widgets', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: 
+            [{
+                name: 'one',
+                ifaces: ['group_field'],
+                widgets: [
+                    {ifaces: ['textline_field'],
+                     name: 'text1',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    },
+                    {ifaces: ['textline_field'],
+                     name: 'text2',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    }
+                ]
+            },
+             {
+                 name: 'two',
+                 ifaces: ['group_field'],
+                 widgets: [
+                     {ifaces: ['textline_field'],
+                      name: 'alpha',
+                      title: 'Alpha'
+                     }
+                 ]
+             }   
+            ]
+        }
+    });
+    equal($('fieldset', el).length, 2);
+    equal($('#obviel-fieldset-test-one', el).length, 1);
+    equal($('#obviel-fieldset-test-two', el).length, 1);
+});
+
+test('form with group widget titles', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: 
+            [{
+                name: 'one',
+                title: "One",
+                ifaces: ['group_field'],
+                widgets: [
+                    {ifaces: ['textline_field'],
+                     name: 'text1',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    },
+                    {ifaces: ['textline_field'],
+                     name: 'text2',
+                     title: 'Text',
+                     description: 'A textline widget'
+                    }
+                ]
+            },
+             {
+                 name: 'two',
+                 title: "Two",
+                 ifaces: ['group_field'],
+                 widgets: [
+                     {ifaces: ['textline_field'],
+                      name: 'alpha',
+                      title: 'Alpha'
+                     }
+                 ]
+             }   
+            ]
+        }
+    });
+    equal($('#obviel-fieldset-test-one>legend', el).text(), 'One');
+    equal($('#obviel-fieldset-test-two>legend', el).text(), 'Two');
+});
+
 test('form with controls', function() {
     var el = $('#viewdiv');
     el.render({

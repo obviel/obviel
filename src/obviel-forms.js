@@ -187,6 +187,7 @@ obviel.forms = {};
 
         field_el.render(widget, function() {
             var view = this;
+            view.render_label();
             view.render_error_area();
             // now link everything up
             view.link(data, errors, global_errors);
@@ -194,19 +195,6 @@ obviel.forms = {};
 
         self.widget_views.push(field_el.view());
         
-        // add in label
-        if (widget.title !== null && widget.title !== undefined) {
-            field_el.prepend('<label for="obviel-field-' +
-                             widget.prefixed_name + '">' +
-                             entitize(widget.title) +
-                             '</label>');
-        } 
-
-        // add in description
-        if (widget.description) {
-            field_el.append('<div class="obviel-field-description">' +
-                            entitize(widget.description) + '</div>');
-        }
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
@@ -451,6 +439,21 @@ obviel.forms = {};
                        'class="obviel-global-error"></div>');
     };
 
+    module.Widget.prototype.render_label = function() {
+        var self = this;
+        if (self.obj.title) {
+            self.el.prepend('<label for="obviel-field-' +
+                            self.obj.prefixed_name + '">' +
+                            entitize(self.obj.title) +
+                            '</label>');
+        } 
+        
+        // add in description
+        if (self.obj.description) {
+            self.el.append('<div class="obviel-field-description">' +
+                           entitize(self.obj.description) + '</div>');
+        }
+    };
     
     module.Widget.prototype.link = function(data, errors, global_errors) {
         var self = this;
@@ -605,6 +608,12 @@ obviel.forms = {};
     module.CompositeWidget.prototype.init = function() {
         this.widget_views = [];
     };
+
+    module.CompositeWidget.prototype.cleanup = function() {
+        $.each(this.widget_views, function(index, view) {
+            view.cleanup();
+        });
+    };
     
     module.CompositeWidget.prototype.render = function() {
         var self = this;
@@ -665,6 +674,93 @@ obviel.forms = {};
     };
     
     obviel.view(new module.CompositeWidget());
+
+    obviel.iface('group_field', 'widget');
+    module.GroupWidget = function(settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'group_field'
+        };
+        $.extend(d, settings);
+        module.Widget.call(this, d);
+    };
+
+    module.GroupWidget.prototype = new module.Widget;
+
+    module.GroupWidget.prototype.init = function() {
+        this.widget_views = [];
+    };
+
+    module.GroupWidget.prototype.cleanup = function() {
+        $.each(this.widget_views, function(index, view) {
+            view.cleanup();
+        });
+    };
+
+    module.GroupWidget.prototype.render_label = function() {
+        // don't render label for group, fieldset already does this
+    };
+    
+    module.GroupWidget.prototype.render = function() {
+        var self = this;
+        var obj = self.obj;
+        
+        var field_el = $(
+            '<fieldset class="obviel-fieldset" ' +
+                'id="obviel-fieldset-' + obj.prefixed_name +
+                '"></fieldset>');
+        if (obj.title) {
+            field_el.append(
+                '<legend>' + entitize(obj.title) +
+                    '</legend>');  
+        }
+
+        $.each(obj.widgets, function(index, sub_widget) {
+            if (obj.disabled) {
+                sub_widget.disabled = true;
+            }
+            sub_widget.prefixed_name = (obj.prefixed_name +
+                                        '-' + sub_widget.name);
+            
+            var sub_el = $('<div class="obviel-field obviel-subfield">');
+            $.each(sub_widget.ifaces, function(i, value) {
+                sub_el.addClass(value);
+            });
+            sub_el.render(sub_widget, function(el, view, widget, name) {
+                view.render_label();
+                view.render_error_area();
+            });
+            self.widget_views.push(sub_el.view());
+
+            // somewhat nasty, but required for a lot of style issues
+            // (they need an element at the end they can rely on, and
+            // the field-error div gets removed from view at times)
+            sub_el.append(
+                '<div class="obviel-field-clear">&#xa0;</div>');
+            
+            field_el.append(sub_el);
+        });
+        
+        self.el.append(field_el);
+    };
+    
+    module.GroupWidget.prototype.link = function(data, errors,
+                                                 global_errors) {
+        var self = this;
+        $.each(self.widget_views, function(index, view) {
+            view.link(data, errors, global_errors);
+        });
+    };
+
+    module.GroupWidget.prototype.change = function() {
+        var self = this;
+        $.each(self.widget_views, function(index, view) {
+            view.change();
+        });
+    };
+    
+    obviel.view(new module.GroupWidget());
+
     
     obviel.iface('repeating_field', 'widget');
     module.RepeatingWidget = function(settings) {
