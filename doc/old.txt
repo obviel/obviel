@@ -1,0 +1,76 @@
+Note: currently not supported
+=============================
+
+Form mode
+---------
+
+NOTE: this section describes the ``form`` iface, which makes that a submit
+handler is attached to forms automatically, and the results are rendered, but
+nothing more - the ``forms`` system that builds a framework to render widgets
+based on this ``form`` iface is not touched here, it has its own documentation.
+(XXX link)
+
+A view, when rendered, may contain a form. We can automatically turn this form
+into an AJAX-submitted form. If we do that, a (JSON) object is expected to be
+returned when the form is submitted, which in turn is rendered using Obviel.
+This behavior is triggered by setting the special ``form`` parameter. A view is
+looked up on the retrieved object using ``render``, using the configuration
+parameters supplied::
+
+  views.view({
+    form: {name: 'completed'},
+    html_url: ...,
+  });
+
+Alternatively, ``true`` can be supplied, in which case the
+configuration is assumed to be ``{name: 'default'}``. Note that the name
+is only used for the view that is rendered after the form has been submitted,
+the name for the form view itself is passed to render()/renderURL() in the
+usual manner.
+
+Let's consider a common case in form rendering: a self-submitting form that
+keeps re-rendering itself as long as there are validation errors. The
+application will only proceed if the form is correctly filled out.  How would
+we implement such a protocol? We will define the object on the server to be a
+JSON structure of iface ``form``, which contains an ``html`` attribute,
+triggering the HTML view behavior, until it decides the submit is successful,
+at which point it returns a model with a different iface (or of course an
+unrelated form).
+
+The view to initially display the form::
+
+  views.view({
+     iface: 'form',
+     form: true
+  });
+
+As long as the server keeps sending a model with the iface ``form``, this view
+is triggered, and the form submit handler is hooked to the html provided
+on the model. If a model with a non-form iface is returned, the submit handler
+is of course not hooked up.
+
+Note: a simple view with iface ``form`` is already registered by Obviel, so
+the view in the example above is not required, you can use ``form`` as an
+iface without defining a view to get the described behaviour.
+
+Iframe mode
+-----------
+
+If the ``iframe`` configuration option set to ``true``, the rendered view will
+be inlined into an iframe. This iframe is constructed within the element
+provided, which is assumed to allow such embedding. ``render()`` will receive
+the original element as the ``el`` argument (at some point we thought it might
+be smart to pass the iframe to render(), however, this does not solve much, as
+render() would still need to find the body or whatnot itself, and makes it less
+flexible, since render() no longer has easy access to the parent element). The
+iframe will be automatically adjusted to the correct height and weight for its
+contents after rendering.
+
+The ``form`` option interacts with the ``iframe`` option: if the
+``iframe`` option is set, the system will look for the form within
+``$(iframe).contents()`` of the embedded iframe. 
+
+The ``html`` attribute also interacts with the ``iframe`` option; the
+contents of the html attribute will be placed within the iframe, using
+``iframe.contentDocument.write()``.
+
