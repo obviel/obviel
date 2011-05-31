@@ -1395,13 +1395,13 @@ obviel.forms = {};
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
-    }
+    };
 
     module.DisplayWidget.prototype = new module.Widget;
 
     module.DisplayWidget.prototype.convert = function (value) {
         return value;
-    }
+    };
 
     module.DisplayWidget.prototype.convert_back = function(value) {
         var self = this;
@@ -1411,7 +1411,7 @@ obviel.forms = {};
         $('#obviel-field-' + self.obj.prefixed_name,  self.el).html(
                 display_value
         );
-    }
+    };
 
     obviel.view(new module.DisplayWidget());
     

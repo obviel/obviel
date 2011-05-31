@@ -1,0 +1,83 @@
+Introduction
+============
+
+Introduction
+------------
+
+Obviel is a model/view abstraction for JavaScript that helps you
+improve the structure of JavaScript applications. Obviel is built on
+jQuery and integrates with it. It is versatile and unobtrusive.
+
+Obviel is especially geared towards RESTful rich client applications,
+but will work for any website that uses JavaScript. Obviel's
+particular strength is its support for *loose coupling* between client
+and server: the JavaScript codebase on the client can be developed
+independently from the server implementation.
+
+Obviel also comes with a powerful JSON-based form framework, built
+with Obviel.
+
+Obviel features include:
+
+Obviel core
+-----------
+
+* Decouple views from each other and from the server: URL-agnostic
+  views, Javascript agnostic server.
+
+* deep jQuery integration with the ``render`` function:
+  ``$('#foo').render(obj)``
+
+* Declarative composite views (subviews).
+
+* Declarative setup of event handlers.
+
+* Associate elements with specific views to easily render different
+  content in the same place.
+
+Hyperlinking
+------------
+
+* RESTful data structures on the server: hyperlinked JSON.
+
+* Bootstrap single-page application from a single URL that links to
+  other information.
+
+HTML generation
+---------------
+
+* Client or server-side HTML generation.
+
+* Support for static HTML inclusion.
+
+* JSON Template template language support.
+
+* Extensible template language system, so other client-side template
+  languages can be plugged in.
+
+Obviel Forms
+------------
+
+* Powerful form framework built on basic Obviel views and JSON.
+
+* Forms load and save JSON directly, no HTML form decoding or
+  generation on server, just work with JSON.
+
+* Widgets for textline, text, integer, float, decimal, boolean
+  (checkbox), choice (drop-down), display, date, autocomplete, and
+  more.
+
+* Client-side validation: instant error messages if the user ends the
+  wrong data.
+
+* Server-side validation support for validation requirements that
+  involve multiple fields.
+
+* Easily extensible with new widgets.
+  
+* Powerful composite and repeating fields to construct complex nested
+  forms out of simple widgets: fields that represent sub-objects and
+  arrays of objects.
+
+* Integration with gettext i18n framework for custom translation of
+  error messages.
