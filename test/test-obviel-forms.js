@@ -2469,18 +2469,20 @@ test("global errors", function() {
     var original_ajax = $.ajax;
     var ajax_options;
     $.ajax = function(options) {
+        var defer = $.Deferred();      
         ajax_options = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a > data.b) {
-                options.success({
+                defer.resolve({
                     'a': 'must be smaller than b',
                     'b': 'must be greater than a'
                 });
-            } else {
-                options.success({});
+                return defer.promise();
             }
         }
+        defer.resolve({});
+        return defer.promise();
     };
 
     el.render({
@@ -2554,15 +2556,19 @@ test("global errors with repeating", function() {
     var original_ajax = $.ajax;
     var ajax_options;
     $.ajax = function(options) {
+        var defer = $.Deferred();      
         ajax_options = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.repeating[0].a == 'trigger_error') {
-                options.success({'repeating': [{'a': 'error'}]});
-            } else {
-                options.success({});
+                defer.resolve({
+                    'repeating': [{'a': 'error'}]
+                });
+                return defer.promise();
             }
         }
+        defer.resolve({});
+        return defer.promise();
     };
 
     el.render({

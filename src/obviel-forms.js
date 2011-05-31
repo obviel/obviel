@@ -77,9 +77,12 @@ obviel.forms = {};
         return result;
     };
 
-    module.Form.prototype.total_errors = function() {
-        return (count_errors(this.obj.errors) +
-                count_errors(this.obj.global_errors));
+    module.Form.prototype.error_count = function() {
+        return count_errors(this.obj.errors);
+    };
+
+    module.Form.prototype.global_error_count = function() {
+        return count_errors(this.obj.global_errors);
     };
     
     module.Form.prototype.render = function() {
@@ -93,16 +96,21 @@ obviel.forms = {};
         obj.data = obj.data || {};
         
         $(el).bind('form-change.obviel', function(ev) {
-            var error_count = self.total_errors();
-            if (error_count > 0) {
+            var error_count = self.error_count();
+            var global_error_count = self.global_error_count();
+            var count = error_count + global_error_count;
+            if (count > 0) {
                 var msg = Gettext.strargs(gt.ngettext(
                     "1 field did not validate",
                     "%1 fields did not validate",
-                    error_count), [error_count]);
+                    count), [count]);
                 $('.obviel-formerror', el).text(msg);
-                $('button.obviel-control', el).attr('disabled', 'true');
             } else {
                 $('.obviel-formerror', el).text('');
+            }
+            if (error_count) {
+                $('button.obviel-control', el).attr('disabled', 'true');
+            } else {
                 $('button.obviel-control', el).removeAttr('disabled');
             }
         });
@@ -265,27 +273,12 @@ obviel.forms = {};
         return clean_data(this.obj.data);
     };
     
-    module.Form.prototype.submit_control = function(control_el, control) {
-        var self = this;
-        
-        if (self.has_errors()) {
-            control_el.attr('disabled', 'true');
-            return;
-        }
-        self.direct_submit(control);
-    };
-
-    module.Form.prototype.has_errors = function() {
+    module.Form.prototype.update_errors = function() {
         var self = this;
         // trigger change event for all widgets
         self.trigger_changes();
         // trigger global validation
-        self.validate();
-
-        // determine whether there are any errors
-        var error_count = self.total_errors();
-
-        return (error_count > 0);
+        return self.validate();
     };
 
     module.Form.prototype.set_global_errors = function(data) {
@@ -297,35 +290,59 @@ obviel.forms = {};
         var url = self.obj.validation_url;
         // no global validation
         if (url === undefined) {
-            return;
+            var defer = $.Deferred();
+            defer.resolve();
+            return defer.promise();
         }
         var data = self.json_data();
         
         // otherwise do global validation and set errors accordingly
-        $.ajax({
+        var defer = $.ajax({
             type: 'GET',
             url: url,
             data: data,
             processData: false,
             contentType: 'application/json',
-            dataType: 'json',
-            success: function(data) {
-                self.set_global_errors(data);
-                // for any update to error status due to validate, trigger event
-                var form_el = $('form', self.el);
-                form_el.trigger('form-change.obviel');
+            dataType: 'json'
+        });
+        
+        defer.done(function(data) {
+            self.set_global_errors(data);
+            // for any update to error status due to validate, trigger event
+            var form_el = $('form', self.el);
+            form_el.trigger('form-change.obviel');
+        });
+        return defer;
+    };
+    
+    module.Form.prototype.submit_control = function(control_el, control) {
+        var self = this;
+
+        self.update_errors().done(function() {
+            // if there are just local errors, disable submit
+            if (self.error_count() > 0) {
+                control_el.attr('disabled', 'true');
+                return;
             }
+            // if there are global errors, submit is not disabled, but
+            // still don't really submit
+            if (self.global_error_count() > 0) {
+                return;
+            }
+            self.direct_submit(control);
         });
     };
     
     module.Form.prototype.submit = function(control) {
         var self = this;
-        
-        if (self.has_errors()) {
-            return;
-        }
 
-        self.direct_submit(control);
+        self.update_errors().done(function() {
+            // don't submit if there are any errors
+            if (self.error_count() > 0 || self.global_error_count > 0) {
+                return;
+            }
+            self.direct_submit(control);
+        });
     };
 
     module.Form.prototype.json_data = function() {
