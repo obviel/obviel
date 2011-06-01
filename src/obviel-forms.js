@@ -298,7 +298,7 @@ obviel.forms = {};
         
         // otherwise do global validation and set errors accordingly
         var defer = $.ajax({
-            type: 'GET',
+            type: 'POST',
             url: url,
             data: data,
             processData: false,
