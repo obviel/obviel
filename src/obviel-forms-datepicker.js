@@ -23,8 +23,8 @@
     module.DatePickerWidget.prototype.render = function() {
         module.TextLineWidget.prototype.render.call(this);
         
-        var input_el = $('[name=' + this.obj.name + ']', this.el);
-
+        var input_el = $('#obviel-field-' + this.obj.prefixed_name, this.el);
+        
         ensure_options(this.obj);
         
         input_el.datepicker(this.obj.datepicker_options);
