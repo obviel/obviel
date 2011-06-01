@@ -611,6 +611,7 @@ obviel.forms = {};
                                         '-' + sub_widget.name);
             
             var sub_el = $('<div class="obviel-field obviel-subfield">');
+            sub_el.addClass('obviel-fieldname-' + sub_widget.name);
             $.each(sub_widget.ifaces, function(i, value) {
                 sub_el.addClass(value);
             });
@@ -710,6 +711,7 @@ obviel.forms = {};
                                         '-' + sub_widget.name);
             
             var sub_el = $('<div class="obviel-field obviel-subfield">');
+            sub_el.addClass('obviel-fieldname-' + sub_widget.name);
             $.each(sub_widget.ifaces, function(i, value) {
                 sub_el.addClass(value);
             });
