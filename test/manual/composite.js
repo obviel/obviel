@@ -31,8 +31,8 @@ $(document).ready(function() {
                         },
                         {
                             ifaces: ['integer_field'],
-                            name: 'b',
-                            title: 'B'
+                            name: 'c',
+                            title: 'C'
                         }
                     ]
                 }
