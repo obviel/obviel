@@ -109,9 +109,11 @@ obviel.forms = {};
                 $('.obviel-formerror', el).text('');
             }
             if (error_count) {
-                $('button.obviel-control', el).attr('disabled', 'true');
+                $('button.obviel-control', el).attr('disabled', 'true').trigger(
+                    'button-updated.obviel');
             } else {
-                $('button.obviel-control', el).removeAttr('disabled');
+                $('button.obviel-control', el).removeAttr('disabled').trigger(
+                    'button-updated.obviel');
             }
         });
 
@@ -181,7 +183,9 @@ obviel.forms = {};
         var controls = self.obj.form.controls || [];
         
         $.each(controls, function(index, control) {
-            controls_el.append(self.render_control(control));
+            var control_el = self.render_control(control);
+            controls_el.append(control_el);
+            control_el.trigger("button-created.obviel");
         });
     };
 
@@ -321,7 +325,8 @@ obviel.forms = {};
         self.update_errors().done(function() {
             // if there are just local errors, disable submit
             if (self.error_count() > 0) {
-                control_el.attr('disabled', 'true');
+                control_el.attr('disabled', 'true').trigger(
+                    'button-updated.obviel');
                 return;
             }
             // if there are global errors, submit is not disabled, but
