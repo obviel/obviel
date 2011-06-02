@@ -25,7 +25,19 @@ $(document).ready(function() {
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
                         ]
+                },
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    title: 'Repeating',
+                    
+                    widgets: [{
+                        ifaces: ['integer_field'],
+                        name: 'aha',
+                        title: 'Aha'
+                    }]
                 }
+
             ],
             controls: [
                 {

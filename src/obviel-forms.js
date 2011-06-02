@@ -809,6 +809,7 @@ obviel.forms = {};
         self.widget_views.push(new_widget_view);
         var remove_button = $('<button class="obviel-repeat-remove-button" ' +
                               'type="button">-</button>');
+        remove_button.trigger('button-created.obviel');
         remove_button.click(function() {
             $(this).parent().remove();
             remove_func();
@@ -879,6 +880,7 @@ obviel.forms = {};
         var field_el = $('#obviel-field-' + obj.prefixed_name, self.el);
         var repeat_button = $('<button class="obviel-repeat-add-button" ' +
                               'type="button">+</button>');
+        repeat_button.trigger('button-created.obviel');
         field_el.append(repeat_button);
         
         repeat_button.click(function() {
