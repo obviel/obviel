@@ -3,12 +3,14 @@ obviel.forms = {};
 (function($, obviel, module) {
     // if no json_locale_data can be found, fall back on the default
     // translations
-    if (json_locale_data === undefined) {
-        var json_locale_data = undefined;
-    };
+    if (typeof json_locale_data != "undefined") {
+        var locale_data = json_locale_data;
+    } else {
+        var locale_data = undefined;
+    }
     var gt = new Gettext({
         domain: "obviel_forms",
-        locale_data: json_locale_data});
+        locale_data: locale_data});
     function _(msgid) { return gt.gettext(msgid); };
     
     var entitize = function(s) {
