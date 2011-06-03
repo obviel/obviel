@@ -3018,7 +3018,7 @@ test("autocomplete url set values", function () {
 module("Display");
 
 test('display value', function () {
-    var el=$('#viewdiv');
+    var el = $('#viewdiv');
     var data = {
         a: null
     };
@@ -3031,7 +3031,7 @@ test('display value', function () {
             widgets: [{
                 ifaces: ['display_field'],
                 null_value: '?',
-                name: 'a',
+                name: 'a'
             }]
         },
         data: data,
@@ -3047,7 +3047,7 @@ test('display value', function () {
 });
 
 test('display label', function () {
-    var el=$('#viewdiv');
+    var el = $('#viewdiv');
     var data = {
         a: 'alpha'
     };

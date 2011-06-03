@@ -168,7 +168,7 @@
             target.val(value);
             // set the value in the cloned element too
             self.clone_el.val(value);
-        }
+        };
 
         if (!$.isFunction(this.source)) {
             set_value();

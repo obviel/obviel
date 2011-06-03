@@ -1423,7 +1423,7 @@ obviel.forms = {};
                 '<div class="obviel-field-input">' +
                 '<span name="obviel-field-{prefixed_name}" id="obviel-field-{prefixed_name}"> ' +
                 '</span>' +
-                '</div>',
+                '</div>'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
