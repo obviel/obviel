@@ -23,7 +23,7 @@
         var input_el = $('#obviel-field-' + obj.prefixed_name, el);
         var clone_el = input_el.clone();
         self.clone_el = clone_el;
-        clone_el.attr('id', null);
+        clone_el.removeAttr('id');
         clone_el.attr('name', 'obviel-field-cloned-' + obj.prefixed_name);
         input_el.hide();
         input_el.after(clone_el);
