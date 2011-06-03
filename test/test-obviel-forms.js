@@ -635,6 +635,43 @@ test('decimal validate', function() {
     equal(widget.validate(null), undefined);
 });
 
+test("form starts out with empty data", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['textline_field'],
+                    name: 'a',
+                    title: 'A'
+                },
+                {
+                    ifaces: ['integer_field'],
+                    name: 'b',
+                    title: 'B'
+                },
+                {
+                    ifaces: ['integer_field'],
+                    name: 'c',
+                    title: 'C',
+                    defaultvalue: 1
+                }
+                
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+
+    ok(data.a === null);
+    ok(data.b === null);
+    equal(data.c, 1);
+});
+
 test("composite datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -738,6 +775,41 @@ test("composite back datalink", function() {
     equal(field_a_el.val(), '');
 });
 
+
+test("composite empty", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['composite_field'],
+                    name: 'composite',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    ok(data.composite.a === null);
+    ok(data.composite.b === null);
+});
 
 test("nested composite datalink", function() {
     var el = $('#viewdiv');
@@ -921,6 +993,107 @@ test("repeating datalink", function() {
     field_b_el.trigger(ev);
     equals(errors.repeating[0].b, '');
     equals(data.repeating[0].b, 3);
+});
+
+test("repeating defaults", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A',
+                            defaultvalue: 'foo'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B',
+                            defaultvalue: 1
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+
+    equal(data.repeating.length, 1);
+    equal(errors.repeating.length, 1);
+    
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+
+    equal(field_a_el.val(), 'foo');
+    equal(field_b_el.val(), '1');
+
+    equal(data.repeating[0].a, 'foo');
+    equal(data.repeating[0].b, 1);
+    
+});
+
+test("repeating empty entries without defaults", function() {
+    var el = $('#viewdiv');
+    var data = {}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['repeating_field'],
+                    name: 'repeating',
+                    widgets: [
+                        {
+                            ifaces: ['textline_field'],
+                            name: 'a',
+                            title: 'A'
+                        },
+                        {
+                            ifaces: ['integer_field'],
+                            name: 'b',
+                            title: 'B'
+                        }
+
+                    ]
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    
+    var form_el = $('form', el);
+
+    var add_button = $('.obviel-repeat-add-button', form_el);
+    add_button.trigger('click');
+
+    equal(data.repeating.length, 1);
+    equal(errors.repeating.length, 1);
+    
+    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
+    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+
+    ok(data.repeating[0].a === null);
+    ok(data.repeating[0].b === null);
+    
 });
 
 test("repeating back datalink", function() {

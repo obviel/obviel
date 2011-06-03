@@ -515,6 +515,9 @@ obviel.forms = {};
             // no value, see whether we need to set the default value
             if (obj.defaultvalue !== undefined) {
                 linked_data.setField(obj.name, obj.defaultvalue);
+            } else {
+                // no default, start at null
+                linked_data.setField(obj.name, null);
             }
         }
 
@@ -1358,6 +1361,7 @@ obviel.forms = {};
 
     module.BooleanWidget.prototype.convert_back = function(
         value, source, target) {
+        value = value || false;
         $(target).attr('checked', value);
     };
     
