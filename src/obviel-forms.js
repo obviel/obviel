@@ -704,7 +704,8 @@ obviel.forms = {};
         var obj = self.obj;
         
         var field_el = $(
-            '<fieldset class="obviel-fieldset" ' +
+            '<fieldset class="obviel-fieldset obviel-fieldset-' +
+                obj.name + '" ' +
                 'id="obviel-fieldset-' + obj.prefixed_name +
                 '"></fieldset>');
         if (obj.title) {
