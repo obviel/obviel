@@ -96,6 +96,21 @@ obviel.forms = {};
         obj.errors = obj.errors || {};
         obj.global_errors = obj.global_errors || {};
         obj.data = obj.data || {};
+
+        $(el).bind('change', function(ev) {
+            var target = $(ev.target);
+            // find view for target
+            var widget = $(target).parent_view();
+            if (!widget) {
+                return;
+            }
+            // if this widget has a global error set right now,
+            // revalidate
+            if (widget.global_error()) {
+                // revalidate this form
+                self.validate();
+            }
+        });
         
         $(el).bind('form-change.obviel', function(ev) {
             var error_count = self.error_count();
@@ -444,6 +459,10 @@ obviel.forms = {};
     module.Widget.prototype.link = function(data, errors, global_errors) {
         var self = this;
         var obj = self.obj;
+
+        self.data = data;
+        self.errors = errors;
+        self.global_errors = global_errors;
         
         if (obj.disabled) {
             return;
@@ -523,6 +542,18 @@ obviel.forms = {};
 
     };
 
+    module.Widget.prototype.value = function() {
+        return this.data[this.obj.name];
+    };
+
+    module.Widget.prototype.error = function() {
+        return this.errors[this.obj.name];
+    };
+
+    module.Widget.prototype.global_error = function() {
+        return this.global_errors[this.obj.name];
+    };
+    
     module.Widget.prototype.handle_convert = function(value, source, target) {
         var self = this;
         // try to convert original form value

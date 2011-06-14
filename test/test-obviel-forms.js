@@ -1466,6 +1466,7 @@ test("integer datalink conversion error", function() {
     ev.target = field_el;
     field_el.trigger(ev);
     equal(errors.a, 'not a number');
+    equal(field_el.parent_view().error(), 'not a number');
     // the value is undefined
     equal(data.a, undefined);
 });
@@ -2707,7 +2708,9 @@ test("global errors", function() {
     var field_global_a = $('#obviel-global-error-test-a', form_el);
     equal(field_global_a.text(), 'must be smaller than b');
     equal(form_error_el.text(), '2 fields did not validate');
-    
+    // and in the widget
+    equal(field_global_a.parent_view().global_error(),
+          'must be smaller than b');
     
     // make the global validation problem go away again
     field_b_el.val('100');
@@ -2716,8 +2719,113 @@ test("global errors", function() {
     equal(global_errors.b, '');
     equal(field_global_a.text(), '');
     equal(form_error_el.text(), '');
+
+    $.ajax = original_ajax;
 });
 
+test('global errors revalidate upon possible correction', function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        var defer = $.Deferred();      
+        ajax_options = options;
+        if (options.url == 'validate') {
+            var data = $.parseJSON(options.data);
+            if (data.a > data.b) {
+                defer.resolve({
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                });
+                return defer.promise();
+            }
+        }
+        defer.resolve({});
+        return defer.promise();
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A'
+            }, {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                description: 'B'
+            }]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-a', form_el);
+    var field_b_el = $('#obviel-field-test-b', form_el);
+
+    field_a_el.val('1');
+    field_b_el.val('10');
+
+    // submitting this, everything should be fine
+    var view = el.view();
+    // no action defined, so submit will succeed quietly
+    view.submit({});
+
+    equal(global_errors.a, undefined);
+    equal(global_errors.b, undefined);
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '');
+    
+    field_a_el.val('10');
+    field_b_el.val('1');
+    view.submit({});
+
+    equal(global_errors.a, 'must be smaller than b');
+    equal(global_errors.b, 'must be greater than a');
+
+    // it also shows up in the element
+    var field_global_a = $('#obviel-global-error-test-a', form_el);
+    equal(field_global_a.text(), 'must be smaller than b');
+    equal(form_error_el.text(), '2 fields did not validate');
+
+    // possibly make the global validation problem go away (but not)
+    // by modifying one of the affected fields
+    stop();
+    field_a_el.val('11');
+    field_a_el.parent_view().change();
+
+    el.bind('form-change.obviel', function() {
+        start();
+    });
+    
+    equal(global_errors.a, 'must be smaller than b');
+    equal(global_errors.b, 'must be greater than a');
+    
+    // make the global validation problem go away
+    stop();
+    field_b_el.val('100');
+    field_b_el.parent_view().change();
+    
+    // this should've resubmitted for validation, so the problem should be
+    // gone already
+    equal(global_errors.a, '');
+    equal(global_errors.b, '');
+    equal(field_global_a.text(), '');
+    equal(form_error_el.text(), '');
+
+    $.ajax = original_ajax;
+});
 
 test("global errors with repeating", function() {
     var el = $('#viewdiv');
@@ -2805,6 +2913,7 @@ test("global errors with repeating", function() {
     equal(global_errors.repeating[0].a, '');
     equal(global_errors.repeating[0].b, undefined);
 
+    $.ajax = original_ajax;
 });
 
 module("Datepicker");
