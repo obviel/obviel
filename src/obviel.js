@@ -627,9 +627,24 @@ var obviel = {};
         return el.data('obviel.rendered_view');
     };
 
+    $.fn.parent_view = function() {
+        var el = $(this);
+        var view = null;
+        while (el.length > 0) {
+            view = el.data('obviel.rendered_view');
+            if (view) {
+                return view;
+            }
+            el = el.parent();
+        }
+        return null;
+    };
+    
     $.fn.unview = function() {
         var view = $(this).view();
-        view.do_cleanup();
+        if (view) {
+            view.do_cleanup();
+        }
     };
 
     $(document).bind(

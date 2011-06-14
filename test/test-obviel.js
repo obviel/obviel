@@ -160,6 +160,7 @@ module('Obviel Views', {
         $('#jsview-area').unbind();
     },
     teardown: function() {
+        $('#jsview-area').unview();
         $('#viewdiv').unbind();
         obviel.clear_registry();
         obviel.compilers.clear_cache();
@@ -958,4 +959,18 @@ test('unview', function() {
     equals($('.added', sub_el).length, 1);
     // and 1 more in total
     equals($('.added', el).length, 4);
+});
+
+test('parent_view', function() {
+    var el = $('#viewdiv');
+    ok(el.parent_view() === null);
+    obviel.view({
+        iface: 'ifoo'
+    });
+    el.render({'ifaces': ['ifoo']});
+    ok(el.parent_view() === el.view());
+
+    var new_el = $('<div></div>');
+    el.append(new_el);
+    ok(new_el.parent_view() === el.view());
 });
