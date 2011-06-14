@@ -639,7 +639,7 @@ obviel.forms = {};
         var el = self.el;
         var obj = self.obj;
         
-        var field_el = $('<div class="obviel-field-input" ' + 
+        var field_el = $('<div class="obviel-field-input obviel-composite" ' + 
                             'id="obviel-field-' + obj.prefixed_name + '">');
         
         $.each(obj.widgets, function(index, sub_widget) {
@@ -815,7 +815,7 @@ obviel.forms = {};
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var field_el = $('<div class="obviel-field-input" ' + 
+        var field_el = $('<div class="obviel-field-input obviel-repeating" ' + 
                             'id="obviel-field-' + self.obj.prefixed_name + '">');    
         self.el.append(field_el);
     };
