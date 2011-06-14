@@ -86,6 +86,10 @@ obviel.forms = {};
     module.Form.prototype.global_error_count = function() {
         return count_errors(this.obj.global_errors);
     };
+
+    module.Form.prototype.total_error_count = function() {
+        return this.error_count() + this.global_error_count();
+    };
     
     module.Form.prototype.render = function() {
         var self = this;
@@ -113,9 +117,7 @@ obviel.forms = {};
         });
         
         $(el).bind('form-change.obviel', function(ev) {
-            var error_count = self.error_count();
-            var global_error_count = self.global_error_count();
-            var count = error_count + global_error_count;
+            var count = self.total_error_count();
             if (count > 0) {
                 var msg = Gettext.strargs(gt.ngettext(
                     "1 field did not validate",
@@ -125,7 +127,7 @@ obviel.forms = {};
             } else {
                 $('.obviel-formerror', el).text('');
             }
-            if (error_count) {
+            if (count) {
                 $('button.obviel-control', el).attr('disabled', 'true').trigger(
                     'button-updated.obviel');
             } else {
@@ -340,17 +342,13 @@ obviel.forms = {};
         var self = this;
 
         self.update_errors().done(function() {
-            // if there are just local errors, disable submit
-            if (self.error_count() > 0) {
+            // if there are  errors, disable submit
+            if (self.total_error_count() > 0) {
                 control_el.attr('disabled', 'true').trigger(
                     'button-updated.obviel');
                 return;
             }
-            // if there are global errors, submit is not disabled, but
-            // still don't really submit
-            if (self.global_error_count() > 0) {
-                return;
-            }
+            
             self.direct_submit(control);
         });
     };
@@ -360,7 +358,7 @@ obviel.forms = {};
 
         self.update_errors().done(function() {
             // don't submit if there are any errors
-            if (self.error_count() > 0 || self.global_error_count > 0) {
+            if (self.total_error_count() > 0) {
                 return;
             }
             self.direct_submit(control);

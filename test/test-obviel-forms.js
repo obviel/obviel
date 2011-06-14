@@ -8,7 +8,16 @@ obviel.onerror = function(e) {
     throw(e);
 };
 
-module("Forms2");
+module("Forms2", {
+    setup: function() {
+        $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
+        $('#jsview-area').unbind();
+    },
+    teardown: function() {
+        $('#jsview-area').unview();
+        $('#viewdiv').unbind();
+    }
+});
 
 // tests to implement still (and to implement in some cases):
 // * absence versus presence of data
@@ -2723,7 +2732,7 @@ test("global errors", function() {
     $.ajax = original_ajax;
 });
 
-test('global errors revalidate upon possible correction', function() {
+asyncTest('global errors revalidate upon possible correction', function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
@@ -2742,9 +2751,11 @@ test('global errors revalidate upon possible correction', function() {
                     'a': 'must be smaller than b',
                     'b': 'must be greater than a'
                 });
+                start();
                 return defer.promise();
             }
         }
+        start();
         defer.resolve({});
         return defer.promise();
     };
@@ -2804,10 +2815,6 @@ test('global errors revalidate upon possible correction', function() {
     stop();
     field_a_el.val('11');
     field_a_el.parent_view().change();
-
-    el.bind('form-change.obviel', function() {
-        start();
-    });
     
     equal(global_errors.a, 'must be smaller than b');
     equal(global_errors.b, 'must be greater than a');
@@ -2824,10 +2831,105 @@ test('global errors revalidate upon possible correction', function() {
     equal(field_global_a.text(), '');
     equal(form_error_el.text(), '');
 
+    
     $.ajax = original_ajax;
 });
 
-test("global errors with repeating", function() {
+asyncTest('global errors do not revalidate upon non-correction', function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    var count = 0;
+    
+    $.ajax = function(options) {
+        var defer = $.Deferred();      
+        ajax_options = options;
+        if (options.url == 'validate') {
+            count++;
+            var data = $.parseJSON(options.data);
+            if (data.a > data.b) {
+                defer.resolve({
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                });
+                start();
+                return defer.promise();
+            }
+        }
+        start();
+        defer.resolve({});
+        return defer.promise();
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A'
+            }, {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                description: 'B'
+            }, {
+                ifaces: ['integer_field'],
+                name: 'c',
+                title: 'C',
+                description: 'C'
+            }]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-a', form_el);
+    var field_b_el = $('#obviel-field-test-b', form_el);
+    var field_c_el = $('#obviel-field-test-c', form_el);
+    field_a_el.val('1');
+    field_b_el.val('10');
+    field_c_el.val('5');
+    // submitting this, everything should be fine
+    var view = el.view();
+    // no action defined, so submit will succeed quietly
+    view.submit({});
+    equal(count, 1);
+    
+    // create error
+    field_a_el.val('10');
+    field_b_el.val('1');
+    stop();
+    view.submit({});
+    
+    equal(global_errors.a, 'must be smaller than b');
+    equal(global_errors.b, 'must be greater than a');
+
+    equal(count, 2);
+    
+    // possibly make the global validation problem go away (but not)
+    // by modifying unrelated field
+    stop();
+    field_c_el.val('55');
+    field_c_el.parent_view().change();
+    
+    // we should not have done any global validation check, as this
+    // field is unrelated to global validation errors
+    equal(count, 2);
+    
+    $.ajax = original_ajax;
+});
+
+asyncTest("global errors with repeating", function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
@@ -2845,9 +2947,11 @@ test("global errors with repeating", function() {
                 defer.resolve({
                     'repeating': [{'a': 'error'}]
                 });
+                start();
                 return defer.promise();
             }
         }
+        start();
         defer.resolve({});
         return defer.promise();
     };
@@ -2901,6 +3005,7 @@ test("global errors with repeating", function() {
     
     field_a_el.val('trigger_error');
     field_b_el.val('1');
+    stop();
     view.submit({});
 
     equal(global_errors.repeating[0].a, 'error');
@@ -2908,8 +3013,9 @@ test("global errors with repeating", function() {
     
     // make the global validation problem go away again
     field_a_el.val('nothing');
-    
+    stop();
     view.submit({});
+
     equal(global_errors.repeating[0].a, '');
     equal(global_errors.repeating[0].b, undefined);
 
