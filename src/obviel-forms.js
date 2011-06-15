@@ -171,7 +171,10 @@ obviel.forms = {};
         $.each(widget.ifaces, function(index, value) {
             field_el.addClass(value);
         });
-
+        if (widget['class']) {
+            field_el.addClass(widget['class']);
+        }
+        
         if (disabled) {
             widget.disabled = true;
         }

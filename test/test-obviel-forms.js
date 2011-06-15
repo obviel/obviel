@@ -55,6 +55,28 @@ test('form with one field', function() {
     equal($('.obviel-field', form_el).length, 1);
 });
 
+test('form with one field with class', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                'class': 'foo',
+                title: 'Text',
+                description: 'A textline widget'
+            }]
+        }
+    });
+    var form_el = $('form', el);
+
+    var field_a_el = $('#obviel-field-test-text', form_el);
+    
+    ok(field_a_el.parent_view().el.hasClass('foo'));
+});
+
 test('form with disabled field', function() {
     var el = $('#viewdiv');
     el.render({
