@@ -758,6 +758,9 @@ obviel.forms = {};
             $.each(sub_widget.ifaces, function(i, value) {
                 sub_el.addClass(value);
             });
+            if (sub_widget['class']) {
+                sub_el.addClass(sub_widget['class']);
+            }
             sub_el.render(sub_widget, function(el, view, widget, name) {
                 view.render_label();
                 view.render_error_area();

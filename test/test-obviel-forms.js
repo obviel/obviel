@@ -77,6 +77,40 @@ test('form with one field with class', function() {
     ok(field_a_el.parent_view().el.hasClass('foo'));
 });
 
+test('form with one group field with one composite field with class', function() {
+    var el = $('#viewdiv');
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {ifaces: ['group_field'],
+                 name: 'group',
+                 title: 'Group',
+                 widgets: [{
+                    ifaces: ['composite_field'],
+                    name: 'text',
+                    'class': 'foo',
+                    title: 'Text',
+                    description: 'A composite widget',
+                    widgets: [{
+                        ifaces: ['textline_field'],
+                        name: 'subtext',
+                        title: 'SubText',
+                        description: 'A textline widget'
+                    }]
+                }]
+            }]
+        }
+    });
+    var form_el = $('form', el);
+
+    var field_a_el = $('#obviel-field-test-group-text', form_el);
+    
+    ok(field_a_el.parent_view().el.hasClass('foo'));
+});
+
+
 test('form with disabled field', function() {
     var el = $('#viewdiv');
     el.render({
