@@ -102,15 +102,19 @@ obviel.forms = {};
         obj.data = obj.data || {};
 
         $(el).bind('change', function(ev) {
+            // if we are already updating the errors in a submit, we don't want
+            // to trigger global validation again
+            if (self.updating_errors) {
+                return;
+            }
             var target = $(ev.target);
             // find view for target
             var widget = $(target).parent_view();
             if (!widget) {
                 return;
             }
-            // if this widget has a global error set right now,
-            // revalidate
-            if (widget.global_error()) {
+            // if this widget has a global validator, revalidate
+            if (widget.obj.global_validator) {
                 // revalidate this form
                 self.validate();
             }
@@ -301,10 +305,15 @@ obviel.forms = {};
     
     module.Form.prototype.update_errors = function() {
         var self = this;
+        // mark that we are updating errors so we don't trigger validation
+        // again during trigger_changes..
+        self.updating_errors = true;
         // trigger change event for all widgets
         self.trigger_changes();
         // trigger global validation
-        return self.validate();
+        return self.validate().done(function() {
+            self.updating_errors = false;
+        });
     };
 
     module.Form.prototype.set_global_errors = function(data) {
@@ -313,6 +322,7 @@ obviel.forms = {};
     
     module.Form.prototype.validate = function() {
         var self = this;
+        
         var url = self.obj.validation_url;
         // no global validation
         if (url === undefined) {

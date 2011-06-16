@@ -12,7 +12,8 @@ $(document).ready(function() {
                 {
                     ifaces: ['textline_field'],
                     name: 'a',
-                    title: 'A'
+                    title: 'A',
+                    global_validator: true
                 }
             ],
             controls: [

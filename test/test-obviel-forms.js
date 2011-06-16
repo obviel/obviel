@@ -2824,12 +2824,14 @@ asyncTest('global errors revalidate upon possible correction', function() {
                 ifaces: ['integer_field'],
                 name: 'a',
                 title: 'A',
-                description: 'A'
+                description: 'A',
+                global_validator: true
             }, {
                 ifaces: ['integer_field'],
                 name: 'b',
                 title: 'B',
-                description: 'B'
+                description: 'B',
+                global_validator: true
             }]
         },
         validation_url: 'validate',
@@ -2930,12 +2932,14 @@ asyncTest('global errors do not revalidate upon non-correction', function() {
                 ifaces: ['integer_field'],
                 name: 'a',
                 title: 'A',
-                description: 'A'
+                description: 'A',
+                global_validator: true
             }, {
                 ifaces: ['integer_field'],
                 name: 'b',
                 title: 'B',
-                description: 'B'
+                description: 'B',
+                global_validator: true
             }, {
                 ifaces: ['integer_field'],
                 name: 'c',
