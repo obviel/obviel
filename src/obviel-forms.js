@@ -477,10 +477,14 @@ obviel.forms = {};
     module.Widget.prototype.render_label = function() {
         var self = this;
         if (self.obj.title) {
-            self.el.prepend('<label for="obviel-field-' +
+            var label_el = $('<label for="obviel-field-' +
                             self.obj.prefixed_name + '">' +
                             entitize(self.obj.title) +
                             '</label>');
+            if (self.obj.required) {
+                label_el.addClass('obviel-required');
+            }
+            self.el.prepend(label_el);
         } 
         
         // add in description

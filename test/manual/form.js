@@ -17,7 +17,7 @@ $(document).ready(function() {
         } else if ('bar'.indexOf(key) >= 0) {
             settings.success([{value: 'bar', label: 'Bar'}]);
         }
-    }
+    };
     
     el.render({
         ifaces: ['viewform'],
@@ -26,7 +26,8 @@ $(document).ready(function() {
                 {
                     ifaces: ['boolean_field'],
                     name: 'a',
-                    title: 'A'
+                    title: 'A',
+                    required: true
                 },
                 {
                     ifaces: ['integer_field'],
