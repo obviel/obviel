@@ -481,7 +481,7 @@ obviel.forms = {};
                             self.obj.prefixed_name + '">' +
                             entitize(self.obj.title) +
                             '</label>');
-            if (self.obj.required) {
+            if (self.obj.validate && self.obj.validate.required) {
                 label_el.addClass('obviel-required');
             }
             self.el.prepend(label_el);

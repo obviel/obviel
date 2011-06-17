@@ -27,7 +27,9 @@ $(document).ready(function() {
                     ifaces: ['boolean_field'],
                     name: 'a',
                     title: 'A',
-                    required: true
+                    validate: {
+                        required: true
+                    }
                 },
                 {
                     ifaces: ['integer_field'],
