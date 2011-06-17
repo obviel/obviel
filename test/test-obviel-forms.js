@@ -2066,6 +2066,77 @@ test("choice no empty but own empty", function() {
     equal($('option', field_el).length, 3);
 });
 
+test('choice global validation', function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        var defer = $.Deferred();      
+        ajax_options = options;
+        if (options.url == 'validate') {
+            var data = $.parseJSON(options.data);
+            if (data.a == 'wrong') {
+                defer.resolve({
+                    'a': 'must not be wrong'
+                });
+                return defer.promise();
+            }
+        }
+        defer.resolve({});
+        return defer.promise();
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['choice_field'],
+                name: 'a',
+                title: 'A',
+                choices: [{value: 'wrong', label: 'Wrong'},
+                          {value: 'right', label: 'Right'}],
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-a', form_el);
+    
+    field_a_el.val('wrong');
+    
+    // submitting this should trigger a global error
+    var view = el.view();
+    view.submit({});
+
+    equal(global_errors.a, 'must not be wrong');
+    
+    // it also shows up in the element
+    var field_global_a = $('#obviel-global-error-test-a', form_el);
+    equal(field_global_a.text(), 'must not be wrong');
+    
+    // make the global validation problem go away again
+    field_a_el.val('right');
+    view.submit({});
+    
+    equal(global_errors.a, '');
+    equal(field_global_a.text(), '');
+    
+    $.ajax = original_ajax;
+});
+
 test("field error rendering", function() {
     var el = $('#viewdiv');
     var errors = {};
