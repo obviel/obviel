@@ -132,11 +132,24 @@ obviel.forms = {};
                 $('.obviel-formerror', el).text('');
             }
             if (count) {
-                $('button.obviel-control', el).attr('disabled', 'true').trigger(
-                    'button-updated.obviel');
+                $('button.obviel-control', el).each(function(index, control_el) {
+                    control_el = $(control_el);
+                    if (!control_el.data('obviel.no_validation')) {
+                        control_el.attr('disabled', 'true').trigger(
+                            'button-updated.obviel');
+                    }
+                    
+                });
+
+                    
             } else {
-                $('button.obviel-control', el).removeAttr('disabled').trigger(
-                    'button-updated.obviel');
+                $('button.obviel-control', el).each(function(index, control_el) {
+                    control_el = $(control_el);
+                    if (!control_el.data('obviel.no_validation')) {
+                        control_el.removeAttr('disabled').trigger(
+                            'button-updated.obviel');
+                    }
+                });
             }
         });
 
@@ -225,8 +238,18 @@ obviel.forms = {};
         if (control.name) {
             control_el.attr('name', control.name);
         }
+
+        // XXX not really nice to attach data to the control el,
+        // but cleaner solution will have to wait until we have
+        // a control view, which is a bigger refactoring
+        if (control.no_validation) {
+            control_el.data('obviel.no_validation', true);
+        }
         
         control_el.click(function(ev) {
+            if (control.no_validation) {
+                return;
+            }
             self.submit_control(control_el, control);
         });
 

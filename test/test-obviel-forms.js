@@ -280,6 +280,38 @@ test('form with controls', function() {
     equal($('button', el).attr('class'), 'obviel-control fooClass');
 });
 
+test('form with non-validating control', function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A'
+            }],
+            controls: [{
+                name: 'foo',
+                no_validation: true
+            }]
+        },
+        errors: errors
+    });
+    var form_el = $('form', el);
+
+    var field_a_el = $('#obviel-field-test-a', form_el);
+
+    field_a_el.val('not an int');
+    
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    // shouldn't have done any validation
+    equals(errors['a'], undefined);
+});
+    
 test('text rendering', function() {
     var el = $('#viewdiv');
     el.render({
@@ -2075,6 +2107,51 @@ test("field error rendering", function() {
     // the submit buttons are disabled
     var control_els = $('button[class="obviel-control"]', el);
     equal(control_els.is(':disabled'), true);
+});
+
+test("no_validation control should not be disabled", function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['textline_field'],
+                name: 'text',
+                title: 'Text',
+                description: 'A text widget',
+                validate: {
+                    min_length: 3
+                }
+            }],
+            controls: [{
+                'label': 'Submit!',
+                'action': 'http://localhost'
+            }, {
+                'label': 'no_validation',
+                no_validation: true
+            }]
+        },
+        errors: errors
+    });
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-text', form_el);
+    // put in a value that's too short, so should trigger error
+    field_el.val('fo');
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    // we now expect the error
+    // the form displays that there's an error
+    var form_error_el = $('.obviel-formerror', el);
+    equal(form_error_el.text(), '1 field did not validate');
+    // the validating button is disabled
+    var submit_el = $("button:contains('Submit!')", el);
+    equal(submit_el.is(':disabled'), true);
+    // the non validating button is not, however
+    var no_validating_el = $("button:contains('no_validation')", el);
+    equal(no_validating_el.is(':disabled'), false);
 });
 
 test("field error clearing", function() {
