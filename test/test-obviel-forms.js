@@ -3230,7 +3230,16 @@ asyncTest("global errors with repeating", function() {
     $.ajax = original_ajax;
 });
 
-module("Datepicker");
+module("Datepicker", {
+       setup: function() {
+           $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
+           $('#jsview-area').unbind();
+       },
+       teardown: function() {
+           $('#jsview-area').unview();
+           $('#viewdiv').unbind();
+       }
+});
 
 test('datepicker convert', function() {
     var widget = new obviel.forms.DatePickerWidget().clone({
@@ -3338,7 +3347,16 @@ test("datepicker datalink conversion error", function() {
     equal(data.a, undefined);
 });
 
-module("Autocomplete");
+module("Autocomplete", {
+       setup: function() {
+           $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
+           $('#jsview-area').unbind();
+       },
+       teardown: function() {
+           $('#jsview-area').unview();
+           $('#viewdiv').unbind();
+       }
+});
 
 test("autocomplete set values", function () {
     var el=$('#viewdiv');
@@ -3438,7 +3456,16 @@ test("autocomplete url set values", function () {
     $.ajax = orig_ajax;
 });
 
-module("Display");
+module("Display", {
+       setup: function() {
+           $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
+           $('#jsview-area').unbind();
+       },
+       teardown: function() {
+           $('#jsview-area').unview();
+           $('#viewdiv').unbind();
+       }
+});
 
 test('display value', function () {
     var el = $('#viewdiv');
