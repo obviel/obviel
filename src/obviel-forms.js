@@ -1519,5 +1519,25 @@ obviel.forms = {};
     };
 
     obviel.view(new module.DisplayWidget());
+
+    module.HiddenWidget = function (settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'hidden_field',
+            jsont: '<input type="hidden" name="obviel-field-{prefixed_name}"'+
+                    ' id="obviel-field-{prefixed_name}"/>'
+        };
+        $.extend(d, settings);
+        module.DisplayWidget.call(this, d);
+    };
+
+    module.HiddenWidget.prototype = new module.DisplayWidget;
+
+    module.HiddenWidget.prototype.convert_back = function (value) { 
+        var self = this;
+        $('#obviel-field-' + self.obj.prefixed_name).val(value);
+    };
+
+    obviel.view(new module.HiddenWidget());
     
 })(jQuery, obviel, obviel.forms);
