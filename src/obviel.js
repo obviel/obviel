@@ -1,3 +1,8 @@
+/*global jQuery: true, template_url: true
+  alert: true , browser: true, document: true, app_url: true,
+  window: true, jsontemplate: true
+*/
+
 var obviel = {};
 
 (function($, module) {
@@ -224,11 +229,13 @@ var obviel = {};
                 if (typeof handler == 'string') {
                     var wrapped_handler = function(ev) {
                         ev.view = self;
+                        ev.args = Array.prototype.slice.call(arguments, 1);
                         self[handler].call(self, ev);
                     };
                 } else {
                     var wrapped_handler = function(ev) {
                         ev.view = self;
+                        ev.args = Array.prototype.slice.call(arguments, 1);
                         handler(ev);
                     };
                 }

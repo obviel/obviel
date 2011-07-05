@@ -1,3 +1,8 @@
+/*global obviel: true, jQuery: true, template_url: true
+  alert: true , browser: true, document: true, app_url: true,
+  window: true, jsontemplate: true
+*/
+
 (function($, obviel, module) {
 
     obviel.iface('autocomplete_field', 'textline_field');

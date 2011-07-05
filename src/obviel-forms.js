@@ -1,3 +1,8 @@
+/*global obviel: true, jQuery: true, template_url: true
+  alert: true , browser: true, document: true, app_url: true,
+  window: true, jsontemplate: true, Gettext: true
+*/
+
 obviel.forms = {};
 
 (function($, obviel, module) {
