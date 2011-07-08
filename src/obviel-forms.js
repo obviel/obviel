@@ -507,10 +507,6 @@ obviel.forms = {};
         self.errors = errors;
         self.global_errors = global_errors;
         
-        if (obj.disabled) {
-            return;
-        }
-        
         // prepare converters and back converters
         var link_context = {};
         var error_link_context = {};

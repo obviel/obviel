@@ -769,6 +769,30 @@ test("form starts out with empty data", function() {
     equal(data.c, 1);
 });
 
+test("form disabled with data", function() {
+    var el = $('#viewdiv');
+    var data = {'a': 'hello world'}; 
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [
+                {
+                    ifaces: ['textline_field'],
+                    name: 'a',
+                    title: 'A',
+                    disabled: true
+                }
+            ]
+        },
+        data: data,
+        errors: errors
+    });
+    equal($('#obviel-field-test-a', el).val(), 'hello world');
+});
+
+
 test("composite datalink", function() {
     var el = $('#viewdiv');
     var data = {}; 
@@ -2553,8 +2577,8 @@ test("actual submit with disabled field", function() {
     button_el.trigger('click');
 
     $.ajax = original_ajax;
-    // text2 shouldn't show up as it's disabled
-    equal(ajax_options.data, '{"text":"foo"}');
+
+    equal(ajax_options.data, '{"text":"foo","text2":"bar"}');
 
     // the success_iface should be rendered
     equal(el.text(), 'success!');
