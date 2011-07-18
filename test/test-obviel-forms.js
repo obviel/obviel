@@ -2751,44 +2751,6 @@ test("default values", function() {
     equal(b_el.val(), '3');
 });
 
-test("default values if value is null", function() {
-    var el = $('#viewdiv');
-    var data = {
-        'a': null,
-        'b': null
-    };
-    el.render({
-        ifaces: ['viewform'],
-        form: {
-            name: 'test',
-            widgets: [{
-                ifaces: ['textline_field'],
-                name: 'a',
-                title: 'A',
-                defaultvalue: 'A default'
-            },
-            {
-                ifaces: ['integer_field'],
-                name: 'b',
-                title: 'B',
-                defaultvalue: 3
-            }
-            ],
-            controls: [{
-                'label': 'Submit!',
-                'action': 'http://localhost'
-            }]
-        },
-        data: data
-    });
-    equal(data.a, 'A default');
-    equal(data.b, 3);
-    var a_el = $('#obviel-field-test-a', el);
-    equal(a_el.val(), 'A default');
-    var b_el = $('#obviel-field-test-b', el);
-    equal(b_el.val(), '3');
-});
-
 test("default values with composite", function() {
     var el = $('#viewdiv');
     var data = {};
