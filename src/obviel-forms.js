@@ -193,6 +193,9 @@ obviel.forms = {};
         $.each(widget.ifaces, function(index, value) {
             field_el.addClass(value);
         });
+        if (widget.name) {
+            field_el.addClass('obviel-fieldname-' + widget.name);
+        }
         if (widget['class']) {
             field_el.addClass(widget['class']);
         }
