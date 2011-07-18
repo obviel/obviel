@@ -567,7 +567,7 @@ obviel.forms = {};
         // if there is a value, update the widget
         var linked_data = $(data);
         var existing_value = data[obj.name];
-        if (existing_value !== undefined) {
+        if (existing_value !== undefined && existing_value !== null) {
             linked_data.setField(obj.name, existing_value);
         } else {
             // no value, see whether we need to set the default value
