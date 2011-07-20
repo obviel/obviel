@@ -19,55 +19,55 @@ var json_locale_data = {
         ],
         "decimal may not contain more than %1 digits after the decimal mark": [
             null,
-            "er zijn niet meer dan %1 cijfers toegestaan na de komma"
+            "Er zijn niet meer dan %1 cijfers toegestaan na de komma"
         ],
         "decimal may not contain more than %1 digits before the decimal mark": [
             null,
-            "er zijn niet meer dan %1 cijfers toegestaan voor de komma"
+            "Er zijn niet meer dan %1 cijfers toegestaan voor de komma"
         ],
         "decimal must contain at least %1 digits after the decimal mark": [
             null,
-            "er zijn tenminste %1 cijfers nodig na de komma"
+            "Er zijn tenminste %1 cijfers nodig na de komma"
         ],
         "decimal must contain at least %1 digits before the decimal mark": [
             null,
-            "er zijn tenminste %1 cijfers nodig voor de komma"
+            "Er zijn tenminste %1 cijfers nodig voor de komma"
         ],
         "negative numbers are not allowed": [
             null,
-            "negatieve getallen zijn niet toegestaan"
+            "Negatieve getallen zijn niet toegestaan"
         ],
         "not a decimal": [
             null,
-            "gebruik bij decimalen komma ipv punt"
+            "Gebruik bij decimalen komma ipv punt"
         ],
         "not a float": [
             null,
-            "gebruik bij decimalen komma ipv punt"
+            "Gebruik bij decimalen komma ipv punt"
         ],
         "not a number": [
             null,
-            "geen nummer"
+            "Geen nummer"
         ],
         "not an integer number": [
             null,
-            "geen geheel getal"
+            "Geen geheel getal"
         ],
         "this field is required": [
             null,
-            "dit veld is verplicht"
+            "Dit veld is verplicht"
         ],
         "value must be %1 digits long": [
             null,
-            "de waarde moet %1 cijfers bevatten"
+            "De waarde moet %1 cijfers bevatten"
         ],
         "value too long": [
             null,
-            "invoer te veel karakters"
+            "Invoer te veel karakters"
         ],
         "value too short": [
             null,
-            "invoer te weinig karakters"
+            "Invoer te weinig karakters"
         ]
     }
 };
