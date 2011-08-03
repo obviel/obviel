@@ -31,8 +31,9 @@
         var input_el = $('#obviel-field-' + this.obj.prefixed_name, this.el);
         
         ensure_options(this.obj);
-        
-        input_el.datepicker(this.obj.datepicker_options);
+        if (!this.obj.disabled) {
+            input_el.datepicker(this.obj.datepicker_options);
+        }
     };
 
     module.DatePickerWidget.prototype.convert = function(value) {
