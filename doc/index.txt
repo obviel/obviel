@@ -1,40 +1,24 @@
 Obviel: Object/View/Element for JavaScript
 ==========================================
 
-Obviel is a model/view abstraction for JavaScript that helps you
-improve the structure of JavaScript applications. It's built with
-jQuery. It is especially geared towards RESTful rich client
-applications, but should work for any website that uses
-JavaScript. Obviel's particular strength is its support for *loose
-coupling* between client and server: the JavaScript codebase on the
-client is relatively independent from the server implementation.
+Obviel is a model/view abstraction for JavaScripts that helps
+you improve the structure of your jQuery-based JavaScript applications.
 
-Obviel is a framework to help structure rich-client web
-applications. With Obviel, the client provides simple JSON data
-structures and the client then provides Obviel views to render
-them. Obviel also provides a powerful JSON-driven form library.
+Obviel features:
 
-Obviel is built on jQuery. It is versatile and unobtrusive, and should
-help in improving the design of many types of web applications.
+* JSON-centric.
 
-Contents:
+* versatile but unobtrustive.
 
-.. toctree::
-   :maxdepth: 2
+* supports true REST development patterns.
 
-   intro
-   manual
-   deps 
-   form
-   api
-   parent-render
-   community
-   development
+* loose coupling between client code and server code.
 
-Indices and tables
-==================
+* client-side templating integration.
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* powerful client-side form library.
+
+Curious? Want to know more? Go on to the :doc:`introduction <intro>`
+or view the :doc:`table of contents <toc>`.
+
 

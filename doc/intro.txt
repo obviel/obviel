@@ -5,14 +5,19 @@ Introduction
 ------------
 
 Obviel is a model/view abstraction for JavaScript that helps you
-improve the structure of JavaScript applications. Obviel is built on
-jQuery and integrates with it. It is versatile and unobtrusive.
+structure JavaScript applications. Obviel is built on jQuery and
+integrates with it. Obviel is versatile and unobtrusive.
 
-Obviel is especially geared towards RESTful rich client applications,
-but will work for any website that uses JavaScript. Obviel's
-particular strength is its support for *loose coupling* between client
-and server: the JavaScript codebase on the client can be developed
-independently from the server implementation.
+We believe Obviel will help with any website that uses JavaScript, but
+it is especially geared towards RESTful rich client applications.
+
+Obviel's particular strength is its support for *loose coupling*
+between client and server: the JavaScript codebase on the client and
+the server implementation (in any language) can be developed
+relatively independently from each other. The JavaScript code needs to
+know little about the URL structure presented by the server, and the
+server code needs to know little about how its data is presented
+through JavaScript.
 
 Obviel also comes with a powerful JSON-based form framework, built
 with Obviel.
@@ -32,28 +37,28 @@ Obviel core
 
 * Declarative setup of event handlers.
 
-* Associate elements with specific views to easily render different
-  content in the same place.
+* Support for long and short-lived views.
 
 Hyperlinking
 ------------
 
-* RESTful data structures on the server: hyperlinked JSON.
+* Obviel works with RESTful data structures on the server: hyperlinked
+  JSON.
 
-* Bootstrap single-page application from a single URL that links to
-  other information.
+* Supports bootstrapping single-page applications from a single URL;
+  all the rest of the information can be retrieved through hyperlinks.
 
 HTML generation
 ---------------
 
-* Client or server-side HTML generation.
+* Support for client or server-side HTML generation.
 
 * Support for static HTML inclusion.
 
 * JSON Template template language support.
 
-* Extensible template language system, so other client-side template
-  languages can be plugged in.
+* Pluggable system for client-side template languages, so that other
+  client-side template languages can be plugged in.
 
 Obviel Forms
 ------------
@@ -70,8 +75,8 @@ Obviel Forms
 * Client-side validation: instant error messages if the user ends the
   wrong data.
 
-* Server-side validation support for validation requirements that
-  involve multiple fields.
+* Server-side validation support for complex validation requirements
+  that involve multiple fields.
 
 * Easily extensible with new widgets.
   
@@ -81,3 +86,15 @@ Obviel Forms
 
 * Integration with gettext i18n framework for custom translation of
   error messages.
+
+Code
+----
+
+* extensive unit test coverage
+
+* well-structured JavaScript code that eats its own dogfood: Obviel
+  Forms built on Obviel core.
+
+* Obviel core is less than 8 kB of minified JavaScript code, Obviel forms
+  library is 22 kB. gzipped you can include them both in less than 10
+  kB!
