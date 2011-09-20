@@ -4,72 +4,126 @@ Obviel: Object/View/Element for jQuery
 Introduction
 ------------
 
-Obviel is a model/view abstraction for JavaScript that helps you
-improve the structure of JavaScript applications. It's built with
-jQuery. It is especially geared towards RESTful rich client
-applications, but should work for any website that uses
-JavaScript. Obviel's particular strength is its support for *loose
-coupling* between client and server: the JavaScript codebase on the
-client is relatively independent from the server implementation.
+What does Obviel really *do*? Obviel lets you associate *views* with
+JSON objects. You are the person who writes the views in
+JavaScript. In the view definition, you write JavaScript code that can
+render the information in the JSON object into the browser DOM. This
+interplay of *object*, *view* and *element* is central to Obviel. It
+also inspires its name, *Ob*-*vi*-*el*.
 
-Obviel provides you with a model/view architecture on the client side,
-with dynamic view lookup based on the type (or in Obviel terminology,
-the *iface*) of a JavaScript object.
+What does Obviel ask you to do?
 
-In Obviel, a *model* is a JavaScript object, typically retrieved
-through JSON. An Obviel *view* is an object that knows how to
-represent such a model object into the browser DOM. Views are
-connected to *elements*.
+* you must, typically on the server side, add simple type information
+  to the JSON *objects* that you want to render with views on the
+  client.  This is done using the *ifaces* property. We also call such
+  JSON objects *model*.
 
-In addition to its basic architecture, Obviel provides support for
-client-side templating and client-side form construction.
+* you must, on the client side, define *views* that know how to render
+  the different JSON objects your server can send back.
+
+* you hook up the views to the JSON objects using the iface.
+
+* you can then render a view for an object on a DOM *element* by using
+  a special ``render`` extension Obviel adds to jQuery.
+
+All this is pretty dense, so we'll go into much more detail about this
+now.
 
 Rendering a view
 ----------------
 
-A view is a component that can *render* its data into the DOM
-tree. This is done using by calling the function render on the result
-of a JQuery selector::
+We'll start with the last bit first: how do we actually render a
+*view* for an *object* on an *element*?
+
+A view is a JavaScript component that can *render* its data into the
+browser DOM tree. This is done using by calling the function render on
+the result of a JQuery selector::
 
   $('#foo').render(model);
 
-This will represent ``model`` for the element indicated by the
-selector ``#foo``. Typically we use selectors that only match a single
-element, but if we use a selector that matches more than one element,
-view lookup is performed multiple times, once for each matching
-element, and the callback is called each time a view is rendered for
-such an element.
+This will look up a view for the JavaScript object ``model`` and then
+ask that view to render the model on the element indicated by the
+jQuery selector ``#foo``. 
+
+Typically we use selectors that only match a single element, but if we
+use a selector that matches more than one element, view lookup is
+performed multiple times, once for each matching element.
+
+Now let's look into the pieces in more detail. 
 
 What is model? It's just a JavaScript object::
 
-  var some_model = {
-    'an': 'attribute'
+  var model = {
+    'name': 'World'
   };
 
-In Obviel models typically declare what type of model they are using
-the ``ifaces`` declaration, more about that later::
+Typically with Obviel models are JavaScript objects generated as JSON
+on the server, but you could basically use any JavaScript object, as
+long as it provides an *iface*.
 
-  var some_model = {
-    ifaces: ['example_model'],
-    'an': 'attribute'
+In Obviel a model declares what type of model it is using the
+``ifaces`` property::
+
+  var model = {
+    ifaces: ['example'],
+    'name': 'World'
   };
+
+As you can see, ``ifaces`` is a list of ifaces that this object
+declares -- typically only one is enough. We'll have more to say about
+this later, but this will do for now.
 
 What is a view? It's a special JavaScript object registered with
-Obviel that at minimum says how to render a model::
+Obviel that at minimum says how to render a model on an element::
 
   obviel.view({
-     iface: 'example_model',
+     iface: 'example',
      render: function() {
-        this.el.text("Hello world!");
+        this.el.text("Hello " + this.obj.name + "!");
      }
   });
+
+So imagine we have the following HTML in the browser DOM::
+
+  <div id="foo"></div>
+
+What happens when you invoke the following?
+
+  $('#foo').render(model);
+
+The DOM will be changed so it reads this::
+
+  <div id="foo">Hello World!</div>
+
+So, it has rendered ``"Hello World!"``, where ``World`` comes from the
+``name`` property of the model object being rendered.
+
+The steps taken are::
+
+* Obviel looks at the ``ifaces`` attribute of the model being
+  rendered, in this case ``[`example`]``.
+
+* Obviel looks up the view registered for the iface ``example`` in its
+  view registry.
+
+* Obviel creates a clone of the registered view object from this view
+  that has as its ``el`` property the element being rendered on, and
+  ``obj`` property the object being rendered.
+
+* call the ``render`` method on the view.
+
+* the ``render`` method then does whatever it wants, in particular
+  manipulating the DOM using jQuery, as we do here to set the text of
+  the div.
 
 Obviel and hyperlinks
 ---------------------
 
-When you ask Obviel to render a string, Obviel will interpret it as a
-URL. In this case, it will send a GET request to the server to fetch a
-JSON object from that URL, and then render it::
+We saw how Obviel can be asked to render JavaScript objects. You can
+also ask Obviel to render URLs. When you pass a string to the
+``render`` method, Obviel will interpret it as a URL. In this case, it
+will send a GET request to the server to fetch a JSON object from that
+URL, and then render it::
 
   $('#foo').render('http://example.com/somejson');
 

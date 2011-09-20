@@ -98,3 +98,6 @@ Code
 * Obviel core is less than 8 kB of minified JavaScript code, Obviel forms
   library is 22 kB. gzipped you can include them both in less than 10
   kB!
+
+Want to know more? Go on to read the :doc:`Obviel core manual
+<manual>`.

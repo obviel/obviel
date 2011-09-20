@@ -26,15 +26,18 @@ send us a pull request when you want us to merge your improvements.
 Building the documentation
 --------------------------
 
-To build the documentation of Obviel you need Python 2.6. First you
-need to install buildout, a tool that installs some useful scripts for
-us. From the Obviel directory, do the following::
+Obviel's documentation is written using restructured text and Sphinx_.
+
+To build the documentation of Obviel you need Python 2.6 or Python
+2.7. First you need to install buildout, a tool that installs some
+useful scripts for us. In the Obviel project directory, type the
+following::
 
  $ python bootstrap.py -d
  $ bin/buildout
 
 After you've done this once, you can build the documentation using
-Sphinx_::
+Sphinx::
 
   $ bin/sphinxbuilder
 
