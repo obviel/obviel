@@ -229,33 +229,36 @@ Obviel and hyperlinks
 
 .. sidebar:: True REST
 
-  In an truly REST_ application, the client does not have particular
-  knowledge about the URLs the server presents - instead the server is
+  In an REST application design, the client does not have particular
+  knowledge about the URLs the server presents -- instead the server is
   in control of the URL space and sends information about URLs to the
-  client. This principle is caled `Hypermedia as the Engine of
-  Application State`_.  
+  client. This is the way normal web browsing works too -- the web
+  browser does not know about particular hyperlinks, but instead the
+  user just clicks on links in web pages it retrieves from the
+  server. This principle is caled `Hypermedia as the Engine of
+  Application State`_.
 
   In many practical applications that are otherwise RESTful this
-  principle is not followed - the JavaScript code has intimate
-  knowledge about what URLs the server has available, hardcoded in the
-  JavaScript code base. This creates a tighter coupling between client
-  and server code, and that sucks.
+  principle is not followed -- the JavaScript code has intimate
+  knowledge about what URLs the server has available and this
+  structure is hardcoded in the JavaScript code base. This creates a
+  tighter coupling between client and server code, and that sucks.
 
-  If it sucks, why do people do such things? Because it's generally
-  easier. The nature of JavaScript and AJAX means that when you try to
-  do it the right way, and without Obviel to help you, you tend to end
-  up with a big nasty ball of nested functions.
+  If it sucks, why do people do such things? Because it's easier to
+  write such code. The asynchronous nature of AJAX means that when you
+  try to do it the right way, you tend to end up with a big nasty ball
+  of nested functions; callbacks within callbacks within callbacks.
 
   But Obviel makes it dirt simple to let the server be in control of
   URLs - it's actually *easier* to write client-side code this way
-  with Obviel, as much of the nitty-gritty about Ajax requests are
+  with Obviel, as much of the nitty-gritty about Ajax requests is
   handled by Obviel itself.
   
-  Of course you still need a web framework that makes it easy to
-  create URLs. We recommend you use a web framework that offers some
-  help generating URLs for models and views, but even if you don't,
-  it's still much better to only have to hardcode the knowledge about
-  URLs in the server code, and not in the client *too*.
+  On the server, we recommend you use a web framework that offers some
+  help in generating URLs for models and views. But even if you can't
+  use such a framework, it's still much better to only have to
+  hardcode the knowledge about URLs in the server code, and not in the
+  client *too*.
 
   .. _`Hypermedia as the Engine of Application State`: http://en.wikipedia.org/wiki/HATEOAS
 
