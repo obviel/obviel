@@ -171,7 +171,7 @@ will render like this::
   The animal is golden
 
 In some cases an iface is not enough, and you can further distinguish
-views by name. The name is really only useful for when you want to
+views by name. The name is really only needed when you want to
 have different ways of rendering the same object (or URL), perhaps
 depending on where a user clicks, or what tab is open, etc. Here's an
 example::
@@ -210,7 +210,7 @@ Properties available on views
 -----------------------------
 
 When you render a view, a view instance is created that has several
-useful properties which you can access through ``this`` in the
+properties which you can access through ``this`` in the
 ``render`` function of a view. We've seen some of them before, but
 we'll go through them systematically now.
 
@@ -545,7 +545,7 @@ that ``render`` was invoked for.
 Callbacks
 ---------
 
-In some cases it is useful to know when a view has finished rendering;
+In some cases you need to know when a view has finished rendering;
 this is particularly useful when you are writing automated tests that
 involve Obviel. The Obviel test suit itself is a good example of
 this. You can supply a callback by passing a function to the
@@ -591,8 +591,8 @@ previously is sufficient, in more complex cases it can be useful to be
 able to create a new view by inheriting from another view. The Obviel
 form system uses this approach for its widgts.
 
-To explain how view inheritance works, it is useful to first
-understand that the following registration::
+To understand how view inheritance works, you first need to understand
+that the following registration::
 
   obviel.view({
     render: function() { ... }
@@ -759,15 +759,49 @@ object as the first argument.
 All declaratively defined events are registered after the view has
 been rendered.
 
-cleanup
+Element Association
+-------------------
+
+When a view is rendered on an element, it remains associated with that
+element. 
+
+It also sets up a special event handler so that when you render the
+view again (with the same ``iface`` and ``name``) for any descendant
+element, it actually will render the view for the element it was
+associated with. In typical applications there are cases when you want
+to redraw a whole section of the UI once a particular operation is
+completed (a form submitted, a popup closed, etc). It is then useful
+to be able to just issue ``render`` on a sub-element without having to
+find the particular parent element that the view was rendered on
+originally.
+
+If you don't want a view to associate itself with an element at all,
+you can set its ``ephemeral`` property to ``true``. You can use this
+for views which really should leave no trace, such as popup notices,
+or redirect to another view.
+
+To retrieve the associated view of an element, you can use the
+``$(el).view()`` function to get it back again.
+
+To access a view in this element or its nearest parent, use
+``(el).parent_view()``.
+
+To remove the element association, you can call ``$(el).unview()``.
+
+To re-render a view on the element again, use ``$(el).rerender()``.
+
+
+View 
+
+
+Cleanup
 -------
 
-XXX
+When a view is un-rendered, for instance before another view is rendered
+on the same object, or because it's being cleaned up using ``unview``,
+it can be useful to execute some cleanup code. You can put in a special
+cleanup method on the view that gets called to perform the cleanup.
 
-element association
---------------------
-
-XXX
 
 events sent by obviel
 ---------------------
