@@ -23,6 +23,89 @@ documentation for more information as well.
 Feel free to fork Obviel on bitbucket if you want to hack on it, and
 send us a pull request when you want us to merge your improvements.
 
+Running the tests
+-----------------
+
+The Obviel tests run in a web browser.
+
+Accessing the tests
+~~~~~~~~~~~~~~~~~~~
+
+You can access Obviel's tests by constructing a ``file:`` URL
+to the test page. For instance:
+
+file:///home/faassen/projects/obviel/index.html
+
+You can also access Obviel's tests through a web server. This is
+useful as some web browsers have test failures due to the peculiar way
+``file:`` URLs are accessed. In addition, the JSCoverage tool
+described below recommends against the use of ``file:`` URLs. A simple
+way to start a web server is to type this in the project directory::
+
+$ python -m SimpleHTTPServer
+
+where ``python`` is a Python 2.x interpreter. You can then navigate
+to:
+
+http://localhost:8000/test
+
+for the test page.
+
+Executing the tests
+~~~~~~~~~~~~~~~~~~~
+
+From the test page, you will see various links to the individual test
+suites:
+
+* obviel.js tests - tests for the Obviel core
+
+* obviel-forms.js tests - tests for Obviel forms
+
+* JSHint - run JSHint against Obviel
+
+There is also a section with manual (non-automatic) tests; this is
+more for experimentation during development with the form logic in
+particular.
+ 
+Modifying the tests
+~~~~~~~~~~~~~~~~~~~
+
+The tests are maintained in the ``test`` directory under the Obviel
+project directory. They use qunit_ test engine.
+
+.. _`qunit`: http://docs.jquery.com/Qunit
+
+Test coverage
+~~~~~~~~~~~~~
+
+The JSCoverage_ tool can be used to analyze the test coverage: how much
+of the Obviel code is being actually called from the test suite. To use it,
+first create a special coverage-analysis copy of the Obviel project directory.
+If your Obviel project directory is called ``obviel``, change directory
+above it and type this::
+
+$ jscoverage obviel obviel-cov
+
+Then go to obviel-cov and start a web server::
+
+$ python -m SimpleHTTPServer
+
+Now go to the special coverage analysis page::
+
+http://localhost:8000/jscoverage.html
+
+In the URL input on the coverage page, type the following and press
+``Open in frame``:
+
+http://localhost:8000/test
+
+Then click on the automatic test suite you want to run.
+
+You can then click on the 'Summary' tab and see how much coverage the
+test suite has for the file ``src/obviel.js``.
+
+.. _`JSCoverage`: http://siliconforks.com/jscoverage/
+
 Building the documentation
 --------------------------
 
