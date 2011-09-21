@@ -103,7 +103,7 @@ So, it has rendered ``"Hello World!"``, where ``World`` comes from the
 
 The steps taken are:
 
-* Obviel looks at the ``ifaces`` attribute of the model being
+* Obviel looks at the ``ifaces`` property of the model being
   rendered, in this case ``[`example`]``.
 
 * Obviel looks up the view registered for the iface ``example`` in its
@@ -118,6 +118,121 @@ The steps taken are:
 * the ``render`` method then does whatever it wants, in particular
   manipulating the DOM using jQuery, as we do here to set the text of
   the div.
+
+View lookup
+-----------
+
+Dynamic view lookup is what what allows loose coupling between client
+and server. The primary mechanism of lookup is by the ``iface`` marker
+on the model. A model can declare with an iface what kind of model it
+is, and this way a view can declare what kind of model it is
+associated with.
+
+An ``iface`` is in essence just a string marker::
+
+  var elephant = {
+    ifaces: ['animal'],
+    color: 'grey'
+  };
+
+  var lion = {
+    ifaces: ['animal'],
+    color: 'golden'
+  };
+
+Each model can declare what kind of model it is using these string
+markers.
+
+When a view is registered, the iface it is associated with can be
+provided::
+
+  obviel.view({
+     iface: 'animal',
+     render: function() {
+       this.el.text('The animal is ' + this.obj.color);
+     };
+  });
+
+If you now render a model that declares iface ``animal``, the view
+will be used::
+
+  $('#animal').render(elephant);
+
+will render in the element indicated by ``#animal`` the text::
+
+  The animal is grey
+
+and this::
+
+  $('#animal').render(lion);
+
+will render like this::
+
+  The animal is golden
+
+In some cases an iface is not enough, and you can further distinguish
+views by name. The name is really only useful for when you want to
+have different ways of rendering the same object (or URL), perhaps
+depending on where a user clicks, or what tab is open, etc. Here's an
+example::
+
+  obviel.view({
+    iface: 'animal',
+    name: 'alternate',
+    render: function() {
+      this.el.text("Color of animal is: " + this.obj.color);
+    };
+  });
+
+This named view can be explicitly invoked by passing its name as
+a second argument to the ``render`` function::
+
+  $('#animal').render(elephant, 'alternate');
+
+will result in::
+  
+  Color of animal is: grey
+
+As said before, names are optional, and aren't used very often. By
+default the name is ``default``.
+
+The iface declaration for a view is optional too, though you should
+usually provide it. If you leave out an iface in a view registration
+you register a fallback view for all objects.
+
+Note that the model property name is ``ifaces`` while the view
+property name is ``iface``. The idea is that a model may have more
+descriptions of what the data is, but a view only knows how to render
+one type of data - but may be a cause of errors that is easy to
+overlook.
+
+Properties available on views
+-----------------------------
+
+When you render a view, a view instance is created that has several
+useful properties which you can access through ``this`` in the
+``render`` function of a view. We've seen some of them before, but
+we'll go through them systematically now.
+
+el
+++
+
+The element that this view is being rendered on. This is a jQuery
+object, so all the usual jQuery functionality will work. The element
+is where the view expresses itself during rendering: it adds
+sub-elements to this element, or changes its ``text()`` value, hooks
+up event handlers, etc.
+
+obj
++++
+
+This is the model that the view is supposed to render. You access
+properties of this object to determine what to render.
+
+name
+++++
+
+This is the name of the current view. By default it is ``default``.
 
 Rending sub-objects
 -------------------
@@ -139,7 +254,7 @@ Rending sub-objects
 
   * loose coupling between server and client - the server code still
     does not need to have intimate knowledge of what the client code
-    does -- just the ifaces it understands and what attributes are
+    does -- just the ifaces it understands and what properties are
     expected on an object with a certain iface.
 
   And all these are Good Things.
@@ -167,7 +282,7 @@ are two parts, one of iface ``text`` and one of iface ``list``.
 
 How would you set out to render such a thing with Obviel views?
 Instead of creating one big view that does everything, we can
-decompose this into a number of sub-views. Let's first create a view
+decompose this into a number of subviews. Let's first create a view
 for the ``text`` iface::
 
   obviel.view({
@@ -215,7 +330,7 @@ Now let's create a view that renders all the ``page`` iface::
   });
 
 This view creates a ``div`` for each part in the ``parts``
-property. You can see how delegation to sub-views comes in: we render
+property. You can see how delegation to subviews comes in: we render
 each part individually. You can also see something else: the ``page``
 view has no knowledge of what these sub views are, and could render
 any list of them -- it's entirely dependent on the object it is asked
@@ -224,18 +339,22 @@ to render.
 Partitioning code into views is useful: it's the Obviel way. You'll
 find it makes your code a lot easier to manage.
 
+You can write the sub-view rendering code manually and often it is not
+cumbersome, but for some common cases Obviel provides a facility to
+automate this, see :ref:`subviews`.
+ 
 Obviel and hyperlinks
 ---------------------
 
 .. sidebar:: True REST
 
-  In an REST application design, the client does not have particular
+  In a REST application design, the client does not have particular
   knowledge about the URLs the server presents -- instead the server is
   in control of the URL space and sends information about URLs to the
   client. This is the way normal web browsing works too -- the web
   browser does not know about particular hyperlinks, but instead the
   user just clicks on links in web pages it retrieves from the
-  server. This principle is caled `Hypermedia as the Engine of
+  server. This principle is called `Hypermedia as the Engine of
   Application State`_.
 
   In many practical applications that are otherwise RESTful this
@@ -336,138 +455,23 @@ render the objects.
 
 So Obviel's understanding of hyperlinks gives us more cool things:
 
-* more flexibility -- you can create URLs that return an object with a
-  *different* iface depending on the circumstances, changing the
-  *behavior of the user interface on the fly.
+* even more flexibility -- you can create URLs that return an object
+  *with a different* iface depending on the circumstances, changing
+  *the behavior of the user interface on the fly.
 
-* more loose coupling between server and client - Obviel's
-  understanding of hyperlinks increases your ability to create such
-  loose coupling.
+* looser coupling between server and client - Obviel's understanding
+  of hyperlinks increases your ability to create such loose coupling.
 
 * easier to create truly RESTful applications - see the sidebar for
   more info on why that's good.
-
-
-View lookup and registration
-----------------------------
-
-Another important ingredient in Obviel that allows loose coupling
-between client and server is dynamic view lookup for models. The
-primary mechanism of lookup is by the ``iface`` marker on the model. A
-model can declare with an iface what kind of model it is, and this way
-a view can declare what kind of model it is associated with.
-
-An ``iface`` is in essence just a string marker::
-
-  var elephant = {
-    ifaces: ['animal'],
-    color: 'grey'
-  };
-
-  var lion = {
-    ifaces: ['animal'],
-    color: 'golden'
-  };
-
-Each model can -- and should -- declare what kind of model it is using
-these string markers.
-
-When a view is registered, the iface can be provided::
-
-  obviel.view({
-     iface: 'animal',
-     render: function() {
-       this.el.text('The animal is ' + this.obj.color);
-     };
-  });
-
-If you now render a model that declares iface ``animal``, the view
-will be used::
-
-  $('#animal').render(elephant);
-
-will render in the element indicated by ``#animal`` the text::
-
-  The animal is grey
-
-and this::
-
-  $('#animal').render(lion);
-
-will render like this::
-
-  The animal is golden
-
-In some cases an iface is not enough, and you can further distinguish
-views by name. The name is really only useful for when you want to
-have different ways of rendering the same object (or URL), depending
-on where a user clicks, or what tab is open, etc. Here's an example::
-
-  obviel.view({
-    iface: 'animal',
-    name: 'alternate',
-    render: function() {
-      this.el.text("Color of animal is: " + this.obj.color);
-    };
-  });
-
-This named view can be explicitly invoked by passing its name as
-a second argument to the ``render`` function::
-
-  $('#animal').render(elephant, 'alternate');
-
-will result in::
-  
-  Color of animal is: grey
-
-As said before, names are optional, and aren't used very often. By
-default the name ``default``.
-
-The iface declaration for a view is optional too, though you should
-usually provide it. If you leave out an iface in a view registration
-you register a fallback view for all objects.
-
-Note that the model attribute name is ``ifaces`` while the view
-attribute name is ``iface``. This makes sense - a model may have more
-descriptions of what the data is, but a view only knows how to render
-one type of data - but may be a cause of errors that is easy to
-overlook.
-
-Attributes available on views
------------------------------
-
-When you render a view, a view instance is created that has several
-useful attributes which you can access through ``this`` in the
-``render`` function of a view. We've seen some of them before, but
-we'll go through them systematically now.
-
-el
-++
-
-The element that this view is being rendered on. This is a jQuery
-object, so all the usual jQuery functional will work. This is where
-the view expresses itself during rendering: it adds sub-elements to
-this element, or changes its ``text()`` value, hooks up event
-handlers, etc.
-
-obj
-+++
-
-This is the model that the view is supposed to render. You access it
-for attributes and such that drive the rendering process on the
-element.
-
-name
-++++
-
-This is the name of the current view. By default it is ``default``.
 
 html and html_url
 -----------------
 
 A view can be configured so that it renders a piece of static HTML
-before the ``render`` function is called. You can do this by adding a
-``html`` attribute to the view. Here's an example::
+into the element (using the jQuery ``.html`` function) before the
+``render`` function is called. You do this by adding a ``html``
+property to the view. Here's an example::
 
   obviel.view({
      ifaces: ['foo'],
@@ -478,8 +482,13 @@ before the ``render`` function is called. You can do this by adding a
      }
   });
 
-You can also refer to a static HTML resource on the server using the
-``html_url`` attribute::
+This will add the structure ``<div class="a_class">Some HTML</div>``
+into the element the view is rendered on, and then calls the
+``render`` function, which can now make some assumptions about what is
+in the element.
+
+The view can also refer to a static HTML resource on the server using
+the ``html_url`` property::
 
   obviel.view({
      ifaces: ['foo'],
@@ -489,32 +498,30 @@ You can also refer to a static HTML resource on the server using the
      }
   });
 
-The HTML referred to by ``html_url`` will be cached by the system.
+The HTML referred to by ``html_url`` will be cached by the system, so
+when you render the view next time no more request will be made to the
+server.
 
-``render`` is called after the HTML is loaded into the element, and
-can place data from the model into the rendered element, register
-event handlers, etc.
-
-Instead of supplying the HTML directly during the view registration,
-you can also let the server supply the HTML in the model. If the
-object to be rendered has a ``html`` or ``html_url`` attribute those
-will be interpreted first.
+In rare cases it is useful to let the server supply the HTML in the
+model instead of using it from the view. So, if the object to be
+rendered has a ``html`` or ``html_url`` property those will be interpreted
+as if they were on the view.
 
 If both ``html`` and ``html_url`` are found on a view or a model, the
-``html`` attribute has precedence. The ``html`` and ``html_url``
-attributes of the model have precedence over any defined on the view.
+``html`` property has precedence. The ``html`` and ``html_url``
+properties of the model have precedence over any defined on the view.
 
 jsont and jsont_url: JSON template
 ----------------------------------
 
 A combination of static HTML and jQuery scripting is often dynamic
-enough, but sometimes a client-side template language is convenient. 
+enough, but sometimes a client-side template language is convenient.
 Obviel offers extensible support for template languages, but by
 default support for `JSON template`_ is included.
 
 .. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
 
-The attributes ``jsont`` and ``jsont_url`` work much like ``html`` and
+The properties ``jsont`` and ``jsont_url`` work like ``html`` and
 ``html_url`` and can be provided both by the view and the model. Let's
 look at an example::
 
@@ -538,24 +545,95 @@ that ``render`` was invoked for.
 Callbacks
 ---------
 
-Sometimes it is useful to know when a view is done rendering This
-especially useful when you are writing automated tests that involve
-Obviel; the Obviel test suit itself is a good example. You can supply
-a callback by passing a function to the ``render`` method::
+In some cases it is useful to know when a view has finished rendering;
+this is particularly useful when you are writing automated tests that
+involve Obviel. The Obviel test suit itself is a good example of
+this. You can supply a callback by passing a function to the
+``render`` method::
 
   el.render(obj, function() { alert("Callback called!") };
 
-You can use ``this`` in the view to refer to the view that invoked the
-callback.
+You can use ``this`` in the callback to refer to the view that invoked
+the callback.
 
-subviews
+.. _subviews:
+
+Additional methods
+------------------
+
+A view is just a JavaScript object, and you may therefore supply extra methods that
+it calls from the ``render`` method to assist in the rendering of the
+view and setting up of event handlers::
+
+  obviel.view({
+    render: function() {
+      this.foo();
+    },
+    foo: function() {
+      // ...extra work...
+    }
+  });
+
+You can also add extra properties::
+
+  obviel.view({
+    render: function() {
+      this.foo();
+    },
+    extra: "An extra property"
+  });
+
+View Inheritance
+----------------
+
+While in many cases the additional methods strategy as described
+previously is sufficient, in more complex cases it can be useful to be
+able to create a new view by inheriting from another view. The Obviel
+form system uses this approach for its widgts.
+
+To explain how view inheritance works, it is useful to first
+understand that the following registration::
+
+  obviel.view({
+    render: function() { ... }
+  });
+
+is in fact a shorthand for this registration::
+
+  obviel.view(new obviel.View({render: function() { ... }}));
+
+Obviel automatically creates a basic Obviel ``View`` if a bare
+object is passed to the ``view`` registration function.
+
+You can however also create new view objects by subclassing ``View``
+yourself::
+
+  var DivView = function(settings) {
+    var d = {
+      html: '<div></div>'
+    };
+    $.extend(d, settings);
+    obviel.View.call(this, d);
+  };
+
+  DivView.prototype = new obviel.View;
+
+  DivView.render = function() {
+    // ...
+  };
+
+Now the new view can be registered like this::
+
+  obviel.view(new DivView());
+
+You can also create your own base classes that derive from ``View``
+that provide extra functionality, and inherit from them.
+
+Subviews
 --------
 
-Often a view is composed out of other views. For instance, an outer
-view could render a whole page, and sections of the page are rendered
-using sub-views. These may in turn use other views for smaller
-fragments on the page. Doing this reduces coupling between application
-components, and encourages the creation of reusable views.
+As we have discussed earlier, many views are composed out of other
+views.
 
 You can invoke sub-views by hand in a render method, like this::
 
@@ -569,8 +647,8 @@ This will render a subview on the element matched by class ``foo`` for
 the model indicated by ``this.obj.attr``. ``this.obj.attr`` may be a
 sub-object or a URL referring to another object.
 
-Doing this by hand is not too bad, but the Obviel also allows a
-shorter, declarative way to express this::
+Doing this by hand is not too bad, but Obviel also allows a shorter,
+declarative way to express this::
 
   views.view({
     subviews: {
@@ -580,10 +658,10 @@ shorter, declarative way to express this::
 
 This does the same thing as the previous example.
 
-The ``subviews`` attribute, if available, should define a mapping from
-JQuery selector to attribute name. After the main ``render()``
-function of the view has been executed, any subviews that are defined
-will be resolved.
+The ``subviews`` property, if available, should define a mapping from
+jQuery selector to model property name. If the view has a ``render``
+function, subviews are rendered after the ``render`` function of the
+view has been executed.
 
 So, if you have this view::
 
@@ -619,17 +697,17 @@ value of the subviews mapping::
   });
 
 Here, a subview is registered for the selector '#selector', the data is looked
-up on the context object using attribute name 'attr', and the view is looked
+up on the context object using property name 'attr', and the view is looked
 up using name 'name'.
 
 Note that if a callback is provided to render(), it will be called after the
 main view and all its subviews are done rendering.
 
-events: view event registration
--------------------------------
+Events: Declarative Event Registration
+--------------------------------------
 
-Typically a view will need to attach event handlers to elements
-rendered by the view. You can do this by hand::
+Often a view will need to attach event handlers to elements rendered
+by the view. You can do this by hand::
 
   obviel.view({ 
      iface: 'foo', 
@@ -655,7 +733,7 @@ is the equivalent of the above::
   });
 
 Like standard jQuery, the event handler gets an event object, but this
-object will have a special attribute ``view`` which is the view that
+object will have a special property ``view`` which is the view that
 this event is associated with.
 
 There is another way to express this::
@@ -674,7 +752,7 @@ There is another way to express this::
 
 In this case instead of directly hooking up the event handler, we
 refer to a method of the view itself as the event handler. You can
-refer to the view and its attributes using ``this`` just like you do
+refer to the view and its properties using ``this`` just like you do
 with ``render``. The event handler also receives the usual event
 object as the first argument.
 
@@ -696,63 +774,6 @@ events sent by obviel
 
 XXX
 
-Additional methods
-------------------
-
-A view may supply extra methods that it calls itself to assist in the
-rendering of the view and setting up of event handlers::
-
-  obviel.view({
-    render: function() {
-      this.foo();
-    },
-    foo: function() {
-      // ...extra work...
-    }
-  });
-
-Similarly additional attributes may be provided.
-
-View inheritance
-----------------
-
-While in many cases the additional methods strategy as described
-previously is sufficient, it is sometimes useful to be able to inherit
-from a base view. The Obviel form system is a good example of this.
-
-To this end it's useful to understand that the following registration::
-
-  obviel.view({
-    render: function() { ... }
-  });
-
-is in fact a shorthand for this registration::
-
-  obviel.view(new obviel.View({render: function() { ... }}));
-
-Obviel automatically creates a basic Obviel ``View`` if a bare
-object is passed to the ``view`` registration function.
-
-You can however also create new view objects by subclassing ``View``
-yourself::
-
-  var DivView = function(settings) {
-    var d = {
-      html: '<div></div>'
-    };
-    $.extend(d, settings);
-    obviel.View.call(this, d);
-  };
-
-  DivView.prototype = new obviel.View;
-
-  DivView.render = function() {
-    // ...
-  };
-
-Now the new view can be registered like this::
-
-  obviel.view(new DivView());
 
 Iface extension
 ---------------
