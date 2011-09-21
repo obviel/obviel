@@ -29,6 +29,9 @@ What does Obviel ask you to do?
 All this is pretty dense, so we'll go into much more detail about this
 now.
 
+How to include Obviel on your web page
+--------------------------------------
+
 Rendering a view
 ----------------
 
@@ -98,7 +101,7 @@ The DOM will be changed so it reads this::
 So, it has rendered ``"Hello World!"``, where ``World`` comes from the
 ``name`` property of the model object being rendered.
 
-The steps taken are::
+The steps taken are:
 
 * Obviel looks at the ``ifaces`` attribute of the model being
   rendered, in this case ``[`example`]``.
@@ -116,50 +119,231 @@ The steps taken are::
   manipulating the DOM using jQuery, as we do here to set the text of
   the div.
 
+Rending sub-objects
+-------------------
+
+.. sidebar:: How Partitioning into Views Helps
+
+  Just to make sure to help you to convince view partitioning is good,
+  we'll throw some big concepts at you. View partitioning aids:
+
+  * comprehension - each view can be understood on its own, without
+    having to read through a mass of other code.
+
+  * reuse - views can be reused in other contexts.
+
+  * pluggability - we can easily plug in different views into the
+    ``page``, just by changing our code.
+
+  * server control - the server can control how the page is composed.
+
+  * loose coupling between server and client - the server code still
+    does not need to have intimate knowledge of what the client code
+    does -- just the ifaces it understands and what attributes are
+    expected on an object with a certain iface.
+
+  And all these are Good Things.
+
+When presenting a complicated web page, it makes sense to split the underlying
+objects that this web page represents into individual sub objects. So,
+you might for instance have a JSON structure like this::
+
+  { 
+    ifaces: ['page'],
+    parts: [
+       { 
+         ifaces: ['text'],
+         text: "Hello world"
+       },
+       { 
+         ifaces: ['list'],
+         entries: ['foo', 'bar', 'baz']
+       }
+    ]
+  }
+
+This has an outer JSON object with the iface ``page``, and in there there
+are two parts, one of iface ``text`` and one of iface ``list``.
+
+How would you set out to render such a thing with Obviel views?
+Instead of creating one big view that does everything, we can
+decompose this into a number of sub-views. Let's first create a view
+for the ``text`` iface::
+
+  obviel.view({
+     iface: 'text'
+     render: function() {
+        var p_el = this.el.append('<p>');
+        p_el.text(this.obj.text);
+     }
+  });
+
+This view adds a ``p`` element to the DOM under which it is rendered,
+and renders the ``text`` property of the underlying object into it.
+
+We'll also create a view for ``list``::
+
+  obviel.view({
+     iface: 'list'
+     render: function() {
+        var self = this;
+        var ul_el = self.el.append('<ul>');
+        $.each(self.obj.entries, function(index, entry) {
+           var li_el = ul_el.append('<li>');
+           li_el.text(entry);
+        });
+     }
+  });
+
+This creates a ``ul`` element in the DOM and renders each entry in the
+``entries`` list as a ``li`` element with text in it. Note the use of
+the common JavaScript technique of assigning ``this`` to another local
+variable, ``self`` by convention in Obviel code, so we have an easy
+reference to it in the nested functions we define inside.
+
+Now let's create a view that renders all the ``page`` iface::
+
+  obviel.view({
+     iface: 'page',
+     render: function() {
+        var self = this;
+        $.each(self.obj.parts, function(index, part) {
+           var div_el = self.el.append($('<div>');
+           div_el.render(part);
+        });
+     }
+  });
+
+This view creates a ``div`` for each part in the ``parts``
+property. You can see how delegation to sub-views comes in: we render
+each part individually. You can also see something else: the ``page``
+view has no knowledge of what these sub views are, and could render
+any list of them -- it's entirely dependent on the object it is asked
+to render.
+
+Partitioning code into views is useful: it's the Obviel way. You'll
+find it makes your code a lot easier to manage.
+
 Obviel and hyperlinks
 ---------------------
 
-We saw how Obviel can be asked to render JavaScript objects. You can
-also ask Obviel to render URLs. When you pass a string to the
-``render`` method, Obviel will interpret it as a URL. In this case, it
-will send a GET request to the server to fetch a JSON object from that
-URL, and then render it::
+.. sidebar:: True REST
+
+  In an truly REST_ application, the client does not have particular
+  knowledge about the URLs the server presents - instead the server is
+  in control of the URL space and sends information about URLs to the
+  client. This principle is caled `Hypermedia as the Engine of
+  Application State`_.  
+
+  In many practical applications that are otherwise RESTful this
+  principle is not followed - the JavaScript code has intimate
+  knowledge about what URLs the server has available, hardcoded in the
+  JavaScript code base. This creates a tighter coupling between client
+  and server code, and that sucks.
+
+  If it sucks, why do people do such things? Because it's generally
+  easier. The nature of JavaScript and AJAX means that when you try to
+  do it the right way, and without Obviel to help you, you tend to end
+  up with a big nasty ball of nested functions.
+
+  But Obviel makes it dirt simple to let the server be in control of
+  URLs - it's actually *easier* to write client-side code this way
+  with Obviel, as much of the nitty-gritty about Ajax requests are
+  handled by Obviel itself.
+  
+  Of course you still need a web framework that makes it easy to
+  create URLs. We recommend you use a web framework that offers some
+  help generating URLs for models and views, but even if you don't,
+  it's still much better to only have to hardcode the knowledge about
+  URLs in the server code, and not in the client *too*.
+
+  .. _`Hypermedia as the Engine of Application State`: http://en.wikipedia.org/wiki/HATEOAS
+
+  .. _REST: http://en.wikipedia.org/wiki/Representational_state_transfer
+
+We saw how Obviel can be asked to render JavaScript objects. We also
+saw how you can compose views together by composing JavaScript objects
+together and then having views defer to each other. But the server
+code doesn't have to send a whole composed object to the client at
+once - sometimes that's too cumbersome (the server state changes), and
+sometimes accessing all the data on the server all at once to send to
+the client is just too costly. Obviel has a way out: you can hyperlink
+objects together using URLs, much like how web pages are hyperlinked
+together.
+
+Obviel can render URLs just like it can render ojbects. When you pass
+a string to the ``render`` method instead of an object, Obviel will
+interpret it as a URL. It will send a GET request to the server to
+fetch a JSON object from that URL, and then render that object. For
+example::
 
   $('#foo').render('http://example.com/somejson');
 
-This allows you to create a hyperlinked structure of JavaScript
-objects: you can send back an object that contains sub-objects or URLs
-to other objects elsewhere on the server. These objects can in turn
-be rendered by the code defined for the view (creating 'sub-views').
+will fetch the JSON from ``http://example.com/somejson``, and then
+call ``render`` on that object::
 
-Example::
+  $('#foo).render(retrieved_obj)
 
-   var foo = { 
-     'alpha': { 'a': 3 },
-     'beta': 'http://www.example.com',
-     'gamma': 'relative_url' 
-   };
+This behavior of Obviel allows you to create a hyperlinked structure
+of JavaScript objects. We can demonstrate that using the ``page`` view
+we created before. We'll show it here again, unchanged::
 
-If you now do::
+  obviel.view({
+     iface: 'page',
+     render: function() {
+        var self = this;
+        $.each(self.obj.parts, function(index, part) {
+           var div_el = self.el.append($('<div>');
+           div_el.render(part);
+        });
+     }
+  });
 
-  $(el).render(foo.alpha);
+We also leave the other views to render ``text`` and ``list`` ifaces
+unchanged.
 
-Obviel will try to render the sub-object ``{'a': 3}``.
+Instead of putting full-fledged objects in the ``parts`` array, you can
+also put hyperlinks in there. Consider the following object::
 
-but you can also ask Obviel to render ``beta``::
+  { 
+    ifaces: ['page'],
+    parts: [
+       'http://example.com/hello',
+       'http://example.com/some_list'
+       ]
+  }
 
-  $(el).render(foo.beta);
+and then under the ``http://example.com/hello`` URL we return this::
 
-in which case it will fetch the object indicated by the
- ``http://www.example.com`` URL and then render it. 
+  { 
+    ifaces: ['text'],
+    text: "Hello world"
+  }
 
-You can also indicate a relative URL (relative to the web page that
-includes this script)::
+and under the ``http://example.com/some_list`` URL we return this::
 
-  $(el).render(foo.gamma);
+  { 
+    ifaces: ['list'],
+    entries: ['foo', 'bar', 'baz']
+  }
 
-Obviel's understanding of hyperlinks is one of the ingredients that
-allow loose coupling between client and server.
+Rendering this ``page`` object will result in the same web page as
+before - Obviel will automatically request the underlying URLs and
+render the objects.
+
+So Obviel's understanding of hyperlinks gives us more cool things:
+
+* more flexibility -- you can create URLs that return an object with a
+  *different* iface depending on the circumstances, changing the
+  *behavior of the user interface on the fly.
+
+* more loose coupling between server and client - Obviel's
+  understanding of hyperlinks increases your ability to create such
+  loose coupling.
+
+* easier to create truly RESTful applications - see the sidebar for
+  more info on why that's good.
+
 
 View lookup and registration
 ----------------------------
