@@ -4,12 +4,18 @@ Obviel: Object/View/Element for jQuery
 Introduction
 ------------
 
+So Obviel promises a better structure for your JavaScript
+applications.
+
 What does Obviel really *do*? Obviel lets you associate *views* with
-JSON objects. You are the person who writes the views in
-JavaScript. In the view definition, you write JavaScript code that can
-render the information in the JSON object into the browser DOM. This
-interplay of *object*, *view* and *element* is central to Obviel. It
-also inspires its name, *Ob*-*vi*-*el*.
+JavaScript objects and DOM elements. You are the one who creates the
+views, and you will find that you can decompose much of your
+JavaScript application into views.
+
+In the view definition, you write JavaScript code that can render the
+information in the JSON object into the browser DOM. This interplay of
+*object*, *view* and *element* is central to Obviel. It also inspires
+its name, *Ob*-*vi*-*el*.
 
 What does Obviel ask you to do?
 
@@ -32,49 +38,90 @@ now.
 How to include Obviel on your web page
 --------------------------------------
 
+First you need to know how to include Obviel on a web page. You need
+to make sure that ``src/obviel.js`` is published somewhere on your web
+server. You also need jQuery_, and optionally `JSON template`_.
+
+.. _jQuery: http://jquery.com/
+
+.. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
+
+To include Obviel, you first need jQuery as a dependency::
+
+   <script type="text/javascript" src="/path/to/jquery-1.6.1.js"></script>
+ 
+If you want Obviel's json-template support, you can include JSON
+template (but this is optional)::
+
+  <script type="text/javascript" src="/path/to/json-template.js"></script>
+ 
+Finally, you need to include Obviel core itself::
+  
+  <script type="text/javascript" src="/path/to/obviel.js"></script>
+
+Obviel is now available as ``obviel`` in your JavaScript code. 
+
+Here is a suggestion on how to structure your code, using the
+`JavaScript module pattern`_ (global import)::
+
+  (function($, obviel) {
+     // .. views are defined here ..
+
+     $(document).ready(function() {
+       $(some_selector).render(some_object_or_url);
+     });
+  })(jQuery, obviel);
+
+We'll go into what you can put in for ``some_selector`` and
+``some_object_or_url`` below.
+
+.. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
+
 Rendering a view
 ----------------
 
-We'll start with the last bit first: how do we actually render a
-*view* for an *object* on an *element*?
+Now that we have Obviel available, we'll start with the last bit
+first: how do we actually render a *view* for an *object* on an
+*element*?
 
-A view is a JavaScript component that can *render* its data into the
-browser DOM tree. This is done using by calling the function render on
-the result of a JQuery selector::
+A view is a JavaScript component that can *render* an object into an
+element in the browser DOM tree. This is done using by calling the
+function render on the result of a JQuery selector::
 
   $('#foo').render(model);
 
-This will look up a view for the JavaScript object ``model`` and then
-ask that view to render the model on the element indicated by the
-jQuery selector ``#foo``. 
+If you have Obviel installed, this ``render`` function will be
+available. Since the DOM needs to be available when you start
+rendering your views, you need to do your view rendering in the
+``$(document).ready`` callback, or in code that gets called as a
+result of the first view rendering.
 
-Typically we use selectors that only match a single element, but if we
-use a selector that matches more than one element, view lookup is
-performed multiple times, once for each matching element.
+So what does this ``render`` call do? It will look up a view for the
+JavaScript object ``model`` and then ask that view to render the model
+on the element indicated by the jQuery selector ``#foo``.
 
-Now let's look into the pieces in more detail. 
+Typically you would use selectors that only match a single element,
+but if you use a selector that matches more than one element, view
+lookup is performed multiple times, once for each matching element.
 
-What is model? It's just a JavaScript object::
+Now let's look at the pieces in more detail.
+
+What is model? It's just a JavaScript object with one special
+property: ``ifaces``::
 
   var model = {
-    'name': 'World'
+    ifaces: ['example'],
+    name: 'World'
   };
 
 Typically with Obviel models are JavaScript objects generated as JSON
 on the server, but you could basically use any JavaScript object, as
-long as it provides an *iface*.
+long as it provides an *ifaces* property. The ``ifaces`` property lets
+models declare what type they have.
 
-In Obviel a model declares what type of model it is using the
-``ifaces`` property::
-
-  var model = {
-    ifaces: ['example'],
-    'name': 'World'
-  };
-
-As you can see, ``ifaces`` is a list of ifaces that this object
-declares -- typically only one is enough. We'll have more to say about
-this later, but this will do for now.
+As you can see, ``ifaces`` is a list of strings; each string
+identifies an iface that this object declares -- typically only one is
+enough. 
 
 What is a view? It's a special JavaScript object registered with
 Obviel that at minimum says how to render a model on an element::
@@ -85,6 +132,9 @@ Obviel that at minimum says how to render a model on an element::
         this.el.text("Hello " + this.obj.name + "!");
      }
   });
+
+You see how ``iface`` comes in again: this view knows how to render
+objects of iface ``example``.
 
 So imagine we have the following HTML in the browser DOM::
 
@@ -122,6 +172,8 @@ The steps taken are:
 View lookup
 -----------
 
+XXX this seems partially redundant with the above section
+
 Dynamic view lookup is what what allows loose coupling between client
 and server. The primary mechanism of lookup is by the ``iface`` marker
 on the model. A model can declare with an iface what kind of model it
@@ -140,10 +192,10 @@ An ``iface`` is in essence just a string marker::
     color: 'golden'
   };
 
-Each model can declare what kind of model it is using these string
+Each model can declare what kind of model it is using these iface
 markers.
 
-When a view is registered, the iface it is associated with can be
+When a view is registered, the iface it is associated with should be
 provided::
 
   obviel.view({
@@ -240,7 +292,7 @@ Rending sub-objects
 .. sidebar:: How Partitioning into Views Helps
 
   Just to make sure to help you to convince view partitioning is good,
-  we'll throw some big concepts at you. View partitioning aids:
+  we'll throw some concepts at you. View partitioning aids:
 
   * comprehension - each view can be understood on its own, without
     having to read through a mass of other code.
@@ -727,7 +779,7 @@ is the equivalent of the above::
     render: function() {},
     events: {
        'click': function(ev) {
-           ev.view.el.text('clicked!");
+           ev.viewel.text('clicked!");
        }
     }
   });
@@ -790,10 +842,6 @@ To remove the element association, you can call ``$(el).unview()``.
 
 To re-render a view on the element again, use ``$(el).rerender()``.
 
-
-View 
-
-
 Cleanup
 -------
 
@@ -801,7 +849,6 @@ When a view is un-rendered, for instance before another view is rendered
 on the same object, or because it's being cleaned up using ``unview``,
 it can be useful to execute some cleanup code. You can put in a special
 cleanup method on the view that gets called to perform the cleanup.
-
 
 events sent by obviel
 ---------------------
