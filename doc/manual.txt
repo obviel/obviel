@@ -754,13 +754,13 @@ value of the subviews mapping::
 
   views.view({
     subviews: {
-        '#selector': ['attr', 'name']
+        '#selector': ['foo', 'name']
     }
   });
 
-Here, a subview is registered for the selector '#selector', the data is looked
-up on the context object using property name 'attr', and the view is looked
-up using name 'name'.
+Here, a subview is registered for the selector ``#selector``, the data is looked
+up on the context object using property name ``foo``, and the view is looked
+up using ``name``.
 
 Note that if a callback is provided to render(), it will be called after the
 main view and all its subviews are done rendering.
