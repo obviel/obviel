@@ -266,8 +266,8 @@ properties which you can access through ``this`` in the
 ``render`` function of a view. We've seen some of them before, but
 we'll go through them systematically now.
 
-el
-++
+``el``
+++++++
 
 The element that this view is being rendered on. This is a jQuery
 object, so all the usual jQuery functionality will work. The element
@@ -275,19 +275,106 @@ is where the view expresses itself during rendering: it adds
 sub-elements to this element, or changes its ``text()`` value, hooks
 up event handlers, etc.
 
-obj
-+++
+``obj``
++++++++
 
 This is the model that the view is supposed to render. You access
 properties of this object to determine what to render.
 
-name
-++++
+``name``
+++++++++
 
 This is the name of the current view. By default it is ``default``.
 
-Rending sub-objects
--------------------
+
+``html`` and ``html_url``
+-------------------------
+
+A view can be configured so that it renders a piece of static HTML
+into the element (using the jQuery ``.html`` function) before the
+``render`` function is called. You do this by adding a ``html``
+property to the view.
+
+This is useful when you have a view that wants to insert a HTML
+structure into the DOM; this way you can avoid manual DOM
+manipulation. Doing this can also add to the clarity of the code.
+
+Here's an example::
+
+  obviel.view({
+     ifaces: ['foo'],
+     html: '<div class="a_class">Some HTML</div>',
+     render: function() {
+        var el = $('.a_class', this.el);
+        el.text("Changed the text!");
+     }
+  });
+
+This will add the structure ``<div class="a_class">Some HTML</div>``
+into the element the view is rendered on, and then calls the
+``render`` function, which can now make some assumptions about what is
+in the element.
+
+If the HTML fragment to insert has multiple lines, it is nicer to
+maintain it in a separate file instead of in an embedded string. The
+view can also refer to a static HTML resource on the server using the
+``html_url`` property::
+
+  obviel.view({
+     ifaces: ['foo'],
+     html_url: 'http://www.example.com/some.html',
+     render: function() {
+        // ...
+     }
+  });
+
+The HTML referred to by ``html_url`` will be cached by the system, so
+when you render the view next time no more request will be made to the
+server to retrieve the HTML fragment.
+
+In some cases you may want to let the server supply the HTML in the
+model instead of using it from the view. If the object to be rendered
+has a ``html`` or ``html_url`` property those will be interpreted as
+if they were on the view.
+
+If both ``html`` and ``html_url`` are found on a view or a model, the
+``html`` property has precedence. The ``html`` and ``html_url``
+properties of the model have precedence over any defined on the view.
+
+``jsont`` and ``jsont_url``: JSON template
+------------------------------------------
+
+A combination of static HTML and jQuery scripting is certainly dynamic
+enough, but sometimes using a template language can result in more
+readable code. By default support for `JSON template`_ is
+included. Obviel also provides an API to extend it to support other
+template languages.
+
+.. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
+
+The properties ``jsont`` and ``jsont_url`` work like ``html`` and
+``html_url`` and can be provided both by the view and the model. Let's
+look at an example::
+
+  obviel.view({
+    iface: 'person',
+    jsont: '<div>{name}</div>'
+  });
+
+  $('#somediv').render({
+    iface: 'person',
+    name: 'John'});
+
+This will result in::
+
+  <div>John</div>
+
+When rendering a JSON template, the object being rendered is combined
+with the template and the resulting HTML is inserted into the element
+that ``render`` was invoked for.
+
+Rendering Sub-Objects
+---------------------
 
 .. sidebar:: How Partitioning into Views Helps
 
@@ -517,83 +604,6 @@ So Obviel's understanding of hyperlinks gives us more cool things:
 * easier to create truly RESTful applications - see the sidebar for
   more info on why that's good.
 
-html and html_url
------------------
-
-A view can be configured so that it renders a piece of static HTML
-into the element (using the jQuery ``.html`` function) before the
-``render`` function is called. You do this by adding a ``html``
-property to the view. Here's an example::
-
-  obviel.view({
-     ifaces: ['foo'],
-     html: '<div class="a_class">Some HTML</div>',
-     render: function() {
-        var el = $('.a_class', this.el);
-        el.text("Changed the text!");
-     }
-  });
-
-This will add the structure ``<div class="a_class">Some HTML</div>``
-into the element the view is rendered on, and then calls the
-``render`` function, which can now make some assumptions about what is
-in the element.
-
-The view can also refer to a static HTML resource on the server using
-the ``html_url`` property::
-
-  obviel.view({
-     ifaces: ['foo'],
-     html_url: 'http://www.example.com/some.html',
-     render: function() {
-        // ...
-     }
-  });
-
-The HTML referred to by ``html_url`` will be cached by the system, so
-when you render the view next time no more request will be made to the
-server.
-
-In rare cases it is useful to let the server supply the HTML in the
-model instead of using it from the view. So, if the object to be
-rendered has a ``html`` or ``html_url`` property those will be interpreted
-as if they were on the view.
-
-If both ``html`` and ``html_url`` are found on a view or a model, the
-``html`` property has precedence. The ``html`` and ``html_url``
-properties of the model have precedence over any defined on the view.
-
-jsont and jsont_url: JSON template
-----------------------------------
-
-A combination of static HTML and jQuery scripting is often dynamic
-enough, but sometimes a client-side template language is convenient.
-Obviel offers extensible support for template languages, but by
-default support for `JSON template`_ is included.
-
-.. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
-
-The properties ``jsont`` and ``jsont_url`` work like ``html`` and
-``html_url`` and can be provided both by the view and the model. Let's
-look at an example::
-
-  obviel.view({
-    iface: 'person',
-    jsont: '<div>{name}</div>'
-  });
-
-  $('#somediv').render({
-    iface: 'person',
-    name: 'John'});
-
-This will result in::
-
-  <div>John</div>
-
-When rendering a JSON template, the object being rendered is combined
-with the template and the resulting HTML is inserted into the element
-that ``render`` was invoked for.
-
 Callbacks
 ---------
 
@@ -755,8 +765,8 @@ up using name 'name'.
 Note that if a callback is provided to render(), it will be called after the
 main view and all its subviews are done rendering.
 
-Events: Declarative Event Registration
---------------------------------------
+Declarative Event Registration
+------------------------------
 
 Often a view will need to attach event handlers to elements rendered
 by the view. You can do this by hand::
@@ -779,7 +789,7 @@ is the equivalent of the above::
     render: function() {},
     events: {
        'click': function(ev) {
-           ev.viewel.text('clicked!");
+           ev.view.el.text('clicked!");
        }
     }
   });
@@ -810,6 +820,8 @@ object as the first argument.
 
 All declaratively defined events are registered after the view has
 been rendered.
+
+.. _element-association:
 
 Element Association
 -------------------
@@ -889,11 +901,30 @@ Obviel calls the ``cleanup`` method on the view. You can put in a
 special cleanup method on the view that gets called to perform the
 cleanup.
 
-events sent by obviel
+Events Sent by Obviel
 ---------------------
 
-XXX
+Obviel triggers two kinds of events:
 
+* ``render-done.obviel``
+
+* ``render.obviel``
+
+These will both be triggered on the element that the view is rendered
+on. Both event objects will also have a special ``view`` property with
+the view that triggered the event.
+
+The ``render-done.obviel`` event can be used to take action when the
+view is done rendering entirely (including the rendering of any
+subviews).
+
+The ``render.obviel`` event is an internal event of Obviel; Obviel
+sets up am event handler for this by default on the document, and also
+sets up an event handler for this for elements that have a view
+associated with it. The latter event handler will only take action if
+the view being rendered has the same ``iface`` and ``name`` properties
+as the view that was associated with the element -- it is used to
+implement :ref:`element-association` behavior.
 
 Iface extension
 ---------------
