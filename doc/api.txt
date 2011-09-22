@@ -1,9 +1,9 @@
-==============================================
-Views and forms APIs and configuration options
-==============================================
+==========
+Obviel API
+==========
 
-Views library
-=============
+Obviel core
+===========
 
 .. function:: views.onerror(e)
 

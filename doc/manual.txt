@@ -823,6 +823,13 @@ been rendered.
 
 .. _element-association:
 
+Bootstrapping Obviel
+--------------------
+
+XXX app url discussion, how to inject app_url
+
+XXX template url discussion
+
 Element Association
 -------------------
 
@@ -944,8 +951,6 @@ Let's consider the following object describing a person::
 
   >>> obviel.ifaces(bob)
   ['person', 'base', 'object']
-
-XXX check whether this is truly returned
 
 So far nothing new. But ifaces themselves can have an extension
 relationship with each other: iface ``b`` can be declared to
