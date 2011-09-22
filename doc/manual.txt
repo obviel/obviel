@@ -509,7 +509,7 @@ So Obviel's understanding of hyperlinks gives us more cool things:
 
 * even more flexibility -- you can create URLs that return an object
   *with a different* iface depending on the circumstances, changing
-  *the behavior of the user interface on the fly.
+  the behavior of the user interface on the fly.
 
 * looser coupling between server and client - Obviel's understanding
   of hyperlinks increases your ability to create such loose coupling.
@@ -814,23 +814,61 @@ been rendered.
 Element Association
 -------------------
 
+.. sidebar:: Element Association Background
+
+  Let's consider form submission. In most cases when a form gets
+  submitted, the server sends back data to fill the space formerly
+  occupied by the form, either new form data (when there were form
+  errors or just because we are displaying an edit page) or just the
+  data of the object that we've added or edited. 
+
+  It is however also quite common to get back data for a parent
+  element, or grandparent element, or even for a completely unrelated
+  element. The form may for instance have been used to add, remove or
+  update a record in a table view or tree view, which we want to
+  refresh. Alternatively the response may contain a message, or status
+  information, that needs to be displayed.
+
+  When the user initiates such an action (for instance by pressing a button),
+  we could define an event handler that retrieves the appropriate ancestor
+  element from the DOM and then retrieving the view for that element using
+  the ``view()`` method. 
+
+  This however means tight coupling: the button handler, processing
+  the server response, now needs to know about which exact element the
+  view is that we need to refresh. And since the subview that causes
+  the outer view to refresh is a subview, we often *know* there is an
+  outer view in that case.
+
+  So we want to be able to provide a structure from the server that
+  does not contain presentation information (where should the object
+  be rendered) and have it displayed on an element other than the
+  'current' one.
+
+  Obviel supports this use case: when a view is rendered on an
+  element, the element becomes associated with that view. When you
+  render the same view (with the same ``iface`` and ``name``) for any
+  descendant element of this associated element, Obviel will go up the
+  parent element chain and rerender the view for the ancestor element
+  instead.
+
+  This means that if you ``.render()`` an object on an element that is
+  a descendant of an element which had a view already rendered for
+  that ``iface`` (and ``name``), the view will render on *that*
+  element, not the current context element you supply to Obviel.
+
+  In some cases element association is not desirable. If you don't
+  want a view to associate itself with an element at all, you can set
+  its ``ephemeral`` property to ``true``. You can use this for views
+  which really should leave no trace, such as popup notices, or
+  redirect to another view.
+  
 When a view is rendered on an element, it remains associated with that
-element. 
-
-It also sets up a special event handler so that when you render the
-view again (with the same ``iface`` and ``name``) for any descendant
-element, it actually will render the view for the element it was
-associated with. In typical applications there are cases when you want
-to redraw a whole section of the UI once a particular operation is
-completed (a form submitted, a popup closed, etc). It is then useful
-to be able to just issue ``render`` on a sub-element without having to
-find the particular parent element that the view was rendered on
-originally.
-
-If you don't want a view to associate itself with an element at all,
-you can set its ``ephemeral`` property to ``true``. You can use this
-for views which really should leave no trace, such as popup notices,
-or redirect to another view.
+element, unless the ``ephemeral`` property of the view is set to
+``true``. If a view is associated with an element, rendering an object
+of the view's ``iface`` (and ``name``) for any sub-element will render
+on the outer element instead. The sidebar has more background on this
+feature.
 
 To retrieve the associated view of an element, you can use the
 ``$(el).view()`` function to get it back again.
@@ -845,10 +883,11 @@ To re-render a view on the element again, use ``$(el).rerender()``.
 Cleanup
 -------
 
-When a view is un-rendered, for instance before another view is rendered
-on the same object, or because it's being cleaned up using ``unview``,
-it can be useful to execute some cleanup code. You can put in a special
-cleanup method on the view that gets called to perform the cleanup.
+When a view is rendered on an element that already had a view
+associated with it, or when a view is unrendered using ``unview``,
+Obviel calls the ``cleanup`` method on the view. You can put in a
+special cleanup method on the view that gets called to perform the
+cleanup.
 
 events sent by obviel
 ---------------------
