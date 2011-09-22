@@ -8,7 +8,6 @@ Contents:
 
    intro
    manual
-   deps 
    form
    api
    community
