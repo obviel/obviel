@@ -2,389 +2,245 @@
 Obviel API
 ==========
 
+.. default-domain:: js
+
 Obviel core
 ===========
 
-.. function:: views.onerror(e)
+.. function:: iface(name[, *bases])
 
-    Hook that displays errors. The 'e' argument is an instance of an exception,
-    or the exception string raised. Override to control error reporting - the
-    default implementation logs the exception to Firebug if it's available,
-    else alerts it, and then throws() it again to stop execution.
+  Declare an iface.
 
-    Note that this is the default for 'errback' to the render() function, if
-    you provide an errback yourself, errors will trigger that instead of
-    onerror().
+  :param string name: A unique string identifying the iface.  
+  :param `*bases`: Optional extra iface strings that are interpreted
+    as base ifaces that this iface extends.
 
-    XXX at some point I'd like to change error handling to be more like that
-    of the forms lib, where some view gets rendered on errors
+  Register an iface with the name ``name``. Note that declaring
+  an iface is not required in order to use it; you can just refer
+  to any iface, declared or not, by name. 
 
-.. function:: views.iface(name[, base, ...])
+  A registered iface always automatically extends a special iface
+  ``base``.
 
-    Register an 'interface' (string marker for views) with name 'name' and
-    optionally mark 'base' as base interface to create an inheritance tree for
-    looking up views. More than one base can be passed for multiple inheritance
-    behaviour. Note that registering an interface before use is not
-    required, this mechanism is optional but provides the inheritance mechanism
-    which may be useful if you want to register 'base views'.
+.. function:: provides(obj, base)
+ 
+  Check whether an object provides an iface.
 
-    Throws DuplicateInterfaces exception on duplicate registrations.
+  :param obj: Any JavaScript object.
+  :param string base: A string identifying an iface.
+  :returns: ``true`` if obj provides iface ``base`` (or an
+    iface that extends ``base``.
 
-.. function:: views.implements(obj, base)
+.. function:: extendsIface(name, base)
 
-    Returns true if 'obj' implements 'base', false otherwise. Note that if the
-    interface of 'obj' is not registered, the interfaces of 'obj' are its own
-    interface, and obj's type (e.g. 'string' or 'Object').
+  Register a new base iface for an iface.
 
-.. function:: views.extendsIface(name, base)
+  :param string name: Identifies the iface to extend.
+  :param string base: Identifies the base iface that this iface extends.
 
-    Register an additional base interface for interface 'name'.
+.. function:: ifaces(obj)
+
+  Obtain all ifaces that this object provides, going recursively
+  through base interfaces, breadth first.
+
+  If no ``ifaces`` attribute is available, the JS type of the object
+  is returned instead.
+  
+  :param obj: Any JavaScript object
+  :returns: a list of ifaces that the obj provides.
+
+.. class:: View(settings)
+ 
+  :param settings: an object of which the properties will become
+     properties of the view itself.
+
+  You can create a View by instantiating one and then registering it
+  with :func:`view`, but that function also allows creation of a new
+  view directly from a settings object.
+
+  If you want to create your own view types that provide more
+  features particular to specific use cases, you should derive your
+  view from the ``View`` class.  One example of this is :class:`Widget`
+  from the Obviel forms library.
+
+  XXX expand with typical settings
+
+.. function:: View.render()
+
+  This function will be called by Obviel when the view is being
+  rendered. It is supplied by the programmer.
+
+.. function:: View.cleanup()
+
+  This function will be called by Obviel when the view is being
+  cleaned up, either explicitly by using :func:`element.unview()`, or
+  implicitly because a new view is being rendered on the same element. It
+  is supplied by the programmer.
+
+.. function:: view(view)
+
+  Register a view with Obviel. This allows Obviel to look up the view
+  for the ``iface`` with which the view was registered.
+
+  :param view: a view object to register with Obviel. As a
+    convenience, you can also provide a bare JavaScript object, which
+    will be converted to a :class:`View` object with the object's
+    properties.
+
+.. function:: element.render(obj[, name, callback, errback])
+
+  Render a view for an object on a jQuery element. This instantiates a
+  view by cloning it from the registered view and then calls its
+  :func:`View.render` method.
     
-    Throws UnknownIface when any of the bases is not a registered iface.
+  :param obj: The JavaScript object to render. Alternatively this
+     can be a string, which will then be interpreted as a URL. The
+     URL will be fetched and the resulting JSON object will be
+     the object to render.
+  :param name: The name of the view to render for the object. If
+     not supplied the name ``default`` will be used.
+  :param callback: A callback function to call when the rendering
+     has been completed. ``this`` will be the view instance
+     that was used for the rendering.
+  :param errback: currently not supported.
 
-.. function:: views.ifaces(obj)
+  All methods of the :class:`View` object will have access to the
+  following properties on ``this`` during rendering:
 
-    Returns the inheritance tree for 'obj', if 'obj's interface is not
-    registered this will be the [obj.iface, typeof obj], if it is it will be
-    obj.iface, then the iface's bases, then 'base' (magic interface marker for
-    all registered interfaces) and then the object's type.
+  * ``el``: the jQuery element that the view is being rendered on.
 
-.. function:: module.DuplicateInterfaces() (exception)
+  * ``obj``: the object being rendered.
 
-    Raised when views.iface() is called with an interface name that is already
-    registered.
+  * ``callback``: the callback function, if supplied.
+  
+  * ``errback``: the errback function, if supplied.
 
-.. function:: module.RecursionError() (exception)
+  * ``registry``: the :class:`Registry` in which the view was
+     looked up.
 
-    Raised when views.extendsIface() detects recursion in interfaces.
+.. function:: element.rerender([callback, errback])
 
-.. function:: module.UnknownIface() (exception)
+.. function:: element.view()
 
-    Raised when extendsIface() is called with an unknown base class.
+.. function:: element.parent_view()
 
-.. class:: module.View(options)
-
-    Base class for views, use this if you create a new View subclass. It
-    provides default implementations of a View's required functionality,
-    including support for the .html attribute, the .jsont attribute, the .form
-    attribute, etc. For a description of options, see the section 'View
-    options' below. For the View class methods, see the section 'View methods'.
-
-.. function:: views.view(view or options)
-
-    Register a view either by providing a view instance or a set of options.
-    The view is registered for interface view.iface (defaulting to 'base') and
-    name view.name (defaulting to 'default').
-
-.. function:: views.formView(options)
-
-    Short-hand method for registering a 'form view' (view with .form = true)
-    using a set of options. This makes that the 'iface' option is set to
-    'form', and the 'form' one to true.
-
-.. function:: views.htmlView(options)
-
-    Similar short-hand registration of .html views, iface is 'html' and .html
-    is true.
-
-.. function:: views.jsontView(options)
-
-    Similar short-hand registration of JSONTemplate views, iface is 'object' to
-    allow registering for any object, you should provide .template_url and
-    .template_options data in order for this view to work.
-
-.. function:: $.fn.render(obj, [name], [callback], [errback])
-
-    Render view 'view' or a view built from options 'options' on an element.
-    Note that this can/should be triggered using $(element).render(data), so
-    it's exposed as a function on a jQuery result set. The 'obj' argument
-    should be a structure with data for a view or a URL (string) that points
-    to a JSON representation of such a structure. The object can provide a
-    .ifaces attribute (optional, defaulting to ['base']) and a .name one (also
-    optional, defaulting to 'default', though usually either .ifaces or .name
-    will be supplied) attributes to find a view, and additional attributes that
-    serve as data for that view. A quick example::
-
-      // register a simple view for iface 'foo' that renders context.data into
-      // the html - note that we don't explicitly register 'foo' since we're not
-      // interested in defining a full view hierarchy with fallbacks and such
-      views.view({
-        iface: 'foo',
-        html: '<div class="mytext"></div>',
-        render: function(el, obj, name) {
-            // add 'obj.foo', to 'mytext' div, the html after this will be
-            // '<div class="mytext">bar</div>'
-            $('.mytext', el).text(obj.foo);
-        });
-
-      // this will find the view defined above by iface 'foo', then calls it
-      // with the provided data as obj argument
-      $('body', document).render({
-        ifaces: ['foo'],
-        foo: 'bar'
-      });
-
-    Use the optional argument 'name' to control what view is rendered,
-    defaulting to 'default' (so one can define more than one view for a
-    specific interface and then control which is used when the view is executed
-    (client-side) rather than from the structure (which is usually defined
-    server-side)).
-
-    The optional 'callback' argument should be a handler, which is called when
-    all rendering is done (so when .render() and .doRender() have finished),
-    with as arguments the element on which the view is rendered, a reference to
-    the view instance itself, and a reference to the context object. The
-    optional 'errback' argument is also a handler, and is called when an
-    exception occurs during rendering, with as argument the exception that
-    occurred.
-
-.. function:: $.fn.renderURL(url, [name], [callback], [errback])
-
-    DEPRECATED: use $.fn.render(url, ...) instead!
-
-    This behaves exactly like $.fn.views() described above, with the difference
-    that instead of providing the context object for the view directly, it is
-    loaded from a URL as JSON. So, given the view definition above, a server
-    could provide a response with the JSON data {"ifaces": ["foo"], "data":
-    "bar"} from url 'url' to get the same results as described above.
-
-.. function:: $.fn.rerender(callback)
-
-    Re-render the currently rendered view on an element, iow re-trigger the
-    last view that was rendered on an element. The view is rendered using the
-    same options and context object or url as before. Note that a view can be
-    marked 'ephemeral' (see section 'View options' below) to keep it from
-    hitting the 'view stack', so views marked as such can not be re-rendered -
-    instead, calling rerender() on an element on which the last view was marked
-    as ephemeral will cause the view rendered before the current view will be
-    re-rendered.
-
-.. function:: $.fn.renderPrevious(callback)
-
-    Remove the currently rendered view from the stack and render the one that
-    was rendered on the element before that, if there was one. This can be used
-    to create relatively comples form sequences and whatnot.
-
-.. function:: $.fn.viewParent()
-
-    Returns the nearest element in the DOM tree that has a view registered on
-    it, going up. So, if the parent of an element on which this is called has a
-    view registered on it, this parent is returned, if not its parent is in
-    turn tested, continued until the top of the document is reached, in which
-    case undefined is returned.
-
-View methods
-++++++++++++
-
-.. function:: View.initialize()
-
-    provides default options and merges them with provided ones (if
-    any), make sure to call this if you create a View subclass::
-
-      var MyView = function() {
-        if (arguments.length) {
-          this.initialize.apply(this, arguments);
-        };
-      };
-
-      MyView.prototype = new views.View;
-
-.. function:: View.doRender(element, obj, name, callback, errback)
-
-    This provides most of the View base class' functionality, the glue code if
-    you will, and should normally not be overridden or changed. This is where
-    most of the config options are processed, e.g. the HTML for .html or .jsont
-    is loaded here and processed if required, if .form is true the form submit
-    handler is registered here, if .iframe is true an iframe is added, etc.
-    When this is done, .render() is executed.
-
-.. function:: View.get_content(obj, wrapper)
-
-    Retrieve the content for the element on which the view is called. This is
-    called by .doRender() and will usually not have to be overridden, unless
-    you have specific needs for content retrieval or processing.
-
-.. function:: View.add_submit(element, obj, name, callback, errback)
-
-    This attaches a form submit handler that makes that when a form is
-    submitted, the server's response is processed as a view again rather than
-    just replacing the whole document contents. Called from .doRender() if
-    .form resolves to true, override only if you want to adjust form submit
-    behaviour.
-
-.. function:: View.render(element, obj, name)
-
-    This is called after the contents of a view have been added to the element
-    on which the view is called, and should be used to register event handlers,
-    process the HTML from the server, etc. Note that this is not provided by
-    the View base class itself, and is optional, but it's used by most
-    subclasses, also the ones provided by the views and forms libs themselves.
+.. function:: element.unview()
 
 View options
 ++++++++++++
 
-The following section described the options for views defined in the views
-lib, note that views defined outside of this lib may define/require different
-options.
-
-.. attribute:: name
-
-    The name of the view, defaulting to 'default'. Used when a view is looked
-    up, along with the iface - the main difference is that the iface is
-    provided from the context object (which usually comes from the server),
-    while the name is provided from the calling code as an argument to
-    render[URL]().
-
-    A quick example: say the server provides a structure `{ifaces: ['date'],
-    year: 2010, month: 1, day: 1}`, the client can define different views for
-    that structure with different names, say 'calendar' and 'dateinput', and
-    determine which of those views is used to render the structure when calling
-    render(), let's say the 'calendar' one in the sidebar of the app and the
-    'dateinput' one on the registration page.
+Views have a number of options you can pass into them in the
+``settings`` parameter.
 
 .. attribute:: iface
 
-    The interface for which the view is registered. Interfaces (which are
-    simple string markers in our implementation) allow you to mark context
-    objects in a structured (hierarchical) manner, and providing views for that
-    structure, without actually binding the context objects to a specific view.
-    This makes that context objects and views are more loosely bound, allowing
-    you for to for instance switch between more or less fine-grained views
-    (think 'person' versus 'employee' views) without changing the server.
+  The iface (a string) for which the view is registered. The view will
+  only be looked up on objects that provide the given ``iface``.
 
-.. attribute:: form
+  While it is optional and defaults to registering the view for all
+  JavaScript objects, you would almost always want to supply an
+  ``iface`` property to a view.
 
-    A flag to control submit behaviour of forms. If this is set to true, the
-    element's contents are searched for forms after the view has been rendered,
-    and form submit handlers are attached to those forms that make that the
-    response of a form submit is considered a view structure rather than plain
-    HTML. In other words, if the form is submitted, the server can (must) send
-    a JSON structure back that is provided as new view data for the element,
-    rather than HTML that is used as new contents for the form's document
-    (normal form behaviour). Note that this requires an 'action' property to be
-    provided by either the view instance or the context object, with that of
-    the context object taking precedence.
+.. attribute:: name
 
-.. attribute:: iframe
+  The name of the view. It is optional, and defaults to
+  ``default``. The name is used when a view is looked up, along with
+  the iface, but for lookup also the default name is ``default``. The
+  difference between name and iface during lookup that iface is
+  provided from the object being rendered, while the name is provided
+  by the calling code as an argument to ``render``.
 
-    If this is set to true, the view is rendered inside an iframe, which is
-    added by the views lib. The iframe is resized to match the element's
-    current size.
+.. attribute:: render
+ 
+  A function which will be added as a method to the view. In it, the
+  developer can refer to ``this.obj`` to access the object the view is
+  rendering, and ``this.el`` to access the jQuery DOM element on which
+  the view is rendering. The ``el`` property is typically manipulated
+  in the ``render`` method to make the view actually do something.
 
-    Note that there isn't much magic going on here: if the view has HTML
-    provided to it, that HTML is added to the iframe, else nothing happens
-    except that the iframe is added. The element passed to the .render() method
-    is still the original element, so it is itself responsible of digging into
-    the iframe contents and such, and no additional event handling is performed
-    except for the form submit handler registration when .form is set to true
-    (.iframe used together with .form works as expected).
-
-.. attribute:: subviews
-
-    The 'subviews' option allows you to define 'sub-views' for child elements
-    of the view element after the view has been rendered. It's a mapping from a
-    selector to an attribute name, when rendering of a view with a certain
-    context object is finished, the selectors are executed one by one, and on
-    each match the attribute name is applied on the context object to find new
-    view data, which can either be a string - in which case it's considered a
-    URL and renderURL is called on the match - or a structure - in which case
-    match.render(value) is called. The mapping can also get a 'tuple'
-    [attrname, viewname] as value if you want to name the view for the
-    attribute (so, mapping is either from selector to  just attribute name or
-    from selector to [attribute name, view name] array).
-
-    A small example may help explain things (note that this example touches
-    quite a bit of the views library)::
-
-      views.view({
-        iface: 'foo',
-        html: '<div></div>',
-        render: function(el, obj, name) {
-          $('div', el).text(obj.foo);
-        }});
-
-      views.view({
-        iface: 'bar',
-        html: '<div></div>',
-        render: function(el, obj, name) {
-          $('div', el).text(obj.text);
-        }});
-
-      views.view({
-        iface: 'bar',
-        name: 'spam',
-        render: function(el, obj, name) {
-          el.text(obj.text);
-        }});
-
-      views.view({
-        iface: 'baz',
-        html: '<div id="foo"></div><div id="bar"></div>',
-        subviews: {
-          '#foo': 'attr1',
-          '#bar': ['attr2', 'spam']
-        }});
-
-      // render the 'baz' view into body, providing data for 'attr1' (which is
-      // rendered for iface 'foo') and 'attr2' (which is rendered for iface
-      // 'bar' and name 'spam')
-      $('body', document).render({
-        ifaces: ['baz'],
-        attr1: {
-            ifaces: ['foo'],
-            text: 'hello'},
-        attr2: {
-            ifaces: ['bar'],
-            text: 'goodbye'}});
-
-      // this should result in:
-      // '<div id="foo"><div>hello</div></div><div id="bar">goodbye</div>'
-      console.log($('body', document).html());
-
-.. attribute:: html
-
-    Provides HTML (as a string) to render into the element, replacing the
-    element's current contents. This can be provided either as a config option
-    (to views.view()) or as a context object attribute, the latter taking
-    precedence.
-
-.. attribute:: html_url
-
-    Provides a URL to load the HTML from, similar to 'html' above. This can be
-    provided as a config option or as a context object attribute, the latter
-    taking precedence.
-
-.. attribute:: jsont
-
-    Provides JSONTemplate contents, as a string. If provided, the context
-    object is used to render the JSONTemplate to HTML, which is then used as
-    contents for the element, replacing its current contents. This can be
-    provided either as a config option or as a context object attribute, the
-    latter taking precedence.
-
-.. attribute:: jsont_url
-
-    Provides a URL to load JSONTemplate contents from, similar to 'jsont'
-    above.  This can be provided as a config option or as a context object
-    attribute, the latter taking precedence.
+  Supplying a ``render`` method is optional.
 
 .. attribute:: cleanup
 
-    Hook called before a view is 'un-rendered' on an element, so if an element
-    that has a view rendered on it is used to render a new view on, the cleanup
-    handler (if provided) of the old view is triggered before the new view is
-    rendered.
+  An optional cleanup function which will be called when the
+  (non-ephemeral) view is being cleaned up from the element it was
+  rendered on, either explicitly because :func:`element.unview` was
+  called on it, or implicitly because something else is being 
+  rendered on the element.
 
-Events
-------
+.. attribute:: ephemeral
 
-.. data:: rendered.views
+  A boolean value. By default it is ``false``. If set to ``true``,
+  the view will not be associated with the element. This is useful for 
+  views that are not really associated with the DOM, such as popup
+  messages or views that redirect to other views.
 
-    Triggered when rendering of a view - including all subviews, etc. - is
-    done. This event handler can be used in situations where you do not
-    explicitly want to pass a callback to all views that you want to trigger
-    after-render actions for.
+.. attribute:: html
 
-    Arguments passed to the event handler are ``element``, a reference to the
-    element on which the view is rendered, ``view``, a reference to the view
-    instance, and ``obj``, a reference to the model being rendered.
+  A string with a snippet of HTML that should be inserted into the DOM
+  upon rendering. This will be done before any :func:`View.render()`
+  function is called.
+
+  This property is optional, and by default there will be no HTML snippet
+  insertion.
+
+.. attribute:: html_url
+ 
+  A string with a URL to a resource with a HTML snippet in it. This
+  HTML snippet will be loaded if the URL has not been previously seen,
+  otherwise it is retrieved from a cache. The HTML snippet is
+  inserted into the DOM as with :attr:`html`.
+
+  This property is optional.
+
+.. attribute:: jsont
+
+  A string with a JSON template. The template is rendered with the
+  object being rendered as the context, and the resulting HTML snippet
+  is inserted into the DOM as with :attr:`html`.
+ 
+  This property is optional.
+
+.. attribute:: jsont_url
+
+  A URL referencing a resource that is a JSON template. This
+  template will be loaded if the URL has not been previously seen,
+  otherwise it is retrieved from a cache. The HTML snippets that
+  results from rendering the template will be inserted into the DOM
+  as with :attr:`html`.
+
+  This property is optional.
+
+.. attribute:: subviews
+
+  A JavaScript object literal describing subviews of this view.  Each
+  property name define a jQuery selector that will be issued on the
+  element being rendered by the outer view that is being rendered. The
+  resulting elements will be have the sub view rendered on them. The
+  property value identifies a property on the model object that is
+  being rendered. This property is accessed: if it is a sub object, it
+  will be rendered directly. If it is a string, this string is
+  interpreted as a URL identifying the object to be rendered, as with
+  :func:`element.render`.
+
+  To render a named subview, use a property value that is an array
+  instead: the first item is interpreted as the property name
+  identifying the subobject or URL to be rendered, and the second item
+  is the view name to use to look up the subview.
+
+.. attribute:: events
+
+  a JavaScript object literal describing event handlers to hook up 
+  for this view. Each property name is the name of the event, such as
+  ``click``. The property value is either a function or a string. 
+
+  If it is a function, this function is the event handler. It will
+  receive a single parameter that is the event. The event object has a
+  ``view`` property that you can use to access the view that issued
+  the event.
+
+  If it is a string, this is used to identify a method of the view
+  that is the event handler. This method also receives a parameter
+  ``ev`` that has a ``view`` property, but the view can in this case
+  also be accessed as ``this``.
+ 
