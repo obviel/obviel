@@ -129,7 +129,7 @@
     };
     
     module.AutocompleteWidget.prototype.validate = function(value) {
-        var result = module.TextLineWidget.prototype.validate.call(this);
+        var result = module.TextLineWidget.prototype.validate.call(this, value);
         if (result !== undefined) {
             return result;
         }

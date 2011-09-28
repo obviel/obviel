@@ -3421,6 +3421,41 @@ test("autocomplete set values", function () {
     equal(data.a, 'bar');
 });
 
+test("autocomplete requiredness", function () {
+    var el=$('#viewdiv');
+    var data = {};
+    var errors = {};
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['autocomplete_field'],
+                name: 'a',
+                title: 'Autocomplete',
+                data: [
+                    {value: 'foo', label: 'Foo'},
+                    {value: 'bar', label: 'Bar'}
+                ],
+                validate: {
+                    required: true
+                }
+            }]
+        },
+        data: data,
+        errors: errors
+    });
+
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+    field_el.val(''); // empty while it's required
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    equal(errors.a, 'this field is required');
+});
+
 test("autocomplete with global error", function () {
     var el = $('#viewdiv');
     var data = {};
