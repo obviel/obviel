@@ -228,7 +228,10 @@ obviel.forms = {};
         var form_el = $('form', self.el);
         var controls_el = $('.obviel-controls', form_el);
         var controls = self.obj.form.controls || [];
-        
+
+        if (self.obj.form.disabled) {
+            return;
+        }
         $.each(controls, function(index, control) {
             var control_el = self.render_control(control);
             controls_el.append(control_el);
