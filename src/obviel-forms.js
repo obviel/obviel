@@ -258,9 +258,6 @@ obviel.forms = {};
         }
         
         control_el.click(function(ev) {
-            if (control.no_validation) {
-                return;
-            }
             self.submit_control(control_el, control);
         });
 
@@ -388,16 +385,19 @@ obviel.forms = {};
     module.Form.prototype.submit_control = function(control_el, control) {
         var self = this;
 
-        self.update_errors().done(function() {
-            // if there are  errors, disable submit
-            if (self.total_error_count() > 0) {
-                control_el.attr('disabled', 'true').trigger(
-                    'button-updated.obviel');
-                return;
-            }
-            
+        if (!control.no_validation) {
+            self.update_errors().done(function() {
+                // if there are  errors, disable submit
+                if (self.total_error_count() > 0) {
+                    control_el.attr('disabled', 'true').trigger(
+                        'button-updated.obviel');
+                    return;   
+                }
+                self.direct_submit(control);
+            });
+        } else {
             self.direct_submit(control);
-        });
+        }
     };
     
     module.Form.prototype.submit = function(control) {
@@ -427,7 +427,11 @@ obviel.forms = {};
             return;
         }
 
-        var data = self.json_data();
+        if (!control.no_validation) {
+            var data = self.json_data();
+        } else {
+            var data = undefined;
+        }
         
         var method = control.method || 'POST';
         var content_type = control.content_type || 'application/json';

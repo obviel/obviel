@@ -311,7 +311,53 @@ test('form with non-validating control', function() {
     // shouldn't have done any validation
     equals(errors['a'], undefined);
 });
+
+
+test('form with non-validating control should still do action', function() {
+    var el = $('#viewdiv');
+    var errors = {};
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A'
+            }],
+            controls: [{
+                name: 'foo',
+                no_validation: true,
+                action: 'http://localhost'
+            }]
+        },
+        errors: errors
+    });
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        ajax_options = options;
+        // to trigger successful result
+        options.success({ifaces: ['success_iface']});
+    };
     
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+    // not a valid value, but it doesn't matter as we don't
+    // submit any actual data with a no_validation control
+    field_el.val('foo');
+
+    var button_el = $('button', el);
+    button_el.trigger('click');
+
+    $.ajax = original_ajax;
+    equal(ajax_options.data, undefined);
+
+    // the success_iface should be rendered
+    equal(el.text(), 'success!');
+});
+
 test('text rendering', function() {
     var el = $('#viewdiv');
     el.render({
