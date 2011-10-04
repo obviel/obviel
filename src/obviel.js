@@ -1,6 +1,6 @@
-/* global jQuery: true, template_url: true
-   alert: true , browser: true, document: true, app_url: true,
-   window: true, jsontemplate: true
+/*global jQuery:true, template_url:true, jsontemplate:false
+  alert:true , browser:true, document:true, app_url:true,
+  window:true
 */
 
 var obviel = {};
@@ -38,24 +38,25 @@ var obviel = {};
     module.iface = function(name) {
         if (module._ifaces[name]) {
             throw((new module.DuplicateInterfaces(name)));
-        };
+        }
         var bases = [];
+        var i;
         if (arguments.length > 1) {
-            for (var i=arguments.length; i > 1; i--) {
+            for (i=arguments.length; i > 1; i--) {
                 bases.unshift(arguments[i-1]);
-            };
+            }
         } else {
             bases = ['base'];
-        };
+        }
 
-        for (var i=0; i < bases.length; i++) {
+        for (i=0; i < bases.length; i++) {
             var basebases = module._ifaces[bases[i]];
             if (basebases === undefined) {
                 throw(
                     'while registering iface ' + name + ': ' +
                     'base iface ' + bases[i] + ' not found!');
-            };
-        };
+            }
+        }
 
         module._ifaces[name] = bases;
     };
@@ -69,8 +70,8 @@ var obviel = {};
         for (var i=0; i < ifaces.length; i++) {
             if (ifaces[i] == base) {
                 return true;
-            };
-        };
+            }
+        }
         return false;
     };
 
@@ -82,12 +83,12 @@ var obviel = {};
         var basebases = module._ifaces[base];
         if (basebases === undefined) {
             throw((new module.UnknownIface(base)));
-        };
+        }
         for (var i=0; i < basebases.length; i++) {
             if (basebases[i] == name) {
                 throw((new module.RecursionError(name, basebases[i])));
-            };
-        };
+            }
+        }
         module._ifaces[name].push(base);
     };
 
@@ -103,31 +104,31 @@ var obviel = {};
         */
         if (!obj.ifaces) {
             return [typeof obj];
-        };
+        }
         var ret = [];
         var bases = [].concat(obj.ifaces);
         while (bases.length) {
             var base = bases.shift();
             if (base == 'base') {
                 continue;
-            };
+            }
             var duplicate = false;
             for (var i=0; i < ret.length; i++) {
                 if (base == ret[i]) {
                     duplicate = true;
                     break;
-                };
-            };
+                }
+            }
             if (duplicate) {
                 continue;
-            };
+            }
             ret.push(base);
             var basebases = module._ifaces[base];
             if (basebases) {
                 // XXX should we warn/error on unknown interfaces?
                 bases = bases.concat(basebases);
-            };
-        };
+            }
+        }
         // XXX hrmph, dealing with base here to avoid having it in the list
         // too early... does that make sense?
         ret.push('base');
@@ -226,14 +227,15 @@ var obviel = {};
         $.each(self.events, function(event_name, events) {
             $.each(events, function(selector, handler) {
                 var el = $(selector, self.el);
+                var wrapped_handler = null;
                 if (typeof handler == 'string') {
-                    var wrapped_handler = function(ev) {
+                    wrapped_handler = function(ev) {
                         ev.view = self;
                         ev.args = Array.prototype.slice.call(arguments, 1);
                         self[handler].call(self, ev);
                     };
                 } else {
-                    var wrapped_handler = function(ev) {
+                    wrapped_handler = function(ev) {
                         ev.view = self;
                         ev.args = Array.prototype.slice.call(arguments, 1);
                         handler(ev);
@@ -280,7 +282,7 @@ var obviel = {};
                 attr = attr[0];
             }
             var obj = self.obj[attr];
-            if ((obj == undefined) || !obj) {
+            if ((obj === undefined) || !obj) {
                 return;
             }
             var promise = self.render_subview(el, obj, name);
@@ -388,7 +390,7 @@ var obviel = {};
         var url = null;
         if (typeof obj == 'string') {
             url = obj;
-        };
+        }
         var promise;
         if (url !== null) {
             promise = self.view_for_url(el, url, name, callback, errback);
@@ -618,11 +620,12 @@ var obviel = {};
         if (!previous_view) {
             return;
         }
-        
+
+        var obj = null;
         if (previous_view.from_url) {
-            var obj = previous_view.from_url;
+            obj = previous_view.from_url;
         } else {
-            var obj = previous_view.obj;
+            obj = previous_view.obj;
         }
         
         previous_view.registry.render(el, obj, previous_view.name,
