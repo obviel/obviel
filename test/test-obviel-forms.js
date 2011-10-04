@@ -8,7 +8,7 @@ obviel.onerror = function(e) {
     throw(e);
 };
 
-module("Forms2", {
+module("Forms", {
     setup: function() {
         $('#jsview-area').html('<div id="viewdiv"></div><div id="viewdiv2"></div>');
         $('#jsview-area').unbind();
