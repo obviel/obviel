@@ -1,3 +1,6 @@
+/*global module:false obviel:false test:false ok:false same:false $:false
+  equal:false raises:false asyncTest:false start:false */
+
 var html_lower = function(html) {
     // some nasty normalization for browser compatibility
     // Firefox & IE give different cases for html, and
@@ -111,7 +114,7 @@ test('error on non-existent base', function() {
         obviel.iface('bla', 'blabla');
     } catch(e) {
         exc = e;
-    };
+    }
     ok(exc);
 });
 
@@ -121,7 +124,7 @@ test('error on duplicate registration', function() {
         obviel.iface('foo');
     } catch(e) {
         exc = e;
-    };
+    }
     ok(exc);
 });
 
@@ -138,7 +141,7 @@ test('extendsIface on non-existent iface', function() {
         obviel.extendsIface('bla', 'foo');
     } catch(e) {
         exc = e;
-    };
+    }
     ok(exc);
 });
 
@@ -150,7 +153,7 @@ test('error on recursion', function() {
         obviel.extendsIface('x', 'y');
     } catch(e) {
         exc = e;
-    };
+    }
     ok(exc);
 });
 
@@ -176,7 +179,7 @@ test('view with default name', function() {
         render: render_text
     });
     $('#viewdiv').render({text: 'foo'});
-    equals($('#viewdiv').text(), 'foo');
+    equal($('#viewdiv').text(), 'foo');
 });
 
 test('named view, no name provided results in error', function() {
@@ -196,7 +199,7 @@ test('named view with name provided', function() {
         render: render_text
     });
     $('#viewdiv').render({text: 'bar'}, 'foo');
-    equals($('#viewdiv').text(), 'bar');
+    equal($('#viewdiv').text(), 'bar');
 });
 
 test('iface view, no iface provided', function() {
@@ -215,7 +218,7 @@ test('iface view with iface provided', function() {
         render: render_text
     });
     $('#viewdiv').render({text: 'baz', ifaces: ['ifoo']});
-    equals($('#viewdiv').text(), 'baz');
+    equal($('#viewdiv').text(), 'baz');
 });
 
 test('iface/named view, no name provided', function() {
@@ -250,7 +253,7 @@ test('iface/named view, both iface and name provided', function() {
     $('#viewdiv').render(
         {text: 'qux', ifaces: ['ifoo']},
         'foo');
-    equals($('#viewdiv').text(), 'qux');
+    equal($('#viewdiv').text(), 'qux');
 });
 
 test('explicit view instance', function() {
@@ -260,7 +263,7 @@ test('explicit view instance', function() {
     }));
 
     $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
-    equals($('#viewdiv').text(), 'qux');
+    equal($('#viewdiv').text(), 'qux');
 });
 
 test('init', function() {
@@ -271,7 +274,7 @@ test('init', function() {
         }
     });
     $('#viewdiv').render({ifaces: ['ifoo']});
-    equals($('#viewdiv').view().whatever, true);
+    equal($('#viewdiv').view().whatever, true);
 });
 
 test('cleanup', function() {
@@ -288,9 +291,9 @@ test('cleanup', function() {
     $('#viewdiv').render(
         {text: 'bar', ifaces: ['cleanup']},
         function() {
-            equals(this.el.text(), 'bar');
+            equal(this.el.text(), 'bar');
             $('#viewdiv').render({text: 'foo', ifaces: ['another']});
-            equals(this.el.text(), 'foo');
+            equal(this.el.text(), 'foo');
             ok(cleanup_called);
         });
 });
@@ -301,7 +304,7 @@ asyncTest('render url, default name', function() {
     });
     $('#viewdiv').render(
         'fixtures/default.json', function() {
-            equals($('#viewdiv').text(), 'foo');
+            equal($('#viewdiv').text(), 'foo');
             start();
         });
 });
@@ -314,7 +317,7 @@ asyncTest('render url with name', function() {
 
     $('#viewdiv').render(
         'fixtures/named.json', 'foo', function() {
-            equals($('#viewdiv').text(), 'bar');
+            equal($('#viewdiv').text(), 'bar');
             start();
         });
 });
@@ -327,7 +330,7 @@ asyncTest('render url with iface', function() {
 
     $('#viewdiv').render(
         'fixtures/interfaced.json',  function() {
-            equals($('#viewdiv').text(), 'baz');
+            equal($('#viewdiv').text(), 'baz');
             start();
         });
 });
@@ -342,7 +345,7 @@ asyncTest('render url with name and iface', function() {
     $('#viewdiv').render(
         'fixtures/named_interfaced.json',  'foo',
         function() {
-            equals($('#viewdiv').text(), 'qux');
+            equal($('#viewdiv').text(), 'qux');
             start();
         });
 });
@@ -369,10 +372,10 @@ asyncTest('rerender url', function() {
     var el = $('#viewdiv');
     el.render(
         'testifoo', function() {
-            equals(this.el.text(), '1');
+            equal(this.el.text(), '1');
             el.rerender(function() {
                 // this should call the URL again
-                equals(this.el.text(), '2');
+                equal(this.el.text(), '2');
                 start();
             });
         });
@@ -394,9 +397,9 @@ test('rerender context object', function() {
     
     var el = $('#viewdiv');
     el.render({ifaces: ['rerender']});
-    equals(el.text(), '1');
+    equal(el.text(), '1');
     el.rerender();
-    equals(el.text(), '2');
+    equal(el.text(), '2');
 });
 
 test('no content, empty render', function() {
@@ -406,7 +409,7 @@ test('no content, empty render', function() {
     var el = $('#viewdiv');
     el.html('<span>foo</span>');
     el.render({});
-    equals(el.text(), 'foo');
+    equal(el.text(), 'foo');
 });
 
 test('no content no render', function() {
@@ -415,7 +418,7 @@ test('no content no render', function() {
     var el = $('#viewdiv');
     el.html('<span>foo</span>');
     el.render({});
-    equals(el.text(), 'foo');   
+    equal(el.text(), 'foo');   
 });
 
 
@@ -437,19 +440,19 @@ test('rerender ephemeral', function() {
     });
     var el = $('#viewdiv');
     el.render({text: 'foo'});
-    equals(el.text(), 'foo');
+    equal(el.text(), 'foo');
     el.render({text: 'bar'}, 'ephemeral');
-    equals(el.text(), 'bar');
+    equal(el.text(), 'bar');
     el.rerender();
-    equals(el.text(), 'foo');
+    equal(el.text(), 'foo');
 });
 
 asyncTest('render subviews', function() {
     obviel.view({
         iface: 'subviews',
         render: function() {
-            el.html('<div id="sub1"></div><div id="sub2"></div>' +
-                    '<div id="sub3"></div>');
+            this.el.html('<div id="sub1"></div><div id="sub2"></div>' +
+                         '<div id="sub3"></div>');
         },
         subviews: {
             '#sub1': 'sub_url',
@@ -476,9 +479,9 @@ asyncTest('render subviews', function() {
         sub_html: {text: 'bar'}, //  obj
         sub_named: {} // is registered by name foo
     }, function() {
-        equals($('#sub1', el).text(), 'foo');
-        equals($('#sub2', el).text(), 'bar');
-        equals($('#sub3', el).text(), 'named');
+        equal($('#sub1', el).text(), 'foo');
+        equal($('#sub2', el).text(), 'bar');
+        equal($('#sub3', el).text(), 'named');
         start();
     });
 });
@@ -497,7 +500,7 @@ test('render subview false argument', function() {
     el.render({
         sub_content: false
     });
-    equals($('#sub1', el).text(), '');
+    equal($('#sub1', el).text(), '');
 });
 
 test('render subview undefined argument', function() {
@@ -513,7 +516,7 @@ test('render subview undefined argument', function() {
     // should also not render the sub view
     var el = $('#viewdiv');
     el.render({});
-    equals($('#sub1', el).text(), '');
+    equal($('#sub1', el).text(), '');
 });
 
 test('view with html', function() {
@@ -529,8 +532,8 @@ test('view with html', function() {
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equals(html_lower($('#viewdiv').html()), '<div>foo!</div>');
-            equals(render_called, 1);
+            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
+            equal(render_called, 1);
         });
 });
 
@@ -547,8 +550,8 @@ asyncTest('view with html_url', function() {
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equals(html_lower($('#viewdiv').html()), '<div>foo</div>');
-            equals(render_called, 1);
+            equal(html_lower($('#viewdiv').html()), '<div>foo</div>');
+            equal(render_called, 1);
             start();
         });
 });
@@ -567,8 +570,8 @@ asyncTest('html context attribute overrides html_url view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equals(html_lower($('#viewdiv').html()), '<span>spam!</span>');
-            equals(render_called, 1);
+            equal(html_lower($('#viewdiv').html()), '<span>spam!</span>');
+            equal(render_called, 1);
             start();
         });
 });
@@ -587,8 +590,8 @@ asyncTest('html context attribute overrides html view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equals(html_lower($('#viewdiv').html()), '<span>spam!</span>');
-            equals(render_called, 1);
+            equal(html_lower($('#viewdiv').html()), '<span>spam!</span>');
+            equal(render_called, 1);
             start();
         });
 });
@@ -607,7 +610,7 @@ asyncTest('html_url context attr overrides html view one', function() {
          html_url: 'fixtures/test1.html',
          text: 'spam'},
         function() {
-            equals(html_lower($('#viewdiv').html()), '<div>foo</div>');
+            equal(html_lower($('#viewdiv').html()), '<div>foo</div>');
             start();
         });
 });
@@ -621,12 +624,12 @@ asyncTest('jsont view', function() {
     // a bit of implementation detail to get the cache
     var cache = obviel.compilers.compilers['jsont'].url_cache;
     
-    equals(cache['fixtures/test1.jsont'], undefined);
+    equal(cache['fixtures/test1.jsont'], undefined);
           
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['jt']},
         function(element, view, context) {
-            equals($.trim($('#viewdiv').text()), 'the value');
+            equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
             ok(cache['fixtures/test1.jsont']);
             start();
@@ -648,7 +651,7 @@ test('view override on iface', function() {
     el.render({
         ifaces: ['ifoo'],
         text: 'eggs'});
-    equals(el.text(), 'spam: eggs');
+    equal(el.text(), 'spam: eggs');
 });
 
 test('render on ancestor', function() {
@@ -668,8 +671,8 @@ test('render on ancestor', function() {
         text: 'eggs'
     });
     // we now have a div appended
-    equals($('#jsview-area').children().last().text(), 'eggs');
-    equals(called, 1);
+    equal($('#jsview-area').children().last().text(), 'eggs');
+    equal(called, 1);
     
     // then render on viewdiv, descendant of ancestor. but because
     // we have rendered this iface on ancestor, it will bubble up
@@ -677,11 +680,11 @@ test('render on ancestor', function() {
         ifaces: ['ifoo'],
         text: 'ham'
     });
-    equals(called, 2);
+    equal(called, 2);
     // nothing added to viewdiv
-    equals($('#viewdiv').children().length, 0);
+    equal($('#viewdiv').children().length, 0);
     // instead it got added to jsview-area
-    equals($('#jsview-area').children().last().text(), 'ham');
+    equal($('#jsview-area').children().last().text(), 'ham');
     // this does apply directly to viewdiv
     obviel.view({
         iface: 'ibar',
@@ -691,15 +694,15 @@ test('render on ancestor', function() {
         ifaces: ['ibar'],
         text: 'spam'
     });
-    equals($('#viewdiv').text(), 'spam');
-    equals(called, 2);
+    equal($('#viewdiv').text(), 'spam');
+    equal(called, 2);
     // but rendering an ifoo again brings us back to jsview-area
     $('#viewdiv').render({
         ifaces: ['ifoo'],
         text: 'breakfast'
     });
-    equals(called, 3);
-    equals($('#jsview-area').children().last().text(), 'breakfast');
+    equal(called, 3);
+    equal($('#jsview-area').children().last().text(), 'breakfast');
 });
 
 asyncTest('render-done.obviel event without subviews', function() {
@@ -712,8 +715,8 @@ asyncTest('render-done.obviel event without subviews', function() {
     el.bind('render-done.obviel', function(ev) {
         called++;
         // this is called only once
-        equals(called, 1);
-        equals(el.text(), 'something');
+        equal(called, 1);
+        equal(el.text(), 'something');
         start();
     });
     el.render({ifaces: ['ifoo']});
@@ -737,11 +740,11 @@ asyncTest('render-done.obviel event with subviews', function() {
     el.bind('render-done.obviel', function(ev) {
         called++;
         if (ev.view.iface == 'ifoo') {
-            equals(called, 3);
-            equals($('#sub1').text(), 'foo');
-            equals($('#sub2').text(), 'sub2 text');
+            equal(called, 3);
+            equal($('#sub1').text(), 'foo');
+            equal($('#sub2').text(), 'sub2 text');
             start();
-        };
+        }
     });
     
 
@@ -760,7 +763,7 @@ asyncTest('view events', function() {
         events: {
             'custom': {
                 '#id1': function(ev) {
-                    equals(ev.view.iface, 'ifoo');
+                    equal(ev.view.iface, 'ifoo');
                     ok(true, "event triggered");
                     start();
                 }
@@ -778,7 +781,7 @@ asyncTest('view events handler string', function() {
         html: '<div id="id1"></div>',
         custom: function(ev) {
             var self = this;
-            equals(self.iface, 'ifoo');
+            equal(self.iface, 'ifoo');
             ok(ev.view === self);
             ok(true, "event triggered");
             start();
@@ -816,7 +819,7 @@ asyncTest('view events cleanup', function() {
     // event shouldn't have been triggered
     el.render({ifaces: ['ibar']});
     $('#id1').trigger('custom');
-    equals(called, 0);
+    equal(called, 0);
     start();
 });
 
@@ -843,7 +846,7 @@ asyncTest('view events cleanup handler string', function() {
     // event shouldn't have been triggered
     el.render({ifaces: ['ibar']});
     $('#id1').trigger('custom');
-    equals(called, 0);
+    equal(called, 0);
     start();
 });
 
@@ -863,7 +866,7 @@ test('element bind', function() {
     // render a view on el
     el.render({ifaces: ['ifoo']});
     // should see single added div
-    equals($('.added', el).length, 1);
+    equal($('.added', el).length, 1);
     
     // render the original object again, in a sub el
     el.append('<div id="sub">nothing</div>');
@@ -871,11 +874,11 @@ test('element bind', function() {
     sub_el.render({ifaces: ['ifoo']});
 
     // the sub el should be unchanged
-    equals(sub_el.text(), 'nothing');
-    equals(sub_el.children().length, 0);
+    equal(sub_el.text(), 'nothing');
+    equal(sub_el.children().length, 0);
     
     // the original el should have a second div added
-    equals($('.added', el).length, 2);
+    equal($('.added', el).length, 2);
 });
 
 test('element bind cleanup', function() {
@@ -894,7 +897,7 @@ test('element bind cleanup', function() {
     // render a view on el
     el.render({ifaces: ['ifoo']});
     // we expect a single added div
-    equals($('.added', el).length, 1);
+    equal($('.added', el).length, 1);
     
     // render another view on el, wiping out the previous one
     el.render({ifaces: ['ibar']});
@@ -907,10 +910,10 @@ test('element bind cleanup', function() {
     // since we've cleaned up the original ifoo view for 'el' by
     // rendering the ibar view, we should render it on the subobject,
     // not the original el
-    equals($('.added', sub_el).length, 1);
+    equal($('.added', sub_el).length, 1);
 
     // in total we've added two things
-    equals($('.added', el).length, 2);
+    equal($('.added', el).length, 2);
     
 });
 
@@ -930,7 +933,7 @@ test('unview', function() {
     // render a view on el
     el.render({ifaces: ['ifoo']});
     // should see single added div
-    equals($('.added', el).length, 1);
+    equal($('.added', el).length, 1);
     
     // render the original object again, in a sub el
     el.append('<div id="sub">nothing</div>');
@@ -938,27 +941,27 @@ test('unview', function() {
     sub_el.render({ifaces: ['ifoo']});
 
     // the sub el should be unchanged
-    equals(sub_el.text(), 'nothing');
-    equals(sub_el.children().length, 0);
+    equal(sub_el.text(), 'nothing');
+    equal(sub_el.children().length, 0);
     
     // the original el should have a second div added
-    equals($('.added', el).length, 2);
+    equal($('.added', el).length, 2);
 
     // try it again, should see another div added
     sub_el.render({ifaces: ['ifoo']});
-    equals($('.added', el).length, 3);
+    equal($('.added', el).length, 3);
 
     // still nothing on sub el
-    equals(sub_el.children().length, 0);
+    equal(sub_el.children().length, 0);
     
     // now we unview the original view
     el.unview();
 
     // if we render on subview now, we should see a div added there
     sub_el.render({ifaces: ['ifoo']});
-    equals($('.added', sub_el).length, 1);
+    equal($('.added', sub_el).length, 1);
     // and 1 more in total
-    equals($('.added', el).length, 4);
+    equal($('.added', el).length, 4);
 });
 
 test('parent_view', function() {

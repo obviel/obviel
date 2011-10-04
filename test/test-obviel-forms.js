@@ -1,3 +1,7 @@
+/*global module:false obviel:false test:false ok:false same:false $:false
+  equal:false raises:false asyncTest:false start:false deepEqual: false
+  stop:false  */
+
 $.fn.html_lower = function() {
     // some nasty normalization for IE
     var html = this.html();
@@ -309,7 +313,7 @@ test('form with non-validating control', function() {
     button_el.trigger('click');
 
     // shouldn't have done any validation
-    equals(errors['a'], undefined);
+    equal(errors['a'], undefined);
 });
 
 
@@ -581,10 +585,10 @@ test('float convert', function() {
     deepEqual(widget.convert('1.2'), {value: 1.2});
     deepEqual(widget.convert('1'), {value: 1});
     deepEqual(widget.convert('-1.2'), {value: -1.2});
-    deepEqual(widget.convert('.2'), {value: .2});
+    deepEqual(widget.convert('.2'), {value: 0.2});
     deepEqual(widget.convert('-1'), {value: -1});
     deepEqual(widget.convert('-1.2'), {value: -1.2});
-    deepEqual(widget.convert('-.2'), {value: -.2});
+    deepEqual(widget.convert('-.2'), {value: -0.2});
     deepEqual(widget.convert(''), {value: null});
     deepEqual(widget.convert('foo'), {error: 'not a float'});
     deepEqual(widget.convert('1.2.3'), {error: 'not a float'});
@@ -894,8 +898,8 @@ test("composite datalink", function() {
     ev = new $.Event('change');
     ev.target = field_b_el;
     field_b_el.trigger(ev);
-    equals(errors.composite.b, '');
-    equals(data.composite.b, 3);
+    equal(errors.composite.b, '');
+    equal(data.composite.b, 3);
 });
 
 test("composite back datalink", function() {
@@ -1158,8 +1162,8 @@ test("repeating datalink", function() {
     ev = new $.Event('change');
     ev.target = field_b_el;
     field_b_el.trigger(ev);
-    equals(errors.repeating[0].b, '');
-    equals(data.repeating[0].b, 3);
+    equal(errors.repeating[0].b, '');
+    equal(data.repeating[0].b, 3);
 });
 
 test("repeating defaults", function() {
@@ -1396,8 +1400,8 @@ test("repeating remove item", function() {
                           field_1_a_el.parent().parent().parent().parent());
     remove_button.trigger('click');
 
-    equals(data.repeating.length, 2);
-    equals(errors.repeating.length, 2);
+    equal(data.repeating.length, 2);
+    equal(errors.repeating.length, 2);
 
     field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
     field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
@@ -1511,8 +1515,8 @@ test("repeating removing added item from data", function() {
                           field_1_a_el.parent().parent().parent().parent());
     remove_button.trigger('click');
 
-    equals(data.repeating.length, 2);
-    equals(errors.repeating.length, 2);
+    equal(data.repeating.length, 2);
+    equal(errors.repeating.length, 2);
 
     field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
     field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
@@ -2727,7 +2731,7 @@ test("control without action", function() {
     button_el.trigger('click');
 
     $.ajax = original_ajax;
-    equals(called, 0);
+    equal(called, 0);
 });
 
 test("existing values", function() {
