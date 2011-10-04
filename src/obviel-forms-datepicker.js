@@ -14,7 +14,7 @@
         module.TextLineWidget.call(this, d);
     };
 
-    module.DatePickerWidget.prototype = new module.TextLineWidget;
+    module.DatePickerWidget.prototype = new module.TextLineWidget();
 
     var ensure_options = function(widget) {
         var options = widget.datepicker_options || {};
@@ -44,21 +44,22 @@
             this, value);
 
         ensure_options(this.obj);
-        
+
+        var date = null;
         try {
-            var date = $.datepicker.parseDate(
+            date = $.datepicker.parseDate(
                 this.obj.datepicker_options.dateFormat,
                 result.value);
         } catch(e) {
             return {error: 'invalid date'};
-        };
+        }
         return {value: $.datepicker.formatDate('yy-mm-dd', date)};
     };
 
     module.DatePickerWidget.prototype.convert_back = function(value) {
         value = module.TextLineWidget.prototype.convert_back.call(
             this, value);
-        if (value == '') {
+        if (value === '') {
             return '';
         }
         ensure_options(this.obj);

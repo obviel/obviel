@@ -16,7 +16,7 @@
         module.TextLineWidget.call(this, d);
     };
 
-    module.AutocompleteWidget.prototype = new module.TextLineWidget;
+    module.AutocompleteWidget.prototype = new module.TextLineWidget();
 
     module.AutocompleteWidget.prototype.render = function() {
         var self = this;
@@ -93,7 +93,7 @@
             self.label_to_value = label_to_value;
             self.value_to_label = value_to_label;
             source = labels;
-        };
+        }
 
         self.source = source;
         
@@ -185,6 +185,6 @@
         } 
     };
     
-    obviel.view(new module.AutocompleteWidget);
+    obviel.view(new module.AutocompleteWidget());
 
 }(jQuery, obviel, obviel.forms));
