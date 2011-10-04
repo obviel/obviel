@@ -1,6 +1,6 @@
 /*global obviel: true, jQuery: true, template_url: true
   alert: true , browser: true, document: true, app_url: true,
-  window: true, jsontemplate: true, Gettext: true
+  window: true, jsontemplate: true, Gettext: true, json_locale_data: true
 */
 
 obviel.forms = {};
@@ -8,15 +8,16 @@ obviel.forms = {};
 (function($, obviel, module) {
     // if no json_locale_data can be found, fall back on the default
     // translations
+    var locale_data = null;
     if (typeof json_locale_data != "undefined") {
-        var locale_data = json_locale_data;
+        locale_data = json_locale_data;
     } else {
-        var locale_data = undefined;
+        locale_data = undefined;
     }
     var gt = new Gettext({
         domain: "obviel_forms",
         locale_data: locale_data});
-    function _(msgid) { return gt.gettext(msgid); };
+    function _(msgid) { return gt.gettext(msgid); }
     
     var entitize = function(s) {
         /* convert the 4 chars that must not be in XML to 'entities'
@@ -58,7 +59,7 @@ obviel.forms = {};
  
     var auto_name = 0;
  
-    module.Form.prototype = new obviel.View;
+    module.Form.prototype = new obviel.View();
  
     module.Form.prototype.init = function() {
         this.widget_views = [];
@@ -265,9 +266,11 @@ obviel.forms = {};
     };
 
     var clean_data = function(data) {
+        var clone = null;
+        
         // clone the data object removing data link annotations
         if ($.isPlainObject(data)) {
-            var clone = {};
+            clone = {};
             $.each(data, function(key, value) {
                 if (!is_internal(key)) {
                     clone[key] = clean_data(value);
@@ -275,7 +278,7 @@ obviel.forms = {};
             });
             return clone;
         } else if ($.isArray(data)) {
-            var clone = [];
+            clone = [];
             $.each(data, function(index, value) {
                 clone.push(clean_data(value));
             });
@@ -300,7 +303,7 @@ obviel.forms = {};
                 });
             } else {
                 linked_obj.setField(key, '');
-            };
+            }
             return;
         });
     };
@@ -314,11 +317,12 @@ obviel.forms = {};
             if (is_internal(key)) {
                 return;
             }
+            var target_value = null;
             if ($.isPlainObject(source_value)) {
-                var target_value = target[key];
+                target_value = target[key];
                 set_linked_data(source_value, target_value);
             } else if ($.isArray(source_value)) {
-                var target_value = target[key];
+                target_value = target[key];
                 $.each(source_value, function(index, array_value) {
                     var target_array_value = target_value[index];
                     set_linked_data(array_value, target_array_value);
@@ -356,15 +360,16 @@ obviel.forms = {};
         
         var url = self.obj.validation_url;
         // no global validation
+        var defer = null;
         if (url === undefined) {
-            var defer = $.Deferred();
+            defer = $.Deferred();
             defer.resolve();
             return defer.promise();
         }
         var data = self.json_data();
         
         // otherwise do global validation and set errors accordingly
-        var defer = $.ajax({
+        defer = $.ajax({
             type: 'POST',
             url: url,
             data: data,
@@ -427,10 +432,11 @@ obviel.forms = {};
             return;
         }
 
+        var data = null;
         if (!control.no_validation) {
-            var data = self.json_data();
+            data = self.json_data();
         } else {
-            var data = undefined;
+            data = undefined;
         }
         
         var method = control.method || 'POST';
@@ -472,7 +478,7 @@ obviel.forms = {};
         obviel.View.call(this, d); 
     };
 
-    module.Widget.prototype = new obviel.View;
+    module.Widget.prototype = new obviel.View();
     
     module.Widget.prototype.render = function() {
 
@@ -672,7 +678,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.CompositeWidget.prototype = new module.Widget;
+    module.CompositeWidget.prototype = new module.Widget();
 
     module.CompositeWidget.prototype.init = function() {
         this.widget_views = [];
@@ -759,7 +765,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.GroupWidget.prototype = new module.Widget;
+    module.GroupWidget.prototype = new module.Widget();
 
     module.GroupWidget.prototype.init = function() {
         this.widget_views = [];
@@ -855,7 +861,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.RepeatingWidget.prototype = new module.Widget;
+    module.RepeatingWidget.prototype = new module.Widget();
 
     module.RepeatingWidget.prototype.init = function() {
         this.widget_views = [];
@@ -908,7 +914,7 @@ obviel.forms = {};
                 if (widget_view === new_widget_view) {
                     widget_view.cleanup();
                     return;
-                };
+                }
                 new_widget_views.push(widget_view);
             });
             self.widget_views = new_widget_views;
@@ -996,7 +1002,7 @@ obviel.forms = {};
         if (items === undefined) {
             items = data[obj.name] = [];
         }
-        if (error_items == undefined) {
+        if (error_items === undefined) {
             error_items = errors[obj.name] = [];
         }
         if (global_error_items === undefined) {
@@ -1057,7 +1063,7 @@ obviel.forms = {};
         module.Widget.call(this, d);        
     };
 
-    module.InputWidget.prototype = new module.Widget;
+    module.InputWidget.prototype = new module.Widget();
 
     module.InputWidget.prototype.convert = function(value) {
         if (value === '') {
@@ -1098,7 +1104,7 @@ obviel.forms = {};
         module.InputWidget.call(this, d);
     };
 
-    module.TextLineWidget.prototype = new module.InputWidget;
+    module.TextLineWidget.prototype = new module.InputWidget();
 
     module.TextLineWidget.prototype.validate = function(value) {
         var self = this;
@@ -1119,7 +1125,7 @@ obviel.forms = {};
         } else if (obj.validate.max_length &&
                    value.length > obj.validate.max_length) {
             return _('value too long');
-        };
+        }
 
         if (obj.validate.regs) {
             $.each(obj.validate.regs, function(index, reg) {
@@ -1161,7 +1167,7 @@ obviel.forms = {};
         module.TextLineWidget.call(this, d);
     };
 
-    module.TextWidget.prototype = new module.TextLineWidget;
+    module.TextWidget.prototype = new module.TextLineWidget();
     obviel.view(new module.TextWidget());
     
     obviel.iface('integer_field', 'input_field');
@@ -1174,13 +1180,13 @@ obviel.forms = {};
         module.InputWidget.call(this, d);
     };
 
-    module.IntegerWidget.prototype = new module.InputWidget;
+    module.IntegerWidget.prototype = new module.InputWidget();
 
     module.IntegerWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
         }
-        var asint = parseInt(value);
+        var asint = parseInt(value, 10);
         if (isNaN(asint)) {
             return {error: _("not a number")};
         }
@@ -1241,7 +1247,7 @@ obviel.forms = {};
         module.InputWidget.call(this, d);
     };
 
-    module.FloatWidget.prototype = new module.InputWidget;
+    module.FloatWidget.prototype = new module.InputWidget();
 
     module.FloatWidget.prototype.convert = function(value) {
         var self = this;
@@ -1310,7 +1316,7 @@ obviel.forms = {};
         module.InputWidget.call(this, d);
     };
 
-    module.DecimalWidget.prototype = new module.InputWidget;
+    module.DecimalWidget.prototype = new module.InputWidget();
     
     module.DecimalWidget.prototype.convert = function(value) {
         var self = this;
@@ -1376,7 +1382,7 @@ obviel.forms = {};
             after_sep = parts[1];
         } else {
             after_sep = '';
-        };
+        }
 
         if (before_sep.charAt(0) == '-') {
             before_sep = before_sep.slice(1);
@@ -1407,7 +1413,7 @@ obviel.forms = {};
         }
 
         var max_after_sep = obj.validate.max_after_sep;
-        if (max_after_sep != undefined &&
+        if (max_after_sep !== undefined &&
             after_sep.length > max_after_sep) {
             return Gettext.strargs(
                 _('decimal may not contain more than %1 digits after the decimal mark'),
@@ -1437,7 +1443,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.BooleanWidget.prototype = new module.Widget;
+    module.BooleanWidget.prototype = new module.Widget();
 
     module.BooleanWidget.prototype.convert = function(value, source, target) {
         return {value:$(source).is(':checked')};
@@ -1472,7 +1478,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.ChoiceWidget.prototype = new module.Widget;
+    module.ChoiceWidget.prototype = new module.Widget();
 
     module.ChoiceWidget.prototype.render = function(el, widget, name) {
         widget.validate = widget.validate || {};
@@ -1513,7 +1519,7 @@ obviel.forms = {};
         module.Widget.call(this, d);
     };
 
-    module.DisplayWidget.prototype = new module.Widget;
+    module.DisplayWidget.prototype = new module.Widget();
 
     module.DisplayWidget.prototype.convert = function (value) {
         return value;
@@ -1542,7 +1548,7 @@ obviel.forms = {};
         module.DisplayWidget.call(this, d);
     };
 
-    module.HiddenWidget.prototype = new module.DisplayWidget;
+    module.HiddenWidget.prototype = new module.DisplayWidget();
 
     module.HiddenWidget.prototype.convert_back = function (value) { 
         var self = this;
