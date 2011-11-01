@@ -323,6 +323,8 @@ Widgets
 
 .. class:: InputWidget
 
+  iface: ``input_field``
+
   Base class for all widgets based on the ``<input type="text">`` field.
 
   Derives from :class:`Widget`.
@@ -358,6 +360,11 @@ Widgets
 
 .. class:: TextLineWidget
 
+  iface: ``textline_field``
+
+  Lets the user enter a single line of text, in an ``<input
+  type="text">`` widget. Becomes a string in the ``data`` object.
+
   Derives from :class:`InputWidget`.
 
   .. attribute:: validate.min_length
@@ -375,8 +382,245 @@ Widgets
     ``message`` property which is a string. If the input does not
     match ``reg``, ``message`` will be displayed as the error message.
 
-    This allows you to write sophisticated custom validators for
-    user input.
+    This allows you to write regular expression based custom
+    validators for user input.
+
+.. class:: TextWidget
+
+  iface: ``text_field``
+
+  Lets the user enter a multiline text in a ``<textarea>``
+  widget. Becomes a string in the ``data`` object. 
+
+  Derives from :class:`TextLineWidget`.
+
+  .. attribute:: width
+
+    The width of the textarea in em.
+
+  .. attribute:: height
+   
+    The height of the textarea in em.
+
+.. class:: IntegerWidget
+
+  iface: ``integer_field``
+
+  Lets the user enter an integer number. Floating point numbers are
+  not accepted, only integers. Becomes a JavaScript number in the
+  ``data`` object.
+
+  Derives from :class:`InputWidget`.
+
+  .. attribute:: validate.allow_negative
+
+    If ``true``, negative numbers are allowed as input. Defaults to ``false``,
+    not allowing negative numbers.
+
+  .. attribute:: validate.length
+
+   Only allow input to a fixed number of digits given by
+   ``length``. If not set, any amount of digits will be allowed.
+
+.. class:: FloatWidget
+
+  .. iface: ``float_field``
+
+  Lets the user enter a floating point number. Becomes a JavaScript
+  number in the ``data`` object.
+
+  Derives from :class:`InputWidget`.
+
+  .. attribute:: validate.separator
+
+   Define the floating point separator. By default this is the period
+   (``.``), but could be set to ``,`` or something else to suit other
+   locales.
+
+  .. attribute:: validate.allow_negative
+
+    If ``true``, negative numbers are allowed as input. Defaults to ``false``,
+    not allowing negative numbers.
+
+.. class:: DecimalWidget
+
+  iface: ``decimal_field``
+
+  Lets the user enter a decimal number. Becomes a string in the
+  ``data`` object for parsing into a server decimal object.
+
+  Derives from :class:`InputWidget`.
+
+  .. attribute:: validate.separator
+
+   Define the decimal separator. By default this is the period
+   (``.``), but could be set to ``,`` or something else to suit other
+   locales.
+
+  .. attribute:: validate.allow_negative
+
+    If ``true``, negative numbers are allowed as input. Defaults to ``false``,
+    not allowing negative numbers.
+
+  .. attribute:: validate.min_before_sep
+
+    Minimum amount of digits that need to be present before the separator.
+    If omitted, there is no minimum.
+
+  .. attribute:: validate.max_before_sep
+
+    Maximum amount of digits that are allowed to be present before the
+    separator. If omitted, there is no maximum.
+
+  .. attribute:: validate.min_after_sep
+
+    Minimum amount of digits that need to be present after the separator.
+    If omitted, there is no minimum.
+
+  .. attribute:: validate.max_after_sep
+
+    Maximum amount of digits that are allowed to be present after the
+    separator. If omitted, there is no maximum.
+
+.. class:: BooleanWidget
+
+  iface: ``boolean_field``
+
+  Lets the user enter a boolean, ``true`` or ``false`` in a checkbox,
+  using ``<input type="checkbox">``.
+
+  Becomes a JavaScript boolean in the ``data`` object.
+
+  Derives from :class:`Widget`.
+
+.. class:: ChoiceWidget
+
+  iface: ``choice_field``
+
+  Lets the user select a choice from a drop-down box. This uses 
+  ``<input type="select">``.
+
+  Becomes a string in the ``data`` object.
+
+  Derives from :class:`Widget`.
+
+  .. attribute:: empty_option
+
+    The value that will be shown and submitted if the field is not
+    filled in. If not given, the first option in the drop down list will
+    be the default if the field is ``required``.
+
+  .. attribute:: width
+
+    The width of the drop-down box in em.
+
+  .. attribute:: choices
+
+    An array of choices that the user can select. Each entry in the
+    array is an object with a ``value`` and a ``label`` property.
+    The ``value`` will be the value submitted, and the ``label`` will
+    be how this value is represented in the user interface.
+
+.. class:: DisplayWidget
+ 
+  iface: ``display_field``
+
+  This is a display-only field that the user is not allowed to edit. The
+  value will be shown in a ``<span>`` element. 
+
+  The server code is responsible for really forbidding changes
+  to fields represented by display widget.
+
+  Derives from :class:`Widget`.
+  
+.. class:: HiddenWidget
+
+  iface: ``hiden_field``
+
+  This is special form of the display field that will be hidden from 
+  view, represented using ``<input type="hidden">``.
+
+  Derives from :class:`DisplayWidget`
+
+.. class:: DatePickerWidget
+ 
+  iface:: ``datepicker_field``
+
+  This is data input widget which offers picking a date from a
+  calendar. Is represented in ``data`` in the ``yy-mm-dd`` format,
+  where ``yy`` is a four digit year, for example ``2011-10-01``.
+
+  Since this widget depends on jquery-ui for its implementation, it is
+  maintained in a separate field, ``obviel-forms-datepicker.js``,
+  which should be included to be able to use this widget.
+
+  Derives from :class:`TextLineWidget`
+
+  .. attribute:: dateFormat
+
+    The format that the date should be displayed as. Note that 
+    the date will always be saved in ``yy-mm-dd`` format, where
+    ``yy`` is a four-digit year, so for example ``2011-11-01``.
+
+    This follows the rules from jquery-ui's datepicker:
+
+    http://jqueryui.com/demos/datepicker/#option-dateFormat
+
+    http://docs.jquery.com/UI/Datepicker/formatDate
+
+    By default the date format is ``mm/dd/yy``.
+
+  .. attribute:: showOn
+
+    When to show the date picker.
+
+    This follows the rules from jquery-ui's datepicker:
+
+    http://jqueryui.com/demos/datepicker/#option-showOn
+
+    By default the datepicker is shown when the button is clicked.
+
+  .. attribute:: constrainInput
+
+    This follows the rules from jquery-ui's datepicker:
+
+    http://jqueryui.com/demos/datepicker/#option-constrainInput
+
+    By default it is set to ``false``.
+
+.. class:: AutocompleteWidget
+ 
+  iface:: ``autocomplete_field``
+
+  This is a text line input with autocompletion, and can therefore be
+  used like a :class:`ChoiceWidget`. Autocomplete widgets can either
+  include all options directly in the form structure, or supply a
+  server URL on which to look up values to autocomplete. The latter is
+  more scalable if the amount of possible choices is very large.
+
+  Since this widget depends on jquery-ui for its implementation, it is
+  maintained in a separate field, ``obviel-forms-autocomplete.js``,
+  which should be included to be able to use this widget.
+
+  Derives from :class:`TextLineWidget`
+
+  .. attribute:: data
+
+    The autocomplete data. This may either be an array of objects 
+    with properties ``label`` and ``value``, much like the possible
+    values for a :class:`ChoiceWidget`, or it can a string, in which
+    case it is interpreted as a URL.
+
+    If interpreted as a URL, the URL will get either a single
+    ``identifier`` parameter or a combination of a ``term`` and
+    ``limit`` parameters. If a single ``identifier`` parameter,
+    the server should interpret this as a ``value`` and should return
+    the ``label`` that belongs to it. If a ``term`` and a ``limit``
+    parameter, ``term`` is a search term that the server should use
+    to look up matching ``label/value`` pairs, and return them as
+    an array with objects each with a ``label`` and ``value`` property. The
+    limit parameter is used to indicate to the server the maximum amount 
+    of matches the server should return.
 
 Custom widgets
 ++++++++++++++
