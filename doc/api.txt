@@ -58,24 +58,10 @@ Obviel core
   with :func:`view`, but that function also allows creation of a new
   view directly from a settings object.
 
-  If you want to create your own view types that provide more
-  features particular to specific use cases, you should derive your
-  view from the ``View`` class.  One example of this is :class:`Widget`
-  from the Obviel forms library.
-
-  XXX expand with typical settings
-
-.. function:: View.render()
-
-  This function will be called by Obviel when the view is being
-  rendered. It is supplied by the programmer.
-
-.. function:: View.cleanup()
-
-  This function will be called by Obviel when the view is being
-  cleaned up, either explicitly by using :func:`element.unview()`, or
-  implicitly because a new view is being rendered on the same element. It
-  is supplied by the programmer.
+  If you want to create your own view types that provide more features
+  particular to specific use cases, you should derive your view from
+  the ``View`` class.  One example of this is :class:`Widget` from the
+  Obviel forms library.
 
 .. function:: view(view)
 
@@ -130,117 +116,334 @@ View options
 ++++++++++++
 
 Views have a number of options you can pass into them in the
-``settings`` parameter.
+``settings`` parameter when registering a view using :func:`view`.
 
-.. attribute:: iface
+.. class:: view
 
-  The iface (a string) for which the view is registered. The view will
-  only be looked up on objects that provide the given ``iface``.
+  .. attribute:: iface
 
-  While it is optional and defaults to registering the view for all
-  JavaScript objects, you would almost always want to supply an
-  ``iface`` property to a view.
+    The iface (a string) for which the view is registered. The view
+    will only be looked up on objects that provide the given
+    ``iface``.
 
-.. attribute:: name
+    While it is optional and defaults to registering the view for all
+    JavaScript objects, you would almost always want to supply an
+    ``iface`` property to a view.
 
-  The name of the view. It is optional, and defaults to
-  ``default``. The name is used when a view is looked up, along with
-  the iface, but for lookup also the default name is ``default``. The
-  difference between name and iface during lookup that iface is
-  provided from the object being rendered, while the name is provided
-  by the calling code as an argument to ``render``.
+  .. attribute:: name
 
-.. attribute:: render
+    The name of the view. It is optional, and defaults to
+    ``default``. The name is used when a view is looked up, along with
+    the iface, but for lookup also the default name is
+    ``default``. The difference between name and iface during lookup
+    that iface is provided from the object being rendered, while the
+    name is provided by the calling code as an argument to
+    :func:`element.render`.
+
+  .. attribute:: render
  
-  A function which will be added as a method to the view. In it, the
-  developer can refer to ``this.obj`` to access the object the view is
-  rendering, and ``this.el`` to access the jQuery DOM element on which
-  the view is rendering. The ``el`` property is typically manipulated
-  in the ``render`` method to make the view actually do something.
+    A function which will be added as a method to the view. In it, the
+    developer can refer to ``this.obj`` to access the object the view
+    is rendering, and ``this.el`` to access the jQuery DOM element on
+    which the view is rendering. The ``el`` property is typically
+    manipulated in the ``render`` method to make the view actually do
+    something.
 
-  Supplying a ``render`` method is optional.
+    Supplying a ``render`` method is optional.
 
-.. attribute:: cleanup
+  .. attribute:: cleanup
 
-  An optional cleanup function which will be called when the
-  (non-ephemeral) view is being cleaned up from the element it was
-  rendered on, either explicitly because :func:`element.unview` was
-  called on it, or implicitly because something else is being 
-  rendered on the element.
+    An optional cleanup function which will be called when the
+    (non-ephemeral) view is being cleaned up from the element it was
+    rendered on, either explicitly because :func:`element.unview` was
+    called on it, or implicitly because something else is being
+    rendered on the element.
 
-.. attribute:: ephemeral
+  .. attribute:: ephemeral
 
-  A boolean value. By default it is ``false``. If set to ``true``,
-  the view will not be associated with the element. This is useful for 
-  views that are not really associated with the DOM, such as popup
-  messages or views that redirect to other views.
+    A boolean value. By default it is ``false``. If set to ``true``,
+    the view will not be associated with the element. This is useful
+    for views that are not really associated with the DOM, such as
+    popup messages or views that redirect to other views.
 
-.. attribute:: html
-
-  A string with a snippet of HTML that should be inserted into the DOM
-  upon rendering. This will be done before any :func:`View.render()`
-  function is called.
-
-  This property is optional, and by default there will be no HTML snippet
-  insertion.
-
-.. attribute:: html_url
+  .. attribute:: html
  
-  A string with a URL to a resource with a HTML snippet in it. This
-  HTML snippet will be loaded if the URL has not been previously seen,
-  otherwise it is retrieved from a cache. The HTML snippet is
-  inserted into the DOM as with :attr:`html`.
+    A string with a snippet of HTML that should be inserted into the
+    DOM upon rendering. This will be done before any
+    :func:`view.render` function is called.
 
-  This property is optional.
+    This property is optional, and by default there will be no HTML
+    snippet insertion.
 
-.. attribute:: jsont
-
-  A string with a JSON template. The template is rendered with the
-  object being rendered as the context, and the resulting HTML snippet
-  is inserted into the DOM as with :attr:`html`.
+  .. attribute:: html_url
  
-  This property is optional.
+    A string with a URL to a resource with a HTML snippet in it. This
+    HTML snippet will be loaded if the URL has not been previously
+    seen, otherwise it is retrieved from a cache. The HTML snippet is
+    inserted into the DOM as with :attr:`html`.
 
-.. attribute:: jsont_url
+    This property is optional.
 
-  A URL referencing a resource that is a JSON template. This
-  template will be loaded if the URL has not been previously seen,
-  otherwise it is retrieved from a cache. The HTML snippets that
-  results from rendering the template will be inserted into the DOM
-  as with :attr:`html`.
+  .. attribute:: jsont
 
-  This property is optional.
-
-.. attribute:: subviews
-
-  A JavaScript object literal describing subviews of this view.  Each
-  property name define a jQuery selector that will be issued on the
-  element being rendered by the outer view that is being rendered. The
-  resulting elements will be have the sub view rendered on them. The
-  property value identifies a property on the model object that is
-  being rendered. This property is accessed: if it is a sub object, it
-  will be rendered directly. If it is a string, this string is
-  interpreted as a URL identifying the object to be rendered, as with
-  :func:`element.render`.
-
-  To render a named subview, use a property value that is an array
-  instead: the first item is interpreted as the property name
-  identifying the subobject or URL to be rendered, and the second item
-  is the view name to use to look up the subview.
-
-.. attribute:: events
-
-  a JavaScript object literal describing event handlers to hook up 
-  for this view. Each property name is the name of the event, such as
-  ``click``. The property value is either a function or a string. 
-
-  If it is a function, this function is the event handler. It will
-  receive a single parameter that is the event. The event object has a
-  ``view`` property that you can use to access the view that issued
-  the event.
-
-  If it is a string, this is used to identify a method of the view
-  that is the event handler. This method also receives a parameter
-  ``ev`` that has a ``view`` property, but the view can in this case
-  also be accessed as ``this``.
+    A string with a JSON template. The template is rendered with the
+    object being rendered as the context, and the resulting HTML
+    snippet is inserted into the DOM as with :attr:`html`.
  
+    This property is optional.
+
+  .. attribute:: jsont_url
+
+    A URL referencing a resource that is a JSON template. This
+    template will be loaded if the URL has not been previously seen,
+    otherwise it is retrieved from a cache. The HTML snippets that
+    results from rendering the template will be inserted into the DOM
+    as with :attr:`html`.
+
+    This property is optional.
+
+  .. attribute:: subviews
+
+    A JavaScript object literal describing subviews of this view.
+    Each property name define a jQuery selector that will be issued on
+    the element being rendered by the outer view that is being
+    rendered. The resulting elements will be have the sub view
+    rendered on them. The property value identifies a property on the
+    model object that is being rendered. This property is accessed: if
+    it is a sub object, it will be rendered directly. If it is a
+    string, this string is interpreted as a URL identifying the object
+    to be rendered, as with :func:`element.render`.
+
+    To render a named subview, use a property value that is an array
+    instead: the first item is interpreted as the property name
+    identifying the subobject or URL to be rendered, and the second
+    item is the view name to use to look up the subview.
+
+  .. attribute:: events
+
+    A JavaScript object literal describing event handlers to hook up
+    for this view. Each property name is the name of the event, such
+    as ``click``. The property value is either a function or a string.
+
+    If it is a function, this function is the event handler. It will
+    receive a single parameter that is the event. The event object has
+    a ``view`` property that you can use to access the view that
+    issued the event.
+
+    If it is a string, this is used to identify a method of the view
+    that is the event handler. This method also receives a parameter
+    ``ev`` that has a ``view`` property, but the view can in this case
+    also be accessed as ``this``.
+
+Obviel forms
+============
+
+A form structure is normally returned from the server-side. It should
+have iface ``viewform``.
+
+Form options
+++++++++++++
+
+.. class:: viewform
+
+  .. attribute:: widgets 
+
+    An array of form widget objects.
+
+  .. attribute:: controls
+
+    An array of form control objects. Defaults to an empty array.
+
+  .. attribute:: data
+
+    The object representing the form contents. Defaults to the empty
+    object and is maintained by the form.
+
+  .. attribute:: disabled
+ 
+    A boolean. If ``true``, the whole form is rendered in a disabled
+    state and cannot be submitted.
+
+  .. attribute:: validation_url
+
+    A URL to do global validation on. Submitted to this URL will be
+    the form's ``data`` object (as JSON). The server needs to decode
+    this JSON object and do validation on it. The server returns a
+    data structure (as JSON) with the same structure as what was
+    submitted, with the values replaced by error messages (or left
+    out). The minimum object a global validator needs to return is the
+    empty (``{}``) object. This object will be placed in the
+    ``global_errors`` attribute of the form.
+
+  .. attribute:: errors
+
+    The object representing the error messages currently visible in the
+    form. If this object is not empty, form submission will not proceed.
+
+    This defaults to the empty object and is maintained by the form.
+
+  .. attribute:: global_errors
+
+    The object representing server-generated error messages currently
+    visible in the form. If this object is not empty, form submission
+    will not proceed.
+ 
+    This defaults to the empty object and is maintained by the form.
+
+Widgets
++++++++
+
+.. class:: Widget
+
+  .. attribute:: name
+  
+    The internal name of the widget. This will be the name of the property
+    under which the inputted value will be stored in the ``data`` object.
+
+    This must therefore be a valid avaScript property name.
+
+  .. attribute:: title
+
+    The label that will be shown for the widget in the user interface.
+
+  .. attribute:: description
+  
+    A longer description of the widget that will be shown in the user
+    interface. May be omitted.
+
+  .. attribute:: validate
+  
+    A sub-object describing how this widget is to be validated. Validation
+    properties differ per widget.
+
+  .. attribute:: validate.defaultvalue
+
+    The default value that should be shown in the widget if no
+    specific value is available in the ``data`` object.
+
+.. class:: InputWidget
+
+  Base class for all widgets based on the ``<input type="text">`` field.
+
+  Derives from :class:`Widget`.
+
+  .. attribute:: width
+
+    Width of the field in em. By default there is no explicit width
+    and the system uses the browser-defined default width of the input
+    field.
+
+  .. attribute:: max_length
+
+    The maximum length that may be entered into this widget by the
+    user.  This is a physical limitation in the browser, not a
+    validation limitation. By default there is no max length.
+
+  .. attribute:: disabled
+
+    Render the widget as disabled and allow no input. By default,
+    disabled is ``false``.
+
+  .. attribute:: validate.required
+
+    This widget is required: a value must be entered by the user
+    before the form can be submitted. By default, widgets are not
+    required.
+
+    Example::
+
+      validate: {
+        required: true
+      }
+
+.. class:: TextLineWidget
+
+  Derives from :class:`InputWidget`.
+
+  .. attribute:: validate.min_length
+
+    The minimum input length in characters allowed.
+
+  .. attribute:: validate.max_length
+  
+    The maximum input length in characters allowed.
+
+  .. attribute:: validate.regs
+
+    An array of zero or more objects. Each object must have a ``reg``
+    property which is a JavaScript style regular expression, and a
+    ``message`` property which is a string. If the input does not
+    match ``reg``, ``message`` will be displayed as the error message.
+
+    This allows you to write sophisticated custom validators for
+    user input.
+
+Custom widgets
+++++++++++++++
+
+Custom widgets will need to subclass ..:class:`InputWidget` and
+provide some methods. This is the typical pattern::
+
+  obviel.iface('custom_field', 'input_field')
+
+  // constructor
+  module.CustomWidget = function(settings) {
+     settings = settings || {};
+     var d = {
+         iface: 'custom_field' // set up iface
+     };
+     $.extend(d, settings);
+     module.InputWidget.call(this, d); // call superclass
+  }; 
+
+  // set up inheritance
+  module.CustomWidget.prototype = new module.InputWidget(); 
+
+  module.CustomWidget.prototype.validate = function(value) {
+    // use inherited validate function first
+    var error = module.InputWidget.prototype.validate.call(this, value);
+    // if we have an error in inherited validation, we are done, return
+    // that error
+    if (error !== undefined) {
+        return error;
+    }
+    // custom validation goes here, either do: return undefined (or
+    // plain bare return) or return error message
+    return undefined;
+  }
+
+  // convert function is necessary if we convert to non-String JavaScript
+  // value. Can also be used for strings even if we don't convert 
+  // away from it, for instance to check whether a date string is really
+  // parseable at all, and to format it to a common format if so.
+  // in addition convert and its pair convert_back can be used to update
+  // the browser DOM in more complex ways than the default implementation
+  // allows.
+  module.CustomWidget.prototype.convert = function(value) {
+    // convert the empty input to null, so that validation for
+    // required can do its work
+    if (value === '') {
+        // return an object with a ``value`` property with the converted value.
+        return {value: null};
+    }
+    // try to interpret the input as the value type we want
+    var asint = parseInt(value, 10);
+    // if the interpretation did not succeed, return an object
+    // with an ``error`` property with the error message.
+    if (isNan(asint)) {
+        return {error: 'not a number'};
+    }
+    // return an object with a ``value`` property with the converted value.
+    return {value: asint};
+  }
+
+  // convert a JavaScript representation back into the widget representation
+  // (typically a string)
+  module.CustomWidget.prototype.convert_back = function(value) {
+    // super call
+    value = module.InputWidget.prototype.convert_back.call(this, value);
+    return value.toString();
+  }
+
+  // finally register the widget as a view with Obviel
+  obviel.view(new module.CustomWidget());  
