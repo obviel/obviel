@@ -84,13 +84,13 @@ first create a special coverage-analysis copy of the Obviel project directory.
 If your Obviel project directory is called ``obviel``, change directory
 above it and type this::
 
-$ jscoverage obviel obviel-cov
+  $ jscoverage obviel obviel-cov
 
 Then go to obviel-cov and start a web server::
 
-$ python -m SimpleHTTPServer
+  $ python -m SimpleHTTPServer
 
-Now go to the special coverage analysis page::
+Now go to the special coverage analysis page:
 
 http://localhost:8000/jscoverage.html
 
