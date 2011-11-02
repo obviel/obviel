@@ -4,21 +4,75 @@ Obviel: Object/View/Element for JavaScript
 Obviel is a model/view abstraction for JavaScripts that helps
 you improve the structure of your jQuery-based JavaScript applications.
 
-Obviel features:
+What is Obviel all about?
 
-* JSON-centric.
+JSON-centric
+------------
 
-* versatile but unobtrustive.
+Obviel builds on JSON. Without insanely nested callback functions
+everywhere!
 
-* supports true REST development patterns.
+Versatile but unobtrustive
+--------------------------
 
-* loose coupling between client code and server code.
+Obviel is powerful. Obviel is also small. If you already know jQuery,
+you just have to learn about Obviel's ``render`` method and you will
+be almost there already!
 
-* client-side templating integration.
+Supports true REST development patterns
+---------------------------------------
 
-* powerful client-side form library.
+We don't just say that REST is cool and go through the motions. An
+Obviel-based app can start with a single URL and find out about the
+rest of your application's URLs by following hyperlinks in JSON. And
+that's RESTful.
 
-Curious? Want to know more? Go on to the :doc:`introduction <intro>`
-or view the :doc:`table of contents <toc>`.
+Loose coupling between client code and server code
+--------------------------------------------------
 
+Because of REST, your server and client code become loosely
+coupled. Imagine changing your server code and having your client UI
+adjust itself without changing a line on the client? With a
+well-designed Obviel app, this is often possible!
 
+Client-side templating
+----------------------
+
+If you're going to build a rich client-side application, why not use a
+client-side templating engine? Obviel supports JSON Template out of the
+box and allows you to integrate others.
+
+Form library
+------------
+
+Besides Obviel core, we also include a powerful client-side form
+library based on Obviel core. Describe your form using JSON
+structures. Get your form data as JSON. Use composite and repeating
+fields with ease!
+
+Download Obviel
+---------------
+
+`Download`_ Obviel here!
+
+.. _`Download`: http://bitbucket.org/obviel/obviel/downloads
+
+Learning more
+-------------
+
+Obviel has extensive documentation.
+
+Look at a quick overview of :doc:`Obviel features <features>`
+
+Read the :doc:`Obviel core manual <manual>`.
+
+Read about :doc:`Obviel forms <form>`
+
+We also have :doc:`API documentation <api>`.
+
+Questions? Comments? Join the :doc:`Obviel community <community>`!
+
+Want to hack on Obviel? Here are some useful :doc:`notes on
+development <development>`.
+
+Review the :doc:`table of contents <toc>`.

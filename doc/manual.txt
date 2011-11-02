@@ -172,13 +172,11 @@ The steps taken are:
 View lookup
 -----------
 
-XXX this seems partially redundant with the above section
-
-Dynamic view lookup is what what allows loose coupling between client
-and server. The primary mechanism of lookup is by the ``iface`` marker
-on the model. A model can declare with an iface what kind of model it
-is, and this way a view can declare what kind of model it is
-associated with.
+Dynamic view lookup is what allows loose coupling between client and
+server. The primary mechanism of lookup is by the ``iface`` marker on
+the model. A model can declare with an iface what kind of model it is,
+and this way a view can declare what kind of model it is associated
+with.
 
 An ``iface`` is in essence just a string marker::
 
@@ -222,6 +220,25 @@ will render like this::
 
   The animal is golden
 
+What if we want to make an exception for elephants, though? We can do
+that too, by registering another view for the ``elephant`` iface and
+using that instead::
+
+  var elephant = {
+    ifaces: ['elephant'],
+    color: 'grey'
+  };
+
+  obviel.view({
+     iface: 'elephant',
+     render: function() {
+       this.el.text('This very big animal is ' + this.obj.color);
+     };
+  });
+
+Now if we were to render a list of animals, and one of them happened to
+be an elephant, we'll see that the exception for elephant will be used.
+
 In some cases an iface is not enough, and you can further distinguish
 views by name. The name is really only needed when you want to
 have different ways of rendering the same object (or URL), perhaps
@@ -239,11 +256,11 @@ example::
 This named view can be explicitly invoked by passing its name as
 a second argument to the ``render`` function::
 
-  $('#animal').render(elephant, 'alternate');
+  $('#animal').render(lion, 'alternate');
 
 will result in::
   
-  Color of animal is: grey
+  Color of animal is: golden
 
 As said before, names are optional, and aren't used very often. By
 default the name is ``default``.
@@ -255,8 +272,8 @@ you register a fallback view for all objects.
 Note that the model property name is ``ifaces`` while the view
 property name is ``iface``. The idea is that a model may have more
 descriptions of what the data is, but a view only knows how to render
-one type of data - but may be a cause of errors that is easy to
-overlook.
+one type of data. (but may be a cause of errors that is easy to
+overlook, so we're looking into changing this)
 
 Properties available on views
 -----------------------------
@@ -826,9 +843,68 @@ been rendered.
 Bootstrapping Obviel
 --------------------
 
-XXX app url discussion, how to inject app_url
+Obviel can start working with just a single URL; two if you need
+templates or HTML snippets. All the other URLs in the application it
+can access by following hyperlinks in JSON.
 
-XXX template url discussion
+This is an example of Obviel bootstrapping code in your application::
+
+  $(document).ready(function() {
+    $('#main').render(app_url);
+  });
+
+This renders the object at ``app_url`` when the DOM is ready, and will
+render it into the HTML element identified with the ``main`` id.
+
+We call the object referred to by ``app_url`` the *root object*.  The
+root object should include hyperlinks to other objects in your
+application, which it will then in turn render as sub-objects.
+
+The question remains how to actually set app_url in your
+application. It is a URL that will be dependent on how your
+application is installed.
+
+One way to do it is to exploit your web framework's server-side templating
+system, and set it in a ``<script>`` element somewhere in your web page::
+
+  <script type="text/javascript">
+     var app_url = "[the app url goes here using a template directive]";
+  </script>
+
+Another way is to include a separate JavaScript file that you dynamically
+generate, that only sets app_url::
+
+  var app_url = "[the app url goes here, using server-side programming]";
+
+There is a second URL that is handy to include using one of these
+methods as well: ``template_url``. This is the URL that identifies
+your template (or HTML snippet) directory. It could for instance look
+like this::
+
+  http://example.com/templates/
+
+Note how it ends with a forward slash (``/``).
+
+Once ``template_url`` is available, your views can refer to individual
+templates like this::
+
+  v.view({
+     html_url: template_url + 'some_snippet.html'
+  });
+
+You can set up ``template_url`` in the same way you set up
+``app_url``, though there is one extra requirement: ``template_url``
+must be known *before* any Obviel views are registered, whereas
+``app_url`` only needs to be known when the DOM is ready. If you are
+going to set ``template_url`` it is therefore important to do this
+early, in a ``<script>`` tag that comes before the ``<script>`` tag
+that includes your code that registers views. For example::
+
+  <script type="text/javascript">
+     var template_url = "http://example.com/templates/";
+     var app_url = "http://example.com/app_root";
+  </script>
+  <script type="text/javascript" src="http://example.com/obviel_app.js"></script>
 
 Element Association
 -------------------

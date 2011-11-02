@@ -1,380 +1,201 @@
-The forms library
-=================
-
-XXX this document was written before the forms lib existed, and reflects early
-thoughts - I'm currently re-writing to reflect the actual current
-implementation.
+Obviel Forms
+============
 
 Introduction
 ------------
 
-A web form is a user interface for modifying an object. This object may be new,
-or retrieved from some place, such as the server.
+Obviel forms are a way to create web forms. Obviel forms are
+interactive and allow you to create complex forms with ease.
 
-When the user is done modifying the object through the form, the user
-issues a submit. The submit handling code can then do things with the
-object, such as sending it to the server.
+HTML forms
+----------
 
-Each widget in the form is linked to an attribute of the object. A
-link may convert the form data. As a simple example, a text input
-field value might be converted to an integer in the object.
+It is instructive to briefly examine HTML forms and patterns involving
+them, before we dive into the details of Obviel forms and how these
+patterns are implemented.
 
-Conversion may also fail: some text cannot be converted to integers,
-for instance. If conversion fails, the failure is reported to a
-callback, so that the user interface can respond, for instance by
-displaying an error message.
+A HTML form consists of a HTML ``form`` element. Inside the form
+element are various ``input``, ``textarea`` and ``select`` elements
+describing the fields of the form that the user can fill in. In
+addition there are one or more ``button`` or submit ``input`` elements
+that let the user submit the form, or cancel the submission. More
+complex JavaScript asssisted input widgets may also exist, for
+instance to allow the user to enter a date.
 
-After conversion, there is a validation step. Conversion makes sure
-that the value is converted to the correct format/type, but validation
-makes sure that this value is indeed correct (within range, not too
-long, etc).
+When the form is submitted, it is sent to a particular URL, identified
+with the ``action`` attribute on the ``form`` tag. This initiates a
+form submission. The entered data are encoded, either in the URL if
+the form is submitted with a ``GET`` request, or in a form data format
+when doing a ``POST`` submission.
 
-Conversion and validation are immediate: you do not have to wait until
-submission.
+The web server software or web framework on the server side that you
+use knows how to decode the form data, and then hands it to your
+application in some way, to take an action: for instance to add a
+record to a database.
 
-There is also an *object validation* when the user submits. Where the
-above validation was on the individual form field level, object
-validation determines whether an entire object is ready to be
-submitted. This is the stage where validation for missing required
-object attributes happens, attributes with inter-dependent
-values can also be validated at this stage.
+When browser submits a form to the action URL, the action URL also
+sends back a HTML response, which the browser then displays. This can
+contain the results of the form processing.
 
-A form description
-------------------
-
-The above describes part of a form framework, it does not handle the
-*construction* of the form yet though - it is often convenient that a
-form can be constructed automatically based on a simple description.
-In addition, it is inconvenient to have to write a lot of custom
-converters and validators by hand. 
-
-We have therefore defined a form description language here, which we used
-for the other part of our framework, form construction. To make it
-convenient for web development, it's been designed to be expressed
-as JSON.
-
-Let's start with a simple field where the user can enter a value from
-0 to 100::
-
-  {
-    ifaces: ['integer_field'],
-    name: "value",
-    title: "Value",
-    description: "A value from 0 to 100",
-    defaultvalue: null, // XXX used to be 'default', but that's a keyword :)
-    link: 'value',
-    validator: {
-      min_value: 0,
-      max_value: 100
-    }
-  }
-
-The field is an 'integer_field' field. This indicates to the form
-rendering system how to display the form, and indicates to the
-conversion system how to convert and validate the field.
-
-It has a name, which is the internal name the field will use, a title,
-which is the display name of the field, and a description, which is an
-optional long display name for the field (that may for instance appear
-on hover, or in a separate section of the UI. It also has a default
-value (null, meaning empty), and a link, which links it to an
-attribute of the object that the form represents. By default, 'link' is
-the same as 'name'.
-
-There are also a set of validator arguments, which are optional. By
-default, the validator offer no restrictions (no validator).
-
-Form definition attributes
---------------------------
-
-The formviews system expects a structure with a ``data`` attribute that points
-to the data object to save to, and a ``form`` one that points to the actual
-form definition. On initialization, the ``form`` attribute is used to build
-a form, and links are made from the form fields to the data object. Note that
-the system creates a new object if ``data`` is null or not provided.
-
-A form structure can have the following attributes:
-
-* method
-
-  the HTTP request method to use, defaults to POST
-
-* disabled
-
-  if set to true, all widgets in the form are disabled, rendering the form
-  as read-only, of course this is false by default
-
-* widgets
-
-  a list of widget definitions, optional (though either ``widgets`` or
-  ``groups`` (see below) must be provided) - for information about what
-  widgets are available and how to define new ones, see below
-
-* groups
-
-  a list of group definitions, each of which have the following keys:
-
-    - ``name``, the name of the group, used to generate ids in the HTML
-    - ``title``, a title of the group, if provided a legend tag is rendered
-      with its value as contents
-    - ``widgets``, a list of widget definitions, see below for more information
-
-* controls
-
-  a list of form controls structures, see the section ``form.controls`` for
-  more information
-
-widget types
-------------
-
-The following field ifaces are defined in the 'core' of the framework, the
-``formviews`` module (forms.js):
-
-* viewformwidget
-
-  This is the base iface for all views, and renders as a simple text input
-  field. Options to the widget are::
-  
-   - ``name``, the widget name
-   - ``title``, the widget title (may contain markup)
-   - ``description``, a text description (may contain markup)
-   - ``link``, the name of the object attribute to link to
-   - ``defaultvalue``, the initial value for the field on rendering with an
-     object that does not contain an explicit value for the field (usually
-     for 'add forms')
-   - ``width``, the rendering width
-   - ``height``, the rendering height
-   - ``validate``, a structure that may in turn contain
-     ~ ``max_length``, the maximum number of characters entered into the
-       field
-     ~ ``min_length``, the minimum number of characters entered into the
-       field
-     ~ ``required``, whether a value must be added to the field, if this
-       is set to false empty fields will result in a null value getting
-       saved on the object
-   - ``disabled``, a boolean that's used to determine whether the field
-     should be (rendered as) disabled
-   - ``regs``, a list of structures used for regular expression validation,
-     with keys:
-     ~ ``reg``, a regular expression against which the widget value is
-       matched on change
-     ~ ``message``, an error message that is displayed when the reg doesn't
-       match
-
-  XXX errors
-
-* textline_field
-
-  This is merely an additional iface for ``viewformwidget``, and has no
-  actual implementation - using this iface will render the base text input
-  as described above (though do not use ``viewformwidget`` as iface for a
-  field, this is not only conceptually wrong but in the future this behaviour
-  may change!). It allows the same options as ``viewformwidget``.
-
-* text_field
-
-  Renders as a textarea, but apart from that it behaves exactly like the
-  textline_field described above.
-
-* integer_field
-
-  Same as texline_field, but it validates only if the value entered is of
-  an integer type, and allows for some additional options:
-
-    - ``validate`` allows for additional options:
-      ~ ``allow_negative``, set to true to allow negative values, false by
-        default
-      ~ ``length``, this basically sets min_length and max_length to the
-        same value, so the input value must contain exactly length characters
-
-* float_field
-
-  Similar to integer_field, though it allows floats as value, and saves values
-  to the object as float. In addition to the options of textline_field,
-  though, it allows the following options:
-
-    - ``validate`` allows for additional options:
-      ~ ``separator``, what separator the user is allowed to use, defaults to
-        '.'
-      ~ ``allow_negative``, set to true to allow negative values, false by
-        default
-
-* decimal_field
-
-  Very similar to float_field, but it converts the value to a string
-  containing a decimal value with digits separated by a dot. This makes it
-  more suitable to deal with things like money, or in situations where float
-  conversions must not happen. In addition to those of textline_field, it
-  allows the following options:
-
-    - ``validate`` allows for additional options:
-      ~ ``separator``, what separator the user is allowed to use, defaults to
-        '.'
-      ~ ``min_before_sep``, the minimum number of digits before the
-        separator
-      ~ ``max_before_sep``, the maximum number of digits before the
-        separator
-      ~ ``min_after_sep``, the minimum number of digits after the
-        separator
-      ~ ``max_after_sep``, the maximum number of digits after the
-        separator
-
-* choice_field
-
-  A field that allows a user to choose from a list of values, rendered as
-  a select tag with options. It supports the following options in addition
-  to those of textline_field:
-
-    - ``choices``, a list of structures with keys ``label`` for the label
-      and ``value`` for the value
-    - ``empty_option``, the label of an empty option, if validate.required
-      is false and empty_option is not provided, '' is used
-
-* boolean_field
-
-  A field that allows selecting a single choice (on/off basically), rendered
-  as a checkbox. This supports the following additional options:
-
-    - ``label_before_input``, set to true to have the label rendered before the
-      checkbox, defaults to false, which causes the label to get rendered after
-      it
-
-form.controls
+Form patterns
 -------------
 
-One of the options to control what controls are displayed is by providing an
-array (us python devs call 'em 'lists') of associative arrays (aka 'dicts') as
-attribute 'controls' on either the view instance (config on view instantiation)
-or the context object (context.form.controls). The dicts in this list may have
-the following keys:
+Form handling in an application tends to follow certain
+patterns. We'll discuss some of these patterns and their traditional
+implementation here.
 
-  * name - the input/button name
+Add forms and edit forms
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-    optional, if not provided no 'name' is set on the input
+An add form is used to add new information to the application: a blog
+entry, someone's address, or whatever else is relevant to the
+application domain. Add forms are empty when they are displayed first:
+its fields are either empty or have a default value in them that the
+user can alter.
 
-  * value - the input/button value
+An edit form is used to change existing information in the
+application: change a blog entry, modify your user account data, and
+so on. Edit forms are shown filled-in when you open them: the fields
+show the information that you are about to change, and allows you to
+modify them.
 
-    optional, if not provided no 'value' is set on the input
+Conversion and validation
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * id - the id to use for the form element, optional
+When a form is submitted, a form needs to be *validated*: for instance
+checking whether a number is in range, or a text input is not too
+long, or a list is one of several allowed values. A very common
+validation is to make sure a required value was filled in at all.
 
-  * class - the class name to use for the form element, optional
+When a form is submitted, form data also needs to be *converted*: for
+instance, numbers are inputed as text strings, and need to be
+converted to actual numbers that the underlying application can deal
+with. A checkbox may be turned into a true/false value, and a date
+string needs to be parsed into a date object. Conversion needs to take
+place before validation can take place.
 
-  * type - the input type
+Conversion and validation can be client-side or server-side.
 
-    optional, defaults to 'submit', this is used along with 'action' below
-    to determine what the button does. if 'type' equals 'submit' the form
-    is submitted to the button action (which must be a url in this case) if
-    provided, else to the action of the form, if it is 'reset' the action of
-    the button is ignored and the button functions as a plain reset button,
-    if it is 'button' the action should be either a url or a structure, and
-    clicking the button causes the action to be rendered on the form element
-    (using views.render() if action is a structure, views.renderURL() if the
-    action is a string)
+Client-side validation, typically in JavaScript, lets the form give
+instant feedback to the user that is fillin in the form, before the
+user even submits the form. This increases the usability of the form,
+as the user does not need to wait for a relatively long submit/reload
+cycle in order to get this information. Client-side validation does
+not ensure that the user really inputs the allowed information
+however.
 
-  * action - the submit action of the button
+Server-side validation has the benefit of being secure: the server can
+validate that the data entered by the client is really allowed by the
+application. This is important especially if the web application faces
+the public.
 
-    what to do when the button is clicked, this is ignored if the button is
-    of type 'reset', optional if the type is 'submit' (with the form action
-    as fallback, either one needs to be provided in case of a submit button)
-    and if provided it should be a string in that case, and it is mandatory
-    in case the button is of type 'button', in which case it should either be
-    a URL (string) to a viewable structure, or a viewable structure itself,
-    in this case clicking the button will cause the viewable structure to be
-    displayed using the views mechanism
+A traditional pattern of doing HTML forms is doing no client-side
+validation at all except for what is offered by bare HTML, and doing
+all the validation on the server. To display validation errors a
+round-trip procedure is required, where the whole form is submitted to
+the server. If conversion or validation failed, the whole form is
+shown again showing validation errors, along with any values the user
+previously filled in.
 
-  * action_name - the view name to use for the submit action result
+Nesting and repeating fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    this can be used to customize what view is used for the action structure
-    (in addition to the structure's iface, of course)
+Advanced form patterns involve *composite* and *repeating* fields. A
+composite field is a field composed out of other fields. An example of
+a composite field is a date field that consists of three fields
+allowing you to enter the year, month and day separately from each
+other. A repeating field is a field where a list of values (sub-forms)
+needs to be entered. A form where you enter the crew of a ship for
+instance should allow you to enter more than one crew member, adding
+as many as you need.
 
-form.controls examples
-----------------------
+In a form system without client-side code, a repeating field requires
+a complicated round-trip with the server. The server needs to have a
+sophisticated system for decoding nested data structures from the flat
+HTML form-data that's been submitted by the client, and also a system
+for generating nested forms.
 
-Some small examples of the form.controls feature (note that we render form
-structures directly, while usually they will come from the server)::
+How Obviel deals with forms
+---------------------------
 
-  el.render({
+Obviel does several things differently:
+
+* the form description is in JSON
+
+* the form contents is maintained as a JSON object by the client
+
+* the form content JSON is submitted to the server using an AJAX
+  request.
+
+Let's look at an example first. 
+
+Here is an Obviel form::
+
+  {
     ifaces: ['viewform'],
-    data: null,
     form: {
-        action: '/foo',
-        widgets: [ ... ],
-        controls: [
-            // submit button that displays 'save', clicking it will cause
-            // a POST of the context object to /foo (form action)
-            {type: 'submit',
-                value: 'Save'
-            },
-            // a submit that causes the form context to be posted to /bar
-            {type: 'submit',
-                value: 'Save to bar',
-                action: '/bar'
-            },
-            // a button that causes the form data to be ignored and the
-            // provided context object to be rendered on the element on which
-            // the form view is rendered
-            {type: 'button',
-                value: 'View something',
-                action: {ifaces: ['foo'], spam: 'eggs'}
-            },
-            // plain form reset button
-            {type: 'button',
-                value: 'Reset form'
-            }
-        ]
+      widgets: [
+        ifaces: ['textline_field'],
+        name: 'test',
+        title: 'Test',
+        validate: {
+           required: true
+        }
+      ],
+      controls: [
+        {
+           'label': 'Submit',
+           'action': 'http://example.com/submit'
+        }
+      ]
+    },
+    data: {
+      'test': 'Some value'
     }
-  });
+  }
+  
+If this JSON is assigned to an object ``form`` in JavaScript, this is how
+we would render this form in an element somewhere on the page::
 
-form.controls notes
--------------------
+  el.render(form);
 
-* providing form.controls overrides both form.submitname/form.submitvalue and
-  form.controlshtml, the library only generates controls for forms that do not
-  have form.controls defined
+The form would have one field, ``test``, with the value ``Some value``
+filled in (from the ``data`` object). The form would also have a
+submit button labeled ``Submit``.
 
-* it is not clear what to do when form.controls does not contain a submit
-  button definition, do we add it automagically, and if so, where? or do we
-  assume the form should perhaps not have a submit button for some reason?
-  currently we don't do anything
+When the user changes the form, the ``data`` object will be
+automatically updated.
 
-* it is not clear how this cooperates with form.disabled, do we hide any of
-  the buttons, or do we assume that the server deals with this correctly?
+The ``test`` field is required. This means that a validation error
+will appear inline if the user attempts to submit the form without
+filling in this field, and submission will not proceed. Validation is
+handled on the client side. 
 
-Error views
------------
+Conversion is also performed partially on the client-side: an
+``integer_field`` will convert to a JavaScript number for instance,
+and a ``boolean_field`` to a JavaScript ``true`` or ``false`` value.
 
-XXX
+Further conversion and validation can be performed on the server-side.
+Conversion is done to cast a value into one more convenient for the
+server-side: a date string may be converted into a date object, for
+instance. Validation after form submission on the server side is
+entirely restricted to validation for security purposes and not used
+for feedback purposes: is the JSON structure received actually
+legitimate considering the constraints of the form? In that case there
+is either an attempted security breach or an error, and server side
+form handling should not proceed. Since these situations should not
+occur in normal usage, there is no mechanism for server-side
+validation error reporting. (A mechanism for server-assisted
+client-side inline validation is however provided: a form may have a
+global validation URL that will validate the ``data`` object and
+return validation errors for it in a JSON structure. This information
+is then used by the client to supplement the inline validation
+procedure)
 
-Events
-------
+When the user presses the submit button on the form, the ``data``
+object will be submitted as JSON to the control's ``action`` URL, in
+this case ``http://example.com/submit``.
 
-XXX
-
-Implementation notes
---------------------
-
-The jquery data linking (beware, needs jquery 1.4.3 pre/beta) API
-should take care of most of the linking concerns. Converters are also
-supported, but I'm not sure how we can hook in conversion failure and
-validation messages; probably by cleverly constructing converter
-functions on the fly.
-
-http://api.jquery.com/link/
-
-Issues
-------
-
-XXX 'field' is a shorthand for 'ifaces', so this is really a context
-for a view. Maybe also we want to allow an alias 'iface' which is
-checked if 'ifaces' is missing for a single value.
-
-XXX need way to send validation failures to message generation system
-and/or include messages themselves in description.
-
-XXX we need a story for nested objects as well as nested repeating
-objects (arrays). Not necessary for this project perhaps, but would
-be very cool to have. Thinking about sub-forms and such.
-
-Izhar XXX: Idea for widget handling: a widget attribute for the field which 
-we define a view in it. 
+Nested and repeating structures come naturally to Obviel forms: a
+nested field's data is simply a sub-object of ``data``, and a
+repeating field's data is an array of sub-objects.

@@ -424,7 +424,7 @@ Widgets
 
 .. class:: FloatWidget
 
-  .. iface: ``float_field``
+  iface: ``float_field``
 
   Lets the user enter a floating point number. Becomes a JavaScript
   number in the ``data`` object.
@@ -625,7 +625,7 @@ Widgets
 Custom widgets
 ++++++++++++++
 
-Custom widgets will need to subclass ..:class:`InputWidget` and
+Custom widgets will need to subclass :class:`InputWidget` and
 provide some methods. This is the typical pattern::
 
   obviel.iface('custom_field', 'input_field')
