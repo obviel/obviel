@@ -1,8 +1,8 @@
 Obviel: Object/View/Element for JavaScript
 ==========================================
 
-Obviel is a model/view abstraction for JavaScripts that helps
-you improve the structure of your jQuery-based JavaScript applications.
+Obviel is a model/view abstraction for JavaScript that helps you
+improve the structure of your jQuery-based JavaScript applications.
 
 What is Obviel all about?
 
