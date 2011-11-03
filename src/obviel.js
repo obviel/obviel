@@ -10,6 +10,14 @@ var obviel = {};
         'base': []
     };
 
+    module.IfaceError = function(obj) {
+        this.obj = obj;
+    };
+
+    module.IfaceError.prototype.toString = function() {
+        return ("object has both ifaces as well as iface property");
+    };
+    
     module.LookupError = function(obj, name) {
         this.obj = obj;
         this.name = name;
@@ -102,11 +110,25 @@ var obviel = {};
     module.ifaces = function(obj) {
         /* return the interfaces of an obj, breadth first
         */
-        if (!obj.ifaces) {
+        /* either get iface or ifaces, but not both */
+        var ifaces = [];
+        if (obj.iface !== undefined) {
+            ifaces.push(obj.iface);
+        }
+        if (obj.ifaces !== undefined) {
+            // if we already have ifaces, report error
+            if (ifaces.length != 0) {
+                throw new module.IfaceError(obj);
+            }
+            // a string instead of an array for ifaces will also work,
+            // as it's added by concat too
+            ifaces = ifaces.concat(obj.ifaces);
+        }
+        if (ifaces.length == 0) {
             return [typeof obj];
         }
         var ret = [];
-        var bases = [].concat(obj.ifaces);
+        var bases = [].concat(ifaces);
         while (bases.length) {
             var base = bases.shift();
             if (base == 'base') {

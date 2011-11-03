@@ -4,6 +4,9 @@ CHANGES
 0.10 (unreleased)
 =================
 
+* Obviel models may now have an ``iface`` or an ``ifaces`` property,
+  but not both. ``ifaces`` may be a string instead of an array.
+
 * Update test dependencies to newer version of jQuery and jQuery-ui.
   These are also used by the demo code. Made it so that the version
   number of dependencies not in the URL anymore, so that it's easier

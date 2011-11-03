@@ -221,6 +221,34 @@ test('iface view with iface provided', function() {
     equal($('#viewdiv').text(), 'baz');
 });
 
+test('iface view with only single iface in model', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: render_text
+    });
+    $('#viewdiv').render({text: 'baz', iface: 'ifoo'});
+    equal($('#viewdiv').text(), 'baz');
+});
+
+test('iface view with iface and ifaces', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: render_text
+    });
+    raises(function() {
+        $('#viewdiv').render({text: 'baz', iface: 'ifoo', ifaces: ['ibar']});
+    }, obviel.IfaceError);
+});
+
+test('iface view with only ifaces string', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: render_text
+    });
+    $('#viewdiv').render({text: 'baz', ifaces: 'ifoo'});
+    equal($('#viewdiv').text(), 'baz');
+});
+
 test('iface/named view, no name provided', function() {
     obviel.view({
         iface: 'ifoo',
