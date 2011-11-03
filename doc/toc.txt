@@ -10,6 +10,7 @@ Contents:
    manual
    form
    api
+   demo
    community
    development
 
@@ -17,5 +18,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

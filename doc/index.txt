@@ -66,9 +66,11 @@ Look at a quick overview of :doc:`Obviel features <features>`
 
 Read the :doc:`Obviel core manual <manual>`.
 
-Read about :doc:`Obviel forms <form>`
+Read about :doc:`Obviel forms <form>`.
 
 We also have :doc:`API documentation <api>`.
+
+Confused? Maybe :doc:`demo code <demo>` will help!
 
 Questions? Comments? Join the :doc:`Obviel community <community>`!
 

@@ -1,0 +1,7 @@
+Demo code
+=========
+
+We are working on building up demo code for Obviel. For now, here's
+a `form demo`_.
+
+.. _`form demo`: _static/form-demo.html

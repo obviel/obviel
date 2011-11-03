@@ -8,7 +8,7 @@ Creation and Implementation
 
 * Guido Wesdorp - implementation, docs
 
-* Izhar Firdaus - design discussions, prototyping, feedback
+* Izhar Firdaus - design discussions, prototyping, implementation, feedback
 
 Useful conversations
 --------------------
@@ -18,3 +18,7 @@ Useful conversations
 * Sylvain Viollon
 
 * Antonin Amand
+
+* Jan-Wijbrand Kolman
+
+* Jasper op de Coul
