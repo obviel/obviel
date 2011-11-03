@@ -70,6 +70,8 @@ Read about :doc:`Obviel forms <form>`.
 
 We also have :doc:`API documentation <api>`.
 
+Confused? Maybe :doc:`demo code <demo>` will help!
+
 Questions? Comments? Join the :doc:`Obviel community <community>`!
 
 Want to hack on Obviel? Here are some useful :doc:`notes on

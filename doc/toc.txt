@@ -10,6 +10,7 @@ Contents:
    manual
    form
    api
+   demo
    community
    development
 
