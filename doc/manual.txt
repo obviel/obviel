@@ -1002,7 +1002,7 @@ view is done rendering entirely (including the rendering of any
 subviews).
 
 The ``render.obviel`` event is an internal event of Obviel; Obviel
-sets up am event handler for this by default on the document, and also
+sets up an event handler for this by default on the document, and also
 sets up an event handler for this for elements that have a view
 associated with it. The latter event handler will only take action if
 the view being rendered has the same ``iface`` and ``name`` properties
