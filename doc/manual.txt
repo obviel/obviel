@@ -838,8 +838,6 @@ object as the first argument.
 All declaratively defined events are registered after the view has
 been rendered.
 
-.. _element-association:
-
 Bootstrapping Obviel
 --------------------
 
@@ -905,6 +903,8 @@ that includes your code that registers views. For example::
      var app_url = "http://example.com/app_root";
   </script>
   <script type="text/javascript" src="http://example.com/obviel_app.js"></script>
+
+.. _element-association:
 
 Element Association
 -------------------
