@@ -70,7 +70,7 @@ $(document).ready(function() {
     obviel.view({
         iface: 'redirect_target',
         render: function() {
-            $(this).render({
+            this.el.render({
                 iface: 'message',
                 message: 'The redirect target was rendered!'
             });
