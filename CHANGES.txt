@@ -5,19 +5,27 @@ CHANGES
 =================
 
 * Obviel models may now have an ``iface`` or an ``ifaces`` property,
-  but not both. ``ifaces`` may be a string instead of an array.
+  but not both. ``ifaces`` may be a string instead of an array. This
+  makes the common mistake to make a model object with ``iface`` not
+  a mistake anymore.
 
 * Update test dependencies to newer version of jQuery and jQuery-ui.
   These are also used by the demo code. Made it so that the version
   number of dependencies not in the URL anymore, so that it's easier
   to update in the future.
 
+* Included datatables as a dependency, though haven't integrated
+  code using it yet.
+
 * Add Obviel patterns ``multi``, ``event`` and ``redirect`` to
-  new ``obviel-patterns.js``. See the demo page in the
+  new ``obviel-patterns.js``. See the pattern demo page in the
   documentation for a demo of these.
 
+* Integrate support for simple jGrowl messages in
+  ``obviel-jgrowl.js``; see the pattern demo page for examples.
+
 * Reorganized directory structure: everything, including tests and demos 
-  are in 'src' now, which in turn is included in the documenation so we
+  are in 'src' now, which in turn is included in the documentation so we
   can link to demos (and its dependencies) from there.
 
 0.9.1 (2011-01-03)
