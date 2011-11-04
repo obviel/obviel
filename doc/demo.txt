@@ -1,7 +1,12 @@
 Demo code
 =========
 
-We are working on building up demo code for Obviel. For now, here's
-a `form demo`_.
+We are working on building up demo code for Obviel. 
+
+Here's a `form demo`_.
 
 .. _`form demo`: _static/form-demo.html
+
+Here is a demo of some Obviel patterns_, along with jGrowl integration:
+
+.. _`patterns`: _static/patterns-demo.html

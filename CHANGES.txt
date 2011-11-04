@@ -12,6 +12,10 @@ CHANGES
   number of dependencies not in the URL anymore, so that it's easier
   to update in the future.
 
+* Add Obviel patterns ``multi``, ``event`` and ``redirect`` to
+  new ``obviel-patterns.js``. See the demo page in the
+  documentation for a demo of these.
+
 0.9.1 (2011-01-03)
 ==================
 
