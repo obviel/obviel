@@ -117,14 +117,14 @@ var obviel = {};
         }
         if (obj.ifaces !== undefined) {
             // if we already have ifaces, report error
-            if (ifaces.length != 0) {
+            if (ifaces.length !== 0) {
                 throw new module.IfaceError(obj);
             }
             // a string instead of an array for ifaces will also work,
             // as it's added by concat too
             ifaces = ifaces.concat(obj.ifaces);
         }
-        if (ifaces.length == 0) {
+        if (ifaces.length === 0) {
             return [typeof obj];
         }
         var ret = [];
