@@ -34,7 +34,7 @@ Accessing the tests
 You can access Obviel's tests by constructing a ``file:`` URL
 to the test page. For instance:
 
-file:///home/faassen/projects/obviel/index.html
+file:///home/faassen/projects/obviel/src/test/index.html
 
 You can also access Obviel's tests through a web server. This is
 useful as some web browsers have test failures due to the peculiar way
@@ -47,7 +47,7 @@ $ python -m SimpleHTTPServer
 where ``python`` is a Python 2.x interpreter. You can then navigate
 to:
 
-http://localhost:8000/test
+http://localhost:8000/src/test
 
 for the test page.
 
@@ -70,19 +70,19 @@ particular.
 Modifying the tests
 ~~~~~~~~~~~~~~~~~~~
 
-The tests are maintained in the ``test`` directory under the Obviel
-project directory. They use qunit_ test engine.
+The tests are maintained in the ``test`` directory under the ``src``
+directory. They use qunit_ test engine.
 
 .. _`qunit`: http://docs.jquery.com/Qunit
 
 Test coverage
 ~~~~~~~~~~~~~
 
-The JSCoverage_ tool can be used to analyze the test coverage: how much
-of the Obviel code is being actually called from the test suite. To use it,
-first create a special coverage-analysis copy of the Obviel project directory.
-If your Obviel project directory is called ``obviel``, change directory
-above it and type this::
+The JSCoverage_ tool can be used to analyze the test coverage: how
+much of the Obviel code is being actually called from the test
+suite. To use it, first create a special coverage-analysis copy of the
+Obviel project directory.  If your Obviel project directory is called
+``obviel``, change to the parent directory above it and type this::
 
   $ jscoverage obviel obviel-cov
 
@@ -97,7 +97,7 @@ http://localhost:8000/jscoverage.html
 In the URL input on the coverage page, type the following and press
 ``Open in frame``:
 
-http://localhost:8000/test
+http://localhost:8000/src/test
 
 Then click on the automatic test suite you want to run.
 
@@ -128,3 +128,8 @@ Sphinx::
 
 The docs source is in ``doc``, the built documentation will be
 available in ``doc/_build/html``.
+
+Note that the ``src`` directory in its entirety is also copied into
+the documentation tree under _static. This is done to make it easy to
+publish demo code as part of the website.
+

@@ -121,9 +121,7 @@ html_theme_options = { "nosidebar": "true"}
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static',
-                    '../test/dependencies', # obviel dependencies
-                    '../src', # obviel itself
-                    'demo', # demo code
+                    '../src', # obviel itself & deps & demos
                     ]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,

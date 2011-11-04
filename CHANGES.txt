@@ -16,6 +16,10 @@ CHANGES
   new ``obviel-patterns.js``. See the demo page in the
   documentation for a demo of these.
 
+* Reorganized directory structure: everything, including tests and demos 
+  are in 'src' now, which in turn is included in the documenation so we
+  can link to demos (and its dependencies) from there.
+
 0.9.1 (2011-01-03)
 ==================
 

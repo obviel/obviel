@@ -5,8 +5,8 @@ We are working on building up demo code for Obviel.
 
 Here's a `form demo`_.
 
-.. _`form demo`: _static/form-demo.html
+.. _`form demo`: _static/demo/form-demo.html
 
 Here is a demo of some Obviel patterns_, along with jGrowl integration:
 
-.. _`patterns`: _static/patterns-demo.html
+.. _`patterns`: _static/demo/patterns-demo.html
