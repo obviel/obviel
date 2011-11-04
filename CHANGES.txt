@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-0.10 (unreleased)
+0.10 (2011-01-04)
 =================
 
 * Obviel models may now have an ``iface`` or an ``ifaces`` property,
