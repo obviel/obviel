@@ -5,7 +5,7 @@ host = ${:host}
 port = ${:port}
 
 [pipeline:main]
-pipeline = accesslogging fanstatic serf
+pipeline = accesslogging fanstatic obvielts
 
 [filter:accesslogging]
 use = egg:Paste#translogger
@@ -18,25 +18,17 @@ use = egg:fanstatic#fanstatic
 versioning = true
 recompute_hashes = true
 
-[app:serf]
-use = egg:fanstatic#serf
-resource = js.jquery.jquery
+[app:obvielts]
+use = egg:obvielts#main
 
 # Logging configuration
 
-# to enable sqlalchemy query logging, add ", sqlalchemy" to the keys
 [loggers]
 keys = root
 
 [logger_root]
 level = INFO
 handlers = console
-
-[logger_sqlalchemy]
-level = INFO
-handlers = console
-qualname = sqlalchemy.engine
-propagate = 0
 
 [handlers]
 keys = console
