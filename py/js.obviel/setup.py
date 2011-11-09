@@ -36,6 +36,7 @@ setup(
         'setuptools',
         'js.jquery >= 1.6',
         'js.jquery_datalink >= 1.0.0-1',
+        'js.jquery_datatables',
         'js.jquery_jgrowl',
         'js.jqueryui',
         'js.jsgettext',
