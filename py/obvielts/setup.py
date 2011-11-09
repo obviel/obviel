@@ -24,6 +24,9 @@ setup(
             ],
         'paste.filter_factory': [
             'dontcachejson = ots.wsgi:dont_cache_json_factory'
-            ]
+            ],
+        'fanstatic.libraries': [
+            'obvielts = obvielts.main:library'
+            ],
         }
     )
