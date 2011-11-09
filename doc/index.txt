@@ -72,6 +72,8 @@ We also have :doc:`API documentation <api>`.
 
 Confused? Maybe :doc:`demo code <demo>` will help!
 
+We offer some :doc:`integration <integration>` with external systems.
+
 Questions? Comments? Join the :doc:`Obviel community <community>`!
 
 Want to hack on Obviel? Here are some useful :doc:`notes on

@@ -1,0 +1,16 @@
+Integration into other Systems
+==============================
+
+Fanstatic
+---------
+
+Obviel has been integrated into Fanstatic_, a WSGI-based framework for
+publishing web resources for Python web frameworks. To include Obviel
+in a Python web framework that uses Fanstatic, all you need to do is
+import from the package `js.obviel`_, which is available on PyPI.
+
+.. _Fanstatic: http://www.fanstatic.org
+
+.. _`js.obviel`: http://pypi.python.org/pypi/js.obviel
+
+
