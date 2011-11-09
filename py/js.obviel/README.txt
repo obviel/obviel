@@ -26,9 +26,9 @@ You can the following resources from ``js.obviel``:
 
 * ``forms_autocomplete`` (``obviel-forms-autocomplete``)
 
+* ``forms_nl`` (``obviel-forms-nl.js``)
+
 * ``patterns`` (``obviel-patterns.js``)
 
 * ``jgrowl`` (``obviel-jgrowl.js``)
-
-* ``obviel_forms_nl`` (``obviel-forms-nl.js``)
  

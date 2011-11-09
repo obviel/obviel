@@ -15,12 +15,12 @@ obviel = Resource(library, 'obviel.js', depends=[jquery, json_template])
 
 forms = Resource(library, 'obviel-forms.js', depends=[obviel, json2, datalink,
                                                       gettext])
-
 forms_datepicker = Resource(library, 'obviel-forms-datepicker.js',
                             depends=[forms, jqueryui])
 forms_autocomplete = Resource(library, 'obviel-forms-autocomplete.js',
                               depends=[forms, jqueryui])
+forms_nl = Resource(library, 'obviel-forms-nl.js')
+
 patterns = Resource(library, 'obviel-patterns.js', depends=[obviel])
 jgrowl = Resource(library, 'obviel-jgrowl.js', depends=[obviel, jgrowl_css,
                                                         jgrowl])
-obviel_forms_nl = Resource(library, 'obviel-forms-nl.js')
