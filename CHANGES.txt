@@ -1,6 +1,16 @@
 CHANGES
 *******
 
+0.11 (unreleased)
+=================
+
+* Added js.obviel Fanstatic_ integration.
+
+* Added Python-based obvielts test server for testing Obviel with a
+  "live" test server.
+
+.. _Fanstatic: http://www.fanstatic.org
+
 0.10 (2011-01-04)
 =================
 
