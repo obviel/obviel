@@ -14,7 +14,7 @@ setup(
     packages=['obvielts'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['paste', 'WebOb', 'fanstatic', 'js.obviel'],
+    install_requires=['paste', 'WebOb', 'fanstatic', 'js.obviel', 'traject'],
     extras_require = dict(
         test=['pytest >= 2.0'],
         ),
