@@ -1,6 +1,6 @@
 /* Obviel datatable integration */
 
-obviel.datatable = {}
+obviel.datatables = {};
 
 (function($, obviel, module) {
 
