@@ -1,3 +1,9 @@
+/* make widths of columns in table work properly */
 table {
   width: 100%
+}
+
+/* fix table headings so that sorting arrows appear right in headers */
+.css_right { 
+  float:right; 
 }

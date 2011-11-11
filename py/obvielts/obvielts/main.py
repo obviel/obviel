@@ -14,6 +14,7 @@ import fanstatic
 from js.obviel import datatables
 from js.jqueryui import smoothness
 import traject
+from js.jquery_datatables import jquery_datatables_css
 
 from obvielts.framework import Publisher, url, JSON, REST, Default, RootBase
 
@@ -26,12 +27,12 @@ def bootstrap_url(url_):
 bootstrap_js = fanstatic.Resource(library, 'bootstrap.js',
                                   renderer=bootstrap_url)
 
-main_css = fanstatic.Resource(library, 'main.css')
+main_css = fanstatic.Resource(library, 'main.css', depends=[
+        smoothness, jquery_datatables_css])
 
 main_js = fanstatic.Resource(library, 'main.js', depends=[bootstrap_js,
                                                           main_css,
-                                                          datatables,
-                                                          smoothness])
+                                                          datatables])
 def main_factory(global_config, **local_conf):
     return Publisher(Root()).publish
 
@@ -47,6 +48,9 @@ root_html = '''\
 class Root(REST, RootBase):
     def GET(self, request):
         # then we load the main obviel using js
+        #smoothness.need()
+        #jquery_datatables_css.need()
+       # main_css.need()
         main_js.need()
         
         return webob.Response(root_html)
