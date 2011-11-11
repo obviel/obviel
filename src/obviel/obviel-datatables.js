@@ -99,7 +99,7 @@ obviel.datatables = {};
                 bJQueryUI: true,
                 sPaginationType: 'full_numbers',
                 iDisplayLength: 10,
-                bAutoWidth: false,
+                bAutoWidth: true,
                 bStateSave: true
             };
 

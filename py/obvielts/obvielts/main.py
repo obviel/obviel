@@ -26,7 +26,10 @@ def bootstrap_url(url_):
 bootstrap_js = fanstatic.Resource(library, 'bootstrap.js',
                                   renderer=bootstrap_url)
 
+main_css = fanstatic.Resource(library, 'main.css')
+
 main_js = fanstatic.Resource(library, 'main.js', depends=[bootstrap_js,
+                                                          main_css,
                                                           datatables,
                                                           smoothness])
 def main_factory(global_config, **local_conf):
@@ -75,7 +78,7 @@ class Table(JSON):
             'sAjaxSource': url(request, TableBrowser()),
             'aoColumns': [{
                     'sName': 'number',
-                    'sTitle': 'Number'
+                    'sTitle': 'Number',
                     }, {
                     'sName': 'text',
                     'sTitle': 'Text',
