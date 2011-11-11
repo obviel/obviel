@@ -19,7 +19,15 @@ from obvielts.framework import Publisher, url, JSON, REST, Default, RootBase
 
 # we want to load our main.js javascript resource on the main page later
 library = fanstatic.Library('obvielts', 'resources')
-main_js = fanstatic.Resource(library, 'main.js', depends=[datatables,
+
+def bootstrap_url(url_):
+    return '<script type="text/javascript" src="/bootstrap.js"></script>'
+
+bootstrap_js = fanstatic.Resource(library, 'bootstrap.js',
+                                  renderer=bootstrap_url)
+
+main_js = fanstatic.Resource(library, 'main.js', depends=[bootstrap_js,
+                                                          datatables,
                                                           smoothness])
 def main_factory(global_config, **local_conf):
     return Publisher(Root()).publish
@@ -35,20 +43,6 @@ root_html = '''\
 
 class Root(REST, RootBase):
     def GET(self, request):
-        # make a fake resource that gets loaded before the other ones
-        # that sets up the app_info and the template_url
-        def bootstrap_url(url_):
-            return '<script type="text/javascript" src="%s"></script>' % (
-                url(request, Bootstrap()))
-        # a hack, as this is a fake resource we don't care whether it can
-        # be found on the filesystem
-        fanstatic.set_resource_file_existence_checking(False)
-        bootstrap_js = fanstatic.Resource(library, 'bootstrap.js',
-                                          renderer=bootstrap_url)
-        fanstatic.set_resource_file_existence_checking(True)
-
-        # we want our bootstrap js first
-        bootstrap_js.need()
         # then we load the main obviel using js
         main_js.need()
         
@@ -76,7 +70,52 @@ class AppInfo(JSON):
     
 class Table(JSON):
     def GET(self, request):
-        return {}
+        return {
+            'iface': 'datatable',
+            'sAjaxSource': url(request, TableBrowser()),
+            'aoColumns': [{
+                    'sName': 'number',
+                    'sTitle': 'Number'
+                    }, {
+                    'sName': 'text',
+                    'sTitle': 'Text',
+                    }
+                ]
+            }
+
+class TableBrowser(JSON):
+    def GET(self, request):
+        args = request.GET
+        limit = int(args.get('iDisplayLength', 10))
+        offset = int(args.get('iDisplayStart', 0))
+
+        echo = int(args.get('sEcho', 0))
+        #search = request.get('sSearch', None)
+
+        count = 4000
+        data = generate_data(limit, offset, count)
+        display_count = count
+        
+        return {
+            'sEcho': echo,
+            'aaData': data,
+            'iTotalRecords': count,
+            'iTotalDisplayRecords': display_count,
+            }
+
+def generate_data(limit, offset, count):
+    """Generate fake table data.
+    """
+    result = []
+    start = offset
+    end = offset + limit
+    if start >= count:
+        return []
+    if end > count:
+        end = count
+    for i in range(start, end):
+        result.append([i, '#' + str(i)])
+    return result
 
 # register our objects using traject; an inverse is also needed to
 # be able to reconstruct an instance's location, this is used by
@@ -87,3 +126,5 @@ traject.register(RootBase, 'app_info', AppInfo)
 traject.register_inverse(RootBase, AppInfo, 'app_info', lambda obj: {})
 traject.register(RootBase, 'bootstrap.js', Bootstrap)
 traject.register_inverse(RootBase, Bootstrap, 'bootstrap.js', lambda obj: {})
+traject.register(RootBase, 'table_browser', TableBrowser)
+traject.register_inverse(RootBase, TableBrowser, 'table_browser', lambda obj: {})

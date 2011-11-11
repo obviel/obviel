@@ -94,6 +94,7 @@ obviel.datatables = {};
                 bFilter: true,
                 bLengthChange: true,
                 bPaginate: true,
+                bServerSide: true,
                 sAjaxSource: '',
                 bJQueryUI: true,
                 sPaginationType: 'full_numbers',
@@ -103,19 +104,10 @@ obviel.datatables = {};
             };
 
             /* combine default config with server-side config */
-            var config = $.extend(default_config, self.obj);
+            var config = $.extend(default_config, this.obj);
             /* throw in table management functions */
             // config = $.extend(config, table_management);
             
-            /* construct headers */
-            var thead = $('<thead></thead>');
-            var head_row =$('<tr></tr>');
-            $.each(config.columns, function(index, column) {
-                head_row.append('<th>' + column + '</th>');
-            });
-            thead.append(head_row);
-            this.el.append(thead);
-
             /* translation */
 
             /* sFilter handling */
