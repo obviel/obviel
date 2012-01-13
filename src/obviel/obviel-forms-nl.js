@@ -44,11 +44,11 @@ var json_locale_data = {
         ],
         "not a decimal": [
             null,
-            "Gebruik bij decimalen komma ipv punt"
+            "Veld moet numerieke waarde bevatten"
         ],
         "not a float": [
             null,
-            "Gebruik bij decimalen komma ipv punt"
+            "Veld moet numerieke waarde bevatten"
         ],
         "not a number": [
             null,
