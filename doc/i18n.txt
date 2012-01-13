@@ -1,27 +1,65 @@
-xgettext -L python -d obviel_forms forms2.js -o obviel_forms.pot
+Internationalizing Obviel
+=========================
 
- msginit -l nl_NL -i obviel_forms.pot
+To extract the translation strings from JavaScript files, you need to
+use the ``xgettext`` tool. Unfortunately this tool still does not have
+native support for JavaScript. The ``C`` extractor comes pretty close,
+but JavaScript code needs some preprocessing (into fake C code) before
+it's safe to use this.
 
-then modify result so it says:
+If you have run buildout, the preprocessor is installed as part of a
+package called JsLex_, in ``bin/jslex_prepare``. First run this against
+all JavaScript files that need preparation for xgettext, like this::
 
-json_locale_data = {
+  bin/jslex_prepare src/obviel/obviel-forms.js
 
-}
+.. _JsLex: http://pypi.python.org/pypi/jslex
 
-and turn key into "obviel_forms".
+This will create a new file in ``src/obviel`` named
+``obviel-forms.jslex``. This file is only needed during xgettext
+extraction, so can be thrown away again.
 
-and end the whole thing with ;
+Once we have this file, we need to use xgettext to extract its translation
+strings into a ``.pot`` file::
 
-Note that the HTML page that includes the JS needs to be encoded as
-UTF-8, to test this with flat HTML, use:
+  xgettext -L C -d obviel-forms --keyword=_ obviel-forms.jslex -o obviel-forms.pot
 
-  <meta http-equiv="Content-Type" content="text/html; charset="UTF-8" />
+What are the command line arguments for?
 
-We need some kind of toolchain to do all this automatically. For some
-reason the key is 'nl' in the generated JSON.
+* ``-L C`` puts xgettext in ``C`` language mode. This is safe as we
+  preprocessed our JavaScript into something which the C language of
+  xgettext can deal with.
 
-What do we do for updating messages? msgmerge nl.po ref.pot
+* ``-d obviel-forms`` tells xgettext that the translation domain is
+  ``obviel-forms``.
 
-Fanstatic could generate the JSON file automatically potentially,
-using the compilation process.
- 
+* ``--keyword=_`` tells xgettext to see ``_("this is a string")`` as
+  translatable texts to extract.
+
+* ``obviel-forms.jslex`` is the preprocessed ``.jslex`` file made from
+  ``obviel-forms.js``. You can list more than on ``.jslex`` file here.
+
+* ``-o obviel-forms.pot`` indicates the ``.pot`` file to generate
+
+Once there is a ``.pot`` file, you can turn it into a specific file that
+contains the translations for a language, in this example, Dutch::
+
+  msginit -l nl_NL -i obviel-forms.pot -o obviel-forms-nl.po
+
+Now use the installed ``pojson`` script to transform the ``.po`` file into
+a ``obviel-forms-nl.js`` file::
+
+  bin/pojson convert -j obviel-forms src/obviel/obviel-forms-nl.po > src/obviel/obviel-forms-nl.js
+
+The ``obviel-forms-nl.js`` file contains the translated messages in a
+form consumable by JsGetText. This file needs to be included before
+``obviel-forms.js`` to make the translations take effect.
+
+The magic command to create the *.pot file from jslex files::
+
+  xgettext -L C -d obviel-forms --keyword=_ src/obviel/obviel-forms.jslex src/obviel/obviel-forms-datepicker.jslex src/obviel/obviel-forms-autocomplete.jslex -o src/obviel/obviel-forms.pot
+
+It would be nice to automate the whole procedure (perhaps using
+Fanstatic?). It would also be nice if more than one language could be
+loaded into the client at once.
+

@@ -4,6 +4,8 @@
 */
 
 (function($, obviel, module) {
+    var _ = module.translate;
+    
     obviel.iface('datepicker_field', 'textline_field');
     module.DatePickerWidget = function(settings) {
         settings = settings || {};
@@ -51,7 +53,7 @@
                 this.obj.datepicker_options.dateFormat,
                 result.value);
         } catch(e) {
-            return {error: 'invalid date'};
+            return {error: _('invalid date')};
         }
         return {value: $.datepicker.formatDate('yy-mm-dd', date)};
     };

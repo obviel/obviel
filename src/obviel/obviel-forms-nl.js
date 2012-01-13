@@ -1,8 +1,9 @@
 var json_locale_data = {
-    "obviel_forms": {
+    "obviel-forms": {
         "": {
             "Content-Transfer-Encoding": "8bit",
             "Content-Type": "text/plain; charset=UTF-8",
+            "Language": "nl",
             "Language-Team": "Dutch",
             "Last-Translator": "Martijn Faassen <faassen@startifact.com>",
             "MIME-Version": "1.0",
@@ -33,6 +34,10 @@ var json_locale_data = {
             null,
             "Er zijn tenminste %1 cijfers nodig voor de komma"
         ],
+        "invalid date": [
+            null,
+            "Ongeldige datum"
+        ],
         "negative numbers are not allowed": [
             null,
             "Negatieve getallen zijn niet toegestaan"
@@ -56,6 +61,10 @@ var json_locale_data = {
         "this field is required": [
             null,
             "Dit veld is verplicht"
+        ],
+        "unknown value": [
+            null,
+            "Ongeldige waarde"
         ],
         "value must be %1 digits long": [
             null,

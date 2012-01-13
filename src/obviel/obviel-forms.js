@@ -18,6 +18,8 @@ obviel.forms = {};
         domain: "obviel_forms",
         locale_data: locale_data});
     function _(msgid) { return gt.gettext(msgid); }
+
+    module.translate = _;
     
     var entitize = function(s) {
         /* convert the 4 chars that must not be in XML to 'entities'

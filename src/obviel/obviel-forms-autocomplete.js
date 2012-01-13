@@ -7,6 +7,8 @@
 
     obviel.iface('autocomplete_field', 'textline_field');
 
+    var _ = module.translate;
+    
     module.AutocompleteWidget = function(settings) {
         settings = settings || {};
         var d = {
@@ -147,7 +149,7 @@
         }
         value = this.label_to_value[result.value];
         if (value === undefined) {
-            return {error: 'unknown value'};
+            return {error: _('unknown value')};
         }
         return {value: value};
     };

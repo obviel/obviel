@@ -9,6 +9,12 @@ CHANGES
 * Added Python-based obvielts test server for testing Obviel with a
   "live" test server.
 
+* Included jslex_prepare script to help with i18n process. See updated
+  ``doc/i18n.txt`` for notes.
+
+* Updated translations to include support for obviel-forms-datepicker and
+  obviel-forms-autocomplete.
+
 .. _Fanstatic: http://www.fanstatic.org
 
 0.10 (2011-01-04)
