@@ -55,11 +55,11 @@ msgstr "De waarde moet %1 cijfers bevatten"
 
 #: src/obviel/obviel-forms.jslex:1266 src/obviel/obviel-forms.jslex:1273
 msgid "not a float"
-msgstr "Gebruik bij decimalen komma ipv punt"
+msgstr "Veld moet numerieke waarde bevatten"
 
 #: src/obviel/obviel-forms.jslex:1335 src/obviel/obviel-forms.jslex:1345
 msgid "not a decimal"
-msgstr "Gebruik bij decimalen komma ipv punt"
+msgstr "Veld moet numerieke waarde bevatten"
 
 #: src/obviel/obviel-forms.jslex:1398
 msgid "decimal must contain at least %1 digits before the decimal mark"
