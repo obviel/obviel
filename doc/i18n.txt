@@ -55,7 +55,7 @@ The ``obviel-forms-nl.js`` file contains the translated messages in a
 form consumable by JsGetText. This file needs to be included before
 ``obviel-forms.js`` to make the translations take effect.
 
-The magic command to create the *.pot file from jslex files::
+The magic command to create the ``*.pot`` file from ``.jslex`` files::
 
   xgettext -L C -d obviel-forms --keyword=_ src/obviel/obviel-forms.jslex src/obviel/obviel-forms-datepicker.jslex src/obviel/obviel-forms-autocomplete.jslex -o src/obviel/obviel-forms.pot
 
