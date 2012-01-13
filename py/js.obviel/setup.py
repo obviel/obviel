@@ -8,7 +8,7 @@ import os
 # For example, a packaging bugfix release version 1.4.4 of the
 # js.jquery package would be version 1.4.4-1 .
 
-version = '0.12dev'
+version = '0.11-1dev'
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
@@ -28,8 +28,14 @@ setup(
     author='Fanstatic Developers',
     author_email='fanstatic@googlegroups.com',
     license='BSD',
-    packages=find_packages(),namespace_packages=['js'],
-    include_package_data=True,
+    packages=find_packages(),
+    namespace_packages=['js'],
+#    include_package_data=True,
+    package_data={
+        'js.obviel': ['resources'],
+        '': ['*.js'],
+        'js.obviel': ['resources/*.js'],
+        },
     zip_safe=False,
     install_requires=[
         'fanstatic',

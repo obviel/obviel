@@ -1,3 +1,2 @@
-recursive-include js/obviel/resources *.*
-recursive-include js/obviel *.txt
+recursive-include js/obviel/resources *.js
 include *.txt

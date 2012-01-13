@@ -1,10 +1,13 @@
 CHANGES
 *******
 
-0.12 (unreleased)
-=================
+0.11-1 (2012-01-13)
+===================
 
-- ...
+- Something in distutils/setuptools/distribute doesn't like the
+  'resources' directory being symlinked, it just doesn't see it. As a
+  result this never was in the 0.11 release. Try again hacking a real
+  resources directory into existence temporarily for this release.
 
 0.11 (2012-01-13)
 =================
