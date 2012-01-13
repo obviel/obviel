@@ -4,7 +4,8 @@ CHANGES
 0.12 (unreleased)
 =================
 
-- ...
+- My mistake, 0.11-1 did work. Ignore any evidence you ever saw of 0.11.1
+  before now.
 
 0.11-1 (2012-01-13)
 ===================
