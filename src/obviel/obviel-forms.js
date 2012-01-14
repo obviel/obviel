@@ -15,7 +15,7 @@ obviel.forms = {};
         locale_data = undefined;
     }
     var gt = new Gettext({
-        domain: "obviel_forms",
+        domain: "obviel-forms",
         locale_data: locale_data});
     function _(msgid) { return gt.gettext(msgid); }
 
