@@ -984,7 +984,7 @@ To retrieve the associated view of an element, you can use the
 ``$(el).view()`` function to get it back again.
 
 To access a view in this element or its nearest parent, use
-``(el).parent_view()``.
+``$(el).parent_view()``.
 
 To remove the element association, you can call ``$(el).unview()``.
 
