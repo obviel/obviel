@@ -354,9 +354,16 @@ var obviel = {};
             }
         );
     };
-    
+
+    /* a tranformer that doesn't do anything */
+    var null_transformer = function(obj, url, name) {
+        return obj;
+    };
+
     module.Registry = function() {
         this.views = {};
+        /* the default transformer doesn't do anything */
+        this.transformer_hook = null_transformer;
     };
 
     module.Registry.prototype.register = function(view) {
@@ -442,6 +449,7 @@ var obviel = {};
             url: url,
             dataType: 'json',
             success: function(obj) {
+                obj = self.transformer_hook(obj, url, name);
                 var view = self.clone_view(el, obj, name, callback, errback);
                 view.from_url = url;
                 defer.resolve(view);
@@ -449,7 +457,14 @@ var obviel = {};
         });
         return defer.promise();
     };
-
+    
+    module.Registry.prototype.register_transformer = function(transformer) {
+        if (transformer === null || transformer === undefined) {
+            transformer = null_transformer;
+        }
+        this.transformer_hook = transformer;
+    };
+    
     module.registry = new module.Registry();
 
     module.clear_registry = function() {
@@ -621,6 +636,10 @@ var obviel = {};
     
     module.view = function(view) {
         module.registry.register(view);
+    };
+
+    module.transformer = function(transformer) {
+        module.registry.register_transformer(transformer);
     };
     
     $.fn.render = function(obj, name, callback, errback) {

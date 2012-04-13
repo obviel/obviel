@@ -636,6 +636,62 @@ So Obviel's understanding of hyperlinks gives us more cool things:
 * easier to create truly RESTful applications - see the sidebar for
   more info on why that's good.
 
+Transformers
+------------
+
+Sometimes the server does not return JSON objects with an ``iface``
+already included, or in some other way returns objects that are not
+very suitable for rendering them with Obviel.
+
+You can plug in a **transformer function** to transform JSON content
+retrieved from the server to a format more useful to your client-side
+views.
+
+How this transformation is done in detail is up to you; you can plug
+in any transformation logic you like, as long as you return an object
+that can be rendered using Obviel.
+
+What does this look like? Let's imagine we have a web server that
+returns JSON objects that are just perfect for Obviel, except for the
+fact that the objects don't have an ``iface`` or ``ifaces``
+property. Instead, these objects have a ``type`` property. We would
+like use this type property as the iface.
+
+We can hook in a transformer that does this for any object retrieved
+from the server using URI access::
+
+  obviel.transformer(function(obj, url, name) {
+     obj.iface = obj.type;
+     return obj;
+  });
+
+In this case, we just modify the incoming JSON object adding an
+``iface`` property in there. You can also return wholly different
+objects instead.
+
+As you can see, the ``transformer`` function takes three arguments: 
+
+obj
+
+  The JSON object retrieved and to be transformed.
+
+url
+
+  The URL from which the object was retrieved. This argument is optional.
+
+name
+
+  The name of the view that is being looked up. This argument is optional.
+
+The URL argument could be used to set the iface of an object based on
+the URL it was accessed with. This is less flexible than letting the
+server send an object with an ``iface`` marker, however, so if you
+have control over the server this is recommended.
+
+Of course setting the ``iface`` is just one of the transformations you
+can apply; you can add any arbitrary property to objects or even
+return completely different objects altogether.
+
 Callbacks
 ---------
 

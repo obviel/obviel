@@ -1005,3 +1005,159 @@ test('parent_view', function() {
     el.append(new_el);
     ok(new_el.parent_view() === el.view());
 });
+
+
+asyncTest('transform server contents', function() {
+    /* view works on ifoo iface only */
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.text(this.obj.text + ': ' + this.obj.view_name);
+        }
+    });
+    
+    var original_ajax = $.ajax;
+    
+    $.ajax = function(options) {
+        if (options.url == 'testifoo') {
+            /* return an object without iface; we will add "ifoo" iface
+               using transformer */
+            options.success({text: 'Hello world'});
+        }
+    };
+
+    obviel.transformer(function(obj, url, name) {
+        obj.iface = 'ifoo';
+        obj.view_name = name;
+        return obj;
+    });
+    
+    var el = $('#viewdiv');
+    el.render(
+        'testifoo', function() {
+            equal(this.el.text(), 'Hello world: default');
+            start();
+        });
+
+    $.ajax = original_ajax;
+});
+
+asyncTest('transform server contents only obj arg', function() {
+    /* view works on ifoo iface only */
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.text(this.obj.text);
+        }
+    });
+    
+    var original_ajax = $.ajax;
+    
+    $.ajax = function(options) {
+        if (options.url == 'testifoo') {
+            /* return an object without iface; we will add "ifoo" iface
+               using transformer */
+            options.success({text: 'Hello world'});
+        }
+    };
+
+    obviel.transformer(function(obj) {
+        obj.iface = 'ifoo';
+        return obj;
+    });
+    
+    var el = $('#viewdiv');
+    el.render(
+        'testifoo', function() {
+            equal(this.el.text(), 'Hello world');
+            start();
+        });
+
+    $.ajax = original_ajax;
+});
+
+asyncTest('disable transformer', function() {
+    /* view works on ifoo iface only */
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.text(this.obj.text);
+        }
+    });
+    
+    var original_ajax = $.ajax;
+    
+    $.ajax = function(options) {
+        if (options.url == 'testifoo') {
+            /* return an object without iface; we will add "ifoo" iface
+               using transformer */
+            options.success({iface: 'ifoo', text: 'Hello world'});
+        }
+    };
+
+    obviel.transformer(function(obj) {
+        obj.text = obj.text + ' transformed';
+        return obj;
+    });
+
+    /* disable transformer again */
+    obviel.transformer(null);
+    
+    var el = $('#viewdiv');
+    el.render(
+        'testifoo', function() {
+            equal(this.el.text(), 'Hello world');
+            start();
+        });
+
+    $.ajax = original_ajax;
+});
+
+asyncTest('transform server contents distinguish between uris', function() {
+    obviel.view({
+        iface: 'ifoo',
+        render: function() {
+            this.el.text("ifoo: " + this.obj.text);
+        }
+    });
+    obviel.view({
+        iface: 'ibar',
+        render: function() {
+            this.el.text("ibar: " + this.obj.text);
+        }
+    });
+    
+    
+    var original_ajax = $.ajax;
+    
+    $.ajax = function(options) {
+        options.success({text: 'Hello world'});
+    };
+
+    obviel.transformer(function(obj, url) {
+        if (url === 'testifoo') {
+            obj.iface = 'ifoo';
+            return obj;
+        } else if (url === 'testibar') {
+            obj.iface = 'ibar';
+            return obj;
+        }
+        return null;
+    });
+    
+    var el = $('#viewdiv');
+    el.render(
+        'testifoo', function() {
+            equal(this.el.text(), 'ifoo: Hello world');
+            start();
+        });
+
+    el.render(
+        'testibar', function() {
+            equal(this.el.text(), 'ibar: Hello world');
+            start();
+        });
+    
+
+    $.ajax = original_ajax;
+});

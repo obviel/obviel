@@ -73,6 +73,37 @@ Obviel core
     will be converted to a :class:`View` object with the object's
     properties.
 
+.. function:: transformer(transformer)
+
+  :param transformer: a function with the ``function(obj, url, name)``
+    signature, or ``function(obj, url)``, or ``function(obj)``.
+
+  Register a transformer function with Obviel. Obviel will pass any
+  object retrieved from the server using URL access (i.e. a hyperlink
+  reference in an object) through this transformer function.
+
+  The transformer function has three arguments:
+
+  ``obj``
+
+    The object retrieved from the server that can be transformed.
+
+  ``url``
+
+    The URL used to access the object on the server. Could be
+    used to determine what transformation to apply. Optional.
+
+  ``name``
+ 
+    The name used to render the view. Optional.
+  
+  The transformer function must return the transformed object.
+
+  By default Obviel does no transformation, and objects are passed
+  from the server to Obviel unchanged.
+
+  You can disable the transformer function by passing in ``null``.
+
 .. function:: element.render(obj[, name, callback, errback])
 
   Render a view for an object on a jQuery element. This instantiates a
