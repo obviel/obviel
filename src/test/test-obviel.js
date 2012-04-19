@@ -992,6 +992,75 @@ asyncTest('object events cleanup handler string', function() {
     start();
 });
 
+asyncTest('object event nested views', function() {
+    var called = 0;
+
+    // a view with a manually nested bar view
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        render: function() {
+            $('#id1', this.el).render(this.obj.bar);
+        }
+    });
+    // a completely different view
+    obviel.view({
+        iface: 'iqux',
+        html: '<p>Something else</p>'
+    });
+
+    // the bar view
+    obviel.view({
+        iface: 'ibar',
+        render: function() {
+            this.el.text(this.obj.title);
+        },
+        object_events: {
+            'update': function(ev) {
+                called++;
+                start();
+            }
+        }
+    });
+
+    // render the foo object with the foo view, indirectly rendering
+    // the bar view
+    var el = $('#viewdiv');
+    var obj = {
+        ifaces: ['ifoo'],
+        bar: {
+            ifaces: ['ibar'],
+            title: "Hello world"
+        }
+    };
+    el.render(obj);
+
+    // now render a completely different object in its place
+    el.render({iface: 'iqux'});
+
+    // when we trigger the event on bar, the event will still be called
+    // even though it is on a now unconnected element
+    $(obj.bar).trigger('update');
+
+    equals(called, 1);
+
+    // is this a problem? first, for plain events this is not a problem,
+    // as nothing will be triggering events on the elements they are associated
+    // with anymore. but for objects possibly temporarily not represented by
+    // a visible view it is odd that a now-invisible view is still handling
+    // events for it.
+
+    // one way to solve this problem would be to automatically disconnect
+    // all subviews when unrendering a view. declarative subviews are easy
+    // enough to unconnect, but non-declarative ones such as the one in this
+    // test are more difficult. of course it should still be possible to
+    // disconnect them if we simply thrawl through all the underlying
+    // elements disconnecting everything in there.
+    // alternatively we could disconnect the object views of the object being
+    // rendered as soon as an object is not being viewed anymore. we also
+    // would need to do this for sub-objects.
+});
+
 test('element bind', function() {
     obviel.view({
         iface: 'ifoo',
