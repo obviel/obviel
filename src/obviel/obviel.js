@@ -164,7 +164,8 @@ var obviel = {};
             name: 'default',
             iface: 'object',
             subviews: {},
-            events: {}
+            events: {},
+            object_events: {}
         };
         $.extend(d, settings);
         $.extend(this, d);
@@ -196,6 +197,8 @@ var obviel = {};
         self.el.unbind('render.obviel');
         
         self.unbind_events();
+        self.unbind_object_events();
+        
         // BBB arguments for backwards compatibility
         self.cleanup(self.el, self.obj, self.name);
     
@@ -232,6 +235,7 @@ var obviel = {};
             
             subviews_promise.done(function() {
                 self.bind_events();
+                self.bind_object_events();
                 
                 self.finalize();
                 // the callback needs to be the last thing called
@@ -243,26 +247,34 @@ var obviel = {};
         });
     };
 
+    module.View.prototype.wrap_handler = function(handler) {
+        var self = this;
+        var wrapped_handler = null;
+        
+        if (typeof handler == 'string') {
+            wrapped_handler = function(ev) {
+                ev.view = self;
+                ev.args = Array.prototype.slice.call(arguments, 1);
+                self[handler].call(self, ev);
+            };
+        } else {
+            wrapped_handler = function(ev) {
+                ev.view = self;
+                ev.args = Array.prototype.slice.call(arguments, 1);
+                handler(ev);
+            };
+        }
+
+        return wrapped_handler;
+    };
+
     module.View.prototype.bind_events = function() {
         var self = this;
         self.bound_handlers = [];
         $.each(self.events, function(event_name, events) {
             $.each(events, function(selector, handler) {
                 var el = $(selector, self.el);
-                var wrapped_handler = null;
-                if (typeof handler == 'string') {
-                    wrapped_handler = function(ev) {
-                        ev.view = self;
-                        ev.args = Array.prototype.slice.call(arguments, 1);
-                        self[handler].call(self, ev);
-                    };
-                } else {
-                    wrapped_handler = function(ev) {
-                        ev.view = self;
-                        ev.args = Array.prototype.slice.call(arguments, 1);
-                        handler(ev);
-                    };
-                }
+                var wrapped_handler = self.wrap_handler(handler);
                 el.bind(event_name, wrapped_handler);
                 self.bound_handlers.push({
                     name: event_name,
@@ -283,7 +295,32 @@ var obviel = {};
             el.unbind(event_info.name, event_info.handler);
         });
     };
-        
+    
+    module.View.prototype.bind_object_events = function() {
+        var self = this;
+        self.bound_object_handlers = [];
+        $.each(self.object_events, function(event_name, handler) {
+            var wrapped_handler = self.wrap_handler(handler);
+
+            $(self.obj).bind(event_name, wrapped_handler);
+
+            self.bound_object_handlers.push({
+                name: event_name,
+                handler: wrapped_handler
+            });;
+        });
+    };
+    
+    module.View.prototype.unbind_object_events = function() {
+        var self = this;
+        if (self.bound_object_handlers === undefined) {
+            return;
+        }
+        $.each(self.bound_object_handlers, function(index, event_info) {
+            $(self.obj).unbind(event_info.name, event_info.handler);
+        });
+    };
+
     module.View.prototype.finalize = function() {
         var self = this;
         self.store_view();
@@ -323,7 +360,11 @@ var obviel = {};
         });
         return defer.promise();
     };
- 
+
+    module.View.prototype.rerender = function() {
+        this.el.render(this.obj);
+    };
+    
     module.View.prototype.store_view = function() {
         var self = this;
         if (self.ephemeral) {

@@ -878,6 +878,97 @@ asyncTest('view events cleanup handler string', function() {
     start();
 });
 
+// object events
+asyncTest('object events', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        object_events: {
+            'custom': function(ev) {
+                equal(ev.view.iface, 'ifoo');
+                ok(true, "event triggered");
+                start();
+            }
+        }
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo']};
+    el.render(obj);
+    $(obj).trigger('custom');
+});
+
+asyncTest('object events handler string', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        custom: function(ev) {
+            var self = this;
+            equal(self.iface, 'ifoo');
+            ok(ev.view === self);
+            ok(true, "event triggered");
+            start();
+        },
+        object_events: {
+            'custom': 'custom'
+        }
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo']};
+    el.render(obj);
+    $(obj).trigger('custom');
+});
+
+asyncTest('object events cleanup', function() {
+    var called = 0;
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        object_events: {
+            'custom': function(ev) {
+                called++;
+            }
+        }
+    });
+    obviel.view({
+        iface: 'ibar'
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo']};
+    el.render(obj);
+    // rendering ibar will clean up the events for ifoo, so the
+    // event shouldn't have been triggered
+    el.render({ifaces: ['ibar']});
+    $(obj).trigger('custom');
+    equal(called, 0);
+    start();
+});
+
+asyncTest('object events cleanup handler string', function() {
+    var called = 0;
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="id1"></div>',
+        custom: function(ev) {
+            called++;
+        },
+        object_events: {
+            'custom': 'custom'
+        }
+    });
+    obviel.view({
+        iface: 'ibar'
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo']};
+    el.render(obj);
+    // rendering ibar will clean up the events for ifoo, so the
+    // event shouldn't have been triggered
+    el.render({ifaces: ['ibar']});
+    $(obj).trigger('custom');
+    equal(called, 0);
+    start();
+});
+
 test('element bind', function() {
     obviel.view({
         iface: 'ifoo',
