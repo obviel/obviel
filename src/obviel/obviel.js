@@ -307,7 +307,7 @@ var obviel = {};
             self.bound_object_handlers.push({
                 name: event_name,
                 handler: wrapped_handler
-            });;
+            });
         });
     };
     
