@@ -254,17 +254,39 @@ Views have a number of options you can pass into them in the
 
     A JavaScript object literal describing event handlers to hook up
     for this view. Each property name is the name of the event, such
-    as ``click``. The property value is either a function or a string.
+    as ``click``. The property value is another object literal, where
+    each key is a jQuery selector and the value either a function or a
+    string that indicates the event handler. The jQuery selector
+    determines to which elements in the view the event handlers are
+    bound.
 
-    If it is a function, this function is the event handler. It will
-    receive a single parameter that is the event. The event object has
-    a ``view`` property that you can use to access the view that
-    issued the event.
+    If the event handler is a function, this function is the event
+    handler. It will receive a single parameter that is the event. The
+    event object has a ``view`` property that you can use to access
+    the view that issued the event.
 
-    If it is a string, this is used to identify a method of the view
-    that is the event handler. This method also receives a parameter
-    ``ev`` that has a ``view`` property, but the view can in this case
-    also be accessed as ``this``.
+    If the event handler is a string, this is used to identify a
+    method of the view that is the event handler. This method also
+    receives a parameter ``ev`` that has a ``view`` property, but the
+    view can in this case also be accessed as ``this``.
+
+  .. attribute:: object_events
+
+    A JavaScript object literal describing event handlers to hook up
+    to the object rendered by this view. Each property name is the
+    name of the event. These are generally custom event names you can
+    come up with yourself. The property value is either a function or
+    a string indicating the event handler.
+
+    If the event handler is a function, this function is the event
+    handler. It will receive a single parameter that is the event. The
+    event object has a ``view`` property that you can use to access
+    the view that issued the event.
+
+    If the event handler is a string, this is used to identify a
+    method of the view that is the event handler. This method also
+    receives a parameter ``ev`` that has a ``view`` property, but the
+    view can in this case also be accessed as ``this``.
 
 Obviel forms
 ============
