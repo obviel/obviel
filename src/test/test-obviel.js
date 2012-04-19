@@ -918,6 +918,29 @@ asyncTest('object events handler string', function() {
     $(obj).trigger('custom');
 });
 
+test('object event triggers rerender', function() {
+    obviel.view({
+        iface: 'ifoo',
+        html: '<div id="the_id"></div>',
+        render: function() {
+            $('#the_id', this.el).text(this.obj.title);
+        },
+        object_events: {
+            'custom': 'rerender'
+        }
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo'], title: 'Hello'};
+    el.render(obj);
+
+    equal($('#the_id').text(), 'Hello');
+    
+    obj.title = 'Bye';
+    $(obj).trigger('custom');
+
+    equal($('#the_id').text(), 'Bye');    
+});
+
 asyncTest('object events cleanup', function() {
     var called = 0;
     obviel.view({

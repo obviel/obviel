@@ -909,6 +909,54 @@ object as the first argument.
 All declaratively defined events are registered after the view has
 been rendered.
 
+Declarative Object Events
+-------------------------
+
+You can also declaratively bind event handlers to the object when it
+is being rendered by the view. In your application you can then define
+custom events and trigger them on objects. The handlers are registered
+just like for normal events, either with a function or with a string
+indicating a method on the view.
+
+Here is an example::
+
+  obviel.view({ 
+    iface: 'foo',
+    render: function() {},
+    object_events: {
+       'update': 'rerender'
+    },
+    rerender: function() {
+       self.el.render(self.obj);
+    }
+  });
+
+This registers a handler that gets triggered when the custom
+``update`` event is sent to the object. Let's first render an object::
+
+  var my_obj = {iface: 'ifoo'};
+  some_el.render(my_obj);
+
+and now let's trigger the ``update`` event on ``my_obj``. This is done by
+wrapping the object in ``$`` first::
+
+  $(my_obj).trigger('custom');
+
+This will cause ``rerender`` to be called, which will redraw the
+view. If ``my_obj`` has changed in the mean time, the view will be
+redrawn to reflect this.
+
+As a convenience, ``rerender`` has been predefined on views, so you
+don't have to define it like we did above. This is sufficient::
+
+  obviel.view({ 
+    iface: 'foo',
+    render: function() {},
+    object_events: {
+       'update': 'rerender'
+    }
+  });
+
 Bootstrapping Obviel
 --------------------
 
