@@ -183,9 +183,16 @@ also define some convenience methods.
 
     Supplying a ``render`` method is optional.
 
+  .. attribute:: before
+
+    An optional function that will be called before any rendering
+    (template or otherwise) takes place. This is most useful to to
+    manipulate ``this.obj`` to set extra information in it that the
+    template needs.
+
   .. attribute:: cleanup
 
-    An optional cleanup function which will be called when the
+    An optional cleanup function that will be called when the
     (non-ephemeral) view is being cleaned up from the element it was
     rendered on, either explicitly because :func:`element.unview` was
     called on it, or implicitly because something else is being

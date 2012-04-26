@@ -692,6 +692,28 @@ Of course setting the ``iface`` is just one of the transformations you
 can apply; you can add any arbitrary property to objects or even
 return completely different objects altogether.
 
+``before``: intervening before rendering starts
+-----------------------------------------------
+
+You can supply an optional ``before`` function to the view that will
+be called just before rendering starts. This can be useful to do
+additional client-side set up in the object being rendered just before
+the template renders it, so that the template can access extra
+information. Here is a simple example::
+
+  obviel.view({
+    iface: 'text',
+    before: function() {
+        this.obj.length = this.obj.data.length;
+    },
+    jsont: 'The text "{data}" has {length} characters.'
+  });
+
+  el.render({
+    iface: 'text',
+    data: 'Hello world'
+  });
+
 Callbacks
 ---------
 

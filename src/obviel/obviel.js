@@ -203,6 +203,10 @@ var obviel = {};
         self.cleanup(self.el, self.obj, self.name);
     
     };
+
+    module.View.prototype.before = function() {
+        // a noop, but can be overridden to manipulate obj
+    };
     
     module.View.prototype.do_render = function() {
         var self = this;
@@ -213,6 +217,8 @@ var obviel = {};
                 previous_view.do_cleanup();
             }
         }
+
+        self.before();
         
         var compiled_template_promise = module.compilers.get_compiled(
             self, self.obj);

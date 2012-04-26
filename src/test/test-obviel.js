@@ -1344,3 +1344,21 @@ asyncTest('transform server contents distinguish between uris', function() {
 
     $.ajax = original_ajax;
 });
+
+test('transform content based on view using before', function() {
+    obviel.view({
+        iface: 'text',
+        before: function() {
+            this.obj.length = this.obj.data.length;
+        },
+        jsont: 'The text "{data}" has {length} characters.'
+    });
+    
+    var el = $('#viewdiv');
+    el.render({
+        iface: 'text',
+        data: 'Hello world'
+    });
+
+    equal(el.text(), 'The text "Hello world" has 11 characters.');
+});
