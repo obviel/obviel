@@ -401,10 +401,22 @@ var obviel = {};
         return obj;
     };
 
+    var http_scheme = function(uri, callback) {
+        $.ajax({
+            type: 'GET',
+            url: uri,
+            dataType: 'json',
+            success: function(obj) {
+                callback(obj);
+            }
+        });
+    };
+    
     module.Registry = function() {
         this.views = {};
         /* the default transformer doesn't do anything */
         this.transformer_hook = null_transformer;
+        this.uri_schemes = {};
     };
 
     module.Registry.prototype.register = function(view) {
@@ -485,17 +497,16 @@ var obviel = {};
                                                       callback, errback) {
         var self = this;
         var defer = $.Deferred();
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'json',
-            success: function(obj) {
-                obj = self.transformer_hook(obj, url, name);
-                var view = self.clone_view(el, obj, name, callback, errback);
-                view.from_url = url;
-                defer.resolve(view);
-            }
-        });
+
+        var obj_callback = function(obj) {
+            obj = self.transformer_hook(obj, url, name);
+            var view = self.clone_view(el, obj, name, callback, errback);
+            view.from_url = url;
+            defer.resolve(view);
+        };
+
+        self.get_uri_scheme(url)(obj_callback);
+        
         return defer.promise();
     };
     
