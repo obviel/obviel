@@ -885,7 +885,7 @@ by the view. You can do this by hand::
      iface: 'foo', 
      render: function() {
         var self = this;
-        self.el.click(function() {
+        $('#some_id', self.el).click(function() {
            self.el.text("clicked!");
         });
      }
@@ -898,8 +898,10 @@ is the equivalent of the above::
     iface: 'foo',
     render: function() {},
     events: {
-       'click': function(ev) {
-           ev.view.el.text('clicked!");
+        click: {
+           '#some_id': function(ev) {
+             ev.view.el.text('clicked!");
+           }
        }
     }
   });
@@ -914,9 +916,10 @@ There is another way to express this::
     iface: 'foo',
     render: function() {},
     events: {
-       'click': 'handle_click'
+       click: {
+         '#some_id': 'handle_click'
        }
-    }
+    },
     handle_click: function(ev) {
        this.el.text('clicked!");
     }
