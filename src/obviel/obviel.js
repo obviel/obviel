@@ -368,7 +368,7 @@ var obviel = {};
     };
 
     module.View.prototype.rerender = function() {
-        this.el.render(this.obj);
+        this.el.render(this.obj, this.name);
     };
     
     module.View.prototype.store_view = function() {

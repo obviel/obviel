@@ -941,6 +941,31 @@ test('object event triggers rerender', function() {
     equal($('#the_id').text(), 'Bye');    
 });
 
+
+test('object event triggers rerender with named view', function() {
+    obviel.view({
+        iface: 'ifoo',
+        name: 'foo',
+        html: '<div id="the_id"></div>',
+        render: function() {
+            $('#the_id', this.el).text(this.obj.title);
+        },
+        object_events: {
+            'custom': 'rerender'
+        }
+    });
+    var el = $('#viewdiv');
+    var obj = {ifaces: ['ifoo'], title: 'Hello'};
+    el.render(obj, 'foo');
+
+    equal($('#the_id').text(), 'Hello');
+    
+    obj.title = 'Bye';
+    $(obj).trigger('custom');
+
+    equal($('#the_id').text(), 'Bye');    
+});
+
 asyncTest('object events cleanup', function() {
     var called = 0;
     obviel.view({
