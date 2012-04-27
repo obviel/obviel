@@ -7,6 +7,10 @@ CHANGES
 * Added ``transformer`` hook. This allows Obviel to transform content
   it retrieves from the server using URLs and hyperlinks.
 
+* Added ``object_events`` structure, allowing you to declare events on
+  the object the view is rendering. Also introduce ``rerender`` method
+  on view.
+
 * Added ``before`` hook to views. You can now pass a ``before``
   function when configuring a view. This function will be called
   before rendering (including before template rendering). This is useful
