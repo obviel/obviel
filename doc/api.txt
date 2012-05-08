@@ -759,3 +759,206 @@ provide some methods. This is the typical pattern::
 
   // finally register the widget as a view with Obviel
   obviel.view(new module.CustomWidget());  
+
+Traject
+=======
+
+.. class:: ParseError
+
+  A parse error when parsing a path.
+
+  .. attribute:: message
+
+    The error message.
+
+.. class:: ResolutionError
+
+  Error resolving a path to an object: object cannot be found.
+
+  .. attribute:: message
+
+    The error message.
+
+.. class:: LocationError
+
+  Error constructing a location (or path) for an object.
+
+  .. attribute:: message
+
+    The error message.
+
+.. class:: RegistrationError
+
+  Error during registration.
+
+  .. attribute:: message
+
+    The error message.
+
+.. class:: Patterns
+
+  .. function:: register_converter(converter_name, converter_func)
+
+  Register a variable converter.
+
+  :param string converter_name: The name of the converter as it will
+    appear in the variable declaration (``$foo:<converter_name>``).
+  :param function converter_func: A function that takes the variable
+    to convert and returns the converted variable.
+
+  .. function:: register(pattern_str, lookup)
+
+  Register a lookup function for a path pattern.
+
+  :param string pattern_str: A path pattern. These are zero or more
+    steps separated by ``/``, where each steps is either a string, or a 
+    $variable (or $variable:converter).
+  :param function lookup: A function that should return the object
+    matching the path variables. It will receive a single variables
+    object as an argument, and its properties are the concrete values
+    used in the path in place of the variables. It can also return ``null``
+    or ``undefined``, indicating thatd the object cannot be found.
+  
+  Can throw :class:`ParseError` if the path cannot be parsed.
+
+  Can throw :class:`RegistrationError`` if the path cannot be
+  registered due to unknown converters or conflicts in registration.
+
+  .. function:: register_inverse(iface, pattern_str, inverse)
+ 
+  Register an inverse function (from object to variables) for 
+  objects of an iface and a pattern.
+
+  :param string iface: The iface that this inverse is registered for.
+    When an object is located, the iface of the object is used to
+    look up the inverse function.
+  :param string pattern_str: A path pattern as for :func:`register`.
+    This is used to reconstruct the path for the objects.
+  :param function inverse: A function that takes an object as an argument
+    and returns a variables object for it that can be used to reconstruct
+    its path, so should have a property for each of the variables in the path.
+
+  .. function:: pattern(iface, pattern_str, lookup, inverse)
+
+  Register both a path lookup as well as the inverse at the same time.
+
+  :param string iface: The iface that this inverse is registered for.
+    When an object is located, the iface of the object is used to
+    look up the inverse function.
+  :param string pattern_str: A path pattern as for :func:`register`.
+    This is used to reconstruct the path for the objects.
+  :param function lookup: A function that should return the object
+    matching the path variables. It will receive a single variables
+    object as an argument, and its properties are the concrete values
+    used in the path in place of the variables.   
+  :param function inverse: A function that takes an object as an argument
+    and returns a variables object for it that can be used to reconstruct
+    its path, so should have a property for each of the variables in the path.
+
+  Can throw :class:`ParseError` if the path cannot be parsed.
+
+  Can throw :class:`RegistrationError` if the path cannot be
+  registered due to unknown converters or conflicts in registration.
+
+  .. function:: set_default_lookup(f)
+
+  Register a function that looks up a default object for those
+  paths that don't have a more specific lookup registered for them.
+
+  :param: function f: A function that returns a default object.
+
+  .. function:: resolve(root, path)
+
+  Resolve a path to an object according to registered patterns,
+  starting at ``root``.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param string path: A concrete path. It will be matched with the
+    registered paths to find the lookup function.
+  :returns: The object found.
+
+  Can throw :class:`ResolutionError` in case the path cannot be
+  resolved to an object.
+
+  .. function:: resolve_stack(root, stack)
+
+  Resolve a stack to an object according to registered patterns,
+  starting at ``root``. A stack is a stack of steps in a path, in
+  reverse order.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param array stack: A stack of steps, in reverse order from the path.
+    It will be matched with the registered paths to find the lookup function.
+  :returns: The object found.
+
+  Can throw :class:`ResolutionError` in case the stack cannot be
+  resolved to an object.
+  
+  .. function:: consume(root, path)
+
+  Resolve a path as far as it can be resolved according to registered
+  patterns, then stop resolving the path. Does not throw a
+  :class:`ResolutionError`, instead simply stops.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param string path: A concrete path. It will be matched with the
+    registered paths to find the lookup function.
+  :returns: An object with three properties, ``unconsumed``, an array of
+    steps that could not be resolved (in stack form, reverse order), 
+    ``consumed``, those steps that have been successfully consumed when
+    resolving the path, and ``obj``, the object found at the end of 
+    path consumption (if no path could be consumed at all, this object
+    will be ``root``).
+
+  .. function:: consume_stack(root, stack)
+
+  Resolve a stack of steps as far as it can be resolved according to
+  registered patterns, then stop resolving the stack. Does not throw a
+  :class:`ResolutionError`, instead simply stops.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param array stack: A stack of steps, in reverse order from the path.
+    It will be matched with the registered paths to find the lookup function.
+  :returns: An object with three properties, ``unconsumed``, an array of
+    steps that could not be resolved (in stack form, reverse order), 
+    ``consumed``, those steps that have been successfully consumed when
+    resolving the path, and ``obj``, the object found at the end of 
+    path consumption (if no stack could be consumed at all, this object
+    will be ``root``).
+
+  .. function:: locate(root, obj)
+
+  Locate ``obj``, giving it ``traject_name`` and ``traject_parent``
+  properties and placing it in a virtual hierarchy, such that
+  following ``traject_parent`` will eventually result in the ``root``
+  object.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param object obj: The object to locate.
+
+  Can throw :class:`LocationError` in case the object can not be located.
+  
+  .. function:: path(root, obj)
+
+  Locate ``obj``, and return its path. This also gives the obj
+  ``traject_name`` and ``traject_parent`` properties and places it in
+  a virtual hierarchy, such that following ``traject_parent`` will
+  eventually result in the ``root`` object.
+
+  :param object root: An object that is the root to the virtual hierarchy
+    created by traject. When following ``traject_parent`` back you will
+    end up at the ``root`` object.
+  :param object obj: The object to get the path for.
+  :returns: The path for ``obj`` according to the patterns.
+
+  Can throw :class:`LocationError` in case the object can not be located.
