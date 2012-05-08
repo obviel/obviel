@@ -112,7 +112,7 @@ var traject = {};
 
     traject.Patterns = function () {
         this._step_registry = new traject.Registry();
-        this._factory_registry = new traject.Registry();
+        this._lookup_registry = new traject.Registry();
         // XXX this won't be the correct registry if we want to get
         // iface inheritance right
         this._inverse_registry = new traject.Registry();
@@ -120,7 +120,7 @@ var traject = {};
             'str': convert_string,
             'int': convert_integer
         };
-        this._default_factory = function () {
+        this._default_lookup = function () {
             return {iface: 'default'};
         };
     };
@@ -133,7 +133,7 @@ var traject = {};
     var _dummy = {};
     
     traject.Patterns.prototype.register = function (
-        pattern_str, factory) {
+        pattern_str, lookup) {
         var pattern = parse(pattern_str);
         var sp = subpatterns(pattern);
         var p = null;
@@ -172,7 +172,7 @@ var traject = {};
         }
         p = sp[sp.length - 1];
         name = component_name(p);
-        this._factory_registry.register(name, factory);
+        this._lookup_registry.register(name, lookup);
     };
 
     traject.Patterns.prototype.register_inverse = function (
@@ -183,13 +183,13 @@ var traject = {};
     };
 
     traject.Patterns.prototype.pattern = function (
-        model_iface, pattern_str, factory, inverse) {
-        this.register(pattern_str, factory);
+        model_iface, pattern_str, lookup, inverse) {
+        this.register(pattern_str, lookup);
         this.register_inverse(model_iface, pattern_str, inverse);
     };
     
-    traject.Patterns.prototype.set_default_factory = function (f) {
-        this._default_factory = f;
+    traject.Patterns.prototype.set_default_lookup = function (f) {
+        this._default_lookup = f;
     };
 
     traject.Patterns.prototype.resolve = function (root, path) {
@@ -269,12 +269,12 @@ var traject = {};
                             obj: obj};
                 }   
             }
-            var factory = this._factory_registry.lookup(pattern_str);
-            if (factory === null) {
-                factory = this._default_factory;
+            var lookup = this._lookup_registry.lookup(pattern_str);
+            if (lookup === null) {
+                lookup = this._default_lookup;
             }
             var parent = obj;
-            obj = factory(variables);
+            obj = lookup(variables);
             if (obj === null) {
                 stack.push(name);
                 return {unconsumed: stack, consumed: consumed, obj: parent};
@@ -333,12 +333,12 @@ var traject = {};
                 model.traject_parent = root;
                 return;
             }
-            var factory = this._factory_registry.lookup(gen_pattern.join('/'));
+            var lookup = this._lookup_registry.lookup(gen_pattern.join('/'));
 
-            if (factory === null) {
-                factory = this._default_factory;
+            if (lookup === null) {
+                lookup = this._default_lookup;
             }
-            var parent = factory(variables);
+            var parent = lookup(variables);
             model.traject_parent = parent;
             model = parent;
 

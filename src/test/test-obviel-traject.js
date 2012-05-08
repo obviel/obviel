@@ -43,11 +43,11 @@ test("subpatterns", function () {
 test("patterns resolve full path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
     
@@ -74,17 +74,17 @@ test("patterns resolve full path", function () {
     equal(obj.iface, 'root');
 });
 
-test("custom default factory", function () {
+test("custom default lookup", function () {
     var patterns = new traject.Patterns();
-    patterns.set_default_factory(function() {
+    patterns.set_default_lookup(function() {
         return {iface: 'custom_default'};
     });
     
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
     
@@ -115,11 +115,11 @@ test("custom default factory", function () {
 test("patterns resolve stack full path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -152,11 +152,11 @@ test("patterns resolve stack full path", function () {
 test("patterns consume stack full path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -194,11 +194,11 @@ test("patterns consume stack full path", function () {
 test("patterns resolve partial path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
     
@@ -223,11 +223,11 @@ test("patterns resolve partial path", function () {
 test("patterns consume stack partial", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -259,11 +259,11 @@ test("patterns consume stack partial", function () {
 test("patterns resolve impossible path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -275,11 +275,11 @@ test("patterns resolve impossible path", function () {
 test("patterns resolve stack impossible path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -295,11 +295,11 @@ test("patterns resolve stack impossible path", function () {
 test("patterns consume stack impossible path", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', lookup);
 
     var root = { iface: 'root'};
 
@@ -313,10 +313,10 @@ test("patterns consume stack impossible path", function () {
     deepEqual(r.consumed, []);
 });
 
-test("resolve to factory that returns null", function () {
+test("resolve to lookup that returns null", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         var result = parseInt(variables.id, 10);
         if (isNaN(result)) {
             return null;
@@ -324,7 +324,7 @@ test("resolve to factory that returns null", function () {
         return {iface: 'obj', id: result};
     };
 
-    patterns.register('models/$id', factory);
+    patterns.register('models/$id', lookup);
     var root = {iface: 'root'};
     
     raises(function () {
@@ -332,10 +332,10 @@ test("resolve to factory that returns null", function () {
     }, traject.ResolutionError);
 });
 
-test("consume to factory that returns null", function () {
+test("consume to lookup that returns null", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         var result = parseInt(variables.id, 10);
         if (isNaN(result)) {
             return null;
@@ -343,7 +343,7 @@ test("consume to factory that returns null", function () {
         return {iface: 'obj', id: result};
     };
 
-    patterns.register('models/$id', factory);
+    patterns.register('models/$id', lookup);
     var root = {iface: 'root'};
     
     var r = patterns.consume(root, 'models/not_an_int');
@@ -358,11 +358,11 @@ test("consume to factory that returns null", function () {
 test("multiple registrations resolve to child", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -372,10 +372,10 @@ test("multiple registrations resolve to child", function () {
     
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
 
     var root = {iface: 'root'};
 
@@ -390,11 +390,11 @@ test("multiple registrations resolve to child", function () {
 test("multiple registrations consume to child with extra", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -404,10 +404,10 @@ test("multiple registrations consume to child with extra", function () {
     
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
 
     var root = {iface: 'root'};
 
@@ -425,11 +425,11 @@ test("multiple registrations consume to child with extra", function () {
 test("multiple registrations resolve to parent", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -439,10 +439,10 @@ test("multiple registrations resolve to parent", function () {
     
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
 
     var root = {iface: 'root'};
 
@@ -456,11 +456,11 @@ test("multiple registrations resolve to parent", function () {
 test("multiple registrations consume to parent with extra", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -470,10 +470,10 @@ test("multiple registrations consume to parent with extra", function () {
     
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
 
     var root = {iface: 'root'};
 
@@ -491,11 +491,11 @@ test("multiple registrations consume to parent with extra", function () {
 test("multiple registrations resolve to nonexistent", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -505,10 +505,10 @@ test("multiple registrations resolve to nonexistent", function () {
     
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
 
     var root = {iface: 'root'};
 
@@ -522,11 +522,11 @@ test("multiple registrations resolve to nonexistent", function () {
 test("overlapping patterns", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
     
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -534,13 +534,13 @@ test("overlapping patterns", function () {
         };
     };
 
-    var special_department_factory = function (variables) {
+    var special_department_lookup = function (variables) {
         return {
             iface: 'special_department'
         };
     };
 
-    var special_employee_factory = function (variables) {
+    var special_employee_lookup = function (variables) {
         return {
             iface: 'special_employee',
             employee_id: variables.employee_id
@@ -549,12 +549,12 @@ test("overlapping patterns", function () {
 
     patterns.register(
         'departments/$department_id',
-        department_factory);
+        department_lookup);
     patterns.register(
         'departments/$department_id/employees/$employee_id',
-        employee_factory);
+        employee_lookup);
     patterns.register('departments/special',
-        special_department_factory);
+        special_department_lookup);
     
     var root = {iface: 'root'};
 
@@ -575,7 +575,7 @@ test("overlapping patterns", function () {
     // now register sub path for special
 
     patterns.register('departments/special/employees/$employee_id',
-                      special_employee_factory);
+                      special_employee_lookup);
 
     obj = patterns.resolve(root, 'departments/special/employees/10');
     equal(obj.iface, 'special_employee');
@@ -586,12 +586,12 @@ test("overlapping patterns", function () {
 /* XXX bunch of tests to do with interface overrides; registering for
    a sub-interface of root definitely won't do anything yet at the moment
 
-   test_factory_override
-   test_factory_override_root_stays_the_same
-   test_factory_extra_path
-   test_factory_extra_path_absent_with_root
-   test_factory_override_in_mid_path
-   test_factory_original_in_mid_path
+   test_lookup_override
+   test_lookup_override_root_stays_the_same
+   test_lookup_extra_path
+   test_lookup_extra_path_absent_with_root
+   test_lookup_override_in_mid_path
+   test_lookup_original_in_mid_path
    test_override_variable_names
    test_conflict_in_override_variable_names
    test_resolved_conflict_in_override_variable_names
@@ -601,11 +601,11 @@ test("overlapping patterns", function () {
 test("conflicting variable names", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
 
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -614,26 +614,26 @@ test("conflicting variable names", function () {
     };
     
     patterns.register(
-        'departments/$department_id', department_factory);
+        'departments/$department_id', department_lookup);
 
     raises(function () {
-        patterns.register('departments/$other_id', department_factory);
+        patterns.register('departments/$other_id', department_lookup);
     }, traject.RegistrationError);
 
     raises(function () {
         patterns.register('departments/$other_id/employees/employee_id',
-                          employee_factory);
+                          employee_lookup);
     }, traject.RegistrationError);
 });
 
 test("conflicting converters", function () {
     var patterns = new traject.Patterns();
 
-    var department_factory = function (variables) {
+    var department_lookup = function (variables) {
         return {iface: 'department', department_id: variables.department_id};
     };
 
-    var employee_factory = function (variables) {
+    var employee_lookup = function (variables) {
         return {
             iface: 'employee',
             department_id: variables.department_id,
@@ -641,16 +641,16 @@ test("conflicting converters", function () {
         };
     };
 
-    patterns.register('departments/$department_id', department_factory);
+    patterns.register('departments/$department_id', department_lookup);
     raises(function () {
         patterns.register('departments/$department_id:int',
-                          department_factory);
+                          department_lookup);
     }, traject.RegistrationError);
 
     raises(function () {
         patterns.register(
             'departments/$department_id:int/employees/$employee_id',
-            employee_factory);
+            employee_lookup);
     }, traject.RegistrationError);
     
 });
@@ -658,11 +658,11 @@ test("conflicting converters", function () {
 test("match int", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('a/$v:int', factory);
+    patterns.register('a/$v:int', lookup);
 
     var root = {iface: 'root'};
 
@@ -679,11 +679,11 @@ test("match int", function () {
 test("consume mismatch int", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('a/$v:int', factory);
+    patterns.register('a/$v:int', lookup);
 
     var root = {iface: 'root'};
 
@@ -699,12 +699,12 @@ test("consume mismatch int", function () {
 test("unknown converter", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', v: variables.v};
     };
 
     raises(function () {
-        patterns.register('a/$v:foo', factory);
+        patterns.register('a/$v:foo', lookup);
     }, traject.RegistrationError);
      
 });
@@ -719,11 +719,11 @@ test("new converter", function () {
         return result;
     });
     
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('a/$v:float', factory);
+    patterns.register('a/$v:float', lookup);
 
     var root = {iface: 'root'};
     
@@ -734,11 +734,11 @@ test("new converter", function () {
 test("converter locate", function () {
     var patterns = new traject.Patterns();
 
-    var factory = function (variables) {
+    var lookup = function (variables) {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('a/$v:int', factory);
+    patterns.register('a/$v:int', lookup);
 
     var args = function (obj) {
         return {'v': obj.v };
