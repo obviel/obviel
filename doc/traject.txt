@@ -1,0 +1,332 @@
+Traject: routing for JavaScript
+===============================
+
+Introduction
+------------
+
+Obviel includes the ``obviel-traject.js`` library. Traject is a
+library for resolving paths to objects. It is not dependent on Obviel
+itself, just on jQuery, but is intended for use with Obviel.
+
+In some JavaScript applications you want to display the user interface
+as a single page that never reloads, but you still want to support
+hyperlinks, the back button and bookmarking.
+
+For this you can use the `fragment identifier`_. The fragment identifier
+is the text behind a hash (#) mark in the URL::
+
+  http://example.com/something#the_fragment_identifier
+
+The fragment identifier can change without the web browser forcing a
+reload of the page, for instance when the user clicks a hyperlink to
+another fragment identifier (``<a
+href="#another_fragment_identifier">Click</a>```), or when the user
+presses the back button in the browser.
+
+.. _`fragment identifier`: https://en.wikipedia.org/wiki/Fragment_identifier
+
+A JavaScript library like `jQuery BBQ`_ can be used to subscribe to
+changes in the fragment identifier (``hashchange`` in jQuery BBQ) and
+take appropriate action.
+
+.. _`jQuery BBQ`: http://benalman.com/projects/jquery-bbq-plugin/
+
+What is this action? The fragment identifier is held to be
+identifying, somehow, some JavaScript object that the client has
+available. We want to get this object, and then render it in the
+content area of the UI. When the fragment identifier changes, we want
+to update the content area of the UI with this rendered object.
+
+Let's look at these steps in more detail:
+
+1. if we receive fragment identifier change event.
+
+2. interpret fragment identifier to find object.
+
+3. render object on content area in UI.
+
+You can use a library like jQuery BBQ for step 1. Obviel views can be
+used for step 3. Traject fits in as library that takes care of step
+2. With traject you can define a patterns registry with path
+patterns. You can then use this patterns registry to resolve actual
+paths to objects.
+
+The Idea in Code
+----------------
+
+Let's translate this into some code::
+
+  $(document).ready(function() {
+    // we render an application object when this
+    // page first loads. we have defined the app view
+    // to include a div with the id "content"
+    $('.app').render(app);
+
+    // trigger the initial hash change manually using BBQ, it goes
+    // to the empty fragment identifier, "#"
+    $(window).trigger('hashchange');
+  });
+
+  // listen to the BBQ hashchange event
+  $(window).bind('hashchange', function(ev) {
+    // we interpret the fragment identifier as a path to an object
+    var path = ev.fragment;
+    // resolve the path to obj using a traject patterns registry we have
+    // defined before
+    var obj = patterns.resolve(app, path);
+    // render the found obj using Obviel
+    $('#content').render(obj);
+  });
+
+With this code, hyperlinks to fragment identifiers and the back button
+will work: when you click a link or press back, the content area in
+the UI will change accordingly, just as if you were browsing to a new
+web page.
+
+This code is not complete: you need to define an ``app`` object, a
+view to display the ``app`` object and views to display whatever
+objects are found using ``patterns.resolve``. What these views are is
+completely up to the application. We'll see examples of an ``app``
+object later.
+
+But most importantly, we haven't described how to create a
+``patterns`` registry with Traject in the first place, and what it can
+do for you exactly. Let's look at this now.
+
+A Patterns Registry
+-------------------
+
+The main object defined by traject is ``traject.Patterns``. If you include
+traject in the page you can create one like this::
+
+  var patterns = new traject.Patterns();
+
+Now let's look at a simple scenario where we use the simplest form
+of a path pattern: a single name. We define a bunch of objects::
+
+  var app = {
+     iface: 'app',
+     objects: {
+        a: {iface: 'A', 'title': 'the A object'};
+        b: {iface: 'B', 'title': 'the B object'};
+        c: {iface: 'C', 'title': 'the C object'};
+     }
+  };
+ 
+Now we want a pattern registry that gives back object ``a`` when the
+path is ``a``, ``b`` when the path is ``b``, and, you guessed it,
+``c`` when the path is ``c``.
+
+Let's do it::
+
+   var get_a = function(variables) {
+      return app.objects.a;
+   };
+
+   var get_b = function(variables) {
+      return app.objects.b;
+   };
+
+   var get_c = function(variables) {
+      return app.objects.c;
+   };
+
+   patterns.register('a', get_a);
+   patterns.register('b', get_b);
+   patterns.register('c', get_c);
+
+When we now resolve a path with the patterns registry, we will find the
+appropriate objects::
+
+  var root = {iface: 'root'};
+
+  patterns.resolve(root, 'a'); // gives back app.objects.a
+  patterns.resolve(root, 'b'); // gives back app.objects.b
+  patterns.resolve(root, 'c'); // gives back app.objects.c
+
+So, what you register with the patterns registry is a path (the first
+argument) and a function to call when this path is matched. You then
+resolve a path. We'll explain what the ``root`` object is for later,
+but you also may have noticed the ``variables`` argument to the
+``get_`` lookup functions, which we'll go into next.
+
+Variables in Paths
+------------------
+
+The code above was a bit repetitive given the regular nature of the
+``app`` object. In addition, each time we add a new object to ``app``
+with some new name (``d``, ``e``, ``foo``, whatever) we would have to
+register a new path in the patterns registry so it can be found. We
+can use this code shorter and more flexible by using a variable in the path
+instead. Instead of the above registrations, we'll use this::
+
+  var get_object = function(variables) {
+     return app.objects[variables.name];
+  };  
+
+  patterns.register('$name', get_object);
+
+Now we can look up paths with arbitrary names, and each will be
+resolved to an object in ``app.objects``.
+
+How does this work? Any variables in the path are indicated using a
+dollar sign (``$``). The values of these variables will be passed into
+the lookup function as properties of the ``variables`` object. The
+function then uses these variables to identify and return the object.
+
+Longer Paths
+------------
+
+Paths are not restricted to single names, you can also use the slash
+(``/``) character in them::
+
+  patterns.register('foo/bar/baz', get_something);
+  patterns.register('stores/$store_id', get_store);
+
+Paths may also use multiple variables at the same time::
+  
+  patterns.register('stores/$store_id/products/$product_id');
+
+Both ``store_id`` and ``product_id`` will be passed into the lookup
+function as properties of the ``variables`` object.
+
+Name and Parent
+---------------
+
+When a path is resolved to an object using traject, the object is placed
+in a virtual hierarchy that is deduced from the path. For instance,
+when we look up an object like this::
+
+   var root = {iface: 'root'};
+   var obj = patterns.resolve(root, 'a');
+
+``obj`` will be placed within the ``root`` object. This is done by
+adding two properties to ``obj``, ``traject_name`` and ``traject_parent``.
+
+``traject_name`` is the name the object was looked up under, in this
+case ``a``. ``traject_parent`` is the object that is placed under, in
+this case ``root``. So these are true::
+
+  obj.traject_name === 'a'
+  obj.traject_parent === root
+
+You can also construct deeper paths. Consider a registration like this::
+
+  patterns.register('foo', get_foo);
+  patterns.register('foo/bar', get_bar);
+
+When we now retrieve ``foo`` and ``bar`` using the following code::
+
+  var root = {iface: 'root'};
+  var foo = patterns.resolve(root, 'foo');
+  var bar = patterns.resolve(root, 'foo/bar');
+
+the following will be true::
+
+  obj.traject_name === 'bar'
+  obj.traject_parent === foo
+  foo.traject_name === 'foo'
+  foo.traject_parent === root
+
+This works with variables too::
+
+  patterns.register('departments/$department_id', get_department)
+
+  var department1 = patterns.resolve(root, 'departments/1');
+
+  obj.traject_name === '1'
+  obj.traject_parent.traject_name === 'departments'
+  obj.traject_parent.traject_parent === root
+
+Here we've registered the path ``departments/$department_id``, but we
+have not registered ``department``. So what kind of object is
+``obj.department_parent``? It's a special default object that traject
+creates if it doesn't have any more specific lookup function
+registered for that path::
+
+  { iface: 'default'}
+
+You can specify a custom default object lookup with a patterns
+registry if you want::
+
+  patterns.set_default_lookup(function() {
+    return { iface: 'some_custom_default_object'};
+  });
+
+Inverse: Locating Objects
+-------------------------
+
+So far we've considered looking up an object for a path, using
+``resolve``.  Traject also supports the inverse scenario: given an
+object, reconstruct what path it has. More generally, we are able to
+*locate* an object using traject. To locate an object means it has a
+``traject_parent`` and ``traject_name``, and following the
+``traject_parent`` chain will eventually lead to the root object.
+
+To help traject locate an object, we need to register an inverse
+function of the lookup function. A lookup function looks up an object
+given a set of variables. The inverse of that creates the variables
+given an object.
+
+Let's consider a simple scenario:
+
+  var departments = {
+    alpha: { iface: 'department', title: 'Alpha'},
+    beta: {iface: 'department', title: 'Beta'},
+    gamma: {iface: 'department', title: 'Gamma'}
+  };
+
+  var get_department = function(variables) {
+     return departments[variables.department_name];
+  };  
+
+  patterns.register('departments/$department_name', get_department);
+
+We now need to create a function that given a department object, gives
+back its name (``$department_name``), in a ``variables`` object like this:
+``{department_name: 'the name'};``. 
+
+How do we find the name of a department in ``departments``? We can loop
+through it until we find the department we want the name for, like this::
+
+  var get_department_variables = function(department) {
+     for (var department_name in departments) {
+        if (department === departments[department_name]) {
+            return {department_name: department_name};
+        }
+     }
+  };
+
+Now we can register the inverse function::
+
+  patterns.register_inverse('department', 'departments/$department_name',
+                            get_department_variables);
+
+Now we can locate a department object::
+
+  patterns.locate(departments.alpha);
+
+Once we've located the department, it will have a ``traject_parent``
+and a ``traject_name``. Locating an object is especially good to
+reconstruct its path, which can be useful to help construct links in
+the the user interface. To construct the path for an object (and automatically
+locate it first if necessary), you can use ``patterns.path``::
+
+  var path = patterns.path(root, departments.alpha);
+
+to get the path ``departments/alpha`` back.
+
+Registering Lookup and Inverse Together
+---------------------------------------
+
+In many cases you'd like to register the lookup and inverse at the same
+time. You can do this using the ``pattern`` method::
+
+  patterns.pattern('department', 'departments/$department_name', 
+                   get_department, get_department_variables);
+
+
+
+
+
+
