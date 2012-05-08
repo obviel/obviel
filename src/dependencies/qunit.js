@@ -1,13 +1,11 @@
 /**
- * QUnit v1.7.0pre - A JavaScript Unit Testing Framework
+ * QUnit v1.6.0 - A JavaScript Unit Testing Framework
  *
  * http://docs.jquery.com/QUnit
  *
  * Copyright (c) 2012 John Resig, Jörn Zaefferer
  * Dual licensed under the MIT (MIT-LICENSE.txt)
  * or GPL (GPL-LICENSE.txt) licenses.
- * Pulled Live from Git Tue May  8 08:35:01 UTC 2012
- * Last Commit: cfc37752b32c6705be421bbacd163454bc0d0236
  */
 
 (function( window ) {
@@ -42,21 +40,15 @@ function Test( name, testName, expected, async, callback ) {
 
 Test.prototype = {
 	init: function() {
-		var a, b, li,
+		var b, li,
         tests = id( "qunit-tests" );
 
 		if ( tests ) {
 			b = document.createElement( "strong" );
-			b.innerHTML = this.name;
-
-			// `a` initialized at top of scope
-			a = document.createElement( "a" );
-			a.innerHTML = "Rerun";
-			a.href = QUnit.url({ filter: getText([b]).replace( /\([^)]+\)$/, "" ).replace( /(^\s*|\s*$)/g, "" ) });
+			b.innerHTML = "Running " + this.name;
 
 			li = document.createElement( "li" );
 			li.appendChild( b );
-			li.appendChild( a );
 			li.className = "running";
 			li.id = this.id = "qunit-test-output" + testId++;
 
@@ -211,6 +203,11 @@ Test.prototype = {
 			b = document.createElement( "strong" );
 			b.innerHTML = this.name + " <b class='counts'>(<b class='failed'>" + bad + "</b>, <b class='passed'>" + good + "</b>, " + this.assertions.length + ")</b>";
 
+			// `a` initialized at top of scope
+			a = document.createElement( "a" );
+			a.innerHTML = "Rerun";
+			a.href = QUnit.url({ filter: getText([b]).replace( /\([^)]+\)$/, "" ).replace( /(^\s*|\s*$)/g, "" ) });
+
 			addEvent(b, "click", function() {
 				var next = b.nextSibling.nextSibling,
 					display = next.style.display;
@@ -233,9 +230,8 @@ Test.prototype = {
 			li = id( this.id );
 			li.className = bad ? "fail" : "pass";
 			li.removeChild( li.firstChild );
-			a = li.firstChild;
 			li.appendChild( b );
-			li.appendChild ( a );
+			li.appendChild( a );
 			li.appendChild( ol );
 
 		} else {
