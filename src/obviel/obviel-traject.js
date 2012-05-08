@@ -11,11 +11,7 @@ var traject = {};
     traject.ParseError = function (message) {
         this.message = message;
     };
-
-    traject.ParseError = function (message) {
-        this.message = message;
-    };
-
+    
     traject.ResolutionError = function (message) {
         this.message = message;
     };
@@ -158,17 +154,17 @@ var traject = {};
     };
 
     traject.Patterns.prototype.register_inverse = function (
-        model_iface, pattern_str, inverse) {
-        this._inverse_registry[model_iface] = {
+        iface, pattern_str, inverse) {
+        this._inverse_registry[iface] = {
             pattern: parse(pattern_str),
             inverse: inverse
         };
     };
 
     traject.Patterns.prototype.pattern = function (
-        model_iface, pattern_str, lookup, inverse) {
+        iface, pattern_str, lookup, inverse) {
         this.register(pattern_str, lookup);
-        this.register_inverse(model_iface, pattern_str, inverse);
+        this.register_inverse(iface, pattern_str, inverse);
     };
     
     traject.Patterns.prototype.set_default_lookup = function (f) {
@@ -275,9 +271,9 @@ var traject = {};
             return;
         }
 
-        var model_iface = provided_by(model);
+        var iface = provided_by(model);
 
-        var v = this._inverse_registry[model_iface];
+        var v = this._inverse_registry[iface];
         if (v === undefined) {
             throw new traject.LocationError(
                 "Cannot reconstruct parameters of: " +
