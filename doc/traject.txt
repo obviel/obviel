@@ -4,6 +4,24 @@ Traject: routing for JavaScript
 Introduction
 ------------
 
+.. sidebar:: maintaining an object structure
+
+  Traject assumes that your application maintains a structure of 
+  JavaScript objects in the browser in which to look up paths. This
+  may not be the way in which an Obviel application is constructed.
+ 
+  We are considering two possible additions to Obviel to help with this:
+
+  * an object synchronisation system so to help the user maintain an
+    object structure on the client, and also update the user interface
+    accordingly.
+  * asynchronous resolution of paths, so that a lookup function can
+    make an AJAX request to the server in order to retrieve an object
+    just in time.
+
+  Please let us know on the :ref:`mailing list <mailing list>` if you
+  have a need for these facilities.
+
 Obviel includes the ``obviel-traject.js`` library. Traject is a
 library for resolving paths to objects. It is not dependent on Obviel
 itself, just on jQuery, but is intended for use with Obviel.
@@ -39,15 +57,15 @@ to update the content area of the UI with this rendered object.
 
 Let's look at these steps in more detail:
 
-1. if we receive fragment identifier change event.
+1. we receive fragment identifier change event (a library such as 
+   jQuery BBQ).
 
-2. interpret fragment identifier to find object.
+2. interpret fragment identifier as a *path* to find an object (
+   using Traject).
 
-3. render object on content area in UI.
+3. render object on content area in UI (using Obviel views).
 
-You can use a library like jQuery BBQ for step 1. Obviel views can be
-used for step 3. Traject fits in as library that takes care of step
-2. With traject you can define a patterns registry with path
+With Traject you can define a patterns registry with path
 patterns. You can then use this patterns registry to resolve actual
 paths to objects.
 
