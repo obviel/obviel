@@ -27,23 +27,6 @@ var traject = {};
     traject.RegistrationError = function (message) {
         this.message = message;
     };
-
-    traject.Registry = function () {
-        this.registry = {};
-    };
-
-    traject.Registry.prototype.register = function(key, value) {
-        this.registry[key] = value;
-    };
-    
-
-    traject.Registry.prototype.lookup = function (key) {
-        var result = this.registry[key];
-        if (result === undefined) {
-            return null;
-        }
-        return result;
-    };
     
     var normalize = function (pattern_str) {
         if (pattern_str.charAt(0) === '/') {
@@ -111,11 +94,10 @@ var traject = {};
     };
 
     traject.Patterns = function () {
-        this._step_registry = new traject.Registry();
-        this._lookup_registry = new traject.Registry();
-        // XXX this won't be the correct registry if we want to get
-        // iface inheritance right
-        this._inverse_registry = new traject.Registry();
+        this._step_registry = {};
+        this._lookup_registry = {};
+        // XXX interface inheritance isn't done
+        this._inverse_registry = {};
         this._converters = {
             'str': convert_string,
             'int': convert_integer
@@ -154,11 +136,11 @@ var traject = {};
                             "variable " + value);
                     }
                 }
-                var prev_value = this._step_registry.lookup(name);
+                var prev_value = this._step_registry[name];
                 if (prev_value === value) {
                     continue;
                 }
-                if (prev_value !== null) {
+                if (prev_value !== undefined) {
                     throw new traject.RegistrationError(
                         "Could not register " + pattern.join('/') +
                         "because of a conflict between variable " +
@@ -168,18 +150,19 @@ var traject = {};
             } else {
                 value = _dummy;
             }
-            this._step_registry.register(name, value);
+            this._step_registry[name] = value;
         }
         p = sp[sp.length - 1];
         name = component_name(p);
-        this._lookup_registry.register(name, lookup);
+        this._lookup_registry[name] = lookup;
     };
 
     traject.Patterns.prototype.register_inverse = function (
         model_iface, pattern_str, inverse) {
-        this._inverse_registry.register(model_iface,
-                                        {pattern: parse(pattern_str),
-                                         inverse: inverse});
+        this._inverse_registry[model_iface] = {
+            pattern: parse(pattern_str),
+            inverse: inverse
+        };
     };
 
     traject.Patterns.prototype.pattern = function (
@@ -233,18 +216,18 @@ var traject = {};
             var name = stack.pop();
             var step_pattern = pattern.concat(name);
             var step_pattern_str = step_pattern.join('/');
-            var next_step = this._step_registry.lookup(step_pattern_str);
-
+            var next_step = this._step_registry[step_pattern_str];
+                
             var pattern_str = null;
             
-            if (next_step !== null) {
+            if (next_step !== undefined) {
                 pattern = step_pattern;
                 pattern_str = step_pattern_str;
             } else {
                 var variable_pattern = pattern.concat('$');
                 var variable_pattern_str = variable_pattern.join('/');
-                var variable = this._step_registry.lookup(variable_pattern_str);
-                if (variable !== null) {
+                var variable = this._step_registry[variable_pattern_str];
+                if (variable !== undefined) {
                     pattern = variable_pattern;
                     pattern_str = variable_pattern_str;
                     var converter_name = null;
@@ -269,8 +252,8 @@ var traject = {};
                             obj: obj};
                 }   
             }
-            var lookup = this._lookup_registry.lookup(pattern_str);
-            if (lookup === null) {
+            var lookup = this._lookup_registry[pattern_str];
+            if (lookup === undefined) {
                 lookup = this._default_lookup;
             }
             var parent = obj;
@@ -294,8 +277,8 @@ var traject = {};
 
         var model_iface = provided_by(model);
 
-        var v = this._inverse_registry.lookup(model_iface);
-        if (v === null) {
+        var v = this._inverse_registry[model_iface];
+        if (v === undefined) {
             throw new traject.LocationError(
                 "Cannot reconstruct parameters of: " +
                 provided_by(model));
@@ -338,9 +321,9 @@ var traject = {};
                 model.traject_parent = root;
                 return;
             }
-            var lookup = this._lookup_registry.lookup(gen_pattern.join('/'));
+            var lookup = this._lookup_registry[gen_pattern.join('/')];
 
-            if (lookup === null) {
+            if (lookup === undefined) {
                 lookup = this._default_lookup;
             }
             var parent = lookup(variables);
