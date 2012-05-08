@@ -253,6 +253,32 @@ registry if you want::
     return { iface: 'some_custom_default_object'};
   });
 
+Converters
+----------
+
+In some cases it is convenient to have a variable be converted to a
+particular type, for instance an integer automatically. You 
+can do this by indicating the converter behind the variable::
+
+  patterns.register('customers/$customer_id:int', get_customer);
+
+The ``variables`` object passed to the ``get_customer`` function will
+now get the variable ``customer_id`` as an integer. If a non-integer
+is in the path for ``$customer_id``, the path will fail to resolve.
+
+You can also register new converters with the patterns registry::
+
+  patterns.register_converter('float', function(value) {
+     var result = parseFloat(value);
+     if (isNaN(result) {
+       return null;
+     }
+     return result;
+  });
+
+You can now use a variable definition with ``:float``, such as
+``$customer_id:float``.
+
 Inverse: Locating Objects
 -------------------------
 
