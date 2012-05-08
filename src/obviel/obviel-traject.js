@@ -32,21 +32,13 @@ var traject = {};
         this.registry = {};
     };
 
-    traject.Registry.prototype.register = function(iface, key, value) {
-        if (this.registry[iface] === undefined) {
-            this.registry[iface] = {};
-        }
-        var sub_registry = this.registry[iface];
-        sub_registry[key] = value;
+    traject.Registry.prototype.register = function(key, value) {
+        this.registry[key] = value;
     };
     
 
-    traject.Registry.prototype.lookup = function (iface, key) {
-        var sub_registry = this.registry[iface];
-        if (sub_registry === undefined) {
-            return null;
-        }
-        var result = sub_registry[key];
+    traject.Registry.prototype.lookup = function (key) {
+        var result = this.registry[key];
         if (result === undefined) {
             return null;
         }
@@ -127,9 +119,12 @@ var traject = {};
         this._converters = {
             'str': convert_string,
             'int': convert_integer
-        };    
+        };
+        this._default_factory = function () {
+            return {iface: 'default'};
+        };
     };
-
+    
     traject.Patterns.prototype.register_converter = function (converter_name,
                                                               converter_func) {
         this._converters[converter_name] = converter_func;
@@ -138,7 +133,7 @@ var traject = {};
     var _dummy = {};
     
     traject.Patterns.prototype.register = function (
-        iface, pattern_str, factory) {
+        pattern_str, factory) {
         var pattern = parse(pattern_str);
         var sp = subpatterns(pattern);
         var p = null;
@@ -159,7 +154,7 @@ var traject = {};
                             "variable " + value);
                     }
                 }
-                var prev_value = this._step_registry.lookup(iface, name);
+                var prev_value = this._step_registry.lookup(name);
                 if (prev_value === value) {
                     continue;
                 }
@@ -173,37 +168,39 @@ var traject = {};
             } else {
                 value = _dummy;
             }
-            this._step_registry.register(iface, name, value);
+            this._step_registry.register(name, value);
         }
         p = sp[sp.length - 1];
         name = component_name(p);
-        this._factory_registry.register(iface, name, factory);
+        this._factory_registry.register(name, factory);
     };
 
     traject.Patterns.prototype.register_inverse = function (
-        root_iface, model_iface, pattern_str, inverse) {
-        this._inverse_registry.register(root_iface, model_iface,
+        model_iface, pattern_str, inverse) {
+        this._inverse_registry.register(model_iface,
                                         {pattern: parse(pattern_str),
                                          inverse: inverse});
     };
 
     traject.Patterns.prototype.pattern = function (
-        root_iface, model_iface, pattern_str, factory, inverse) {
-        this.register(root_iface, pattern_str, factory);
-        this.register_inverse(root_iface, model_iface, pattern_str, inverse);
+        model_iface, pattern_str, factory, inverse) {
+        this.register(pattern_str, factory);
+        this.register_inverse(model_iface, pattern_str, inverse);
     };
     
-    traject.Patterns.prototype.resolve = function (root, path,
-                                                   default_factory) {
+    traject.Patterns.prototype.set_default_factory = function (f) {
+        this._default_factory = f;
+    };
+
+    traject.Patterns.prototype.resolve = function (root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
-        return this.resolve_stack(root, names, default_factory);
+        return this.resolve_stack(root, names);
     };
 
-    traject.Patterns.prototype.resolve_stack = function (root, stack,
-                                                         default_factory) {
-        var r = this.consume_stack(root, stack, default_factory);
+    traject.Patterns.prototype.resolve_stack = function (root, stack) {
+        var r = this.consume_stack(root, stack);
         if (r.unconsumed.length) {
             var stack_copy = stack.slice(0);
             stack_copy.reverse();
@@ -213,12 +210,11 @@ var traject = {};
         return r.obj;
     };
 
-    traject.Patterns.prototype.consume = function (root, path,
-                                                   default_factory) {
+    traject.Patterns.prototype.consume = function (root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
-        return this.consume_stack(root, names, default_factory);
+        return this.consume_stack(root, names);
     };
 
     var provided_by = function (obj) {
@@ -228,10 +224,8 @@ var traject = {};
         return obj.iface;
     };
     
-    traject.Patterns.prototype.consume_stack = function (root, stack,
-                                                         default_factory) {
+    traject.Patterns.prototype.consume_stack = function (root, stack) {
         var variables = {};
-        var provided = provided_by(root);
         var obj = root;
         var pattern = [];
         var consumed = [];
@@ -239,8 +233,7 @@ var traject = {};
             var name = stack.pop();
             var step_pattern = pattern.concat(name);
             var step_pattern_str = step_pattern.join('/');
-            var next_step = this._step_registry.lookup(
-                provided, step_pattern_str);
+            var next_step = this._step_registry.lookup(step_pattern_str);
 
             var pattern_str = null;
             
@@ -250,8 +243,7 @@ var traject = {};
             } else {
                 var variable_pattern = pattern.concat('$');
                 var variable_pattern_str = variable_pattern.join('/');
-                var variable = this._step_registry.lookup(
-                    provided, variable_pattern_str);
+                var variable = this._step_registry.lookup(variable_pattern_str);
                 if (variable !== null) {
                     pattern = variable_pattern;
                     pattern_str = variable_pattern_str;
@@ -277,9 +269,9 @@ var traject = {};
                             obj: obj};
                 }   
             }
-            var factory = this._factory_registry.lookup(provided, pattern_str);
+            var factory = this._factory_registry.lookup(pattern_str);
             if (factory === null) {
-                factory = default_factory;
+                factory = this._default_factory;
             }
             var parent = obj;
             obj = factory(variables);
@@ -294,16 +286,15 @@ var traject = {};
         return {unconsumed: stack, consumed: consumed, obj: obj};
     };
 
-    traject.Patterns.prototype.locate = function (root, model, default_) {
+    traject.Patterns.prototype.locate = function (root, model) {
         if (model.traject_parent !== undefined &&
             model.traject_parent !== null) {
             return;
         }
 
-        var root_iface = provided_by(root);
         var model_iface = provided_by(model);
 
-        var v = this._inverse_registry.lookup(root_iface, model_iface);
+        var v = this._inverse_registry.lookup(model_iface);
         if (v === null) {
             throw new traject.LocationError(
                 "Cannot reconstruct parameters of: " +
@@ -342,11 +333,10 @@ var traject = {};
                 model.traject_parent = root;
                 return;
             }
-            var factory = this._factory_registry.lookup(
-                root_iface, gen_pattern.join('/'));
+            var factory = this._factory_registry.lookup(gen_pattern.join('/'));
 
             if (factory === null) {
-                factory = default_;
+                factory = this._default_factory;
             }
             var parent = factory(variables);
             model.traject_parent = parent;
@@ -360,8 +350,8 @@ var traject = {};
         
     };
 
-    traject.Patterns.prototype.path = function(root, obj, default_) {
-        this.locate(root, obj, default_);
+    traject.Patterns.prototype.path = function(root, obj) {
+        this.locate(root, obj);
         var stack = [];
         while (obj !== root) {
             stack.push(obj.traject_name);

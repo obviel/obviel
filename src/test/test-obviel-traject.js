@@ -47,15 +47,11 @@ test("patterns resolve full path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
     
-    var obj = patterns.resolve(root, 'a/B/c/D', default_factory);
+    var obj = patterns.resolve(root, 'a/B/c/D');
 
     equal(obj.traject_name, 'D');
     equal(obj.iface, 'obj');
@@ -78,6 +74,44 @@ test("patterns resolve full path", function () {
     equal(obj.iface, 'root');
 });
 
+test("custom default factory", function () {
+    var patterns = new traject.Patterns();
+    patterns.set_default_factory(function() {
+        return {iface: 'custom_default'};
+    });
+    
+    var factory = function (variables) {
+        return {iface: 'obj', 'b': variables.b, 'd': variables.d};
+    };
+
+    patterns.register('a/$b/c/$d', factory);
+
+    var root = { iface: 'root'};
+    
+    var obj = patterns.resolve(root, 'a/B/c/D');
+
+    equal(obj.traject_name, 'D');
+    equal(obj.iface, 'obj');
+    equal(obj.b, 'B');
+    equal(obj.d, 'D');
+    
+    obj = obj.traject_parent;
+    equal(obj.traject_name, 'c');
+    equal(obj.iface, 'custom_default');
+
+    obj = obj.traject_parent;
+    equal(obj.traject_name, 'B');
+    equal(obj.iface, 'custom_default');
+
+    obj = obj.traject_parent;
+    equal(obj.traject_name, 'a');
+    equal(obj.iface, 'custom_default');
+
+    obj = obj.traject_parent;
+    equal(obj.iface, 'root');
+
+});
+
 test("patterns resolve stack full path", function () {
     var patterns = new traject.Patterns();
 
@@ -85,18 +119,14 @@ test("patterns resolve stack full path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
 
     var l = ['a', 'B', 'c', 'D'];
     l.reverse();
     
-    var obj = patterns.resolve_stack(root, l, default_factory);
+    var obj = patterns.resolve_stack(root, l);
 
     equal(obj.traject_name, 'D');
     equal(obj.iface, 'obj');
@@ -126,18 +156,14 @@ test("patterns consume stack full path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
 
     var l = ['a', 'B', 'c', 'D'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l, default_factory);
+    var r = patterns.consume_stack(root, l);
 
     deepEqual(r.unconsumed, []);
     deepEqual(r.consumed, ['a', 'B', 'c', 'D']);
@@ -172,15 +198,11 @@ test("patterns resolve partial path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
     
-    var obj = patterns.resolve(root, 'a/B/c', default_factory);
+    var obj = patterns.resolve(root, 'a/B/c');
 
     equal(obj.traject_name, 'c');
     equal(obj.iface, 'default');
@@ -205,18 +227,14 @@ test("patterns consume stack partial", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
 
     var l = ['a', 'B', 'c'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l, default_factory);
+    var r = patterns.consume_stack(root, l);
 
     deepEqual(r.unconsumed, []);
     deepEqual(r.consumed, ['a', 'B', 'c']);
@@ -245,16 +263,12 @@ test("patterns resolve impossible path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
 
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
-
     raises(function () {
-        patterns.resolve(root, 'B/c/D', default_factory);
+        patterns.resolve(root, 'B/c/D');
     }, traject.ResolutionError);
 });
 
@@ -265,19 +279,15 @@ test("patterns resolve stack impossible path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
 
     var l = ['B', 'c', 'D'];
     l.reverse();
 
     raises(function () {
-        patterns.resolve_stack(root, l, default_factory);
+        patterns.resolve_stack(root, l);
     }, traject.ResolutionError);
     
 });
@@ -289,18 +299,14 @@ test("patterns consume stack impossible path", function () {
         return {iface: 'obj', 'b': variables.b, 'd': variables.d};
     };
 
-    patterns.register('root', 'a/$b/c/$d', factory);
+    patterns.register('a/$b/c/$d', factory);
 
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return { iface: 'default'};
-    };
 
     var l = ['B', 'c', 'D'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l, default_factory);
+    var r = patterns.consume_stack(root, l);
 
     equal(r.obj, root);
     deepEqual(r.unconsumed, ['D', 'c', 'B']);
@@ -318,15 +324,11 @@ test("resolve to factory that returns null", function () {
         return {iface: 'obj', id: result};
     };
 
-    patterns.register('root', 'models/$id', factory);
+    patterns.register('models/$id', factory);
     var root = {iface: 'root'};
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
     
     raises(function () {
-        patterns.resolve(root, 'models/not_an_int', default_factory);
+        patterns.resolve(root, 'models/not_an_int');
     }, traject.ResolutionError);
 });
 
@@ -341,14 +343,10 @@ test("consume to factory that returns null", function () {
         return {iface: 'obj', id: result};
     };
 
-    patterns.register('root', 'models/$id', factory);
+    patterns.register('models/$id', factory);
     var root = {iface: 'root'};
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
     
-    var r = patterns.consume(root, 'models/not_an_int', default_factory);
+    var r = patterns.consume(root, 'models/not_an_int');
 
     deepEqual(r.unconsumed, ['not_an_int']);
     deepEqual(r.consumed, ['models']);
@@ -373,20 +371,15 @@ test("multiple registrations resolve to child", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    var obj = patterns.resolve(root, 'departments/1/employees/10',
-                               default_factory);
+    var obj = patterns.resolve(root, 'departments/1/employees/10');
 
     equal(obj.iface, 'employee');
     equal(obj.department_id, '1');
@@ -410,20 +403,15 @@ test("multiple registrations consume to child with extra", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    var r = patterns.consume(root, 'departments/1/employees/10/index',
-                               default_factory);
+    var r = patterns.consume(root, 'departments/1/employees/10/index');
 
     deepEqual(r.unconsumed, ['index']);
     deepEqual(r.consumed, ['departments', '1', 'employees', '10']);
@@ -450,20 +438,15 @@ test("multiple registrations resolve to parent", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    var obj = patterns.resolve(root, 'departments/1',
-                               default_factory);
+    var obj = patterns.resolve(root, 'departments/1');
 
     equal(obj.iface, 'department');
     equal(obj.department_id, '1'); 
@@ -486,20 +469,15 @@ test("multiple registrations consume to parent with extra", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    var r = patterns.consume(root, 'departments/1/index',
-                               default_factory);
+    var r = patterns.consume(root, 'departments/1/index');
 
     deepEqual(r.unconsumed, ['index']);
     deepEqual(r.consumed, ['departments', '1']);
@@ -526,21 +504,16 @@ test("multiple registrations resolve to nonexistent", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     raises(function () {
-        patterns.resolve(root, 'foo/1/bar',
-                         default_factory);
+        patterns.resolve(root, 'foo/1/bar');
     }, traject.ResolutionError);
     
 });
@@ -575,45 +548,36 @@ test("overlapping patterns", function () {
     };
 
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         department_factory);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         employee_factory);
-    patterns.register(
-        'root', 'departments/special',
+    patterns.register('departments/special',
         special_department_factory);
     
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    var obj = patterns.resolve(root, 'departments/1/employees/10',
-                               default_factory);
+    var obj = patterns.resolve(root, 'departments/1/employees/10');
     equal(obj.iface, 'employee');
 
-    obj = patterns.resolve(root, 'departments/1',
-                           default_factory);
+    obj = patterns.resolve(root, 'departments/1');
     
     equal(obj.iface, 'department');
 
-    obj = patterns.resolve(root, 'departments/special', default_factory);
+    obj = patterns.resolve(root, 'departments/special');
     equal(obj.iface, 'special_department');
 
     raises(function () {
-        patterns.resolve(root, 'departments/special/employees/10',
-                         default_factory);
+        patterns.resolve(root, 'departments/special/employees/10');
     }, traject.ResolutionError);
 
     // now register sub path for special
 
-    patterns.register('root', 'departments/special/employees/$employee_id',
+    patterns.register('departments/special/employees/$employee_id',
                       special_employee_factory);
 
-    obj = patterns.resolve(root, 'departments/special/employees/10',
-                           default_factory);
+    obj = patterns.resolve(root, 'departments/special/employees/10');
     equal(obj.iface, 'special_employee');
     equal(obj.employee_id, '10');
     
@@ -650,15 +614,14 @@ test("conflicting variable names", function () {
     };
     
     patterns.register(
-        'root', 'departments/$department_id', department_factory);
+        'departments/$department_id', department_factory);
 
     raises(function () {
-        patterns.register('root', 'departments/$other_id', department_factory);
+        patterns.register('departments/$other_id', department_factory);
     }, traject.RegistrationError);
 
     raises(function () {
-        patterns.register('root',
-                          'departments/$other_id/employees/employee_id',
+        patterns.register('departments/$other_id/employees/employee_id',
                           employee_factory);
     }, traject.RegistrationError);
 });
@@ -678,17 +641,14 @@ test("conflicting converters", function () {
         };
     };
 
-    patterns.register('root',
-                      'departments/$department_id', department_factory);
+    patterns.register('departments/$department_id', department_factory);
     raises(function () {
-        patterns.register('root',
-                          'departments/$department_id:int',
+        patterns.register('departments/$department_id:int',
                           department_factory);
     }, traject.RegistrationError);
 
     raises(function () {
         patterns.register(
-            'root',
             'departments/$department_id:int/employees/$employee_id',
             employee_factory);
     }, traject.RegistrationError);
@@ -702,20 +662,16 @@ test("match int", function () {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('root', 'a/$v:int', factory);
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
+    patterns.register('a/$v:int', factory);
 
     var root = {iface: 'root'};
 
-    var obj = patterns.resolve(root, 'a/1', default_factory);
+    var obj = patterns.resolve(root, 'a/1');
 
     strictEqual(obj.v, 1);
 
     raises(function () {
-        patterns.resolve(root, 'a/not_an_int', default_factory);
+        patterns.resolve(root, 'a/not_an_int');
     }, traject.ResolutionError);
     
 });
@@ -727,15 +683,11 @@ test("consume mismatch int", function () {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('root', 'a/$v:int', factory);
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
+    patterns.register('a/$v:int', factory);
 
     var root = {iface: 'root'};
 
-    var r = patterns.consume(root, 'a/not_an_int', default_factory);
+    var r = patterns.consume(root, 'a/not_an_int');
 
     deepEqual(r.unconsumed, ['not_an_int']);
     deepEqual(r.consumed, ['a']);
@@ -752,7 +704,7 @@ test("unknown converter", function () {
     };
 
     raises(function () {
-        patterns.register('root', 'a/$v:foo', factory);
+        patterns.register('a/$v:foo', factory);
     }, traject.RegistrationError);
      
 });
@@ -771,15 +723,11 @@ test("new converter", function () {
         return {iface: 'obj', v: variables.v};
     };
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    patterns.register('root', 'a/$v:float', factory);
+    patterns.register('a/$v:float', factory);
 
     var root = {iface: 'root'};
     
-    var obj = patterns.resolve(root, 'a/1.1', default_factory);
+    var obj = patterns.resolve(root, 'a/1.1');
     strictEqual(obj.v, 1.1);
 });
 
@@ -790,23 +738,19 @@ test("converter locate", function () {
         return {iface: 'obj', v: variables.v};
     };
 
-    patterns.register('root', 'a/$v:int', factory);
+    patterns.register('a/$v:int', factory);
 
     var args = function (obj) {
         return {'v': obj.v };
     };
 
-    patterns.register_inverse('root', 'obj', 'a/$v:int', args);
+    patterns.register_inverse('obj', 'a/$v:int', args);
     
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var root = {iface: 'root'};
 
     var obj = {iface: 'obj', v: 3};
 
-    patterns.locate(root, obj, default_factory);
+    patterns.locate(root, obj);
 
     strictEqual(obj.traject_name, '3');
 });
@@ -907,30 +851,30 @@ var get_identity_patterns = function () {
     
 
     patterns.register(
-        'root', 'departments', identityDepartments);
+        'departments', identityDepartments);
     patterns.register(
-        'root', 'departments/$department_id',
+        'departments/$department_id',
         identityDepartment);
     patterns.register(
-        'root', 'departments/$department_id/employees', identityEmployees);
+        'departments/$department_id/employees', identityEmployees);
     patterns.register(
-        'root', 'departments/$department_id/employees/$employee_id',
+        'departments/$department_id/employees/$employee_id',
         identityEmployee);
     
     patterns.register_inverse(
-        'root', 'departments',
+        'departments',
         'departments',
         departmentsArguments);
     patterns.register_inverse(
-        'root', 'department',
+        'department',
         'departments/$department_id',
         departmentArguments);
     patterns.register_inverse(
-        'root', 'employees',
+        'employees',
         'departments/$department_id/employees',
         employeesArguments);
     patterns.register_inverse(
-        'root', 'employee',
+        'employee',
         'departments/$department_id/employees/$employee_id',
         employeeArguments);
     return patterns;
@@ -940,14 +884,10 @@ var get_identity_patterns = function () {
 test("inverse", function () {
     var patterns = get_identity_patterns();
     var root = { iface: 'root'};
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
     
     var employee = {iface: 'employee', department_id: 1, employee_id: 2};
 
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
 
     equal(employee.traject_name, '2');
     var employees = employee.traject_parent;
@@ -963,17 +903,13 @@ test("identity", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var employee1 = patterns.resolve(
-        root, 'departments/1/employees/2', default_factory);
+        root, 'departments/1/employees/2');
     var employee2 = patterns.resolve(
-        root, 'departments/1/employees/2', default_factory);
+        root, 'departments/1/employees/2');
     strictEqual(employee1, employee2);
     var employee3 = patterns.resolve(
-        root, 'departments/1/employees/3', default_factory);
+        root, 'departments/1/employees/3');
     notEqual(employee1, employee3); 
 });
 
@@ -981,13 +917,9 @@ test("no recreation", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2',
                        'employees 1',
                        'department 1',
@@ -995,7 +927,7 @@ test("no recreation", function () {
     _calls = [];
 
     // won't create anything next time
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     deepEqual(_calls, []);
 });
 
@@ -1003,13 +935,9 @@ test("cannot locate", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var foo = {iface: 'foo'};
     raises(function () {
-        patterns.locate(root, foo, default_factory);
+        patterns.locate(root, foo);
     }, traject.LocationError);
 
 });
@@ -1019,19 +947,15 @@ test("no recreation of departments", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var department = identityDepartment({department_id: '1'});
-    patterns.locate(root, department, default_factory);
+    patterns.locate(root, department);
 
     _calls = [];
     // it won't recreate departments the second time as it'll
     // find a department object with a parent
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2',
                        'employees 1',
                        'department 1']);
@@ -1041,19 +965,15 @@ test("no recreation of department", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     var employees = identityEmployees({department_id: '1'});
-    patterns.locate(root, employees, default_factory);
+    patterns.locate(root, employees);
 
     _calls = [];
     // it won't recreate department the second time as it'll
     // find a employees object with a parent
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2', 'employees 1']);
 });
 
@@ -1061,18 +981,14 @@ test("no recreation of department after resolve", function () {
     var patterns = get_identity_patterns();
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
-    patterns.resolve(root, 'departments/1/employees', default_factory);
+    patterns.resolve(root, 'departments/1/employees');
     
     _calls = [];
     // it won't recreate department the second time as it'll
     // find a employees object with a parent
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2', 'employees 1']);
 });
 
@@ -1081,15 +997,11 @@ test("inverse non string name", function () {
 
     var root = {iface: 'root'};
 
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
-
     // use integers here, not strings
     var employee = identityEmployee({department_id: 1,
                                      employee_id: 2});
 
-    patterns.locate(root, employee, default_factory);
+    patterns.locate(root, employee);
     equal(employee.traject_name, '2');
 });
 
@@ -1097,18 +1009,14 @@ test("inverse twice", function () {
     var patterns = get_identity_patterns();
 
     var root = {iface: 'root'};
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
     
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
     var other_employee = identityEmployee({department_id: '1',
                                            employee_id: '3'});
     
-    patterns.locate(root, employee, default_factory);
-    patterns.locate(root, other_employee, default_factory);
+    patterns.locate(root, employee);
+    patterns.locate(root, other_employee);
     
     equal(employee.traject_name, '2');
     equal(other_employee.traject_name, '3');
@@ -1118,14 +1026,10 @@ test("generate path", function () {
     var patterns = get_identity_patterns();
 
     var root = {iface: 'root'};
-
-    var default_factory = function () {
-        return {iface: 'default'};
-    };
     
     var employee = identityEmployee({department_id: '1',
                                      employee_id: '2'});
 
-    var path = patterns.path(root, employee, default_factory);
+    var path = patterns.path(root, employee);
     equal(path, 'departments/1/employees/2');
 });
