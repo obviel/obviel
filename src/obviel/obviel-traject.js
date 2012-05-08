@@ -265,19 +265,19 @@ var traject = {};
         return {unconsumed: stack, consumed: consumed, obj: obj};
     };
 
-    traject.Patterns.prototype.locate = function (root, model) {
-        if (model.traject_parent !== undefined &&
-            model.traject_parent !== null) {
+    traject.Patterns.prototype.locate = function (root, obj) {
+        if (obj.traject_parent !== undefined &&
+            obj.traject_parent !== null) {
             return;
         }
 
-        var iface = provided_by(model);
+        var iface = provided_by(obj);
 
         var v = this._inverse_registry[iface];
         if (v === undefined) {
             throw new traject.LocationError(
                 "Cannot reconstruct parameters of: " +
-                provided_by(model));
+                provided_by(obj));
         }
         /* need to make a copy of pattern before manipulating it */
         var pattern = v.pattern.slice(0); 
@@ -285,7 +285,7 @@ var traject = {};
 
         var gen_pattern = generalize_pattern(pattern);
 
-        var variables = inverse(model);
+        var variables = inverse(obj);
 
         if (variables === null || variables === undefined) {
             throw new traject.LocationError(
@@ -311,10 +311,10 @@ var traject = {};
                 name = variables[name];
                 delete variables[name];
             }
-            model.traject_name = name.toString();
+            obj.traject_name = name.toString();
 
             if (gen_pattern.length === 0) {
-                model.traject_parent = root;
+                obj.traject_parent = root;
                 return;
             }
             var lookup = this._lookup_registry[gen_pattern.join('/')];
@@ -323,11 +323,11 @@ var traject = {};
                 lookup = this._default_lookup;
             }
             var parent = lookup(variables);
-            model.traject_parent = parent;
-            model = parent;
+            obj.traject_parent = parent;
+            obj = parent;
 
-            if (model.traject_parent !== undefined &&
-                model.traject_parent !== null) {
+            if (obj.traject_parent !== undefined &&
+                obj.traject_parent !== null) {
                 return;
             }
         }
