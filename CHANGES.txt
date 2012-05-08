@@ -17,6 +17,10 @@ CHANGES
   to manipulate ``this.obj`` to add extra information before the template
   is rendered.
 
+* Added obviel-traject library. This library allows routing of paths
+  to objects and the inverse: constructing paths for objects. See the
+  documentation for more detail.
+
 0.11.1 (2012-01-14)
 ===================
 
