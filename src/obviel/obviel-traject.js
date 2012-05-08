@@ -275,7 +275,7 @@ var traject = {};
             }
             var parent = obj;
             obj = lookup(variables);
-            if (obj === null) {
+            if (obj === null || obj === undefined) {
                 stack.push(name);
                 return {unconsumed: stack, consumed: consumed, obj: parent};
             }
@@ -308,6 +308,11 @@ var traject = {};
 
         var variables = inverse(model);
 
+        if (variables === null || variables === undefined) {
+            throw new traject.LocationError(
+                "Inverse returned null or undefined, not variables");
+        }
+        
         for (var key in variables) {
             var value = variables[key];
             variables[key.toString()] = value;

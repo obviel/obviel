@@ -332,6 +332,29 @@ test("resolve to lookup that returns null", function () {
     }, traject.ResolutionError);
 });
 
+test("resolve to lookup that returns undefined", function () {
+    var patterns = new traject.Patterns();
+
+    var data = {
+        'a': {iface: 'something'},
+        'b': {iface: 'something'}
+    };
+    
+    var lookup = function (variables) {
+        return data[variables.id]; // will return undefined if not found
+    };
+
+    patterns.register('models/$id', lookup);
+    var root = {iface: 'root'};
+
+    strictEqual(patterns.resolve(root, 'models/a'), data.a);
+    
+    raises(function () {
+        patterns.resolve(root, 'models/unknown');
+    }, traject.ResolutionError);
+
+});
+
 test("consume to lookup that returns null", function () {
     var patterns = new traject.Patterns();
 
@@ -1032,4 +1055,76 @@ test("generate path", function () {
 
     var path = patterns.path(root, employee);
     equal(path, 'departments/1/employees/2');
+});
+
+test("patterns method", function () {
+    var departments = {
+        alpha: { iface: 'department', title: 'Alpha'},
+        beta: {iface: 'department', title: 'Beta'},
+        gamma: {iface: 'department', title: 'Gamma'}
+        };
+        
+    var get_department = function(variables) {
+        return departments[variables.department_name];
+    };
+
+    var get_department_variables = function(department) {
+        for (var department_name in departments) {
+            if (department === departments[department_name]) {
+                return {department_name: department_name};
+            }
+        }
+        return null;
+    };
+    
+    var patterns = new traject.Patterns();
+    
+    patterns.pattern(
+        'department',
+        'departments/$department_name',
+        get_department,
+        get_department_variables);
+
+
+    var root = {iface: 'root'};
+    
+    strictEqual(patterns.resolve(root, 'departments/alpha'),
+                departments.alpha);
+    equal(patterns.path(root, departments.alpha),
+          'departments/alpha');
+    equal(patterns.path(root, departments.beta),
+          'departments/beta');
+    
+});
+
+test("inverse not found", function () {
+    var departments = {
+        alpha: { iface: 'department', title: 'Alpha'},
+        beta: {iface: 'department', title: 'Beta'},
+        gamma: {iface: 'department', title: 'Gamma'}
+        };
+        
+    var get_department_variables = function(department) {
+        for (var department_name in departments) {
+            if (department === departments[department_name]) {
+                return {department_name: department_name};
+            }
+        }
+        return null;
+    };
+    
+    var patterns = new traject.Patterns();
+    
+    patterns.register_inverse(
+        'department',
+        'departments/$department_name',
+        get_department_variables);
+
+
+    var root = {iface: 'root'};
+
+    raises(function () {
+        patterns.path(root, {iface: 'department'});
+    }, traject.LocationError);
+    
 });
