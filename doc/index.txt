@@ -50,6 +50,15 @@ library based on Obviel core. Describe your form using JSON
 structures. Get your form data as JSON. Use composite and repeating
 fields with ease!
 
+Routing with Traject
+--------------------
+
+Obviel also contains an easy to use but powerful routing library
+called Traject, which can be used to resolve paths to objects and the
+inverse: construct paths for objects. With Traject you can make
+dynamic single-page user interfaces that work with hyperlinks and the
+browser back button.
+
 Download Obviel
 ---------------
 
@@ -67,6 +76,8 @@ Look at a quick overview of :doc:`Obviel features <features>`
 Read the :doc:`Obviel core manual <manual>`.
 
 Read about :doc:`Obviel forms <form>`.
+
+Read about :doc:`the Traject routing library <traject>`.
 
 We also have :doc:`API documentation <api>`.
 

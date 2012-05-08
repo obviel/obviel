@@ -9,6 +9,7 @@ Contents:
    features
    manual
    form
+   traject
    api
    demo
    community

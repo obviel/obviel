@@ -268,7 +268,7 @@ function of the lookup function. A lookup function looks up an object
 given a set of variables. The inverse of that creates the variables
 given an object.
 
-Let's consider a simple scenario:
+Let's consider a simple scenario::
 
   var departments = {
     alpha: { iface: 'department', title: 'Alpha'},
