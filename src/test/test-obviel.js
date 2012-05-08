@@ -1,5 +1,6 @@
 /*global module:false obviel:false test:false ok:false same:false $:false
-  equal:false raises:false asyncTest:false start:false */
+  equal:false deepEqual:false expect:false raises:false
+  asyncTest:false start:false */
 
 var html_lower = function(html) {
     // some nasty normalization for browser compatibility
@@ -26,7 +27,7 @@ test('object implements object', function() {
 });
 
 test('object ifaces', function() {
-    same(obviel.ifaces({}), ['object']);
+    deepEqual(obviel.ifaces({}), ['object']);
 });
 
 test('object does not implement base', function() {
@@ -50,7 +51,7 @@ test('foo does not implement bar', function() {
 });
 
 test('foo ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['foo']}),
         ['foo', 'base', 'object']);
 });
@@ -64,32 +65,32 @@ test('bar implements foo', function() {
 });
 
 test('bar ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['bar']}),
         ['bar', 'foo', 'base', 'object']);
 });
 
 test('qux ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['qux']}),
         ['qux', 'baz', 'foo', 'base', 'object']);
 });
 
 test('mess ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['mess']}),
         ['mess', 'eggs', 'qux', 'spam', 'baz', 'foo',
          'base', 'object']);
 });
 
 test('foo+spam ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['foo', 'spam']}),
         ['foo', 'spam', 'base', 'object']);
 });
 
 test('bar+foo ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['bar', 'foo']}),
         ['bar', 'foo', 'base', 'object']);
 });
@@ -97,13 +98,13 @@ test('bar+foo ifaces', function() {
 // XXX not sure about this one... should 'foo' indeed take
 // precedence here?
 test('foo+bar ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['foo', 'bar']}),
         ['foo', 'bar', 'base', 'object']);
 });
 
 test('eggs+qux ifaces', function() {
-    same(
+    deepEqual(
         obviel.ifaces({ifaces: ['eggs', 'qux']}),
         ['eggs', 'qux', 'spam', 'baz', 'foo', 'base', 'object']);
 });
@@ -132,7 +133,7 @@ test('basic extendsIface', function() {
     obviel.iface('mess2');
     obviel.extendsIface('mess2', 'eggs');
     obviel.extendsIface('mess2', 'qux');
-    same(obviel.ifaces('mess'), obviel.ifaces('mess2'));
+    deepEqual(obviel.ifaces('mess'), obviel.ifaces('mess2'));
 });
 
 test('extendsIface on non-existent iface', function() {
@@ -455,6 +456,7 @@ test('rerender without viewstack', function() {
     var newel = $('div');
     // no checking, should just not throw an exception
     $(newel).rerender();
+    expect(0);
 });
 
 test('rerender ephemeral', function() {
@@ -1067,7 +1069,7 @@ asyncTest('object event nested views', function() {
     // even though it is on a now unconnected element
     $(obj.bar).trigger('update');
 
-    equals(called, 1);
+    equal(called, 1);
 
     // is this a problem? first, for plain events this is not a problem,
     // as nothing will be triggering events on the elements they are associated

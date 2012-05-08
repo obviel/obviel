@@ -3141,8 +3141,8 @@ asyncTest('global errors do not revalidate upon non-correction', function() {
                 return defer.promise();
             }
         }
-        start();
         defer.resolve({});
+        start();
         return defer.promise();
     };
 
@@ -3209,6 +3209,8 @@ asyncTest('global errors do not revalidate upon non-correction', function() {
     equal(count, 2);
     
     $.ajax = original_ajax;
+
+    start();
 });
 
 asyncTest("global errors with repeating", function() {
