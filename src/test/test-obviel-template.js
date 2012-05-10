@@ -11,6 +11,20 @@ module("Template", {
 
 var module = obviel.template;
 
+test('simple template without variable', function() {
+    var template = new module.Template($('<p>Hello world!</p>'));
+    var el = $('<div></div>');
+    template.render(el, {});
+    equal(el.html(), '<p>Hello world!</p>'); 
+});
+
+test('simple template with variable', function() {
+    var template = new module.Template($('<p>Hello {who}!</p>'));
+    var el = $('<div></div>');
+    template.render(el, {who: "world"});
+    equal(el.html(), '<p>Hello world!</p>'); 
+});
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);

@@ -131,47 +131,66 @@ obviel.template = {};
     
     module.Template = function(el) {
         this.el = el;
+        this.compile();
     };
 
-    
-    /*
+    module.Template.prototype.compile = function() {
+        this.dynamic = new module.Dynamic(this.el);
+    };
+
+    module.Template.prototype.render = function(el, obj) {
+        var scope = new module.Scope(obj);
+        var cloned_el = this.el.clone();
+        this.dynamic.render(cloned_el, scope);
+        el.append(cloned_el);
+    };
     
     module.Dynamic = function(el) {
-        // entry for each dynamic attribute
-        this.attr_texts = {};
-        // entry for each text content
-        this.content_texts = [];
- 
-        this.compile(el);
-    };
-
-    module.Dynamic.prototype.is_dynamic = function() {
-        return (this.content_texts.length >= 0 ||
-                !$.isEmptyObject(this.attr_texts));
-    };   
-    
-    module.Dynamic.prototype.compile = function(el) {
+        this.el = el;
         
-    };
-    
-    module.DynamicText = function(i18n) {
-        this.parts = [];
-        this.i18n = i18n;
+        this.compile();
     };
 
-    module.DynamicText.prototype.resolve = function(scope) {
+    // module.Dynamic.prototype.is_dynamic = function() {
+    //     return (this.content_texts.length >= 0 ||
+    //             !$.isEmptyObject(this.attr_texts));
+    // };   
+    
+    module.Dynamic.prototype.compile = function() {
+        this.dynamic_text = new module.DynamicText(this.el.text());
+    };
+
+    module.Dynamic.prototype.render = function(el, scope) {
+        el.text(this.dynamic_text.render(scope));
+    };
+    
+    module.DynamicText = function(text) {
+        this.parts = [];
+        var tokens = module.tokenize(text);
+        for (var i in tokens) {
+            var token = tokens[i];
+            if (token.type === module.TEXT_TOKEN) {
+                this.parts.push(new module.Text(token.value));
+            } else if (token.type === module.NAME_TOKEN) {
+                this.parts.push(new module.Variable(token.value));
+            }
+        }
+    };
+
+    module.DynamicText.prototype.render = function(scope) {
         var result = [];
-        $.each(this.parts, function(index, part) {
-            result.push(part.resolve(scope));
-        });
+        for (var i in this.parts) {
+            var part = this.parts[i];   
+            result.push(part.render(scope));
+        };
         return result.join('');
     };
-
+        
     module.Text = function(text) {
         this.text = text;
     };
 
-    module.Text.prototype.resolve = function(scope) {
+    module.Text.prototype.render = function(scope) {
         return this.text;
     };
                                              
@@ -179,10 +198,19 @@ obviel.template = {};
         this.name = name;
     };
 
-    module.Variable.prototype.resolve = function(scope) {
+    module.Variable.prototype.render = function(scope) {
         return scope.resolve(this.name);
     };
-    
+
+    module.Scope = function(obj) {
+        this.obj = obj;
+    };
+
+    module.Scope.prototype.resolve = function(name) {
+        return this.obj[name];
+    };
+
+    /*
     module.Section = function(el) { 
         this.dynamics = {};
         this.with_sections = {};
