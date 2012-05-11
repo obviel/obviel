@@ -72,6 +72,7 @@ obviel.template = {};
         el) {
         this.el = el;
         this.dynamic_elements = [];
+        this.sections = [];
         this.compile(el);
     };
     
@@ -97,21 +98,39 @@ obviel.template = {};
         
         // hook up to document so that id selector works...
         el.append(cloned);
-
+        
         this.render_dynamic_elements(el, scope, translations);
-    };
 
+        this.render_sub_sections(el, scope, translations);
+
+        this.render_cleanup(el);
+        
+    };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
         $.each(this.dynamic_elements, function(index, value) {
             var dynamic_el = $(value.selector, el);
             value.dynamic_element.render(dynamic_el, scope, translations);
-            if (starts_with(dynamic_el.attr('id'), OBVIEL_TEMPLATE_ID_PREFIX)) {
-                dynamic_el.removeAttr('id');
-            }
         });
 
+    };
+
+    module.Section.prototype.render_sub_sections = function(el, scope,
+                                                            translations) {
+        $.each(this.sub_sections, function(index, value) {
+            var sub_section_el = $(value.selector, el);
+            value.section.render(sub_section_el, scope, translations);
+            
+        });
+    };
+
+    module.Section.prototype.render_cleanup = function(el) {
+        $.each(this.dynamic_elements, function(index, value) {
+            var dynamic_el = $(value.selector, el);
+            clean_id(dynamic_el);
+        });
+        
     };
     
     module.DynamicElement = function(el) {
@@ -404,6 +423,13 @@ obviel.template = {};
             _id++;
         }
         return result;
+    };
+
+    var clean_id = function(el) {
+        var id = el.attr('id');
+        if (id !== undefined && starts_with(id, OBVIEL_TEMPLATE_ID_PREFIX)) {
+            el.removeAttr('id');
+        }
     };
     
     var trim = function(s) {
