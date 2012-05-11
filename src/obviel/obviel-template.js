@@ -18,35 +18,24 @@ There are two phases:
 
 How does compilation work?
 
-* A separated Section is compiled for each data-with and data-if element.
+* a separated Section is compiled for each data-with and data-if element.
 
 * Sections have sub-sections for underlying data-with and data-if elements.
 
-* each section is marked in the template with an id
+* each Section is marked in the template with an id for fast access.
 
-* Each element with dynamic content has its own Dynamic object.
+* each section maintains a list of elements with dynamic content.
 
-* the Dynamic object maintains which variables there are in attributes
-  and text content of the section. It also has references to underlying
-  elements (?).
-
-* the dynamics are also stored in the sections they are in
-
-* each dynamic is also marked in the template with an id
-
-* a dynamic may also be marked data-trans or data-tvar
-
-* in that case, the tvariables are rendered, then the translated text,
-  and the tvariables are interpolated in there. This is done by parsing
-  the translated text.
+* each dynamic element is also marked in the template with an id for
+  fast access.
 
 when rendering a section:
 
-* clone original section
+* clone original section (deep copy).
 
-* now find all dynamic elements and update them.
+* now find all dynamic elements by id in clone and update them.
 
-
+* render sub-sections and attach them.
 
 */
 
