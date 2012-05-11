@@ -39,6 +39,15 @@ How does compilation work?
 * in that case, the tvariables are rendered, then the translated text,
   and the tvariables are interpolated in there. This is done by parsing
   the translated text.
+
+when rendering a section:
+
+* clone original section
+
+* now find all dynamic elements and update them.
+
+
+
 */
 
 obviel.template = {};
@@ -46,11 +55,13 @@ obviel.template = {};
 (function($, obviel, module) {
     
     var _id = 0;
+
+    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
     
     var generate_id = function(el) {
         var result = el.attr('id');
         if (result === undefined) {
-            result = 'obviel-template-' + id;
+            result = OBVIEL_TEMPLATE_ID_PREFIX + _id;
             el.attr('id', result);
             _id++;
         }
@@ -130,60 +141,146 @@ obviel.template = {};
     };
     
     module.Template = function(el) {
-        this.el = el;
-        this.compile();
+        this.section = null;
+        this.compile(el);
     };
 
-    module.Template.prototype.compile = function() {
-        this.dynamic = new module.Dynamic(this.el);
+    module.Template.prototype.compile = function(el) {
+        this.section = new module.Section(el);
     };
-
+    
     module.Template.prototype.render = function(el, obj) {
         var scope = new module.Scope(obj);
-        var cloned_el = this.el.clone();
-        this.dynamic.render(cloned_el, scope);
-        el.append(cloned_el);
+        this.section.render(el, scope);
     };
     
-    module.Dynamic = function(el) {
+    module.Section = function(el) {
         this.el = el;
-        
-        this.compile();
+        this.dynamic_elements = [];
+        this.compile(el);
     };
-
-    // module.Dynamic.prototype.is_dynamic = function() {
-    //     return (this.content_texts.length >= 0 ||
-    //             !$.isEmptyObject(this.attr_texts));
-    // };   
     
-    module.Dynamic.prototype.compile = function() {
-        this.dynamic_text = new module.DynamicText(this.el.text());
+    module.Section.prototype.compile = function(el) {
+        var self = this;
+        
+        var dynamic_element = new module.DynamicElement(el);
+        if (dynamic_element.is_dynamic()) {
+            var id = generate_id(el);
+            this.dynamic_elements.push({
+                id: id,
+                selector: '#' + id,
+                dynamic_element: dynamic_element});
+        }
+        
+        el.children().each(function() {
+            self.compile($(this));
+        });
+    };
+    
+    module.Section.prototype.render = function(el, scope) {
+        var cloned = this.el.clone();
+
+        $.each(this.dynamic_elements, function(index, value) {
+            var dynamic_el = cloned.select(value.selector);
+            value.dynamic_element.render(dynamic_el, scope);
+            if (value.id.slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
+                OBVIEL_TEMPLATE_ID_PREFIX) {
+                dynamic_el.removeAttr('id');
+            }
+        });
+
+        // XXX not right
+        el.empty();
+        el.append(cloned);
+    };
+    
+    module.DynamicElement = function(el) {
+        this.attr_texts = {};
+        this.content_texts = [];
+        this._dynamic = false;
+        this.compile(el);
     };
 
-    module.Dynamic.prototype.render = function(el, scope) {
-        el.text(this.dynamic_text.render(scope));
+    module.DynamicElement.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };   
+    
+    module.DynamicElement.prototype.compile = function(el) {
+        this.compile_attr_texts(el);
+        this.compile_content_texts(el);
+    };
+    
+    module.DynamicElement.prototype.compile_attr_texts = function(el) {
+        var node = el[0];
+        for (var i in node.attributes) {
+            var attr = node.attributes[i];
+            if (!attr.specified) {
+                continue;
+            }
+            var dynamic_text = new module.DynamicText(attr.value);
+            if (dynamic_text.is_dynamic()) {
+                this.attr_texts[attr.name] = dynamic_text;
+                this._dynamic = true;
+            }
+        }
+    };
+    
+    module.DynamicElement.prototype.compile_content_texts = function(el) {
+        var self = this;
+        el.contents().each(function(index) {
+            var node = this;
+            if (!node.nodeType === 3) {
+                return;
+            }
+            var dynamic_text = new module.DynamicText(node.nodeValue);
+            if (dynamic_text.is_dynamic()) {
+                self.content_texts.push({
+                    index: index,
+                    dynamic_text: dynamic_text
+                });
+                self._dynamic = true;
+            }
+        });        
+    };
+    
+    module.DynamicElement.prototype.render = function(el, scope) {
+        $.each(this.attr_texts, function(key, value) {
+            el.attr(key, value.render(scope));
+        });
+        var node = el[0];
+        $.each(this.content_texts, function(index, value) {
+            var text = value.dynamic_text.render(scope);
+            node.childNodes[value.index].nodeValue = text;
+        });
     };
     
     module.DynamicText = function(text) {
         this.parts = [];
         var tokens = module.tokenize(text);
+        var dynamic = false;
         for (var i in tokens) {
             var token = tokens[i];
             if (token.type === module.TEXT_TOKEN) {
                 this.parts.push(new module.Text(token.value));
             } else if (token.type === module.NAME_TOKEN) {
                 this.parts.push(new module.Variable(token.value));
+                dynamic = true;
             }
         }
+        this._dynamic = dynamic;
     };
 
+    module.DynamicText.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };
+    
     module.DynamicText.prototype.render = function(scope) {
         var result = [];
         for (var i in this.parts) {
             var part = this.parts[i];   
             result.push(part.render(scope));
         };
-        return result.join('');
+        return result.join('');        
     };
         
     module.Text = function(text) {
@@ -210,33 +307,8 @@ obviel.template = {};
         return this.obj[name];
     };
 
-    /*
-    module.Section = function(el) { 
-        this.dynamics = {};
-        this.with_sections = {};
-        this.if_sections = {};
 
-        this.compile(el);
-    };
-    
-    module.Section.compile = function(el) {
-        this.compile_dynamic(el);
-        this.compile_children(el);
-    };
-
-    module.Section.compile_dynamic = function(el) {        
-        var dynamic_id = generate_id(el);
-        var dynamic = new module.Dynamic(el);
-        if (!dynamic.is_dynamic()) {
-            return; 
-        }
-        this.dynamics[dynamic_id] = dynamic;
-    };
-
-    module.Section.compile_text = function(text) {
-
-    };
-    
+ /*    
     module.Section.compile_children = function(el) {
         var self = this;
         el.children().each(function() {
