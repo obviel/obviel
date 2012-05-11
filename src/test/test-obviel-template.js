@@ -4,8 +4,10 @@
 
 module("Template", {
     setup: function() {
+        $('#jsview-area').html('<div id="viewdiv"></div>');
     },
     teardown: function() {
+
     }
 });
 
@@ -25,7 +27,7 @@ Translations.prototype.gettext = function(msgid) {
 
 var render = function(text, obj) {
     var template = new module.Template($(text));
-    var el = $('<div></div>');
+    var el = $('#viewdiv');
     var translations = new Translations();
     template.render(el, obj, translations);
     return el.html();
@@ -54,6 +56,18 @@ test('template with just variable', function() {
 test('template with text and variable', function() {
     equal(render('<p>Hello {who}!</p>', {who: 'world'}),
           '<p>Hello world!</p>'); 
+});
+
+test("template with dotted name", function() {
+    equal(render('<p>Hello {something.who}!</p>', {something: {who: 'world'}}),
+          '<p>Hello world!</p>');
+});
+
+test("template with variable that does not exist", function() {
+    raises(function() {
+        render('<p>{who}</p>', {});
+    }, module.RenderError);
+                 
 });
 
 test('template with variable and sub element', function() {

@@ -53,6 +53,11 @@ obviel.template = {};
         this.el = el;
         this.message = message;
     };
+
+    module.RenderError = function(el, message) {
+        this.el = el;
+        this.message = message;
+    };
     
     module.Template = function(el) {
         this.section = null;
@@ -65,52 +70,115 @@ obviel.template = {};
     
     module.Template.prototype.render = function(el, obj, translations) {
         var scope = new module.Scope(obj);
-        this.section.render(el, scope, translations);
+        // XXX this clone is too expensive for what we do
+        var top_el = this.section.el.clone().empty();
+        el.append(top_el);
+        this.section.render(top_el, scope, translations);
     };
     
-    module.Section = function(
-        el) {
+    module.Section = function(el, data_if, data_with) {
         this.el = el;
+        this.data_if = data_if;
+        this.data_with = data_with;
         this.dynamic_elements = [];
-        this.sections = [];
+        this.sub_sections = [];
         this.compile(el);
     };
     
     module.Section.prototype.compile = function(el) {
         var self = this;
         
-        var dynamic_element = new module.DynamicElement(el);
-        if (dynamic_element.is_dynamic()) {
-            var id = generate_id(el);
-            this.dynamic_elements.push({
-                id: id,
-                selector: '#' + id,
-                dynamic_element: dynamic_element});
-        }
+        self.compile_dynamic_element(el);
+
+        self.compile_sub_section(el);
         
         el.children().each(function() {
             self.compile($(this));
         });
     };
+
+    module.Section.prototype.compile_dynamic_element = function(el) {
+        var self = this;
+        
+        var dynamic_element = new module.DynamicElement(el);
+        if (!dynamic_element.is_dynamic()) {
+            return;
+        }
+
+        var id = generate_id(el);
+        this.dynamic_elements.push({
+            id: id,
+            selector: '#' + id,
+            dynamic_element: dynamic_element
+        });
+    };
+    
+    module.Section.prototype.compile_sub_section = function(el) {
+        var self = this;
+
+        var data_if = el.attr('data-if');
+        var data_with = el.attr('data-with');
+
+        if (data_if === undefined && data_with === undefined) {
+            return;
+        }
+
+        // create sub section with copied contents
+        var sub_section = new module.Section(el.clone(), data_if, data_with);
+
+        // empty sub section of contents
+        el.empty();
+        
+        var id = generate_id(el);
+        this.sub_sections.push({
+            id: id,
+            selector: '#' + id,
+            sub_section: sub_section
+        });
+    };
     
     module.Section.prototype.render = function(el, scope, translations) {
-        var cloned = this.el.clone();
+        if (this.data_if) {
+            var data_if = scope.resolve(this.data_if);
+            if (!data_if) {
+                return;
+            }
+        }
+
+        if (this.data_with) {
+            var data_with = scope.resolve(this.data_with);
+            scope.push(data_with);
+        }
         
-        // hook up to document so that id selector works...
-        el.append(cloned);
+        this.render_clone(el);
         
         this.render_dynamic_elements(el, scope, translations);
 
-       // this.render_sub_sections(el, scope, translations);
+        this.render_sub_sections(el, scope, translations);
 
         this.render_cleanup(el);
+
+        if (this.data_with) {
+            scope.pop(data_with);
+        }
+    };
+
+    module.Section.prototype.render_clone = function(el) {
+        el.empty();
+
+        var parent_node = el.get(0);
         
+        var cloned = this.el.clone();
+        cloned.contents().each(function() {
+            var node = this;
+            parent_node.appendChild(node);
+        });
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = $(value.selector, el);
+            var dynamic_el = $(value.selector);
             value.dynamic_element.render(dynamic_el, scope, translations);
         });
 
@@ -119,18 +187,18 @@ obviel.template = {};
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
         $.each(this.sub_sections, function(index, value) {
-            var sub_section_el = $(value.selector, el);
-            value.section.render(sub_section_el, scope, translations);
-            
+            var sub_section_el = $(value.selector);
+            value.sub_section.render(sub_section_el, scope, translations);
         });
     };
 
     module.Section.prototype.render_cleanup = function(el) {
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = $(value.selector, el);
-            clean_id(dynamic_el);
+            clean_id($(value.selector));
         });
-        
+        $.each(this.sub_sections, function(index, value) {
+            clean_id($(value.selector));
+        });
     };
     
     module.DynamicElement = function(el) {
@@ -227,7 +295,7 @@ obviel.template = {};
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
         $.each(this.attr_texts, function(key, value) {
-            var text = value.render(scope);
+            var text = value.render(el, scope);
             if (key === 'data-id') {
                 el.removeAttr('data-id');
                 el.attr('id', text);
@@ -254,7 +322,7 @@ obviel.template = {};
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
         var node = el.get(0);
         $.each(this.content_texts, function(index, value) {
-            var text = value.dynamic_text.render(scope);
+            var text = value.dynamic_text.render(el, scope);
             node.childNodes[value.index].nodeValue = text;
         });
     };
@@ -318,11 +386,11 @@ obviel.template = {};
         return this._dynamic;
     };
     
-    module.DynamicText.prototype.render = function(scope) {
+    module.DynamicText.prototype.render = function(el, scope) {
         var result = [];
         for (var i in this.parts) {
-            var part = this.parts[i];   
-            result.push(part.render(scope));
+            var part = this.parts[i];
+            result.push(part.render(el, scope));
         };
         return result.join('');        
     };
@@ -331,7 +399,7 @@ obviel.template = {};
         this.text = text;
     };
 
-    module.Text.prototype.render = function(scope) {
+    module.Text.prototype.render = function(el, scope) {
         return this.text;
     };
                                              
@@ -339,76 +407,51 @@ obviel.template = {};
         this.name = name;
     };
 
-    module.Variable.prototype.render = function(scope) {
-        return scope.resolve(this.name);
+    module.Variable.prototype.render = function(el, scope) {
+        var result = scope.resolve(this.name);
+        if (result === undefined) {
+            throw new module.RenderError(el, "Variable '" + this.name + "' " +
+                                         "could not be found.");
+        }
+        return result;
     };
 
     module.Scope = function(obj) {
-        this.obj = obj;
+        this.stack = [obj];
+    };
+                                                      
+    module.Scope.prototype.push = function(obj) {
+        this.stack.push(obj);
     };
 
-    module.Scope.prototype.resolve = function(name) {
-        return this.obj[name];
+    module.Scope.prototype.pop = function() {
+        this.stack.pop();
     };
-
-
- /*    
-    module.Section.compile_children = function(el) {
-        var self = this;
-        el.children().each(function() {
-            var child_el = $(this);
-            var if_ = child_el.attr('data-if');
-            var created_section = false;
-            if (if_ !== undefined) {
-                var section = new module.IfSection(child_el);
-                var section_id = generate_id(child_el);
-                self.if_sections[section_id] = section;
-                created_section = true;
+    
+    module.Scope.prototype.resolve = function(dotted_name) {
+        // XXX better dotted name checking, or perhaps in compiler
+        var names = dotted_name.split('.');
+        for (var i = this.stack.length - 1; i >= 0; i--) {
+            var obj = this.stack[i];
+            var result = resolve_in_obj(obj, names);
+            if (result !== undefined) {
+                return result;
             }
-            
-            var with_ = child_el.attr('data-with');
-            if (with_ !== undefined) {
-                var section = new module.ScopeSection(child_el);
-                var section_id = generate_id(child_el);
-                self.with_sections[section_id] = section;
-                created_section = true;
-            }
-            if (created_section) {
-                return;
-            }
-            self.compile(child_el);
-        });
-    };
-    
-    module.ScopeSection = function(el) {
-
-    };
-
-    module.ScopeSection.prototype = new module.Section();
-    
-    module.IfSection = function(el) {
-        
-    };
-
-    module.IfSection.prototype = new module.Section();
-    
-    
-    module.compile = function(html) {
-        var el = $(html);
-        for (var i in el.childNodes) {
-            var child_el = el.childNodes[i];
-            
         }
-        
-        
-        var with_els = $("*[data-with]", el);
-        for (var i in with_els) {
-            var with_el = with_els[i];
-            var section = new Section(with_el);
-            
-        };
+        return undefined;
     };
-*/
+
+    var resolve_in_obj = function(obj, names) {
+        for (var i in names) {
+            var name = names[i];
+            obj = obj[name];
+            if (obj === undefined) {
+                return undefined;
+            }
+        }
+        return obj;
+    };
+    
     var _id = 0;
 
     var starts_with = function(s, startswith) {
