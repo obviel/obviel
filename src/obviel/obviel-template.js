@@ -54,91 +54,6 @@ obviel.template = {};
 
 (function($, obviel, module) {
     
-    var _id = 0;
-
-    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
-    
-    var generate_id = function(el) {
-        var result = el.attr('id');
-        if (result === undefined) {
-            result = OBVIEL_TEMPLATE_ID_PREFIX + _id;
-            el.attr('id', result);
-            _id++;
-        }
-        return result;
-    };
-    
-
-    module.NAME_TOKEN = 0;
-    module.TEXT_TOKEN = 1;
-
-    var trim = function(s) {
-        return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-    };
-    
-    module.tokenize = function(text) {
-        var result = [];
-        var index = 0;
-        var last_index = 0;
-        var text_token = '';
-        while (true) {
-            var open_index = text.indexOf('{', index);
-            if (open_index === -1) {
-                text_token = text.slice(last_index);
-                if (text_token !== '') {
-                    result.push({
-                        type: module.TEXT_TOKEN,
-                        value: text_token
-                    });
-                }
-                break;
-            }
-            var next_char = text.charAt(open_index + 1);
-            if (next_char === '' ||
-                next_char === ' ' ||
-                next_char === '\t' ||
-                next_char === '\n') {
-                index = open_index + 1;
-                continue;
-            }
-            index = open_index + 1;
-            var close_index = text.indexOf('}', index);
-            if (close_index === -1) {
-                text_token = text.slice(last_index);
-                if (text_token !== '') {
-                    result.push({
-                        type: module.TEXT_TOKEN,
-                        value: text_token
-                    });
-                }
-                break;
-            }
-            text_token = text.slice(last_index, open_index);
-            if (text_token !== '') {
-                result.push({
-                    type: module.TEXT_TOKEN,
-                    value: text_token
-                });
-            }
-            var name_token = text.slice(index, close_index);
-            var trimmed_name_token = trim(name_token);
-            if (trimmed_name_token !== '') {
-                result.push({
-                    type: module.NAME_TOKEN,
-                    value: trimmed_name_token
-                });
-            } else {
-                result.push({
-                    type: module.TEXT_TOKEN,
-                    value: '{' + name_token + '}'
-                });
-            }
-            index = close_index + 1;
-            last_index = index;
-        }
-        
-        return result;
-    };
     
     module.Template = function(el) {
         this.section = null;
@@ -372,6 +287,90 @@ obviel.template = {};
         };
     };
 */
+    var _id = 0;
+
+    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
+    
+    var generate_id = function(el) {
+        var result = el.attr('id');
+        if (result === undefined) {
+            result = OBVIEL_TEMPLATE_ID_PREFIX + _id;
+            el.attr('id', result);
+            _id++;
+        }
+        return result;
+    };
+    
+    module.NAME_TOKEN = 0;
+    module.TEXT_TOKEN = 1;
+
+    var trim = function(s) {
+        return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+    };
+    
+    module.tokenize = function(text) {
+        var result = [];
+        var index = 0;
+        var last_index = 0;
+        var text_token = '';
+        while (true) {
+            var open_index = text.indexOf('{', index);
+            if (open_index === -1) {
+                text_token = text.slice(last_index);
+                if (text_token !== '') {
+                    result.push({
+                        type: module.TEXT_TOKEN,
+                        value: text_token
+                    });
+                }
+                break;
+            }
+            var next_char = text.charAt(open_index + 1);
+            if (next_char === '' ||
+                next_char === ' ' ||
+                next_char === '\t' ||
+                next_char === '\n') {
+                index = open_index + 1;
+                continue;
+            }
+            index = open_index + 1;
+            var close_index = text.indexOf('}', index);
+            if (close_index === -1) {
+                text_token = text.slice(last_index);
+                if (text_token !== '') {
+                    result.push({
+                        type: module.TEXT_TOKEN,
+                        value: text_token
+                    });
+                }
+                break;
+            }
+            text_token = text.slice(last_index, open_index);
+            if (text_token !== '') {
+                result.push({
+                    type: module.TEXT_TOKEN,
+                    value: text_token
+                });
+            }
+            var name_token = text.slice(index, close_index);
+            var trimmed_name_token = trim(name_token);
+            if (trimmed_name_token !== '') {
+                result.push({
+                    type: module.NAME_TOKEN,
+                    value: trimmed_name_token
+                });
+            } else {
+                result.push({
+                    type: module.TEXT_TOKEN,
+                    value: '{' + name_token + '}'
+                });
+            }
+            index = close_index + 1;
+            last_index = index;
+        }
+        
+        return result;
+    };
 
     
 }(jQuery, obviel, obviel.template));

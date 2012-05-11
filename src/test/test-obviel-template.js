@@ -68,6 +68,11 @@ test('template with attribute text and variable', function() {
           '<p class="the thing!"></p>');
 });
 
+test('template with attribute in sub-element', function() {
+    equal(render('<p><em class="{a}">foo</em></p>', {a: 'silly'}),
+          '<p><em class="silly">foo</em></p>');
+});
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);
