@@ -48,6 +48,25 @@ test('template with variable and sub element', function() {
           '<p>a <em>very nice</em> day, sir!</p>');
 });
 
+test('template with variable in sub element', function() {
+    equal(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
+          '<p>a <em>nice</em> day, sir!</p>');
+});
+
+test('template with multiple variables', function() {
+    equal(render('<p>{first}{second}</p>', {first: 'One', second: 'Two'}),
+          '<p>OneTwo</p>');
+});
+
+test('template with attribute variable', function() {
+    equal(render('<p class="{a}"></p>', {a: 'Alpha'}),
+          '<p class="Alpha"></p>');
+});
+
+test('template with attribute text and variable', function() {
+    equal(render('<p class="the {text}!"></p>', {text: 'thing'}),
+          '<p class="the thing!"></p>');
+});
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
