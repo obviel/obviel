@@ -78,6 +78,17 @@ test("template with element with both id and variable", function() {
           '<p id="foo">hello</p>');
 });
 
+test("disallow dynamic id in template", function() {
+    raises(function() {
+        render('<p id="{dynamic}"></p>', {dynamic: 'test'});
+    }, module.CompilationError);
+});
+
+test("template with data-id", function() {
+    equal(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
+          '<p id="Foo"></p>');
+});
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);

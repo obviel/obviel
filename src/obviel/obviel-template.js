@@ -43,6 +43,10 @@ obviel.template = {};
 
 (function($, obviel, module) {
     
+    module.CompilationError = function(el, message) {
+        this.el = el;
+        this.message = message;
+    };
     
     module.Template = function(el) {
         this.section = null;
@@ -92,7 +96,7 @@ obviel.template = {};
         $.each(this.dynamic_elements, function(index, value) {
             var dynamic_el = $(value.selector, el);
             value.dynamic_element.render(dynamic_el, scope);
-            if (value.id.slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
+            if (dynamic_el.attr('id').slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
                 OBVIEL_TEMPLATE_ID_PREFIX) {
                 dynamic_el.removeAttr('id');
             }
@@ -127,6 +131,11 @@ obviel.template = {};
             }
             var dynamic_text = new module.DynamicText(attr.value);
             if (dynamic_text.is_dynamic()) {
+                if (attr.name === 'id') {
+                    throw new module.CompilationError(
+                        el, "Not allowed to use variables in id attribute. " +
+                            "Use data-id instead.");
+                }
                 this.attr_texts[attr.name] = dynamic_text;
                 this._dynamic = true;
             }
@@ -155,8 +164,15 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.render = function(el, scope) {
+        
         $.each(this.attr_texts, function(key, value) {
-            el.attr(key, value.render(scope));
+            var text = value.render(scope);
+            if (key === 'data-id') {
+                el.removeAttr('data-id');
+                el.attr('id', text);
+                return;
+            }
+            el.attr(key, text);
         });
         var node = el.get(0);
         $.each(this.content_texts, function(index, value) {
