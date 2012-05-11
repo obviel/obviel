@@ -218,6 +218,9 @@ obviel.template = {};
             if (!attr.specified) {
                 continue;
             }
+            if (attr.value === null) {
+                continue;
+            }
             var dynamic_text = new module.DynamicText(attr.value);
             if (dynamic_text.is_dynamic()) {
                 this.attr_texts[attr.name] = dynamic_text;
@@ -231,6 +234,9 @@ obviel.template = {};
         el.contents().each(function(index) {
             var node = this;
             if (!node.nodeType === 3) {
+                return;
+            }
+            if (node.nodeValue === null) {
                 return;
             }
             var dynamic_text = new module.DynamicText(node.nodeValue);
@@ -255,7 +261,7 @@ obviel.template = {};
         });
     };
     
-    module.DynamicText = function(text) {
+    module.DynamicText = function(text) {        
         this.parts = [];
         var tokens = module.tokenize(text);
         var dynamic = false;

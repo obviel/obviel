@@ -11,19 +11,43 @@ module("Template", {
 
 var module = obviel.template;
 
-test('simple template without variable', function() {
-    var template = new module.Template($('<p>Hello world!</p>'));
+var render = function(text, obj) {
+    var template = new module.Template($(text));
     var el = $('<div></div>');
-    template.render(el, {});
-    equal(el.html(), '<p>Hello world!</p>'); 
+    template.render(el, obj);
+    return el.html();
+};
+
+test('template with text, without variable', function() {
+    equal(render('<p>Hello world!</p>', {}),
+          '<p>Hello world!</p>'); 
 });
 
-test('simple template with variable', function() {
-    var template = new module.Template($('<p>Hello {who}!</p>'));
-    var el = $('<div></div>');
-    template.render(el, {who: "world"});
-    equal(el.html(), '<p>Hello world!</p>'); 
+test("template without text", function() {
+    equal(render('<p></p>', {}),
+          '<p></p>');
 });
+
+test('template without text, with sub elements', function() {
+    equal(render('<p><em>Sub</em></p>', {}),
+          '<p><em>Sub</em></p>');
+});
+
+test('template with just variable', function() {
+    equal(render('<p>{who}</p>', {who: 'world'}),
+          '<p>world</p>');
+});
+
+test('template with text and variable', function() {
+    equal(render('<p>Hello {who}!</p>', {who: 'world'}),
+          '<p>Hello world!</p>'); 
+});
+
+test('template with variable and sub element', function() {
+    equal(render('<p>a <em>very nice</em> {time}, sir!</p>', {time: 'day'}),
+          '<p>a <em>very nice</em> day, sir!</p>');
+});
+
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
