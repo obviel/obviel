@@ -101,7 +101,7 @@ obviel.template = {};
         
         this.render_dynamic_elements(el, scope, translations);
 
-        this.render_sub_sections(el, scope, translations);
+       // this.render_sub_sections(el, scope, translations);
 
         this.render_cleanup(el);
         
