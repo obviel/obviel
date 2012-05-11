@@ -73,6 +73,11 @@ test('template with attribute in sub-element', function() {
           '<p><em class="silly">foo</em></p>');
 });
 
+test("template with element with both id and variable", function() {
+    equal(render('<p id="foo">{content}</p>', {content: 'hello'}),
+          '<p id="foo">hello</p>');
+});
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);
