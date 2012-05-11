@@ -1,0 +1,473 @@
+Obviel Template
+===============
+
+Introduction
+------------
+
+Obviel is pluggable with custom JavaScript template languages, and has
+in the past used JSON-Template as its default template language. Why
+does Obviel now ship with a default template language of its own?
+
+Obviel Template integrates with Obviel in an important way: sub-views
+can be rendered directly in the template. This allows these views to
+respond to events in the standard Obviel way, including responding to
+object events.
+
+In addition Obviel Template supports i18n markers directly in the
+template for the purpose of gettext. This way automatic extraction
+tools can be used to maintain translations of strings in the
+template. This feature is inspired by (server-side) Zope Page
+Templates, but this is not commonly supported by client-side template
+languages.
+
+Obviel Template is deliberately a very minimal template
+language. Logic should as much be possible be done in code, not
+templates.
+
+Interpolation
+-------------
+
+Obviel-Template supports interpolation using {} markers in text. It
+looks like this::
+
+  <p>{content}</p>
+
+Combined with a JavaScript object with the following structure::
+
+  {
+    content: "Hello world!"
+  }
+
+This will result in a rendered template like this::
+
+  <p>Hello world!</p>
+
+If the ``content`` property is not available in the JavaScript object,
+this is considered to be an error.
+
+Dotted names
+------------
+
+Objects can be nested::
+
+  {
+    a: {
+      b: "The value"
+    }
+  }
+
+You can indicate such nested values using a dotted name::
+
+  <p>{a.b}</p>
+
+Rendering the template with the object will result in this::
+
+  <p>The value</p>
+
+If you refer to a dotted name that does not exist in the data,
+this is an error and the template won't render.
+
+``data-with``
+-------------
+
+You can change the scope in which the template language operates using
+the ``data-with`` directive. Given the same nested structure as before::
+
+  {
+    a: {
+      b: "The value"
+    }
+  }
+
+The template could also be expressed like this::
+
+  <div>
+    <p data-with="a">{b}</p>
+  </div>
+
+Rendering the template with the object will result in this::
+
+  <div>
+    <p>The value</p>
+  </div>
+
+``data-with`` must point to an object or an array; it cannot point to
+strings or other values, and cannot point to a missing value either: these
+are errors.
+
+``data-with`` for repetition
+----------------------------
+
+If you point to an array with ``data-with``, the scope will be set to
+each item in the array sequentially. Each will be rendered using the
+template. So with a data structure like this::
+
+  {
+    persons: [
+       {
+         name: "Bob"
+       },
+       {
+         name: "Steven"
+       }
+    ]
+  }
+
+and a template like this::
+ 
+  <ul>
+    <li data-with="persons">{name}</li>
+  </ul>
+
+the result will be this::
+
+  <ul>
+    <li>Bob</li>
+    <li>Steven</li>
+  </ul>
+ 
+if the array is empty, nothing will be rendered at all. So, this
+data::
+
+  {
+    persons: [
+    ]
+  }
+
+will result in this::
+
+  <ul>
+  </ul>
+
+You can use ``.`` to render simple arrays where each item is not an object
+in itself. For instance::
+
+  {
+    persons: [
+      "Bob", "Steven", "Jay"
+    ]
+  }
+
+and this template::
+
+  <ul>
+    <li data-with="persons">{.}</li>
+  </ul>
+
+will render like this::
+
+  <ul>
+    <li>Bob</li>
+    <li>Steven</li>
+    <li>Jay</li>
+  </ul>
+
+Interpolating the current object: ``.``
+---------------------------------------
+
+Sometimes you want to interpolate the current object into the document
+(as JSON), for debugging purposes. For this you can use ``{.}`` as well.
+
+Consider this data::
+
+  {
+    title: "Foo"
+  }
+
+and this template::
+
+  <div>
+    {.}
+  </div>
+
+Rendering the template with the data will result in this::
+
+  <div>
+    {
+      title: "Foo"
+    }
+  </div>
+
+``data-if``
+-----------
+
+Sometimes you want to include an element only if a given value is true
+or not. For the purposes of ``data-if``, a value is false if:
+
+* it is the JavaScript ``false``
+
+* it is 0
+
+* it is the empty string ``""``
+
+* it is an empty array
+
+* the value is missing in its scope
+
+Otherwise, the value is considered true.
+
+``data-if`` doesn't alter the scope.
+
+With ``not``, the behavior of ``data-if`` can be reversed: values that 
+evaluate to false *will* be included.
+
+Consider this template::
+
+  <p data-with="person">Hello {name}!</p>
+  <p data-with="not person">{name} is not present</p>
+
+here's a data structure with ``person`` present::
+
+  {
+    person: {
+      name: "Evan"
+    }
+  }
+
+rendering the template will result in this::
+
+  <p>Hello Evan!</p>
+
+but if you have a data structure without ``person`` present, such as this::
+
+  { 
+
+  }
+
+the template will render like this::
+
+  <p>Evan is not present</p>
+
+Nested scoping
+--------------
+
+Values in outer scopes are available for interpolation in inner
+scopes. Consider this structure of objects::
+
+  {
+   a: {
+     b: "The value"
+   },
+   c: "Outer value"
+   d: {
+     e: "Value in outer object"
+   }
+  }
+
+In the scope ``a``, we can still access ``c`` and ``d`` (and even
+``a`` again)::
+
+ <p>b in outer scope: {a.b}</p>
+ <p>c in outer scope: {c}</p>
+ <p>e in outer scope: {e}</p>
+ <p data-with="a">b in scope a: {b}</p>
+ <p data-with="a">c in scope a: {c}</p>
+ <p data-with="a">e in scope a: {d.e}</p>
+ <p data-with="a">b in a in scope a: {a.a.b}</p>
+
+Including HTML
+--------------
+
+Normally interpolation escapes HTML. You can however also include HTML
+in data as HTML.  Consider this data::
+
+  {
+    my_html: "<p>Hello</p>"
+  }
+
+with this template::
+
+  <div>{my_html}</div>
+
+the HTML will be included but escaped. Usually this is what you want,
+especially when dealing with user input::
+
+  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
+
+but sometimes you want to include the HTML literally. You can do this by
+indicating this in the interpolation with ``|html``::
+
+  <div>{my_html|html}></div>
+
+now if you render the same data, you will get this::
+
+  <div><p>Hello</p></div>
+
+``data-view``
+-------------
+
+Consider the following data::
+
+  {
+    greeting: "Hello",
+    who: {
+      iface: 'person',
+      name: "Pat Pending",
+      url: "http://www.example.com/pat_pending"
+    }
+  }
+
+and this template::
+
+  <p>{greeting} <span><a data-with="who" href="{url}">{name}</a></span></p>
+
+it will render like this::
+
+  <p>Hello <span><a href="http://www.example.com/pat_pending">Pat Pending</a></span></p>
+
+This works. But we could also arrange our code so that we have a view
+for the ``person`` iface and use that instead. The advantage of that
+is that we could reuse this view in other places. Let's consider the
+view::
+
+  obviel.view({
+     iface: 'person',
+     ovlt: '<a href="{url}">{name}</a>'
+  });
+
+now we can change our template to render ``who`` as a view::
+
+  <p>{greeting} <span data-view="who"></span></p>
+
+The result is still the same::
+
+  <p>Hello <span><a href="http://www.example.com/pat_pending">Pat Pending</a></span></p>
+
+The outer template has become more powerful as well: if the object
+indicated by the name ``who`` has another ``iface``, the template will
+still work unchanged. For example, here is a data structure where
+``who`` is a robot::
+
+  {
+    greeting: "Greetings",
+    who: {
+      iface: 'robot',
+      designation: "OVL-R 4711",
+    }
+  }
+ 
+and this is a view for the iface ``robot``::
+
+  obviel.view({
+     iface: 'robot',
+     ovlt: '{designation}'
+  });
+
+and here is our template again::
+
+  <p>{greeting} <span data-view="who"></span></p>
+
+when we render the data now, we get this::
+
+  <p>Greetings <span>OVL-R 4711</span></p>
+
+in other words, if you add ``data-view`` to an element ``el`` to
+render object ``who``, Obviel Template will do the equivalent of this::
+
+  $(el).render(who);
+
+data-view must point to an object. It cannot point to an array or other
+value.
+
+data-i18n
+---------
+
+Obviel Template offers the ability to write a template that can be
+shown in other languages as well. If we have a template like this::
+
+ <p data-i18n="">Hello world!</p>
+
+we can also show this template in the Dutch language given the appropriate
+translation data::
+
+ <p>Hallo wereld!</p>
+
+``data-i18n`` is used to mark up those parts of the template that
+should be translatable, such as attributes and texts. These
+translatable values can contain variables as well:
+
+  <p data-i18n="">Hello {who}!</p>
+
+XXX stuff about po files and spelling
+
+XXX what happens if HTML is in the section marked?
+
+By default, ``data-i18n`` is used to mark the textual content of a tag
+for translation. You can indicate that you want to translate an attribute
+like this::
+
+  <blah data-i18n="title" title="Hello" />
+
+You can indicate multiple attributes by space separated names::
+
+  <blah data-i18n="title other" title="Hello" other="Something" />
+
+You can indicate attributes *and* element contents with the special
+name ``.``:
+
+  <blah data-i18n=". title" title="Hello">Contents</blah>
+
+Order
+-----
+
+You can combine the attributes ``data-if``, ``data-with`` and ``data-view``
+on an element::
+
+  <p data-if="a" data-with="b" data-view="c"></p>
+
+This means that if the value ``a`` is present and true, the ``p``
+element will be included in the rendered template. After this, the
+scope is changed to ``b`` (possibly repeating if b is an array), and
+we then render the object ``c`` in the ``b`` scope with a view.
+
+``data-i18n`` will also apply after ``data-if``. ``data-with`` and
+``data-i18n`` do not interact directly, but of course ``data-with`` is
+already applied when any variable interpolation that can affect
+``data-i18n`` happens, so ``data-i18n`` can also be seen as applying
+after ``data-with``.
+
+``data-i18n`` can only be combined with ``data-view`` if ``data-i18n``
+refers to attributes only, not element content; any other combination is
+an error.
+
+id support
+----------
+
+Obviel templates should be valid HTML fragments. In valid HTML, a id
+should be unique. Ids are allowed::
+ 
+  <div id="foo"></div>
+
+But variables in ids are not allowed, so this is **illegal**::
+
+  <div id="{not_allowed}"></div>
+
+To generate an id, you can instead use the ``data-id`` command::
+
+  <div data-id="{some_id}"></div>
+
+support for gettext message ids
+-------------------------------
+
+XXX If a message id enters the template, it's automatically translated.
+
+Template-language injected data
+-------------------------------
+
+XXX or solve this on the view level? probably there is better, we can have
+a special view that injects 'path'.
+
+Before an object is rendered, some extra fields can be injected in the
+namespace. This can be useful to These fields start with a ! to
+distinguish them.
+
+Literals
+--------
+
+Injecting the characters ``{`` and ``}`` can be done using a special
+markup::
+
+  {!open} 
+
+  {!close}
+
