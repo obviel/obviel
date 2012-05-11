@@ -42,7 +42,13 @@ when rendering a section:
 obviel.template = {};
 
 (function($, obviel, module) {
-    
+
+    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
+
+    module.NAME_TOKEN = 0;
+    module.TEXT_TOKEN = 1;
+
+
     module.CompilationError = function(el, message) {
         this.el = el;
         this.message = message;
@@ -88,20 +94,24 @@ obviel.template = {};
     
     module.Section.prototype.render = function(el, scope, translations) {
         var cloned = this.el.clone();
-
-        // XXX not right
-        el.empty();
-        // hook up to document so that selector works...
-        el.append(cloned);
         
+        // hook up to document so that id selector works...
+        el.append(cloned);
+
+        this.render_dynamic_elements(el, scope, translations);
+    };
+
+    
+    module.Section.prototype.render_dynamic_elements = function(el, scope,
+                                                                translations) {
         $.each(this.dynamic_elements, function(index, value) {
             var dynamic_el = $(value.selector, el);
             value.dynamic_element.render(dynamic_el, scope, translations);
-            if (dynamic_el.attr('id').slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
-                OBVIEL_TEMPLATE_ID_PREFIX) {
+            if (starts_with(dynamic_el.attr('id'), OBVIEL_TEMPLATE_ID_PREFIX)) {
                 dynamic_el.removeAttr('id');
             }
         });
+
     };
     
     module.DynamicElement = function(el) {
@@ -382,8 +392,10 @@ obviel.template = {};
 */
     var _id = 0;
 
-    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
-    
+    var starts_with = function(s, startswith) {
+        return (s.slice(0, startswith.length) === startswith);
+    };
+
     var generate_id = function(el) {
         var result = el.attr('id');
         if (result === undefined) {
@@ -394,9 +406,6 @@ obviel.template = {};
         return result;
     };
     
-    module.NAME_TOKEN = 0;
-    module.TEXT_TOKEN = 1;
-
     var trim = function(s) {
         return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
