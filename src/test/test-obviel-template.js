@@ -11,10 +11,22 @@ module("Template", {
 
 var module = obviel.template;
 
+var Translations = function() {
+    this._trans = {
+        'Hello world!': 'Hallo wereld!',
+        'Hello {who}!': '{who}, hallo!'
+    };
+};
+
+Translations.prototype.gettext = function(msgid) {
+    return this._trans[msgid];
+};
+
 var render = function(text, obj) {
     var template = new module.Template($(text));
     var el = $('<div></div>');
-    template.render(el, obj);
+    var translations = new Translations();
+    template.render(el, obj, translations);
     return el.html();
 };
 
@@ -87,6 +99,16 @@ test("disallow dynamic id in template", function() {
 test("template with data-id", function() {
     equal(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
           '<p id="Foo"></p>');
+});
+
+test("data-trans with text", function() {
+    equal(render('<p data-trans="">Hello world!</p>', {}),
+          '<p>Hallo wereld!</p>');
+});
+
+test("data-trans with variable", function() {
+    equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
+          '<p>Fred, hallo!</p>');
 });
 
 test('tokenize single variable', function() {

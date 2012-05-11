@@ -57,12 +57,13 @@ obviel.template = {};
         this.section = new module.Section(el);
     };
     
-    module.Template.prototype.render = function(el, obj) {
+    module.Template.prototype.render = function(el, obj, translations) {
         var scope = new module.Scope(obj);
-        this.section.render(el, scope);
+        this.section.render(el, scope, translations);
     };
     
-    module.Section = function(el) {
+    module.Section = function(
+        el) {
         this.el = el;
         this.dynamic_elements = [];
         this.compile(el);
@@ -85,7 +86,7 @@ obviel.template = {};
         });
     };
     
-    module.Section.prototype.render = function(el, scope) {
+    module.Section.prototype.render = function(el, scope, translations) {
         var cloned = this.el.clone();
 
         // XXX not right
@@ -95,7 +96,7 @@ obviel.template = {};
         
         $.each(this.dynamic_elements, function(index, value) {
             var dynamic_el = $(value.selector, el);
-            value.dynamic_element.render(dynamic_el, scope);
+            value.dynamic_element.render(dynamic_el, scope, translations);
             if (dynamic_el.attr('id').slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
                 OBVIEL_TEMPLATE_ID_PREFIX) {
                 dynamic_el.removeAttr('id');
@@ -106,6 +107,8 @@ obviel.template = {};
     module.DynamicElement = function(el) {
         this.attr_texts = {};
         this.content_texts = [];
+        this.message_id = null;
+        this.tvars = {};
         this._dynamic = false;
         this.compile(el);
     };
@@ -117,6 +120,12 @@ obviel.template = {};
     module.DynamicElement.prototype.compile = function(el) {
         this.compile_attr_texts(el);
         this.compile_content_texts(el);
+        var data_trans = el.attr('data-trans');
+        if (data_trans !== undefined) {
+            this._dynamic = true;
+            this.compile_message_id(el);
+            el.removeAttr('data-trans');
+        }
     };
     
     module.DynamicElement.prototype.compile_attr_texts = function(el) {
@@ -162,9 +171,31 @@ obviel.template = {};
             }
         });        
     };
+
+    module.DynamicElement.prototype.compile_message_id = function(el) {
+        var self = this;
+        var parts = [];
+        el.contents().each(function(index) {
+            var node = this;
+            if (node.nodeType === 3) {
+                parts.push(node.nodeValue);
+            } else if (node.nodeType === 1) {
+                var tvar = $(node).attr('data-tvar');
+                if (tvar === undefined) {
+                    throw new module.CompilationError(
+                        el, "data-trans element has sub-elements " +
+                            "that are not marked with data-tvar");
+                }
+                parts.push("{" + tvar + "}");
+                self.tvars[tvar] = index;
+            }
+            // XXX other kinds of nodeTypes
+        });
+        // XXX empty message id
+        self.message_id = parts.join('');
+    };
     
-    module.DynamicElement.prototype.render = function(el, scope) {
-        
+    module.DynamicElement.prototype.render = function(el, scope, translations) {        
         $.each(this.attr_texts, function(key, value) {
             var text = value.render(scope);
             if (key === 'data-id') {
@@ -174,11 +205,67 @@ obviel.template = {};
             }
             el.attr(key, text);
         });
+        /* fast path without translations; elements do not need to
+           be reorganized */
+        if (translations === undefined || translations === null ||
+            this.message_id === null) {
+            this.render_notrans(el, scope);
+            return;
+        }
+        var translated = translations.gettext(this.message_id);
+        if (translated === this.message_id) {
+            /* if translation is original message id, we can use fast path */
+            this.render_notrans(el, scope);
+            return;
+        }
+        this.render_trans(el, scope, translated);
+    };
+
+    module.DynamicElement.prototype.render_notrans = function(el, scope) {
         var node = el.get(0);
         $.each(this.content_texts, function(index, value) {
             var text = value.dynamic_text.render(scope);
             node.childNodes[value.index].nodeValue = text;
         });
+    };
+
+    module.DynamicElement.prototype.get_tvar_node = function(el, name) {
+        var index = this.tvars[name];
+        if (index === undefined) {
+            return null;
+        }
+        return el.get(0).childNodes[index];
+    };
+    
+    module.DynamicElement.prototype.render_trans = function(el, scope,
+                                                            translated) {
+        var self = this;
+        var result = [];
+
+        // XXX caching
+        var tokens = module.tokenize(translated);
+
+        // prepare what to put in place, including possibly
+        // shifting tvar nodes
+        $.each(tokens, function(index, token) {
+            if (token.type === module.TEXT_TOKEN) {
+                result.push(document.createTextNode(token.value));
+            } else if (token.type === module.NAME_TOKEN) {
+                var tvar_node = self.get_tvar_node(el, token.value);
+                if (tvar_node !== null) {
+                    result.push(tvar_node);
+                } else {
+                    result.push(document.createTextNode(
+                        scope.resolve(token.value)));
+                }
+            }
+        });
+        // now move the elements in place
+        el.empty();
+        var node = el.get(0);
+        for (var i in result) {
+            node.appendChild(result[i]);
+        }
     };
     
     module.DynamicText = function(text) {        
