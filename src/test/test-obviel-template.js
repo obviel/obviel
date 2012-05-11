@@ -14,7 +14,8 @@ var module = obviel.template;
 var Translations = function() {
     this._trans = {
         'Hello world!': 'Hallo wereld!',
-        'Hello {who}!': '{who}, hallo!'
+        'Hello {who}!': '{who}, hallo!',
+        'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!'
     };
 };
 
@@ -117,12 +118,19 @@ test('data-trans with data-tvar', function() {
           '<p><em>world</em>, hallo!</p>');
 });
 
-test('data-trans with data-tvar and variable', function() {
+test('data-trans with data-tvar and variable in tvar', function() {
     equal(render('<p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>',
                  {who: 'wereld'}),
           '<p><em>wereld</em>, hallo!</p>');
 });
 
+test('data-trans with data-tvar and variable in text', function() {
+    equal(render('<p data-trans="">Hello {qualifier} <em data-tvar="who">{who}</em>!</p>',
+                 {who: 'wereld',
+                  qualifier: 'beste'}),
+          '<p>beste <em>wereld</em>, hallo!</p>');
+    
+});
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
