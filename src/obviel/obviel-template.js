@@ -180,18 +180,19 @@ obviel.template = {};
     module.Section.prototype.render = function(el, scope) {
         var cloned = this.el.clone();
 
+        // XXX not right
+        el.empty();
+        // hook up to document so that selector works...
+        el.append(cloned);
+        
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = cloned.select(value.selector);
+            var dynamic_el = $(value.selector, el);
             value.dynamic_element.render(dynamic_el, scope);
             if (value.id.slice(0, OBVIEL_TEMPLATE_ID_PREFIX.length) ===
                 OBVIEL_TEMPLATE_ID_PREFIX) {
                 dynamic_el.removeAttr('id');
             }
         });
-
-        // XXX not right
-        el.empty();
-        el.append(cloned);
     };
     
     module.DynamicElement = function(el) {
@@ -211,7 +212,7 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile_attr_texts = function(el) {
-        var node = el[0];
+        var node = el.get(0);
         for (var i in node.attributes) {
             var attr = node.attributes[i];
             if (!attr.specified) {
@@ -247,7 +248,7 @@ obviel.template = {};
         $.each(this.attr_texts, function(key, value) {
             el.attr(key, value.render(scope));
         });
-        var node = el[0];
+        var node = el.get(0);
         $.each(this.content_texts, function(index, value) {
             var text = value.dynamic_text.render(scope);
             node.childNodes[value.index].nodeValue = text;
