@@ -111,6 +111,19 @@ test("data-trans with variable", function() {
           '<p>Fred, hallo!</p>');
 });
 
+test('data-trans with data-tvar', function() {
+    equal(render('<p data-trans="">Hello <em data-tvar="who">world</em>!</p>',
+                 {}),
+          '<p><em>world</em>, hallo!</p>');
+});
+
+test('data-trans with data-tvar and variable', function() {
+    equal(render('<p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>',
+                 {who: 'wereld'}),
+          '<p><em>wereld</em>, hallo!</p>');
+});
+
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);

@@ -188,6 +188,7 @@ obviel.template = {};
                 }
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = index;
+                $(node).removeAttr('data-tvar');
             }
             // XXX other kinds of nodeTypes
         });
