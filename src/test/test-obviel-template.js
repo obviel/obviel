@@ -132,6 +132,17 @@ test('data-trans with data-tvar and variable in text', function() {
     
 });
 
+/* XXX
+
+  tvar implies data-trans
+
+
+  tvar should be unique, also compared to variables
+
+
+  explicit naming
+*/
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);
