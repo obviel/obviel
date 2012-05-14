@@ -18,13 +18,27 @@ There are two phases:
 
 How does compilation work?
 
-* a separated Section is compiled for each data-with and data-if element.
+* a separated Section is compiled for each data-with and data-if
+  element, or combinations thereof.
 
-* Sections have sub-sections for underlying data-with and data-if elements.
+* Sections are organized in a tree; each section may have sub-sections.
+  The template itself starts with a single Section at the top.
 
-* each Section is marked in the template with an id for fast access.
+* each element that starts a Section is marked with an id, so that
+  when the template is rendered, sub-section elements can be found quickly.
 
-* each section maintains a list of elements with dynamic content.
+* each section also maintains a list of dynamic elements: an element with
+  dynamic content. An element becomes dynamic if:
+
+  * it has an attribute which uses variable interpolation.
+
+  * it has a child text node that uses variable interpolation.
+
+  * it has a data-id directive.
+
+  * it has a data-trans directive.
+
+  * it has a data-tvar directive.
 
 * each dynamic element is also marked in the template with an id for
   fast access.
@@ -33,9 +47,19 @@ when rendering a section:
 
 * clone original section (deep copy).
 
-* now find all dynamic elements by id in clone and update them.
+* now find all dynamic elements by id and fill in interpolations
+  according to data (and translations).
 
 * render sub-sections and attach them.
+
+Issues:
+
+* explicit ids in repeated sections really are pretty bogus. How do we
+  prevent those? rendering error or explicit data-each construct that
+  can do static checking during compilation time? We need to make sure
+  that the generated ids only exist on the newly inserted iteration
+  and are removed before the next iteration is inserted.
+
 
 */
 
