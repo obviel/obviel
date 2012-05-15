@@ -26,7 +26,7 @@ Translations.prototype.gettext = function(msgid) {
 };
 
 var render = function(text, obj) {
-    var template = new module.Template($(text));
+    var template = new module.Template(text);
     var el = $('#viewdiv');
     var translations = new Translations();
     template.render(el, obj, translations);
@@ -41,6 +41,21 @@ test('template with text, without variable', function() {
 test("template without text", function() {
     equal(render('<p></p>', {}),
           '<p></p>');
+});
+
+test("template that is just text, without variable", function() {
+    equal(render("Hello world!", {}),
+          'Hello world!');
+});
+
+test("template that is just text with a variable", function() {
+    equal(render("Hello {who}!", {who: "world"}),
+          'Hello world!');
+});
+
+test("template that is text with dynamic element", function() {
+    equal(render("Hello <em>{who}</em>!", {who: "world"}),
+          'Hello <em>world</em>!');
 });
 
 test('template without text, with sub elements', function() {
@@ -116,10 +131,10 @@ test("template with data-id", function() {
           '<p id="Foo"></p>');
 });
 
-test("template with data-with", function() {
-    equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
-          '<p>Hello</p>');
-});
+// test("template with data-with", function() {
+//     equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
+//           '<p>Hello</p>');
+// });
 
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),

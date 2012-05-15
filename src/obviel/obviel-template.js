@@ -60,6 +60,28 @@ Issues:
   that the generated ids only exist on the newly inserted iteration
   and are removed before the next iteration is inserted.
 
+A section:
+
+* is always rendered on an element
+
+* will take care of the dynamic content of that element, because it
+  can take care of textual content. This means that
+  the outer section will *not* take care of that dynamic content,
+  even though the element is in that element's tree by necessity too.
+  We can prevent it by not having dynamic elements register for elements
+  that also start sections, except on the top.
+
+* the Template has a section. This means it takes care of any dynamic content
+  of the element it is rendered on, such as attributes or text.
+
+* when compiling a template we do not treat its top element as one
+  to look for sub-sections.
+
+* when a section is rendered, it will take care of dynamic content on
+  all elements except sub-section elements.
+
+* a Template may just deal with textual content. This means this has a
+  hidden element that is never rendered.
 
 */
 
@@ -83,9 +105,14 @@ obviel.template = {};
         this.message = message;
     };
     
-    module.Template = function(el) {
+    module.Template = function(text) {
         this.section = null;
-        this.compile(el);
+        this.text_template = false;
+        if (!is_html_text(text)) {
+            text = '<div>' + text + '</div>';
+            this.text_template = true;
+        }
+        this.compile($(text));
     };
 
     module.Template.prototype.compile = function(el) {
@@ -94,10 +121,18 @@ obviel.template = {};
     
     module.Template.prototype.render = function(el, obj, translations) {
         var scope = new module.Scope(obj);
-        // XXX this clone is too expensive for what we do
-        var top_el = this.section.el.clone().empty();
+        var top_el = $(this.section.el.get(0).cloneNode(false));
         el.append(top_el);
         this.section.render(top_el, scope, translations);
+        if (this.text_template) {
+            // even with a text template we've inserted our virtual top
+            // div element now. we now have to remove it again.
+            var node = el.get(0);
+            $(top_el).contents().each(function() {
+                node.appendChild(this);
+            });
+            top_el.remove();
+        }
     };
     
     module.Section = function(el, data_if, data_with) {
@@ -491,6 +526,14 @@ obviel.template = {};
         return (s.slice(0, startswith.length) === startswith);
     };
 
+    var trim = function(s) {
+        return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+    };
+
+    var is_html_text = function(text) {
+        return text.trim().charAt(0) === '<';
+    };
+    
     var generate_id = function(el) {
         var result = el.attr('id');
         if (result === undefined) {
@@ -506,10 +549,6 @@ obviel.template = {};
         if (id !== undefined && starts_with(id, OBVIEL_TEMPLATE_ID_PREFIX)) {
             el.removeAttr('id');
         }
-    };
-    
-    var trim = function(s) {
-        return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
     
     module.tokenize = function(text) {
