@@ -121,12 +121,19 @@ obviel.template = {};
     
     module.Template.prototype.render = function(el, obj, translations) {
         var scope = new module.Scope(obj);
+
+        // we need to insert the top element into document first so
+        // we can hang the rest of the template off it
         var top_el = $(this.section.el.get(0).cloneNode(false));
         el.append(top_el);
+
+        // now render the template
         this.section.render(top_el, scope, translations);
+
+        // if we inserted a text template, we've inserted a virtual top
+        // div element. we have to remove it again, just leaving the
+        // underlying nodes
         if (this.text_template) {
-            // even with a text template we've inserted our virtual top
-            // div element now. we now have to remove it again.
             var node = el.get(0);
             $(top_el).contents().each(function() {
                 node.appendChild(this);
