@@ -4,21 +4,24 @@ Obviel Template
 Introduction
 ------------
 
-Obviel is pluggable with custom JavaScript template languages, and has
-in the past used JSON-Template as its default template language. Why
-does Obviel now ship with a default template language of its own?
+Obviel has its own template language. Why? After all, in the past it
+used `JSON-Template`_ as its default template language, and always
+featured pluggable template languages.
+
+.. `JSON-Template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
 
 Obviel Template integrates with Obviel in an important way: sub-views
-can be rendered directly in the template. This allows these views to
+can be rendered directly from the template. This allows these views to
 respond to events in the standard Obviel way, including responding to
-object events.
+object events. With a text-based template language like JSON-Template
+this wasn't possible, as it wasn't aware of DOM elements at all.
 
-In addition Obviel Template supports i18n markers directly in the
-template for the purpose of gettext. This way automatic extraction
-tools can be used to maintain translations of strings in the
-template. This feature is inspired by (server-side) Zope Page
-Templates, but this is not commonly supported by client-side template
-languages.
+Another powerful feature of Obviel Template is that it supports i18n
+markers directly in the template for the purpose of gettext. This way
+automatic extraction tools can be used to maintain translations of
+strings in the template. This feature is inspired by (server-side)
+Zope Page Templates, but this is not commonly supported by client-side
+template languages.
 
 Obviel Template is deliberately a very minimal template
 language. Logic should as much be possible be done in code, not
@@ -38,12 +41,13 @@ Combined with a JavaScript object with the following structure::
     content: "Hello world!"
   }
 
-This will result in a rendered template like this::
+this will result in a rendered template like this::
 
   <p>Hello world!</p>
 
 If the ``content`` property is not available in the JavaScript object,
-this is considered to be an error.
+this is considered to be an error and the template will fail with a
+``RenderError`` exception.
 
 Dotted names
 ------------
@@ -64,8 +68,9 @@ Rendering the template with the object will result in this::
 
   <p>The value</p>
 
-If you refer to a dotted name that does not exist in the data,
-this is an error and the template won't render.
+If you refer to a dotted name that does not exist in the data, this is
+an error and the template won't render; you get a ``RenderError``
+exception.
 
 ``data-with``
 -------------
@@ -79,7 +84,7 @@ the ``data-with`` directive. Given the same nested structure as before::
     }
   }
 
-The template could also be expressed like this::
+you can express the template like::
 
   <div>
     <p data-with="a">{b}</p>
@@ -91,9 +96,9 @@ Rendering the template with the object will result in this::
     <p>The value</p>
   </div>
 
-``data-with`` must point to an object or an array; it cannot point to
-strings or other values, and cannot point to a missing value either: these
-are errors.
+``data-with`` must point to an object; it cannot point to strings or
+arrays or other values, and cannot point to a missing value either:
+these are ``RenderError`` errors.
 
 ``data-with`` for repetition
 ----------------------------

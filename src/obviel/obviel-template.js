@@ -264,7 +264,8 @@ obviel.template = {};
         var data_each = scope.resolve(this.data_each);
         if (!$.isArray(data_each)) {
             throw new module.RenderError(
-                "data-each must point to an array, not a " + $.type(data_each));
+                ("data-each must point to an array, not to " +
+                 $.type(data_each)), el);
         }
         // empty array, so don't render any elements
         if (data_each.length === 0) {
@@ -302,7 +303,7 @@ obviel.template = {};
             var type = $.type(data_with);
             if (type !== 'object') {
                 throw new module.RenderError(
-                    "data-with must point to an object, not a " + type, el);
+                    "data-with must point to an object, not to " + type, el);
             }
             scope.push(data_with);
         }
