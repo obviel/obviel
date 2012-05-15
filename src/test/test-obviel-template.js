@@ -177,6 +177,13 @@ test("data-with not pointing to object", function() {
     
 });
 
+test("data-with not pointing to anything", function() {
+   raises(function() {
+        render('<p data-with="alpha"></p>', {});
+   }, module.RenderError);
+    
+});
+
 test("deeper data-with", function() {
     equal(render('<div><p data-with="alpha">{beta}</p></div>',
                  {alpha: { beta: "Hello"}}),
@@ -236,6 +243,69 @@ test("deeper data-if where if is false", function() {
                 {alpha: false,
                  beta: 'Beta'}),
           '<div></div>');
+});
+
+test("data-if where if is null", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: null,
+                 beta: 'Beta'}),
+          '');
+});
+
+test("data-if where if is undefined", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: undefined,
+                 beta: 'Beta'}),
+          '');
+});
+
+test("data-if where if is 0", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: 0,
+                 beta: 'Beta'}),
+          '');
+});
+
+test("data-if where if is 1", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: 1,
+                 beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+test("data-if where if is empty string", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: '',
+                 beta: 'Beta'}),
+          '');
+});
+
+test("data-if where if is non-empty string", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: 'non empty',
+                 beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+test("data-if where if is empty array", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: [],
+                 beta: 'Beta'}),
+          '');
+});
+
+test("data-if where if is non-empty array", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: ['a'],
+                 beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+
+test("data-if where if is not there", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {beta: 'Beta'}),
+          '');
 });
 
 test("data-with and data-if where if is true", function() {

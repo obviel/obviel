@@ -247,7 +247,7 @@ obviel.template = {};
     module.Section.prototype.render = function(el, scope, translations) {
         if (this.data_if) {
             var data_if = scope.resolve(this.data_if);
-            if (!data_if) {
+            if (data_if == false || data_if === null || data_if === undefined) {
                 el.remove();
                 return;
             }
@@ -264,8 +264,8 @@ obviel.template = {};
         var data_each = scope.resolve(this.data_each);
         if (!$.isArray(data_each)) {
             throw new module.RenderError(
-                ("data-each must point to an array, not to " +
-                 $.type(data_each)), el);
+                el, ("data-each must point to an array, not to " +
+                     $.type(data_each)));
         }
         // empty array, so don't render any elements
         if (data_each.length === 0) {
@@ -300,10 +300,14 @@ obviel.template = {};
     module.Section.prototype.render_el = function(el, scope, translations) {
         if (this.data_with) {
             var data_with = scope.resolve(this.data_with);
+            if (data_with === undefined) {
+                throw new module.RenderError(el, "data-with '" + data_with + "' " +
+                                             "could not be found");
+            }
             var type = $.type(data_with);
             if (type !== 'object') {
-                throw new module.RenderError(
-                    "data-with must point to an object, not to " + type, el);
+                throw new module.RenderError(el, 
+                    "data-with must point to an object, not to " + type);
             }
             scope.push(data_with);
         }
@@ -397,8 +401,8 @@ obviel.template = {};
             if (dynamic_text.is_dynamic()) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
-                        el, "Not allowed to use variables in id attribute. " +
-                            "Use data-id instead.");
+                        el, "not allowed to use variables in id attribute. " +
+                            "use data-id instead");
                 }
                 this.attr_texts[attr.name] = dynamic_text;
                 this._dynamic = true;
@@ -568,8 +572,8 @@ obviel.template = {};
     module.Variable.prototype.render = function(el, scope) {
         var result = scope.resolve(this.name);
         if (result === undefined) {
-            throw new module.RenderError(el, "Variable '" + this.name + "' " +
-                                         "could not be found.");
+            throw new module.RenderError(el, "variable '" + this.name + "' " +
+                                         "could not be found");
         }
         return result;
     };
