@@ -259,6 +259,14 @@ test('data-each with 3 elements', function() {
           '<ul><li>a</li><li>b</li><li>c</li></ul>');
 });
 
+test('top-level data each', function() {
+    equal(render('<p data-each="list">{title}</p>',
+                 {list: [{title: 'a'},
+                         {title: 'b'},
+                         {title: 'c'}]}),
+          '<p>a</p><p>b</p><p>c</p>');
+});
+
 test('data-each with 2 elements', function() {
     equal(render('<ul><li data-each="list">{title}</li></ul>',
                  {list: [{title: 'a'},
@@ -286,22 +294,57 @@ test('data-each with text after it', function() {
 });
 
 test('data-each with data-if and true', function() {
-    equal(render('<ul><li data-if="flag" data-each="list">{title}</li>after</ul>',
+    equal(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
                  {flag: true,
                   list: [{title: 'a'},
                          {title: 'b'}]}),
-          '<ul><li>a</li><li>b</li>after</ul>');
+          '<ul><li>a</li><li>b</li></ul>');
 
 });
 
 test('data-each with data-if and false', function() {
-    equal(render('<ul><li data-if="flag" data-each="list">{title}</li>after</ul>',
+    equal(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
                  {flag: false,
                   list: [{title: 'a'},
                          {title: 'b'}]}),
-          '<ul>after</ul>');
+          '<ul></ul>');
 
 });
+
+test('data-each with data-with', function() {
+    equal(render('<ul><li data-each="list" data-with="sub">{title}</li></ul>',
+                 {list: [{sub: {title: 'a'}},
+                         {sub: {title: 'b'}}]}),
+          '<ul><li>a</li><li>b</li></ul>');
+});
+
+test('data-each with data-with and data-if and true', function() {
+    equal(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+                 {flag: true,
+                  list: [{sub: {title: 'a'}},
+                         {sub: {title: 'b'}}]}),
+          '<ul><li>a</li><li>b</li></ul>');
+});
+
+test('data-each with data-with and data-if and false', function() {
+    equal(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+                 {flag: false,
+                  list: [{sub: {title: 'a'}},
+                         {sub: {title: 'b'}}]}),
+          '<ul></ul>');
+});
+
+test('nested data-each', function() {
+    equal(render(
+        '<ul><li data-each="outer"><ul><li data-each="inner">{title}</li></ul></li></ul>',
+        {outer: [
+            {inner: [{title: 'a'}, {title: 'b'}]},
+            {inner: [{title: 'c'}, {title: 'd'}]}
+        ]}),
+          '<ul><li><ul><li>a</li><li>b</li></ul></li><li><ul><li>c</li><li>d</li></ul></li></ul>');
+    
+});
+
 
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),

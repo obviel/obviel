@@ -287,6 +287,8 @@ obviel.template = {};
             scope.push(data_each[i]);
             this.render_el(iteration_el, scope, translations);
             scope.pop();
+            // clean up id that may still be on top-level element
+            clean_id(iteration_el);
             insert_after_el = iteration_el;
         }
     };
