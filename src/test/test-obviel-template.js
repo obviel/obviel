@@ -38,126 +38,69 @@ test('template with text, without variable', function() {
           '<p>Hello world!</p>'); 
 });
 
-test("template without text", function() {
+test("empty element", function() {
     equal(render('<p></p>', {}),
           '<p></p>');
 });
 
-test("template that is just text, without variable", function() {
+test("just text", function() {
     equal(render("Hello world!", {}),
           'Hello world!');
 });
 
-test("template that is just text with a variable", function() {
+test("text with a variable", function() {
     equal(render("Hello {who}!", {who: "world"}),
           'Hello world!');
 });
 
-test("template that is text with dynamic element", function() {
-    equal(render("Hello <em>{who}</em>!", {who: "world"}),
-          'Hello <em>world</em>!');
-});
 
-test('template without text, with sub elements', function() {
+test('text with sub element', function() {
     equal(render('<p><em>Sub</em></p>', {}),
           '<p><em>Sub</em></p>');
 });
 
-test('template with just elements', function() {
+test("text with element with variable", function() {
+    equal(render("Hello <em>{who}</em>!", {who: "world"}),
+          'Hello <em>world</em>!');
+});
+
+test('element with empty element', function() {
     equal(render('<p><em></em></p>', {}),
           '<p><em></em></p>');
 });
 
-test('template with just variable', function() {
+test('element with variable', function() {
     equal(render('<p>{who}</p>', {who: 'world'}),
           '<p>world</p>');
 });
 
-test('template with text and variable', function() {
+test('element with text and variable', function() {
     equal(render('<p>Hello {who}!</p>', {who: 'world'}),
           '<p>Hello world!</p>'); 
 });
 
-test("template with dotted name", function() {
-    equal(render('<p>Hello {something.who}!</p>', {something: {who: 'world'}}),
-          '<p>Hello world!</p>');
-});
-
-test("template with variable that does not exist", function() {
-    raises(function() {
-        render('<p>{who}</p>', {});
-    }, module.RenderError);
-                 
-});
-
-test('template with variable and sub element', function() {
+test('variable and sub element', function() {
     equal(render('<p>a <em>very nice</em> {time}, sir!</p>', {time: 'day'}),
           '<p>a <em>very nice</em> day, sir!</p>');
 });
 
-test('template with variable in sub element', function() {
+
+test('variable in sub element', function() {
     equal(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
           '<p>a <em>nice</em> day, sir!</p>');
 });
+
 
 test('template with multiple variables', function() {
     equal(render('<p>{first}{second}</p>', {first: 'One', second: 'Two'}),
           '<p>OneTwo</p>');
 });
 
-test('template with attribute variable', function() {
-    equal(render('<p class="{a}"></p>', {a: 'Alpha'}),
-          '<p class="Alpha"></p>');
+test("variable with dotted name", function() {
+    equal(render('<p>Hello {something.who}!</p>', {something: {who: 'world'}}),
+          '<p>Hello world!</p>');
 });
 
-test('template with attribute text and variable', function() {
-    equal(render('<p class="the {text}!"></p>', {text: 'thing'}),
-          '<p class="the thing!"></p>');
-});
-
-test('template with attribute in sub-element', function() {
-    equal(render('<p><em class="{a}">foo</em></p>', {a: 'silly'}),
-          '<p><em class="silly">foo</em></p>');
-});
-
-test("template with element with both id and variable", function() {
-    equal(render('<p id="foo">{content}</p>', {content: 'hello'}),
-          '<p id="foo">hello</p>');
-});
-
-test("disallow dynamic id in template", function() {
-    raises(function() {
-        render('<p id="{dynamic}"></p>', {dynamic: 'test'});
-    }, module.CompilationError);
-});
-
-test("template with data-id", function() {
-    equal(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
-          '<p id="Foo"></p>');
-});
-
-test("template with data-with", function() {
-    equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
-          '<p>Hello</p>');
-});
-
-test("template with deeper data-with", function() {
-    equal(render('<div><p data-with="alpha">{beta}</p></div>',
-                 {alpha: { beta: "Hello"}}),
-          '<div><p>Hello</p></div>');
-});
-
-test("template with nested data-with", function() {
-    equal(render('<div data-with="alpha"><div data-with="beta"><div data-with="gamma">{delta}</div></div></div>',
-                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
-          '<div><div><div>Hello</div></div></div>');
-});
-
-test("template with data-with with dotted name", function() {
-    equal(render('<div data-with="alpha.beta.gamma">{delta}</div>',
-                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
-          '<div>Hello</div>');
-});
 
 test("nested scoping", function() {
     equal(render('<div data-with="second">{alpha}{beta}</div>',
@@ -184,21 +127,96 @@ test("things disappear out of scope", function() {
     
 });
 
-test("template with data-if where if is true", function() {
+test("variable that does not exist", function() {
+    raises(function() {
+        render('<p>{who}</p>', {});
+    }, module.RenderError);
+                 
+});
+
+test('attribute variable', function() {
+    equal(render('<p class="{a}"></p>', {a: 'Alpha'}),
+          '<p class="Alpha"></p>');
+});
+
+test('attribute text and variable', function() {
+    equal(render('<p class="the {text}!"></p>', {text: 'thing'}),
+          '<p class="the thing!"></p>');
+});
+
+test('attribute in sub-element', function() {
+    equal(render('<p><em class="{a}">foo</em></p>', {a: 'silly'}),
+          '<p><em class="silly">foo</em></p>');
+});
+
+test("element with both id and variable", function() {
+    equal(render('<p id="foo">{content}</p>', {content: 'hello'}),
+          '<p id="foo">hello</p>');
+});
+
+test("disallow dynamic id in template", function() {
+    raises(function() {
+        render('<p id="{dynamic}"></p>', {dynamic: 'test'});
+    }, module.CompilationError);
+});
+
+test("data-id", function() {
+    equal(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
+          '<p id="Foo"></p>');
+});
+
+test("data-with", function() {
+    equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
+          '<p>Hello</p>');
+});
+
+test("deeper data-with", function() {
+    equal(render('<div><p data-with="alpha">{beta}</p></div>',
+                 {alpha: { beta: "Hello"}}),
+          '<div><p>Hello</p></div>');
+});
+
+test("nested data-with", function() {
+    equal(render('<div data-with="alpha"><div data-with="beta"><div data-with="gamma">{delta}</div></div></div>',
+                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
+          '<div><div><div>Hello</div></div></div>');
+});
+
+test("data-with with dotted name", function() {
+    equal(render('<div data-with="alpha.beta.gamma">{delta}</div>',
+                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
+          '<div>Hello</div>');
+});
+
+test("data-with with attribute", function() {
+    equal(render('<div data-with="alpha" class="{beta}"></div>',
+                 {alpha: { beta: 'Beta'}}),
+          '<div class="Beta"></div>');
+
+});
+
+test("deeper data-with with attribute", function() {
+    equal(render('<div><div data-with="alpha" class="{beta}"></div></div>',
+                 {alpha: { beta: 'Beta'}}),
+          '<div><div class="Beta"></div></div>');
+
+});
+
+test("data-if where if is true", function() {
     equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: true,
                  beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
-test("template with data-if where if is false", function() {
+test("data-if where if is false", function() {
     equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: false,
                  beta: 'Beta'}),
           '');
 });
 
-test("template with deeper data-if where if is true", function() {
+test("deeper data-if where if is true", function() {
     equal(render('<div><div data-if="alpha">{beta}</div></div>',
                 {alpha: true,
                  beta: 'Beta'}),
@@ -206,14 +224,14 @@ test("template with deeper data-if where if is true", function() {
 });
 
 
-test("template with deeper data-if where if is false", function() {
+test("deeper data-if where if is false", function() {
     equal(render('<div><div data-if="alpha">{beta}</div></div>',
                 {alpha: false,
                  beta: 'Beta'}),
           '<div></div>');
 });
 
-test("element with data-with and data-if where if is true", function() {
+test("data-with and data-if where if is true", function() {
     equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
                  {alpha: true,
                   beta: {
@@ -223,7 +241,7 @@ test("element with data-with and data-if where if is true", function() {
 });
 
 
-test("element with data-with and data-if where if is false", function() {
+test("data-with and data-if where if is false", function() {
     equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
                  {alpha: false,
                   beta: {
