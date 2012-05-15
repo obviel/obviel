@@ -410,15 +410,15 @@ name ``.``:
 Order
 -----
 
-You can combine the attributes ``data-if``, ``data-with`` and ``data-view``
-on an element::
+You can combine the attributes ``data-if``, ``data-each``,
+``data-with``, and ``data-view`` on an element::
 
-  <p data-if="a" data-with="b" data-view="c"></p>
+  <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
 
 This means that if the value ``a`` is present and true, the ``p``
-element will be included in the rendered template. After this, the
-scope is changed to ``b`` (possibly repeating if b is an array), and
-we then render the object ``c`` in the ``b`` scope with a view.
+element will be included in the rendered template. After this,
+for each of the entries in ``b``, we render the object ``d`` in the
+``c`` scope with a view.
 
 ``data-i18n`` will also apply after ``data-if``. ``data-with`` and
 ``data-i18n`` do not interact directly, but of course ``data-with`` is

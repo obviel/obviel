@@ -118,10 +118,12 @@ obviel.template = {};
     module.Template.prototype.compile = function(el) {
         var data_if = el.attr('data-if');
         var data_with = el.attr('data-with');
+        var data_each = el.attr('data-each');
         el.removeAttr('data-if');
         el.removeAttr('data-with');
+        el.removeAttr('data-each');
         
-        this.section = new module.Section(el, data_if, data_with);
+        this.section = new module.Section(el, data_if, data_with, data_each);
     };
     
     module.Template.prototype.render = function(el, obj, translations) {
@@ -147,10 +149,11 @@ obviel.template = {};
         }
     };
     
-    module.Section = function(el, data_if, data_with) {
+    module.Section = function(el, data_if, data_with, data_each) {
         this.el = el;
         this.data_if = data_if;
         this.data_with = data_with;
+        this.data_each = data_each;
         this.dynamic_elements = [];
         this.sub_sections = [];
         this.compile(el);
@@ -211,11 +214,14 @@ obviel.template = {};
 
         var data_if = el.attr('data-if');
         var data_with = el.attr('data-with');
-
+        var data_each = el.attr('data-each');
+        
         el.removeAttr('data-if');
         el.removeAttr('data-with');
+        el.removeAttr('data-each');
         
-        if (data_if === undefined && data_with === undefined) {
+        if (data_if === undefined && data_with === undefined &&
+            data_each === undefined) {
             return false;
         }
 
@@ -224,7 +230,8 @@ obviel.template = {};
         var id = generate_id(el);
 
         // create sub section with copied contents
-        var sub_section = new module.Section(el.clone(), data_if, data_with);
+        var sub_section = new module.Section(el.clone(), data_if, data_with,
+                                            data_each);
 
         // empty sub section of contents
         el.empty();
@@ -246,11 +253,50 @@ obviel.template = {};
             }
         }
 
+        if (this.data_each) {
+            this.render_each(el, scope, translations);
+        } else {
+            this.render_el(el, scope, translations);
+        }
+    };
+
+    module.Section.prototype.render_each = function(el, scope, translations) {
+        var data_each = scope.resolve(this.data_each);
+
+        // empty array, so don't render any elements
+        if (data_each.length === 0) {
+            el.remove();
+            return;
+        }
+
+        // prepare the element to keep cloning back into the
+        // DOM for each iteration. this needs to be done here,
+        // before its id is removed
+        var iteration_node = el.get(0).cloneNode(false);
+
+        // render the first iteration on the element
+        scope.push(data_each[0]);
+        this.render_el(el, scope, translations);
+        scope.pop();
+
+        // now insert the next iterations after the first iteration
+        var insert_after_el = el;
+        for (var i = 1; i < data_each.length; i++) {
+            var iteration_el = $(iteration_node.cloneNode(false));
+            insert_after_el.after(iteration_el);
+            scope.push(data_each[i]);
+            this.render_el(iteration_el, scope, translations);
+            scope.pop();
+            insert_after_el = iteration_el;
+        }
+    };
+    
+    module.Section.prototype.render_el = function(el, scope, translations) {
         if (this.data_with) {
             var data_with = scope.resolve(this.data_with);
             scope.push(data_with);
         }
-        
+
         this.render_clone(el);
         
         this.render_dynamic_elements(el, scope, translations);
@@ -260,7 +306,7 @@ obviel.template = {};
         this.render_cleanup(el);
 
         if (this.data_with) {
-            scope.pop(data_with);
+            scope.pop();
         }
     };
 

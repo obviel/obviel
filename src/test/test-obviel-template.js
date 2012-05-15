@@ -174,6 +174,16 @@ test("nested scoping with override", function() {
           '<div>AlphaBetaOverride</div>');
 });
 
+test("things disappear out of scope", function() {
+    raises(function()  {
+        render('<div><div data-with="sub">{foo}</div><div>{foo}</div>',
+               {sub:{
+                   foo: "Hello!"
+               }});
+    }, module.RenderError);
+    
+});
+
 test("template with data-if where if is true", function() {
     equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: true,
@@ -221,6 +231,42 @@ test("element with data-with and data-if where if is false", function() {
                   }}),
           '');
 });
+
+
+test('data-each with 3 elements', function() {
+    equal(render('<ul><li data-each="list">{title}</li></ul>',
+                 {list: [{title: 'a'},
+                         {title: 'b'},
+                         {title: 'c'}]}),
+          '<ul><li>a</li><li>b</li><li>c</li></ul>');
+});
+
+test('data-each with 2 elements', function() {
+    equal(render('<ul><li data-each="list">{title}</li></ul>',
+                 {list: [{title: 'a'},
+                         {title: 'b'}]}),
+          '<ul><li>a</li><li>b</li></ul>');
+});
+
+test('data-each with 1 element', function() {
+    equal(render('<ul><li data-each="list">{title}</li></ul>',
+                 {list: [{title: 'a'}]}),
+          '<ul><li>a</li></ul>');
+});
+
+test('data-each with 0 elements', function() {
+    equal(render('<ul><li data-each="list">{title}</li></ul>',
+                 {list: []}),
+          '<ul></ul>');
+});
+
+test('data-each with text after it', function() {
+    equal(render('<ul><li data-each="list">{title}</li>after</ul>',
+                 {list: [{title: 'a'},
+                         {title: 'b'}]}),
+          '<ul><li>a</li><li>b</li>after</ul>');
+});
+
 
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
