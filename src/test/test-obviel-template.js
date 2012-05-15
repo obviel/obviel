@@ -285,6 +285,23 @@ test('data-each with text after it', function() {
           '<ul><li>a</li><li>b</li>after</ul>');
 });
 
+test('data-each with data-if and true', function() {
+    equal(render('<ul><li data-if="flag" data-each="list">{title}</li>after</ul>',
+                 {flag: true,
+                  list: [{title: 'a'},
+                         {title: 'b'}]}),
+          '<ul><li>a</li><li>b</li>after</ul>');
+
+});
+
+test('data-each with data-if and false', function() {
+    equal(render('<ul><li data-if="flag" data-each="list">{title}</li>after</ul>',
+                 {flag: false,
+                  list: [{title: 'a'},
+                         {title: 'b'}]}),
+          '<ul>after</ul>');
+
+});
 
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
