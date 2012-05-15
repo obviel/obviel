@@ -116,6 +116,11 @@ test("template with data-id", function() {
           '<p id="Foo"></p>');
 });
 
+test("template with data-with", function() {
+    equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
+          '<p>Hello</p>');
+});
+
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');

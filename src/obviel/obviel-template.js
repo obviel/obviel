@@ -113,11 +113,20 @@ obviel.template = {};
         var self = this;
         
         self.compile_dynamic_element(el);
+        el.children().each(function() {
+            self.compile_el($(this));
+        });
+    };
 
+    module.Section.prototype.compile_el = function(el) {
+        var self = this;
+        
+        self.compile_dynamic_element(el);
+        
         self.compile_sub_section(el);
         
         el.children().each(function() {
-            self.compile($(this));
+            self.compile_el($(this));
         });
     };
 
