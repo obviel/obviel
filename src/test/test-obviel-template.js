@@ -527,6 +527,11 @@ test('data-trans with data-tvar and variable in text', function() {
   explicit naming
 */
 
+test('included html is escaped', function() {
+    equal(render('<p>{html}</p>', {html: '<em>test</em>'}),
+          '<p>&lt;em&gt;test&lt;/em&gt;</p>');
+});
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);

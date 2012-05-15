@@ -220,11 +220,12 @@ will render like this::
     <li>Jay</li>
   </ul>
 
-Interpolating the current object: ``.``
----------------------------------------
+Interpolating the current object: ``@.``
+----------------------------------------
 
-Sometimes you want to interpolate the current object into the document
-(as JSON), for debugging purposes. For this you can use ``{@.}`` as well.
+Sometimes you want to interpolate the current object or array into the
+document (as JSON), for debugging purposes. For this you can use
+``{@.}`` as well.
 
 Consider this data::
 
