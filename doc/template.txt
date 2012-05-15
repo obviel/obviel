@@ -72,8 +72,8 @@ If you refer to a dotted name that does not exist in the data, this is
 an error and the template won't render; you get a ``RenderError``
 exception.
 
-``data-with``
--------------
+``data-with`` for scope control
+-------------------------------
 
 You can change the scope in which the template language operates using
 the ``data-with`` directive. Given the same nested structure as before::
@@ -100,126 +100,37 @@ Rendering the template with the object will result in this::
 arrays or other values, and cannot point to a missing value either:
 these are ``RenderError`` errors.
 
-``data-with`` for repetition
+``data-if`` for conditionals
 ----------------------------
-
-If you point to an array with ``data-with``, the scope will be set to
-each item in the array sequentially. Each will be rendered using the
-template. So with a data structure like this::
-
-  {
-    persons: [
-       {
-         name: "Bob"
-       },
-       {
-         name: "Steven"
-       }
-    ]
-  }
-
-and a template like this::
- 
-  <ul>
-    <li data-with="persons">{name}</li>
-  </ul>
-
-the result will be this::
-
-  <ul>
-    <li>Bob</li>
-    <li>Steven</li>
-  </ul>
- 
-if the array is empty, nothing will be rendered at all. So, this
-data::
-
-  {
-    persons: [
-    ]
-  }
-
-will result in this::
-
-  <ul>
-  </ul>
-
-You can use ``.`` to render simple arrays where each item is not an object
-in itself. For instance::
-
-  {
-    persons: [
-      "Bob", "Steven", "Jay"
-    ]
-  }
-
-and this template::
-
-  <ul>
-    <li data-with="persons">{.}</li>
-  </ul>
-
-will render like this::
-
-  <ul>
-    <li>Bob</li>
-    <li>Steven</li>
-    <li>Jay</li>
-  </ul>
-
-Interpolating the current object: ``.``
----------------------------------------
-
-Sometimes you want to interpolate the current object into the document
-(as JSON), for debugging purposes. For this you can use ``{.}`` as well.
-
-Consider this data::
-
-  {
-    title: "Foo"
-  }
-
-and this template::
-
-  <div>
-    {.}
-  </div>
-
-Rendering the template with the data will result in this::
-
-  <div>
-    {
-      title: "Foo"
-    }
-  </div>
-
-``data-if``
------------
 
 Sometimes you want to include an element only if a given value is true
 or not. For the purposes of ``data-if``, a value is false if:
 
-* it is the JavaScript ``false``
+* it is the ``false``
 
-* it is 0
+* it is ``null``
 
-* it is the empty string ``""``
+* it is ``undefined``
+
+* it is ``0``
+
+* it is an empty string ``""``
 
 * it is an empty array
 
-* the value is missing in its scope
+* the value is missing in its scope entirely
 
 Otherwise, the value is considered true.
 
 ``data-if`` doesn't alter the scope.
 
-With ``not``, the behavior of ``data-if`` can be reversed: values that 
+With ``!``, the behavior of ``data-if`` can be reversed: values that 
 evaluate to false *will* be included.
 
 Consider this template::
 
   <p data-with="person">Hello {name}!</p>
-  <p data-with="not person">{name} is not present</p>
+  <p data-with="!person">{name} is not present</p>
 
 here's a data structure with ``person`` present::
 
@@ -242,6 +153,99 @@ but if you have a data structure without ``person`` present, such as this::
 the template will render like this::
 
   <p>Evan is not present</p>
+
+``data-each`` for repetition
+----------------------------
+
+If you point to an array with ``data-each``, it will render each entry
+in the array into the DOM. So with a data structure like this::
+
+  {
+    persons: [
+       {
+         name: "Bob"
+       },
+       {
+         name: "Steven"
+       }
+    ]
+  }
+
+and a template like this::
+ 
+  <ul>
+    <li data-each="persons">{name}</li>
+  </ul>
+
+the result will be this::
+
+  <ul>
+    <li>Bob</li>
+    <li>Steven</li>
+  </ul>
+ 
+if the array is empty, nothing will be rendered at all. So, this
+data::
+
+  {
+    persons: [
+    ]
+  }
+
+will result in this::
+
+  <ul>
+  </ul>
+
+You can use the special variable ``$.`` to render simple arrays where
+each item is not an object in itself. For instance::
+
+  {
+    persons: [
+      "Bob", "Steven", "Jay"
+    ]
+  }
+
+and this template::
+
+  <ul>
+    <li data-each="persons">{$.}</li>
+  </ul>
+
+will render like this::
+
+  <ul>
+    <li>Bob</li>
+    <li>Steven</li>
+    <li>Jay</li>
+  </ul>
+
+Interpolating the current object: ``.``
+---------------------------------------
+
+Sometimes you want to interpolate the current object into the document
+(as JSON), for debugging purposes. For this you can use ``{$.}`` as well.
+
+Consider this data::
+
+  {
+    title: "Foo"
+  }
+
+and this template::
+
+  <div>
+    {$.}
+  </div>
+
+Rendering the template with the data will result in this::
+
+  <div>
+    {
+      title: "Foo"
+    }
+  </div>
+
 
 Nested scoping
 --------------
