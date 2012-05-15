@@ -202,6 +202,9 @@ test("data-with with dotted name", function() {
           '<div>Hello</div>');
 });
 
+// XXX test failure if dotted name has non-end name to name that doesn't exist
+// also test with data-with, data-if, data-each
+
 test("data-with with attribute", function() {
     equal(render('<div data-with="alpha" class="{beta}"></div>',
                  {alpha: { beta: 'Beta'}}),
@@ -227,6 +230,35 @@ test("data-if where if is false", function() {
     equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: false,
                  beta: 'Beta'}),
+          '');
+});
+
+test('data-if with not where data is false', function() {
+    equal(render('<div data-if="!alpha">{beta}</div>',
+                 {alpha: false,
+                  beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+test('data-if with not where data is true', function() {
+    equal(render('<div data-if="!alpha">{beta}</div>',
+                 {alpha: true,
+                  beta: 'Beta'}),
+          '');
+});
+
+
+test('data-if with not where data is null', function() {
+    equal(render('<div data-if="!alpha">{beta}</div>',
+                 {alpha: null,
+                  beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+test('data-if with not where data is string', function() {
+    equal(render('<div data-if="!alpha">{beta}</div>',
+                 {alpha: 'something',
+                  beta: 'Beta'}),
           '');
 });
 

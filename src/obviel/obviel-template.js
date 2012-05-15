@@ -151,7 +151,11 @@ obviel.template = {};
     
     module.Section = function(el, data_if, data_with, data_each) {
         this.el = el;
-        this.data_if = data_if;
+        if (data_if) {
+            this.data_if = new module.IfExpression(el, data_if);
+        } else {
+            this.data_if = null;
+        }
         this.data_with = data_with;
         this.data_each = data_each;
         this.dynamic_elements = [];
@@ -246,8 +250,8 @@ obviel.template = {};
     
     module.Section.prototype.render = function(el, scope, translations) {
         if (this.data_if) {
-            var data_if = scope.resolve(this.data_if);
-            if (data_if == false || data_if === null || data_if === undefined) {
+            var data_if = this.data_if.resolve(el, scope);
+            if (!data_if) {
                 el.remove();
                 return;
             }
@@ -578,6 +582,31 @@ obviel.template = {};
         return result;
     };
 
+    module.IfExpression = function(el, text) {
+        this.el = el;
+        text = trim(text);
+        this.not_enabled = text.charAt(0) === '!';
+        if (this.not_enabled) {
+            this.dotted_name = text.slice(1);
+        } else {
+            this.dotted_name = text;
+        }
+    };
+
+    module.IfExpression.prototype.resolve = function(el, scope) {
+        var result = scope.resolve(this.dotted_name);
+        if (this.not_enabled) {
+            return (result === undefined ||
+                    result === null ||
+                    result == false);
+        }
+        // result != false is NOT equivalent to result == true in JS
+        // and it is the one we want
+        return (result !== undefined &&
+                result !== null &&
+                result != false);
+    };
+    
     module.Scope = function(obj) {
         this.stack = [obj];
     };
