@@ -159,6 +159,69 @@ test("template with data-with with dotted name", function() {
           '<div>Hello</div>');
 });
 
+test("nested scoping", function() {
+    equal(render('<div data-with="second">{alpha}{beta}</div>',
+                 {'beta': 'Beta',
+                  second: {alpha: "Alpha"}}),
+          '<div>AlphaBeta</div>');
+});
+
+test("nested scoping with override", function() {
+    equal(render('<div data-with="second">{alpha}{beta}</div>',
+                 {beta: 'Beta',
+                  second: {'alpha': "Alpha",
+                           'beta': "BetaOverride"}}),
+          '<div>AlphaBetaOverride</div>');
+});
+
+test("template with data-if where if is true", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: true,
+                 beta: 'Beta'}),
+          '<div>Beta</div>');
+});
+
+test("template with data-if where if is false", function() {
+    equal(render('<div data-if="alpha">{beta}</div>',
+                {alpha: false,
+                 beta: 'Beta'}),
+          '');
+});
+
+test("template with deeper data-if where if is true", function() {
+    equal(render('<div><div data-if="alpha">{beta}</div></div>',
+                {alpha: true,
+                 beta: 'Beta'}),
+          '<div><div>Beta</div></div>');
+});
+
+
+test("template with deeper data-if where if is false", function() {
+    equal(render('<div><div data-if="alpha">{beta}</div></div>',
+                {alpha: false,
+                 beta: 'Beta'}),
+          '<div></div>');
+});
+
+test("element with data-with and data-if where if is true", function() {
+    equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
+                 {alpha: true,
+                  beta: {
+                      gamma: "Gamma"
+                  }}),
+          '<div>Gamma</div>');
+});
+
+
+test("element with data-with and data-if where if is false", function() {
+    equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
+                 {alpha: false,
+                  beta: {
+                      gamma: "Gamma"
+                  }}),
+          '');
+});
+
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');

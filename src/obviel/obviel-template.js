@@ -241,6 +241,7 @@ obviel.template = {};
         if (this.data_if) {
             var data_if = scope.resolve(this.data_if);
             if (!data_if) {
+                el.remove();
                 return;
             }
         }
