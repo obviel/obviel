@@ -149,6 +149,17 @@ test('attribute in sub-element', function() {
           '<p><em class="silly">foo</em></p>');
 });
 
+test('json output for objects', function() {
+    equal(render('{@.}', {'a': 'silly'}),
+          '{\n    "a": "silly"\n}');
+});
+
+test('json output for arrays', function() {
+    equal(render('{@.}', ['a', 'b']),
+          "[\n    \"a\",\n    \"b\"\n]");
+});
+
+
 test("element with both id and variable", function() {
     equal(render('<p id="foo">{content}</p>', {content: 'hello'}),
           '<p id="foo">hello</p>');
@@ -373,6 +384,12 @@ test('top-level data each', function() {
                  {list: [{title: 'a'},
                          {title: 'b'},
                          {title: 'c'}]}),
+          '<p>a</p><p>b</p><p>c</p>');
+});
+
+test('data-each with @.', function() {
+    equal(render('<p data-each="list">{@.}</p>',
+                 {list: ['a', 'b', 'c']}),
           '<p>a</p><p>b</p><p>c</p>');
 });
 

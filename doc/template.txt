@@ -197,7 +197,7 @@ will result in this::
   <ul>
   </ul>
 
-You can use the special variable ``$.`` to render simple arrays where
+You can use the special variable ``@.`` to render simple arrays where
 each item is not an object in itself. For instance::
 
   {
@@ -209,7 +209,7 @@ each item is not an object in itself. For instance::
 and this template::
 
   <ul>
-    <li data-each="persons">{$.}</li>
+    <li data-each="persons">{@.}</li>
   </ul>
 
 will render like this::
@@ -224,7 +224,7 @@ Interpolating the current object: ``.``
 ---------------------------------------
 
 Sometimes you want to interpolate the current object into the document
-(as JSON), for debugging purposes. For this you can use ``{$.}`` as well.
+(as JSON), for debugging purposes. For this you can use ``{@.}`` as well.
 
 Consider this data::
 
@@ -235,7 +235,7 @@ Consider this data::
 and this template::
 
   <div>
-    {$.}
+    {@.}
   </div>
 
 Rendering the template with the data will result in this::
@@ -245,7 +245,6 @@ Rendering the template with the data will result in this::
       title: "Foo"
     }
   </div>
-
 
 Nested scoping
 --------------

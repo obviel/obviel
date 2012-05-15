@@ -579,6 +579,11 @@ obviel.template = {};
             throw new module.RenderError(el, "variable '" + this.name + "' " +
                                          "could not be found");
         }
+        // if we want to render an object, pretty-print it
+        var type = $.type(result);
+        if (type === 'object' || type === 'array') {
+            return JSON.stringify(result, null, 4);
+        }
         return result;
     };
 
@@ -620,6 +625,9 @@ obviel.template = {};
     };
     
     module.Scope.prototype.resolve = function(dotted_name) {
+        if (dotted_name === '@.') {
+            return this.stack[this.stack.length - 1];
+        }
         // XXX better dotted name checking, or perhaps in compiler
         var names = dotted_name.split('.');
         for (var i = this.stack.length - 1; i >= 0; i--) {
