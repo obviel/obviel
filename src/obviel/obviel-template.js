@@ -116,7 +116,12 @@ obviel.template = {};
     };
 
     module.Template.prototype.compile = function(el) {
-        this.section = new module.Section(el);
+        var data_if = el.attr('data-if');
+        var data_with = el.attr('data-with');
+        el.removeAttr('data-if');
+        el.removeAttr('data-with');
+        
+        this.section = new module.Section(el, data_if, data_with);
     };
     
     module.Template.prototype.render = function(el, obj, translations) {
@@ -153,8 +158,11 @@ obviel.template = {};
     
     module.Section.prototype.compile = function(el) {
         var self = this;
-        
+
+        // always compile any dynamic elements on top element
         self.compile_dynamic_element(el);
+
+        // now compile sub-elements
         el.children().each(function() {
             self.compile_el($(this));
         });
@@ -162,11 +170,21 @@ obviel.template = {};
 
     module.Section.prototype.compile_el = function(el) {
         var self = this;
+
+        // compile element as sub-section
+        var is_sub_section = self.compile_sub_section(el);
+
+        // if it's a sub-section, we're done with it
+        // we don't want to compile dynamic elements for it,
+        // as that's done in the sub-section. we also don't want
+        // to process further child elements, as that's done in the
+        // sub section
+        if (is_sub_section) {
+            return;
+        }
         
         self.compile_dynamic_element(el);
-        
-        self.compile_sub_section(el);
-        
+
         el.children().each(function() {
             self.compile_el($(this));
         });
@@ -194,9 +212,16 @@ obviel.template = {};
         var data_if = el.attr('data-if');
         var data_with = el.attr('data-with');
 
+        el.removeAttr('data-if');
+        el.removeAttr('data-with');
+        
         if (data_if === undefined && data_with === undefined) {
-            return;
+            return false;
         }
+
+        // generate id before cloning element for sub-section, so
+        // id is shared
+        var id = generate_id(el);
 
         // create sub section with copied contents
         var sub_section = new module.Section(el.clone(), data_if, data_with);
@@ -204,12 +229,12 @@ obviel.template = {};
         // empty sub section of contents
         el.empty();
         
-        var id = generate_id(el);
         this.sub_sections.push({
             id: id,
             selector: '#' + id,
             sub_section: sub_section
         });
+        return true;
     };
     
     module.Section.prototype.render = function(el, scope, translations) {

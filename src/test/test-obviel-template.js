@@ -63,6 +63,11 @@ test('template without text, with sub elements', function() {
           '<p><em>Sub</em></p>');
 });
 
+test('template with just elements', function() {
+    equal(render('<p><em></em></p>', {}),
+          '<p><em></em></p>');
+});
+
 test('template with just variable', function() {
     equal(render('<p>{who}</p>', {who: 'world'}),
           '<p>world</p>');
@@ -131,10 +136,28 @@ test("template with data-id", function() {
           '<p id="Foo"></p>');
 });
 
-// test("template with data-with", function() {
-//     equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
-//           '<p>Hello</p>');
-// });
+test("template with data-with", function() {
+    equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
+          '<p>Hello</p>');
+});
+
+test("template with deeper data-with", function() {
+    equal(render('<div><p data-with="alpha">{beta}</p></div>',
+                 {alpha: { beta: "Hello"}}),
+          '<div><p>Hello</p></div>');
+});
+
+test("template with nested data-with", function() {
+    equal(render('<div data-with="alpha"><div data-with="beta"><div data-with="gamma">{delta}</div></div></div>',
+                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
+          '<div><div><div>Hello</div></div></div>');
+});
+
+test("template with data-with with dotted name", function() {
+    equal(render('<div data-with="alpha.beta.gamma">{delta}</div>',
+                 {alpha: { beta: { gamma: { delta: "Hello"}}}}),
+          '<div>Hello</div>');
+});
 
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
