@@ -170,6 +170,13 @@ test("data-with", function() {
           '<p>Hello</p>');
 });
 
+test("data-with not pointing to object", function() {
+   raises(function() {
+        render('<p data-with="alpha"></p>', {alpha: 'not an object'});
+   }, module.RenderError);
+    
+});
+
 test("deeper data-with", function() {
     equal(render('<div><p data-with="alpha">{beta}</p></div>',
                  {alpha: { beta: "Hello"}}),
@@ -286,6 +293,14 @@ test('data-each with 0 elements', function() {
           '<ul></ul>');
 });
 
+test('data-each with attributes', function() {
+    equal(render('<a data-each="list" href="{url}">link</a>',
+                 {list: [{url: 'a'},
+                         {url: 'b'}]}),
+          '<a href="a">link</a><a href="b">link</a>');
+
+});
+
 test('data-each with text after it', function() {
     equal(render('<ul><li data-each="list">{title}</li>after</ul>',
                  {list: [{title: 'a'},
@@ -293,6 +308,12 @@ test('data-each with text after it', function() {
           '<ul><li>a</li><li>b</li>after</ul>');
 });
 
+test('data-each not pointing to array', function() {
+    raises(function() {
+        render('<p data-each="foo"></p>', {foo: 'not an array'});
+    }, module.RenderError);
+});
+     
 test('data-each with data-if and true', function() {
     equal(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
                  {flag: true,

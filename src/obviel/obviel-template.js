@@ -262,7 +262,10 @@ obviel.template = {};
 
     module.Section.prototype.render_each = function(el, scope, translations) {
         var data_each = scope.resolve(this.data_each);
-
+        if (!$.isArray(data_each)) {
+            throw new module.RenderError(
+                "data-each must point to an array, not a " + $.type(data_each));
+        }
         // empty array, so don't render any elements
         if (data_each.length === 0) {
             el.remove();
@@ -296,6 +299,11 @@ obviel.template = {};
     module.Section.prototype.render_el = function(el, scope, translations) {
         if (this.data_with) {
             var data_with = scope.resolve(this.data_with);
+            var type = $.type(data_with);
+            if (type !== 'object') {
+                throw new module.RenderError(
+                    "data-with must point to an object, not a " + type, el);
+            }
             scope.push(data_with);
         }
 
