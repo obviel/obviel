@@ -319,9 +319,11 @@ obviel.template = {};
             scope.push(data_each[i]);
             this.render_el(iteration_el, scope, translations);
             scope.pop();
-            // clean up id that may still be on top-level element
-            clean_id(iteration_el);
             insert_after_el = iteration_el;
+        }
+        // clean up id of the last element
+        if (data_each.length > 1) {
+            clean_id(iteration_el);
         }
     };
     
@@ -810,9 +812,14 @@ obviel.template = {};
     };
 
     var clean_id = function(el) {
-        var id = el.attr('id');
-        if (id !== undefined && starts_with(id, OBVIEL_TEMPLATE_ID_PREFIX)) {
-            el.removeAttr('id');
+        if (el.length === 0) {
+            return;
+        }
+        var node = el.get(0);
+        var id = node.getAttribute('id');
+        if (id !== undefined && id !== null &&
+            starts_with(id, OBVIEL_TEMPLATE_ID_PREFIX)) {
+            node.removeAttribute('id');
         }
     };
     
