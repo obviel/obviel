@@ -757,13 +757,3 @@ test('tokenize whitespace after { with variable', function() {
 
 });
 
-test('huge template', function() {
-    var data = {list: []};
-    for (var i = 0; i < 1000; i++) {
-        data.list.push({a: 'a' + i, b: 'b' + i, url: 'url' + i});
-    }
-    render('<table><tr data-each="list"><td>{a}</td><td><a href="{url}">{b}</a></td></tr></table',
-          data);
-    expect(0);
-});
-
