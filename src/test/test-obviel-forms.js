@@ -3716,8 +3716,8 @@ test("modify error area", function() {
         jsont: ('<div class="obviel-error-wrapper">' +
                 '<div class="obviel-error-content">' +
                 '<div class="obviel-error-arrow"></div>' +
-                '<div id="obviel-field-error-{prefixed_name}" class="obviel-field-error"></div>' +
-                '<div id="obviel-global-error-{prefixed_name}" class="obviel-global-error"></div>' +
+                '<div id="{field_error_id}" class="obviel-field-error"></div>' +
+                '<div id="{global_error_id}" class="obviel-global-error"></div>' +
                 '</div>' +
                 '</div>')
     });
