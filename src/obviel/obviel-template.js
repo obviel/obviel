@@ -366,7 +366,8 @@ obviel.template = {};
         var children = cloned_node.childNodes;
 
         while (cloned_node.hasChildNodes()) {
-            parent_node.appendChild(cloned_node.removeChild(cloned_node.firstChild));
+            parent_node.appendChild(cloned_node.removeChild(
+                cloned_node.firstChild));
         }
     };
     
