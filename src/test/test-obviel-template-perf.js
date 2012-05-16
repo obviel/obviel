@@ -41,22 +41,60 @@ var module = obviel.template;
 // '</ul>');
 
 
-var bigtable = new module.Template(
+var big_table_nested = new module.Template(
 '<table>\n' +
 '<tr data-each="table">' +
 '<td data-each="@.">{@.}</td>' +
 '</tr>' +
 '</table>');
 
+var big_table_flat = new module.Template(
+'<table>\n' +
+'<tr data-each="table">' +
+'<td>{a}</td>' +
+'<td>{b}</td>' +
+'<td>{c}</td>' +
+'<td>{d}</td>' +
+'<td>{e}</td>' +
+'<td>{f}</td>' +
+'<td>{g}</td>' +
+'<td>{h}</td>' +
+'<td>{i}</td>' +
+'<td>{j}</td>' +
+'</tr>' +
+'</table>'
+);
+
 var data = {
     table: []    
 };
 
-for (var i = 0; i < 1000; i++) {
-    data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+var data_flat = {
+    table: []
 };
 
-test('big table', function() {
-    bigtable.render($('#viewdiv'), data);
+for (var i = 0; i < 1000; i++) {
+    data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    data_flat.table.push({
+        a: 1,
+        b: 2,
+        c: 3,
+        d: 4,
+        e: 5,
+        f: 6,
+        g: 7,
+        h: 8,
+        i: 9,
+        j: 10
+    });
+};
+
+test('big table nested', function() {
+    big_table_nested.render($('#viewdiv'), data);
+    expect(0);
+});
+
+test('big table flat', function() {
+    big_table_flat.render($('#viewdiv'), data_flat);
     expect(0);
 });

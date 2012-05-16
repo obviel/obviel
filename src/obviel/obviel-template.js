@@ -361,11 +361,13 @@ obviel.template = {};
 
         var parent_node = el.get(0);
         
-        var cloned = this.el.clone();
-        cloned.contents().each(function() {
-            var node = this;
-            parent_node.appendChild(node);
-        });
+        var cloned_node = this.el.get(0).cloneNode(true);
+
+        var children = cloned_node.childNodes;
+
+        while (cloned_node.hasChildNodes()) {
+            parent_node.appendChild(cloned_node.removeChild(cloned_node.firstChild));
+        }
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
