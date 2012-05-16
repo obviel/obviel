@@ -8,6 +8,8 @@ module("Template", {
     },
     teardown: function() {
         obviel.template.clear_formatters();
+        obviel.clear_registry();
+        obviel.compilers.clear_cache();
     }
 });
 
@@ -549,6 +551,18 @@ test('included html is escaped', function() {
     equal(render('<p>{html}</p>', {html: '<em>test</em>'}),
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
+
+// test('data-view', function() {
+//     obviel.view({
+//         iface: 'person',
+//         render: function() {
+//             this.el.empty();
+//             this.el.append('<p>' + this.obj.name + '</p>');
+//         }
+//     });
+
+    
+// });
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
