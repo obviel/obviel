@@ -460,15 +460,10 @@ support for gettext message ids
 
 XXX If a message id enters the template, it's automatically translated.
 
-Template-language injected data
--------------------------------
+Formatters
+----------
 
-XXX or solve this on the view level? probably there is better, we can have
-a special view that injects 'path'.
-
-Before an object is rendered, some extra fields can be injected in the
-namespace. This can be useful to These fields start with a ! to
-distinguish them.
+...
 
 Literals
 --------
