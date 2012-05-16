@@ -433,6 +433,14 @@ test('data-each with 0 elements', function() {
           '<ul></ul>');
 });
 
+test('data-each with deeper elements', function() {
+    equal(render('<ul><li data-each="list"><p>{title}</p></li></ul>',
+                 {list: [{title: 'a'},
+                         {title: 'b'},
+                         {title: 'c'}]}),
+          '<ul><li><p>a</p></li><li><p>b</p></li><li><p>c</p></li></ul>');
+});
+     
 test('data-each with attributes', function() {
     equal(render('<a data-each="list" href="{url}">link</a>',
                  {list: [{url: 'a'},

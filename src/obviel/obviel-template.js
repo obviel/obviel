@@ -312,18 +312,17 @@ obviel.template = {};
         scope.pop();
 
         // now insert the next iterations after the first iteration
-        var insert_after_el = el;
+        var insert_before_node = el.get(0).nextSibling;
+        var parent_node = el.get(0).parentNode;
+        
         for (var i = 1; i < data_each.length; i++) {
-            var iteration_el = $(iteration_node.cloneNode(false));
-            insert_after_el.after(iteration_el);
+            var iteration_clone = iteration_node.cloneNode(false);
+            parent_node.insertBefore(iteration_clone, insert_before_node);
+
             scope.push(data_each[i]);
-            this.render_el(iteration_el, scope, translations);
+            this.render_el($(iteration_clone), scope, translations);
             scope.pop();
-            insert_after_el = iteration_el;
-        }
-        // clean up id of the last element
-        if (data_each.length > 1) {
-            clean_id(iteration_el);
+            clean_id($(iteration_clone));
         }
     };
     
