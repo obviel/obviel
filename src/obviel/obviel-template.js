@@ -671,7 +671,7 @@ obviel.template = {};
         this.obj_name = r.name;
         this.view_name = r.formatter;
         if (this.view_name === null) {
-            this.view_name = view_name_default;
+            this.view_name = default_view_name;
         }
     };
     
@@ -779,10 +779,10 @@ obviel.template = {};
         formatters.clear();
     };
 
-    var view_name_default = 'default';
+    var default_view_name = 'default';
 
-    module.set_view_name_default = function(name) {
-        view_name_default = name;
+    module.set_default_view_name = function(name) {
+        default_view_name = name;
     };
     
     var _id = 0;

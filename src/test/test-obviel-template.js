@@ -10,6 +10,7 @@ module("Template", {
         obviel.template.clear_formatters();
         obviel.clear_registry();
         obviel.compilers.clear_cache();
+        obviel.template.set_default_view_name('default');
     }
 });
 
@@ -578,6 +579,24 @@ test('data-view with named view', function() {
 
     equal(render('<div data-view="bob|summary"></div>', {bob: {iface: 'person',
                                                                name: 'Bob'}}),
+          '<div><p>Bob</p></div>');
+
+});
+
+test('data-view with altered default view', function() {
+    obviel.view({
+        iface: 'person',
+        name: 'summary',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+
+    module.set_default_view_name('summary');
+    
+    equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+                                                       name: 'Bob'}}),
           '<div><p>Bob</p></div>');
 
 });
