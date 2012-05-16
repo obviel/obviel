@@ -357,10 +357,14 @@ obviel.template = {};
     };
     
     module.Section.prototype.render_clone = function(el) {
-        el.empty();
-
         var parent_node = el.get(0);
-        
+
+        // remove all child nodes
+        while (parent_node.hasChildNodes()) {
+            parent_node.removeChild(parent_node.firstChild);
+        }
+
+        // now copy child nodes of clone under parent
         var cloned_node = this.el.get(0).cloneNode(true);
 
         var children = cloned_node.childNodes;
