@@ -486,15 +486,30 @@ obviel.forms = {};
 
     };
 
+
+    obviel.view({
+        iface: 'obviel_forms_error_area',
+        render: function() {
+            // add in field validation or conversion failing error area
+            this.el.append('<div id="' +
+                           this.obj.field_error_id +
+                           '" class="obviel-field-error"></div>');
+            // add in global level validation failure error area
+            this.el.append('<div id="' +
+                           this.obj.global_error_id +
+                           '" class="obviel-global-error"></div>');
+        }
+    });
+    
     module.Widget.prototype.render_error_area = function() {
-        // add in field validation or conversion failing error area
-        this.el.append('<div id="obviel-field-error-' +
-                       this.obj.prefixed_name + '" ' +
-                       'class="obviel-field-error"></div>');
-        // add in form-level validation failure error area
-        this.el.append('<div id="obviel-global-error-' +
-                       this.obj.prefixed_name + '" ' +
-                       'class="obviel-global-error"></div>');
+        this.el.append('<div class="obviel-error-area"></div>');
+        
+        $('.obviel-error-area', this.el).render(
+            {iface: 'obviel_forms_error_area',
+             widget: this,
+             field_error_id: 'obviel-field-error-' + this.obj.prefixed_name,
+             global_error_id: 'obviel-global-error-' + this.obj.prefixed_name,
+             prefixed_name: this.obj.prefixed_name });
     };
 
     module.Widget.prototype.render_label = function() {
@@ -560,6 +575,11 @@ obviel.forms = {};
             name: 'obviel-field-error-' + obj.prefixed_name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
+                if (value) {
+                    $(target).trigger('field-error.obviel-forms');
+                } else {
+                    $(target).trigger('field-error-clear.obviel-forms');
+                }
             }
         };
         global_error_link_context[obj.name] = {
@@ -567,6 +587,11 @@ obviel.forms = {};
             name: 'obviel-global-error-' + obj.prefixed_name,
             convertBack: function(value, source, target) {
                 $(target).text(value);
+                if (value) {
+                    $(target).trigger('global-error.obviel-forms');
+                } else {
+                    $(target).trigger('global-error-clear.obviel-forms');
+                }
             }
         };
         
