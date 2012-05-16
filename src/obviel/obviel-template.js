@@ -401,7 +401,7 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
-            var dynamic_text = new module.DynamicText(attr.value);
+            var dynamic_text = new module.DynamicText(el, attr.value);
             if (dynamic_text.is_dynamic()) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
@@ -424,7 +424,7 @@ obviel.template = {};
             if (node.nodeValue === null) {
                 return;
             }
-            var dynamic_text = new module.DynamicText(node.nodeValue);
+            var dynamic_text = new module.DynamicText(el, node.nodeValue);
             if (dynamic_text.is_dynamic()) {
                 self.content_texts.push({
                     index: index,
@@ -532,7 +532,7 @@ obviel.template = {};
         }
     };
     
-    module.DynamicText = function(text) {        
+    module.DynamicText = function(el, text) {        
         this.parts = [];
         var tokens = module.tokenize(text);
         var dynamic = false;
@@ -541,7 +541,7 @@ obviel.template = {};
             if (token.type === module.TEXT_TOKEN) {
                 this.parts.push(new module.Text(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                this.parts.push(new module.Variable(token.value));
+                this.parts.push(new module.Variable(el, token.value));
                 dynamic = true;
             }
         }
@@ -569,8 +569,20 @@ obviel.template = {};
         return this.text;
     };
                                              
-    module.Variable = function(name) {
-        this.name = name;
+    module.Variable = function(el, name) {
+        var name_parts = name.split('|');
+        if (name_parts.length === 1) {
+            this.name = name;
+            this.formatter = null;
+        } else if (name_parts.length === 2) {
+            this.name = name_parts[0];
+            var formatter = formatters.get(name_parts[1]);
+            if (formatter === undefined) {
+                throw new module.CompilationError(
+                    el, "cannot find formatter with name: " + name_parts[1]);
+            }
+            this.formatter = formatter;
+        }
     };
 
     module.Variable.prototype.render = function(el, scope) {
@@ -579,6 +591,15 @@ obviel.template = {};
             throw new module.RenderError(el, "variable '" + this.name + "' " +
                                          "could not be found");
         }
+
+        if (this.formatter !== null) {
+            result = this.formatter(result);
+        }
+
+        // if (result instanceof $) {
+        //     return result;
+        // }
+        
         // if we want to render an object, pretty-print it
         var type = $.type(result);
         if (type === 'object' || type === 'array') {
@@ -587,6 +608,42 @@ obviel.template = {};
         return result;
     };
 
+    // var html_formatter = function(value) {
+    //     if (is_html_text(value)) {
+    //         return $(value);
+    //     } else {
+    //         return value;
+    //     }
+    // };
+    
+    module.Formatters = function() {
+        this.clear();
+    };
+
+    module.Formatters.prototype.register = function(name, f) {
+        this.formatters[name] = f;
+    };
+
+    module.Formatters.prototype.get = function(name) {
+        return this.formatters[name];
+    };
+
+    module.Formatters.prototype.clear = function() {
+        this.formatters = {
+ //           html: html_formatter
+        };
+    };
+    
+    var formatters = new module.Formatters();
+
+    module.register_formatter = function(name, f) {
+        formatters.register(name, f);
+    };
+
+    module.clear_formatters = function() {
+        formatters.clear();
+    };
+    
     module.IfExpression = function(el, text) {
         this.el = el;
         text = trim(text);

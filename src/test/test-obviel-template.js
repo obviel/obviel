@@ -7,7 +7,7 @@ module("Template", {
         $('#jsview-area').html('<div id="viewdiv"></div>');
     },
     teardown: function() {
-
+        obviel.template.clear_formatters();
     }
 });
 
@@ -101,6 +101,24 @@ test("variable with dotted name", function() {
           '<p>Hello world!</p>');
 });
 
+test("variable with formatter", function() {
+    module.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    equal(render('{foo|upper}', {foo: 'hello'}),
+          'HELLO');
+});
+
+test("variable with formatter that does not exist", function() {
+    raises(function() {
+        render('{foo|upper}', {foo: 'hello'});
+    }, module.CompilationError);
+});
+
+// test("variable with built-in html formatter", function() {
+//     equal(render('<div>{foo|html}</div>', {foo: '<p>This is HTML</p>'}),
+//           '<div><p>This is HTML</p></div>');
+// });
 
 test("nested scoping", function() {
     equal(render('<div data-with="second">{alpha}{beta}</div>',
