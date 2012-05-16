@@ -85,9 +85,13 @@ A section:
 
 */
 
+if (obviel === undefined) {
+    obviel = {};
+}
+
 obviel.template = {};
 
-(function($, obviel, module) {
+(function($, module) {
 
     var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
 
@@ -159,6 +163,7 @@ obviel.template = {};
         this.data_with = data_with;
         this.data_each = data_each;
         this.dynamic_elements = [];
+        this.view_elements = [];
         this.sub_sections = [];
         this.compile(el);
     };
@@ -169,6 +174,9 @@ obviel.template = {};
         // always compile any dynamic elements on top element
         self.compile_dynamic_element(el);
 
+        // always compile any view on top element
+        self.compile_view(el);
+        
         // now compile sub-elements
         el.children().each(function() {
             self.compile_el($(this));
@@ -192,14 +200,14 @@ obviel.template = {};
         
         self.compile_dynamic_element(el);
 
+        self.compile_view(el);
+       
         el.children().each(function() {
             self.compile_el($(this));
         });
     };
 
     module.Section.prototype.compile_dynamic_element = function(el) {
-        var self = this;
-        
         var dynamic_element = new module.DynamicElement(el);
         if (!dynamic_element.is_dynamic()) {
             return;
@@ -210,6 +218,22 @@ obviel.template = {};
             id: id,
             selector: '#' + id,
             dynamic_element: dynamic_element
+        });
+    };
+
+    module.Section.prototype.compile_view = function(el) {
+        var view_element = new module.ViewElement(el);
+
+        if (!view_element.is_dynamic()) {
+            return;
+        }
+
+        var id = generate_id(el);
+
+        this.view_elements.push({
+            id: id,
+            selector: '#' + id,
+            view_element: view_element
         });
     };
     
@@ -320,6 +344,8 @@ obviel.template = {};
         
         this.render_dynamic_elements(el, scope, translations);
 
+        this.render_views(el, scope, translations);
+        
         this.render_sub_sections(el, scope, translations);
 
         this.render_cleanup(el);
@@ -328,7 +354,7 @@ obviel.template = {};
             scope.pop();
         }
     };
-
+    
     module.Section.prototype.render_clone = function(el) {
         el.empty();
 
@@ -350,6 +376,15 @@ obviel.template = {};
 
     };
 
+    module.Section.prototype.render_views = function(el, scope,
+                                                                translations) {
+        $.each(this.view_elements, function(index, value) {
+            var view_el = $(value.selector);
+            value.view_element.render(view_el, scope, translations);
+        });
+
+    };
+
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
         $.each(this.sub_sections, function(index, value) {
@@ -360,6 +395,9 @@ obviel.template = {};
 
     module.Section.prototype.render_cleanup = function(el) {
         $.each(this.dynamic_elements, function(index, value) {
+            clean_id($(value.selector));
+        });
+        $.each(this.view_elements, function(index, value) {
             clean_id($(value.selector));
         });
         $.each(this.sub_sections, function(index, value) {
@@ -568,20 +606,37 @@ obviel.template = {};
     module.Text.prototype.render = function(el, scope) {
         return this.text;
     };
-                                             
-    module.Variable = function(el, name) {
+
+    var split_name_formatter = function(el, name) {
         var name_parts = name.split('|');
         if (name_parts.length === 1) {
-            this.name = name;
-            this.formatter = null;
-        } else if (name_parts.length === 2) {
-            this.name = name_parts[0];
-            var formatter = formatters.get(name_parts[1]);
-            if (formatter === undefined) {
+            return {
+                name: name_parts[0],
+                formatter: null
+            };
+        }
+        if (name_parts.length !== 2) {
+            throw new module.CompilationError(
+                el, "variable may only have a single | in it");
+        }
+        return {
+            name: name_parts[0],
+            formatter: name_parts[1]
+        };   
+    };
+    
+    module.Variable = function(el, name) {
+        var r = split_name_formatter(el, name);
+        this.name = r.name;
+        if (r.formatter !== null) {
+            this.formatter = formatters.get(r.formatter);
+            if (this.formatter === undefined) {
                 throw new module.CompilationError(
-                    el, "cannot find formatter with name: " + name_parts[1]);
+                    el, "cannot find formatter with name: " +
+                        r.formatter);
             }
-            this.formatter = formatter;
+        } else {
+            this.formatter = null;
         }
     };
 
@@ -595,10 +650,6 @@ obviel.template = {};
         if (this.formatter !== null) {
             result = this.formatter(result);
         }
-
-        // if (result instanceof $) {
-        //     return result;
-        // }
         
         // if we want to render an object, pretty-print it
         var type = $.type(result);
@@ -608,40 +659,34 @@ obviel.template = {};
         return result;
     };
 
-    // var html_formatter = function(value) {
-    //     if (is_html_text(value)) {
-    //         return $(value);
-    //     } else {
-    //         return value;
-    //     }
-    // };
-    
-    module.Formatters = function() {
-        this.clear();
-    };
-
-    module.Formatters.prototype.register = function(name, f) {
-        this.formatters[name] = f;
-    };
-
-    module.Formatters.prototype.get = function(name) {
-        return this.formatters[name];
-    };
-
-    module.Formatters.prototype.clear = function() {
-        this.formatters = {
- //           html: html_formatter
-        };
+    module.ViewElement = function(el) {
+        var data_view = el.attr('data-view');
+        if (data_view === undefined) {
+            this.dynamic = false;
+            return;
+        }
+        el.removeAttr('data-view');
+        this.dynamic = true;
+        var r = split_name_formatter(el, data_view);
+        this.obj_name = r.name;
+        this.view_name = r.formatter;
+        if (this.view_name === null) {
+            this.view_name = view_name_default;
+        }
     };
     
-    var formatters = new module.Formatters();
-
-    module.register_formatter = function(name, f) {
-        formatters.register(name, f);
+    module.ViewElement.prototype.is_dynamic = function() {
+        return this.dynamic;
     };
 
-    module.clear_formatters = function() {
-        formatters.clear();
+    module.ViewElement.prototype.render = function(el, scope, translations) {
+        var obj = scope.resolve(this.obj_name);
+        if (obj === undefined) {
+            throw new module.RenderError(
+                el, "data-view object '" + this.property_name + "' " +
+                    "could not be found");
+        }
+        el.render(obj, this.view_name);
     };
     
     module.IfExpression = function(el, text) {
@@ -706,6 +751,38 @@ obviel.template = {};
             }
         }
         return obj;
+    };
+
+    module.Formatters = function() {
+        this.clear();
+    };
+
+    module.Formatters.prototype.register = function(name, f) {
+        this.formatters[name] = f;
+    };
+
+    module.Formatters.prototype.get = function(name) {
+        return this.formatters[name];
+    };
+
+    module.Formatters.prototype.clear = function() {
+        this.formatters = {};
+    };
+    
+    var formatters = new module.Formatters();
+
+    module.register_formatter = function(name, f) {
+        formatters.register(name, f);
+    };
+
+    module.clear_formatters = function() {
+        formatters.clear();
+    };
+
+    var view_name_default = 'default';
+
+    module.set_view_name_default = function(name) {
+        view_name_default = name;
     };
     
     var _id = 0;
@@ -804,4 +881,4 @@ obviel.template = {};
     };
 
     
-}(jQuery, obviel, obviel.template));
+}(jQuery, obviel.template));

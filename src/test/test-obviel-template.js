@@ -552,17 +552,35 @@ test('included html is escaped', function() {
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
 
-// test('data-view', function() {
-//     obviel.view({
-//         iface: 'person',
-//         render: function() {
-//             this.el.empty();
-//             this.el.append('<p>' + this.obj.name + '</p>');
-//         }
-//     });
+test('data-view', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
 
-    
-// });
+    equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+                                                       name: 'Bob'}}),
+          '<div><p>Bob</p></div>');
+});
+
+test('data-view with named view', function() {
+    obviel.view({
+        iface: 'person',
+        name: 'summary',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+
+    equal(render('<div data-view="bob|summary"></div>', {bob: {iface: 'person',
+                                                               name: 'Bob'}}),
+          '<div><p>Bob</p></div>');
+
+});
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
