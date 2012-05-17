@@ -641,9 +641,6 @@ test('data-view with named view', function() {
 
 });
 
-
-// XXX data view with data-with, data-each, data-if, data-trans
-
 test('data-view with altered default view', function() {
     obviel.view({
         iface: 'person',
@@ -662,6 +659,36 @@ test('data-view with altered default view', function() {
 
 });
 
+
+// XXX data view with data-with, data-trans
+
+test('data-view with data-with', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    equal(render('<div data-with="sub" data-view="person">person</div>',
+                 {sub: {person: {iface: 'person',
+                                 name: 'Bob'}}}),
+          '<div><p>Bob</p></div>');
+});
+
+test('deeper data-view with data-with', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    equal(render('<div><div data-with="sub" data-view="person">person</div></div>',
+                 {sub: {person: {iface: 'person',
+                                 name: 'Bob'}}}),
+          '<div><div><p>Bob</p></div></div>');
+});
 
 test('data-view with data-if where if is true', function() {
     obviel.view({
