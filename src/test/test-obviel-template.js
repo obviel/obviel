@@ -19,6 +19,7 @@ var module = obviel.template;
 var Translations = function() {
     this._trans = {
         'Hello world!': 'Hallo wereld!',
+        'Bye world!': 'Tot ziens wereld!',
         'Hello {who}!': '{who}, hallo!',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!'
     };
@@ -503,6 +504,13 @@ test('data-each with data-with and data-if and false', function() {
           '<ul></ul>');
 });
 
+test('data-each with data-trans', function() {
+    equal(render(
+        '<ul><li data-each="list" data-trans="">Hello world!</li></ul>',
+        {list: [1, 2]}),
+          '<ul><li>Hallo wereld!</li><li>Hallo wereld!</li></ul>');
+});
+
 test('nested data-each', function() {
     equal(render(
         '<ul><li data-each="outer"><ul><li data-each="inner">{title}</li></ul></li></ul>',
@@ -542,6 +550,26 @@ test('data-trans with data-tvar and variable in text', function() {
                  {who: 'wereld',
                   qualifier: 'beste'}),
           '<p>beste <em>wereld</em>, hallo!</p>');
+    
+});
+
+test('data-trans with just variable, no text', function() {
+    raises(function() {
+        render('<p data-trans="">{hello}</p>', {hello: 'Hello!'});
+    }, module.CompilationError);
+});
+
+test('data-trans used on whitespace', function() {
+    raises(function() {
+        render('<p data-trans="">   </p>');
+    }, module.CompilationError);
+    
+});
+
+test('data-trans without text altogether', function() {
+    raises(function() {
+        render('<p data-trans=""></p>');
+    }, module.CompilationError);
     
 });
 

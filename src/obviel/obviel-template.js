@@ -260,8 +260,9 @@ obviel.template = {};
         // create sub section with copied contents
         var sub_section = new module.Section(el.clone(), data_if, data_with,
                                             data_each);
-        // remove any data-view attributes that may be there
+        // remove any data-view and data-trans attributes that may be there
         el.removeAttr('data-view');
+        el.removeAttr('data-trans');
         
         // empty sub section of contents
         el.empty();
@@ -503,9 +504,41 @@ obviel.template = {};
             }
             // XXX other kinds of nodeTypes
         });
-        // XXX empty message id
-        self.message_id = parts.join('');
+        var message_id = parts.join('');
+        self.validate_message_id(el, message_id);
+        self.message_id = message_id;
     };
+
+    module.DynamicElement.prototype.validate_message_id = function(
+        el, message_id) {
+        if (message_id === '') {
+            throw new module.CompilationError(
+                el, "data-trans used on element with no text to translate");
+            
+        }
+        var tokens = module.tokenize(message_id);
+        var name_tokens = 0;
+        for (var i in tokens) {
+            var token = tokens[i];
+            // if we run into any non-whitespace text token at all,
+            // we assume we have something to translate
+            if (token.type === module.TEXT_TOKEN) {
+                if (trim(token.value) !== '') {
+                    return;
+                }
+            } else if (token.type === module.NAME_TOKEN) {
+                name_tokens++;
+            }
+        }
+        // if we find no or only a single name token, we consider this
+        // an error. more than one name tokens are considered translatable,
+        // at least in their order
+        if (name_tokens <= 1) {
+            throw new module.CompilationError(
+                el, "data-trans used on element with no text to translate");
+        }
+
+    };    
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
         $.each(this.attr_texts, function(key, value) {
