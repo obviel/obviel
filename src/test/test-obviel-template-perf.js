@@ -65,6 +65,13 @@ var big_table_flat = new module.Template(
 '</table>'
 );
 
+var big_table_flat_view = new module.Template(
+'<table>\n' +
+'<tr data-each="table" data-view="@.">' +
+'</tr>' +
+'</table>'
+);
+
 var data = {
     table: []    
 };
@@ -76,6 +83,7 @@ var data_flat = {
 for (var i = 0; i < 1000; i++) {
     data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     data_flat.table.push({
+        iface: 'row',
         a: 1,
         b: 2,
         c: 3,
@@ -97,4 +105,16 @@ test('big table nested', function() {
 test('big table flat', function() {
     big_table_flat.render($('#viewdiv'), data_flat);
     expect(0);
+});
+
+test('big table flat with view', function() {
+    obviel.view({
+        iface: 'row',
+        render: function() {
+            this.el.append('<td>' + this.obj.a + '</td>');
+        }
+    });
+    big_table_flat_view.render($('#viewdiv'), data_flat);
+    expect(0);
+    
 });
