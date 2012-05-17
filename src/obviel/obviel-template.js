@@ -454,9 +454,9 @@ obviel.template = {};
     
     module.DynamicElement.prototype.compile_attr_texts = function(el) {
         var node = el.get(0);
-        for (var i in node.attributes) {
+        for (var i = 0; i < node.attributes.length; i++) {
             var attr = node.attributes[i];
-            if (!attr.specified) {
+            if (attr.specified != true) {
                 continue;
             }
             if (attr.value === null) {
@@ -874,7 +874,7 @@ obviel.template = {};
     };
 
     is_html_text = function(text) {
-        return text.trim().charAt(0) === '<';
+        return trim(text).charAt(0) === '<';
     };
     
     generate_id = function(el) {
