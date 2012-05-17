@@ -634,6 +634,8 @@ test('data-view with named view', function() {
 
 });
 
+// XXX data view with data-with, data-each, data-if, data-trans
+
 test('data-view with altered default view', function() {
     obviel.view({
         iface: 'person',
