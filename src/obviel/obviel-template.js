@@ -509,7 +509,7 @@ obviel.template = {};
                 $(node).removeAttr('data-tvar');
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
-                // no need to do anything, i will be correct
+                // no need to do anything, index for tvars will be correct
             } else if (node.nodeType === 4) {
                 // CDATA_SECTION_NODE
                 // browser differences are rather severe, we just
