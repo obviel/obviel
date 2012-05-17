@@ -550,6 +550,16 @@ test("data-trans with text & entity reference", function() {
           '<p>een &lt; twee</p>');
 });
 
+test("data-trans with text & comment", function() {
+    equal(render('<p data-trans="">Hello world!<!-- comment -->', {}),
+          '<p>Hallo wereld!</p>');
+});
+
+test("data-trans with text & comment and element", function() {
+    equal(render('<p data-trans=""><!-- comment -->Hello <!-- comment --><em data-tvar="who">{who}</em>!</p>',
+                 {who: "Bob"}),
+          '<p><em>Bob</em>, hallo!</p>');
+});
 test("data-trans with variable", function() {
     equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
           '<p>Fred, hallo!</p>');

@@ -493,8 +493,10 @@ obviel.template = {};
         el.contents().each(function(index) {
             var node = this;
             if (node.nodeType === 3) {
+                // TEXT_NODE
                 parts.push(node.nodeValue);
             } else if (node.nodeType === 1) {
+                // ELEMENT_NODE
                 var tvar = $(node).attr('data-tvar');
                 if (tvar === undefined) {
                     throw new module.CompilationError(
@@ -504,6 +506,9 @@ obviel.template = {};
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = index;
                 $(node).removeAttr('data-tvar');
+            } else if (node.nodeType === 8) {
+                // COMMENT_NODE
+                // no need to do anything, index will be correct
             }
             // XXX other kinds of nodeTypes
         });
