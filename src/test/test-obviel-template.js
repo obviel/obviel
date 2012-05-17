@@ -533,6 +533,11 @@ test("data-trans with text", function() {
           '<p>Hallo wereld!</p>');
 });
 
+test('data-trans with text, translation not there', function() {
+    equal(render('<p data-trans="">This is not translated</p>', {}),
+          '<p>This is not translated</p>');
+});
+
 test("data-trans with text & entity reference", function() {
     equal(render('<p data-trans="">one &lt; two</p>', {}),
           '<p>een &lt; twee</p>');
