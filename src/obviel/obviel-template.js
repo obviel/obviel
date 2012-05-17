@@ -260,7 +260,9 @@ obviel.template = {};
         // create sub section with copied contents
         var sub_section = new module.Section(el.clone(), data_if, data_with,
                                             data_each);
-
+        // remove any data-view attributes that may be there
+        el.removeAttr('data-view');
+        
         // empty sub section of contents
         el.empty();
         
@@ -305,7 +307,7 @@ obviel.template = {};
         // DOM for each iteration. this needs to be done here,
         // before its id is removed
         var iteration_node = el.get(0).cloneNode(false);
-
+        
         // render the first iteration on the element
         scope.push(data_each[0]);
         this.render_el(el, scope, translations);

@@ -609,6 +609,50 @@ test('data-view with altered default view', function() {
 
 });
 
+test('data-view with data-each', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    
+    equal(render('<div data-each="persons" data-view="@."></div>',
+                 {persons: [
+                     {iface: 'person',
+                      name: 'Bob'},
+                     {iface: 'person',
+                      name: 'Jay'},
+                     {iface: 'person',
+                      name: 'Stephen'}]}),
+          '<div><p>Bob</p></div><div><p>Jay</p></div><div><p>Stephen</p></div>');
+    
+});
+
+
+test('deeper data-view with data-each', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    
+    equal(render('<div><div data-each="persons" data-view="@."></div></div>',
+                 {persons: [
+                     {iface: 'person',
+                      name: 'Bob'},
+                     {iface: 'person',
+                      name: 'Jay'},
+                     {iface: 'person',
+                      name: 'Stephen'}]}),
+          '<div><div><p>Bob</p></div><div><p>Jay</p></div><div><p>Stephen</p></div></div>');
+    
+});
+
+
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
                                           value: 'foo'}]);
