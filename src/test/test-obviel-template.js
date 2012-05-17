@@ -20,13 +20,18 @@ var Translations = function() {
     this._trans = {
         'Hello world!': 'Hallo wereld!',
         'Bye world!': 'Tot ziens wereld!',
+        'one < two': 'een < twee',
         'Hello {who}!': '{who}, hallo!',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!'
     };
 };
 
 Translations.prototype.gettext = function(msgid) {
-    return this._trans[msgid];
+    var result = this._trans[msgid];
+    if (result === undefined) {
+        return msgid;
+    }
+    return result;
 };
 
 var render = function(text, obj) {
@@ -526,6 +531,11 @@ test('nested data-each', function() {
 test("data-trans with text", function() {
     equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');
+});
+
+test("data-trans with text & entity reference", function() {
+    equal(render('<p data-trans="">one &lt; two</p>', {}),
+          '<p>een &lt; twee</p>');
 });
 
 test("data-trans with variable", function() {

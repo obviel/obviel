@@ -865,6 +865,10 @@ obviel.template = {};
     };
     
     module.tokenize = function(text) {
+        // fast path for empty text
+        if (text === '') {
+            return [];
+        }
         var result = [];
         var index = 0;
         var last_index = 0;
