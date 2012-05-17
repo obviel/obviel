@@ -47,6 +47,13 @@ test('template with text, without variable', function() {
           '<p>Hello world!</p>'); 
 });
 
+test('render template twice on same element', function() {
+    equal(render('<p>Hello world!</p>', {}),
+          '<p>Hello world!</p>');
+    equal(render('<p>Bye world!</p>', {}),
+          '<p>Bye world!</p>');
+});
+
 test("empty element", function() {
     equal(render('<p></p>', {}),
           '<p></p>');
@@ -634,6 +641,7 @@ test('data-view with named view', function() {
 
 });
 
+
 // XXX data view with data-with, data-each, data-if, data-trans
 
 test('data-view with altered default view', function() {
@@ -651,6 +659,43 @@ test('data-view with altered default view', function() {
     equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
                                                        name: 'Bob'}}),
           '<div><p>Bob</p></div>');
+
+});
+
+
+test('data-view with data-if where if is true', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    
+    
+    equal(render('<div data-if="flag" data-view="person">person</div>',
+                 {person: {iface: 'person',
+                           name: 'Bob'},
+                  flag: true}),
+          '<div><p>Bob</p></div>');
+    
+});
+
+test('data-view with deeper data-if where if is false', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+    
+
+    equal(render('<div><div data-if="flag" data-view="person"></div></div>',
+                 {person: {iface: 'person',
+                           name: 'Bob'},
+                  flag: false}),
+          '<div></div>');
 
 });
 

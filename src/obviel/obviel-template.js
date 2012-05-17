@@ -133,6 +133,9 @@ obviel.template = {};
     module.Template.prototype.render = function(el, obj, translations) {
         var scope = new module.Scope(obj);
 
+        // clear the element first
+        el.empty();
+        
         // we need to insert the top element into document first so
         // we can hang the rest of the template off it
         var top_el = $(this.section.el.get(0).cloneNode(false));
