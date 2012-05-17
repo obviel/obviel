@@ -679,7 +679,7 @@ test('data-view with altered default view', function() {
 });
 
 
-// XXX data view with data-with, data-trans
+// XXX data-view with data-trans
 
 test('data-view with data-with', function() {
     obviel.view({
@@ -788,6 +788,14 @@ test('deeper data-view with data-each', function() {
     
 });
 
+// XXX data-view with data-trans not allowed
+// XXX data-view with any content that isn't attribute is not allowed
+
+// test('data-view with data-trans on same element is not allowed', function() {
+//     //raises(function() {
+//         render('<div data-view="foo" data-trans="bar">foo</div>', {});
+//     //}, module.CompilationError);
+// });
 
 test('tokenize single variable', function() {
     deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
