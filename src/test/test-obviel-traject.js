@@ -76,7 +76,7 @@ test("patterns resolve full path", function () {
 
 test("custom default lookup", function () {
     var patterns = new traject.Patterns();
-    patterns.set_default_lookup(function() {
+    patterns.set_default_lookup(function () {
         return {iface: 'custom_default'};
     });
     
@@ -1062,13 +1062,13 @@ test("patterns method", function () {
         alpha: { iface: 'department', title: 'Alpha'},
         beta: {iface: 'department', title: 'Beta'},
         gamma: {iface: 'department', title: 'Gamma'}
-        };
+    };
         
-    var get_department = function(variables) {
+    var get_department = function (variables) {
         return departments[variables.department_name];
     };
 
-    var get_department_variables = function(department) {
+    var get_department_variables = function (department) {
         for (var department_name in departments) {
             if (department === departments[department_name]) {
                 return {department_name: department_name};
@@ -1102,9 +1102,9 @@ test("inverse not found", function () {
         alpha: { iface: 'department', title: 'Alpha'},
         beta: {iface: 'department', title: 'Beta'},
         gamma: {iface: 'department', title: 'Gamma'}
-        };
+    };
         
-    var get_department_variables = function(department) {
+    var get_department_variables = function (department) {
         for (var department_name in departments) {
             if (department === departments[department_name]) {
                 return {department_name: department_name};

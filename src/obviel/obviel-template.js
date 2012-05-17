@@ -93,6 +93,15 @@ obviel.template = {};
 
 (function($, module) {
 
+    // will define these later, is to please jshint
+    var generate_id = null;
+    var clean_id = null;
+    var is_html_text = null;
+    var trim = null;
+    var formatters = null;
+    var default_view_name = null;
+    var resolve_in_obj = null;
+        
     var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
 
     module.NAME_TOKEN = 0;
@@ -470,7 +479,7 @@ obviel.template = {};
         var self = this;
         el.contents().each(function(index) {
             var node = this;
-            if (!node.nodeType === 3) {
+            if (node.nodeType !== 3) {
                 return;
             }
             if (node.nodeValue === null) {
@@ -662,7 +671,7 @@ obviel.template = {};
         for (var i in this.parts) {
             var part = this.parts[i];
             result.push(part.render(el, scope));
-        };
+        }
         return result.join('');        
     };
         
@@ -770,12 +779,14 @@ obviel.template = {};
     module.IfExpression.prototype.resolve = function(el, scope) {
         var result = scope.resolve(this.dotted_name);
         if (this.not_enabled) {
+            /* XXX jshint doesn't like the == false comparison */
             return (result === undefined ||
                     result === null ||
                     result == false);
         }
         // result != false is NOT equivalent to result == true in JS
         // and it is the one we want
+        /* XXX jshint doesn't like the != false comparison */
         return (result !== undefined &&
                 result !== null &&
                 result != false);
@@ -809,7 +820,7 @@ obviel.template = {};
         return undefined;
     };
 
-    var resolve_in_obj = function(obj, names) {
+    resolve_in_obj = function(obj, names) {
         for (var i in names) {
             var name = names[i];
             obj = obj[name];
@@ -836,7 +847,7 @@ obviel.template = {};
         this.formatters = {};
     };
     
-    var formatters = new module.Formatters();
+    formatters = new module.Formatters();
 
     module.register_formatter = function(name, f) {
         formatters.register(name, f);
@@ -846,7 +857,7 @@ obviel.template = {};
         formatters.clear();
     };
 
-    var default_view_name = 'default';
+    default_view_name = 'default';
 
     module.set_default_view_name = function(name) {
         default_view_name = name;
@@ -858,15 +869,15 @@ obviel.template = {};
         return (s.slice(0, startswith.length) === startswith);
     };
 
-    var trim = function(s) {
+    trim = function(s) {
         return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
 
-    var is_html_text = function(text) {
+    is_html_text = function(text) {
         return text.trim().charAt(0) === '<';
     };
     
-    var generate_id = function(el) {
+    generate_id = function(el) {
         var result = el.attr('id');
         if (result === undefined) {
             result = OBVIEL_TEMPLATE_ID_PREFIX + _id;
@@ -876,7 +887,7 @@ obviel.template = {};
         return result;
     };
 
-    var clean_id = function(el) {
+    clean_id = function(el) {
         if (el.length === 0) {
             return;
         }

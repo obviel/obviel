@@ -14,7 +14,7 @@ module("Template", {
     }
 });
 
-var module = obviel.template;
+var obtemp = obviel.template;
 
 var Translations = function() {
     this._trans = {
@@ -35,7 +35,7 @@ Translations.prototype.gettext = function(msgid) {
 };
 
 var render = function(text, obj) {
-    var template = new module.Template(text);
+    var template = new obtemp.Template(text);
     var el = $('#viewdiv');
     var translations = new Translations();
     template.render(el, obj, translations);
@@ -118,7 +118,7 @@ test("variable with dotted name", function() {
 });
 
 test("variable with formatter", function() {
-    module.register_formatter('upper', function(value) {
+    obtemp.register_formatter('upper', function(value) {
         return value.toUpperCase();
     });
     equal(render('{foo|upper}', {foo: 'hello'}),
@@ -128,7 +128,7 @@ test("variable with formatter", function() {
 test("variable with formatter that does not exist", function() {
     raises(function() {
         render('{foo|upper}', {foo: 'hello'});
-    }, module.CompilationError);
+    }, obtemp.CompilationError);
 });
 
 // test("variable with built-in html formatter", function() {
@@ -157,14 +157,14 @@ test("things disappear out of scope", function() {
                {sub:{
                    foo: "Hello!"
                }});
-    }, module.RenderError);
+    }, obtemp.RenderError);
     
 });
 
 test("variable that does not exist", function() {
     raises(function() {
         render('<p>{who}</p>', {});
-    }, module.RenderError);
+    }, obtemp.RenderError);
                  
 });
 
@@ -202,7 +202,7 @@ test("element with both id and variable", function() {
 test("disallow dynamic id in template", function() {
     raises(function() {
         render('<p id="{dynamic}"></p>', {dynamic: 'test'});
-    }, module.CompilationError);
+    }, obtemp.CompilationError);
 });
 
 test("data-id", function() {
@@ -218,14 +218,14 @@ test("data-with", function() {
 test("data-with not pointing to object", function() {
    raises(function() {
         render('<p data-with="alpha"></p>', {alpha: 'not an object'});
-   }, module.RenderError);
+   }, obtemp.RenderError);
     
 });
 
 test("data-with not pointing to anything", function() {
    raises(function() {
         render('<p data-with="alpha"></p>', {});
-   }, module.RenderError);
+   }, obtemp.RenderError);
     
 });
 
@@ -472,7 +472,7 @@ test('data-each with text after it', function() {
 test('data-each not pointing to array', function() {
     raises(function() {
         render('<p data-each="foo"></p>', {foo: 'not an array'});
-    }, module.RenderError);
+    }, obtemp.RenderError);
 });
      
 test('data-each with data-if and true', function() {
@@ -597,20 +597,20 @@ test('data-trans with data-tvar and variable in text', function() {
 test('data-trans with just variable, no text', function() {
     raises(function() {
         render('<p data-trans="">{hello}</p>', {hello: 'Hello!'});
-    }, module.CompilationError);
+    }, obtemp.CompilationError);
 });
 
 test('data-trans used on whitespace', function() {
     raises(function() {
         render('<p data-trans="">   </p>');
-    }, module.CompilationError);
+    }, obtemp.CompilationError);
     
 });
 
 test('data-trans without text altogether', function() {
     raises(function() {
         render('<p data-trans=""></p>');
-    }, module.CompilationError);
+    }, obtemp.CompilationError);
     
 });
 
@@ -670,7 +670,7 @@ test('data-view with altered default view', function() {
         }
     });
 
-    module.set_default_view_name('summary');
+    obtemp.set_default_view_name('summary');
     
     equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
                                                        name: 'Bob'}}),
@@ -794,160 +794,160 @@ test('deeper data-view with data-each', function() {
 // test('data-view with data-trans on same element is not allowed', function() {
 //     //raises(function() {
 //         render('<div data-view="foo" data-trans="bar">foo</div>', {});
-//     //}, module.CompilationError);
+//     //}, obtemp.CompilationError);
 // });
 
 test('tokenize single variable', function() {
-    deepEqual(module.tokenize("{foo}"), [{type: module.NAME_TOKEN,
+    deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);
     
 });
 
 test('tokenize variable in text', function() {
-    deepEqual(module.tokenize("the {foo} is great"),
+    deepEqual(obtemp.tokenize("the {foo} is great"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'the '},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'},
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: ' is great'}
               ]);
     
 });
 
 test('tokenize variable starts text', function() {
-    deepEqual(module.tokenize("{foo} is great"),
+    deepEqual(obtemp.tokenize("{foo} is great"),
               [
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'},
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: ' is great'}
               ]);
     
 });
 
 test('tokenize variable ends text', function() {
-    deepEqual(module.tokenize("great is {foo}"),
+    deepEqual(obtemp.tokenize("great is {foo}"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'great is '},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'}
               ]);
     
 });
 
 test('tokenize two variables follow', function() {
-    deepEqual(module.tokenize("{foo}{bar}"),
+    deepEqual(obtemp.tokenize("{foo}{bar}"),
               [
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'bar'}
               ]);
 });
 
 test('tokenize two variables with text', function() {
-    deepEqual(module.tokenize("a{foo}b{bar}c"),
+    deepEqual(obtemp.tokenize("a{foo}b{bar}c"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'a'},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'},
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'b'},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'bar'},
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'c'}
               ]);
 });
 
 
 test('tokenize no variables', function() {
-    deepEqual(module.tokenize("Hello world!"),
+    deepEqual(obtemp.tokenize("Hello world!"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'Hello world!'}
               ]);
 });
 
 test('tokenize open but no close', function() {
-    deepEqual(module.tokenize("{foo"),
+    deepEqual(obtemp.tokenize("{foo"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: '{foo'}
               ]);
 });
 
 test('tokenize open but no close after text', function() {
-    deepEqual(module.tokenize("after {foo"),
+    deepEqual(obtemp.tokenize("after {foo"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'after {foo'}
               ]);
 });
 
 test('tokenize open but no close after variable', function() {
-    deepEqual(module.tokenize("{bar} after {foo"),
+    deepEqual(obtemp.tokenize("{bar} after {foo"),
               [
-                  {"type": module.NAME_TOKEN,
+                  {"type": obtemp.NAME_TOKEN,
                    "value": "bar"},
-                  {"type": module.TEXT_TOKEN,
+                  {"type": obtemp.TEXT_TOKEN,
                    "value": " after {foo"} 
               ]);
 });
 
 test('tokenize just close', function() {
-    deepEqual(module.tokenize("foo } bar"),
+    deepEqual(obtemp.tokenize("foo } bar"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: 'foo } bar'}
               ]);
 });
 
 test('tokenize empty variable', function() {
-    deepEqual(module.tokenize("{}"),
+    deepEqual(obtemp.tokenize("{}"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: '{}'}
               ]);
 
 });
 
 test('tokenize whitespace variable', function() {
-    deepEqual(module.tokenize("{ }"),
+    deepEqual(obtemp.tokenize("{ }"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: '{ }'}
               ]);
 
 });
 
 test('tokenize non-trimmed variable', function() {
-    deepEqual(module.tokenize("{foo }"),
+    deepEqual(obtemp.tokenize("{foo }"),
               [
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'foo'}
               ]);
 
 });
 
 test('tokenize whitespace after {', function() {
-    deepEqual(module.tokenize("{ foo}"),
+    deepEqual(obtemp.tokenize("{ foo}"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: '{ foo}'}
               ]);
 });
 
 test('tokenize whitespace after { with variable', function() {
-    deepEqual(module.tokenize("{ foo}{bar}"),
+    deepEqual(obtemp.tokenize("{ foo}{bar}"),
               [
-                  {type: module.TEXT_TOKEN,
+                  {type: obtemp.TEXT_TOKEN,
                    value: '{ foo}'},
-                  {type: module.NAME_TOKEN,
+                  {type: obtemp.NAME_TOKEN,
                    value: 'bar'}
               ]);
 
