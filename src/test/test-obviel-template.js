@@ -560,6 +560,15 @@ test("data-trans with text & comment and element", function() {
                  {who: "Bob"}),
           '<p><em>Bob</em>, hallo!</p>');
 });
+
+// CDATA is too different in browsers and not really sensible to support
+// see also CDATASection in HTML for more info:
+// http://reference.sitepoint.com/javascript/CDATASection
+// test("data-trans with text & CDATA section", function() {
+//     equal(render('<p data-trans=""><![CDATA[Hello world!]]></p>', {}),
+//           '<p>Hallo wereld!</p>');
+// });
+
 test("data-trans with variable", function() {
     equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
           '<p>Fred, hallo!</p>');

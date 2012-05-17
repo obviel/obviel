@@ -490,8 +490,9 @@ obviel.template = {};
     module.DynamicElement.prototype.compile_message_id = function(el) {
         var self = this;
         var parts = [];
-        el.contents().each(function(index) {
-            var node = this;
+        var children = el.get(0).childNodes;
+        for (var i = 0; i < children.length; i++) {
+            var node = children[i];
             if (node.nodeType === 3) {
                 // TEXT_NODE
                 parts.push(node.nodeValue);
@@ -504,14 +505,29 @@ obviel.template = {};
                             "that are not marked with data-tvar");
                 }
                 parts.push("{" + tvar + "}");
-                self.tvars[tvar] = index;
+                self.tvars[tvar] = i;
                 $(node).removeAttr('data-tvar');
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
-                // no need to do anything, index will be correct
+                // no need to do anything, i will be correct
+            } else if (node.nodeType === 4) {
+                // CDATA_SECTION_NODE
+                // browser differences are rather severe, we just
+                // don't support this in output as it's of a limited utility
+                // see also:
+                // http://reference.sitepoint.com/javascript/CDATASection
+            } else if (node.nodeType === 7) {
+                // PROCESSING_INSTRUCDTION_NODE
+                // we also don't support processing instructions in any
+                // consistent way; again they have limited utility
             }
-            // XXX other kinds of nodeTypes
-        });
+        }
+
+        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+        // occur under elements
+        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+        // be merged with text nodes
         var message_id = parts.join('');
         self.validate_message_id(el, message_id);
         self.message_id = message_id;
