@@ -44,7 +44,7 @@ Translations.prototype.gettext = function(msgid) {
 
 var render = function(text, obj) {
     var template = new obtemp.Template(text);
-    var el = $('#viewdiv');
+    var el = $("<div></div>"); // if you want to see it, use $('#viewdiv')
     var translations = new Translations();
     template.render(el, obj, translations);
     return el.html();
