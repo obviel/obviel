@@ -648,10 +648,32 @@ test('data-trans without text altogether', function() {
     
 });
 
+// XXX what if you want to translate an attribute on a data-tvar element?
+
 test('data-trans with just a single data-tvar', function() {
     raises(function() {
         render('<p data-trans=""><em data-tvar="something"></em></p>');
     }, obtemp.CompilationError);
+});
+
+test('data-trans on attribute with plain text', function() {
+    html_equal(render(
+        '<p data-trans="title" title="Hello world!">Hello world!</p>', {}),
+               '<p title="Hallo wereld!">Hello world!</p>');
+});
+
+
+test('data-trans on attribute with variable', function() {
+    html_equal(render(
+        '<p data-trans="title" title="Hello {who}!">Hello world!</p>',
+        {who: 'X'}),
+               '<p title="X, hallo!">Hello world!</p>');
+});
+
+test('data-trans on text and attribute', function() {
+    html_equal(render(
+        '<p data-trans=". title" title="Hello world!">Hello world!</p>', {}),
+               '<p title="Hallo wereld!">Hallo wereld!</p>');
 });
 
 test('data-trans without translation available but with tvar', function() {

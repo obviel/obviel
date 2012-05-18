@@ -457,15 +457,59 @@ obviel.template = {};
     module.DynamicElement.prototype.is_dynamic = function() {
         return this._dynamic;
     };   
+
+    var parse_trans_info = function(trans) {
+        if (trans === undefined) {
+            return {
+                text: false,
+                any_translations: false,
+                attributes: {}
+            };
+        }
+        
+        // empty string will mean translating text content only
+        if (trim(trans) === '') {
+            return {
+                text: true,
+                any_translations: true,
+                attributes: {}
+            };
+        }
+
+        // split with space character
+        var parts = trans.split(' ');
+        var result = {
+            text: false,
+            any_translations: false,
+            attributes: {}
+        };
+        for (var i in parts) {
+            var part = trim(parts[i]);
+            if (part === '') {
+                continue;
+            }
+            if (part === '.') {
+                result.text = true;
+                result.any_translations = true;
+                continue;
+            }
+            result.attributes[part] = true;
+            result.any_translations = true;
+        }
+        return result;
+    };
     
     module.DynamicElement.prototype.compile = function(el) {
-        this.compile_attr_texts(el);
-        this.compile_content_texts(el);
         var data_trans = el.attr('data-trans');
-        if (data_trans !== undefined) {
+        var trans_info = parse_trans_info(data_trans);
+        this.compile_attr_texts(el, trans_info.attributes);
+        this.compile_content_texts(el);
+        if (trans_info.text) {
             this._dynamic = true;
             this.compile_message_id(el);
             this.validate_trans_message_id(el, this.message_id);
+        }
+        if (trans_info.any_translations) {
             el.removeAttr('data-trans');
         }
         // XXX verify that this is within a data-trans
@@ -478,7 +522,8 @@ obviel.template = {};
         }
     };
     
-    module.DynamicElement.prototype.compile_attr_texts = function(el) {
+    module.DynamicElement.prototype.compile_attr_texts = function(
+        el, trans_attributes) {
         var node = el.get(0);
         for (var i = 0; i < node.attributes.length; i++) {
             var attr = node.attributes[i];
@@ -489,13 +534,20 @@ obviel.template = {};
                 continue;
             }
             var dynamic_text = new module.DynamicText(el, attr.value);
-            if (dynamic_text.is_dynamic()) {
+            if (dynamic_text.is_dynamic() || trans_attributes[attr.name]) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
-                        el, "not allowed to use variables in id attribute. " +
-                            "use data-id instead");
+                        el, ("not allowed to use variables (or translation) in id " +
+                             "attribute. use data-id instead"));
                 }
-                this.attr_texts[attr.name] = dynamic_text;
+                if (trans_attributes[attr.name]) {
+                    var attr_text = new module.AttributeText(
+                        dynamic_text, attr.value);
+                } else {
+                    var attr_text = new module.AttributeText(
+                        dynamic_text, null);
+                }
+                this.attr_texts[attr.name] = attr_text;
                 this._dynamic = true;
             }
         }
@@ -636,7 +688,7 @@ obviel.template = {};
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
         $.each(this.attr_texts, function(key, value) {
-            var text = value.render(el, scope);
+            var text = value.render(el, scope, translations);
             if (key === 'data-id') {
                 el.removeAttr('data-id');
                 el.attr('id', text);
@@ -746,7 +798,48 @@ obviel.template = {};
         }
         return result.join('');        
     };
-        
+
+    module.AttributeText = function(dynamic, message_id) {
+        this.dynamic = dynamic;
+        this.message_id = message_id;
+    };
+
+    module.AttributeText.prototype.render = function(el, scope,
+                                                     translations) {
+        // fast path without translations
+        if (translations === undefined || translations === null ||
+            this.message_id === null) {
+            return this.dynamic.render(el, scope);
+        }
+        var translated = translations.gettext(this.message_id);
+        if (translated === this.message_id) {
+            // if translation is original message id, we can use fast path
+            return this.dynamic.render(el, scope);
+        }
+        // we need to translate and reorganize sub elements
+        return this.render_trans(el, scope, translated);
+    };
+
+    module.AttributeText.prototype.render_trans = function(
+        el, scope, translated) {
+        var self = this;
+        var result = [];
+
+        // XXX caching
+        var tokens = module.tokenize(translated);
+
+        // prepare what to put in place, including possibly
+        // shifting tvar nodes
+        $.each(tokens, function(index, token) {
+            if (token.type === module.TEXT_TOKEN) {
+                result.push(token.value);
+            } else if (token.type === module.NAME_TOKEN) {
+                result.push(scope.resolve(token.value));
+            }
+        });
+        return result.join('');
+    };
+    
     module.Text = function(text) {
         this.text = text;
     };
