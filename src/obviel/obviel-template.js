@@ -743,8 +743,7 @@ obviel.template = {};
         var self = this;
         var result = [];
 
-        // XXX caching
-        var tokens = module.tokenize(translated);
+        var tokens = module.cached_tokenize(translated);
 
         // prepare what to put in place, including possibly
         // shifting tvar nodes
@@ -824,9 +823,8 @@ obviel.template = {};
         el, scope, translated) {
         var self = this;
         var result = [];
-
-        // XXX caching
-        var tokens = module.tokenize(translated);
+        
+        var tokens = module.cached_tokenize(translated);
 
         // prepare what to put in place, including possibly
         // shifting tvar nodes
@@ -1110,5 +1108,22 @@ obviel.template = {};
         return result;
     };
 
+    var _token_cache = {};
+
+    var MAX_CACHED_TEXT_LENGTH = 100;
+    
+    module.cached_tokenize = function(text) {
+        // don't cache if it's too big
+        if (text.length > MAX_CACHED_TEXT_LENGTH) {
+            return module.tokenize(text);
+        }
+        var cached = _token_cache[text];
+        if (cached !== undefined) {
+            return cached;
+        }
+        var result = module.tokenize(text);
+        _token_cache[text] = result;
+        return result;
+    };
     
 }(jQuery, obviel.template));
