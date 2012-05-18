@@ -560,12 +560,6 @@ test('nested data-each', function() {
     
 });
 
-
-// XXX test fast path translation where translation isn't available,
-// in case of tvar. the tvar should still be executed (check with variable
-// or a translation), and right
-// now I suspect it isn't
-
 // XXX check with tvar that needs to be translated
 
 test("data-trans with text", function() {
@@ -627,6 +621,14 @@ test('data-trans with data-tvar and variable in text', function() {
     
 });
 
+test('data-trans with multiple data-tvars', function() {
+    html_equal(render('<p data-trans="">Hello <strong data-tvar="qualifier">{qualifier}</strong> <em data-tvar="who">{who}</em>!</p>',
+                 {who: 'wereld',
+                  qualifier: 'beste'}),
+          '<p><strong>beste</strong> <em>wereld</em>, hallo!</p>');
+
+});
+
 test('data-trans with just variable, no text', function() {
     raises(function() {
         render('<p data-trans="">{hello}</p>', {hello: 'Hello!'});
@@ -645,6 +647,12 @@ test('data-trans without text altogether', function() {
         render('<p data-trans=""></p>');
     }, obtemp.CompilationError);
     
+});
+
+test('data-trans without translation available but with tvar', function() {
+    html_equal(render('<p data-trans="">Hey there <em data-tvar="who">{who}</em>!</p>',
+                      {who: 'pardner'}),
+               '<p>Hey there <em>pardner</em>!</p>');
 });
 
 /* XXX

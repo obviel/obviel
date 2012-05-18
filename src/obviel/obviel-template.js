@@ -604,8 +604,8 @@ obviel.template = {};
             }
             el.attr(key, text);
         });
-        /* fast path without translations; elements do not need to
-           be reorganized */
+        // fast path without translations; elements do not need to be
+        // reorganized
         if (translations === undefined || translations === null ||
             this.message_id === null) {
             this.render_notrans(el, scope);
@@ -613,10 +613,17 @@ obviel.template = {};
         }
         var translated = translations.gettext(this.message_id);
         if (translated === this.message_id) {
-            /* if translation is original message id, we can use fast path */
+            // if translation is original message id, we can use fast path
             this.render_notrans(el, scope);
+            // but we do need to render any tvars
+            var children = el.get(0).childNodes;
+            for (var key in this.tvars) {
+                var info = this.tvars[key];
+                info.dynamic.render($(children[info.index]), scope, translated);
+            }
             return;
         }
+        // we need to translate and reorganize sub elements
         this.render_trans(el, scope, translated);
     };
 
