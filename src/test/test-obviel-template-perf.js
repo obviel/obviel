@@ -102,7 +102,7 @@ test('big table nested', function() {
     expect(0);
 });
 
-test('big table flat', function() {
+test('big table flat without view', function() {
     big_table_flat.render($('#viewdiv'), data_flat);
     expect(0);
 });
