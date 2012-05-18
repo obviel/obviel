@@ -94,8 +94,6 @@ obviel.template = {};
 (function($, module) {
 
     // will define these later, is to please jshint
-    var generate_id = null;
-    var clean_id = null;
     var is_html_text = null;
     var trim = null;
     var formatters = null;
@@ -902,28 +900,6 @@ obviel.template = {};
 
     is_html_text = function(text) {
         return trim(text).charAt(0) === '<';
-    };
-    
-    generate_id = function(el) {
-        var result = el.attr('id');
-        if (result === undefined) {
-            result = OBVIEL_TEMPLATE_ID_PREFIX + _id;
-            el.attr('id', result);
-            _id++;
-        }
-        return result;
-    };
-
-    clean_id = function(el) {
-        if (el.length === 0) {
-            return;
-        }
-        var node = el.get(0);
-        var id = node.getAttribute('id');
-        if (id !== undefined && id !== null &&
-            starts_with(id, OBVIEL_TEMPLATE_ID_PREFIX)) {
-            node.removeAttribute('id');
-        }
     };
     
     module.tokenize = function(text) {
