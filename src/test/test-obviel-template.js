@@ -454,6 +454,24 @@ test('data-each with 0 elements', function() {
           '<ul></ul>');
 });
 
+test('data-each, small table', function() {
+    var data = { table: [] };
+    for (var i = 0; i < 2; i++) {
+        data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    }
+    html_equal(render('<table>' +
+                       '<tr data-each="table">' +
+                       '<td data-each="@.">{@.}</td>' +
+                       '</tr>' +
+                       '</table>', data),
+               '<table>' +
+               '<tbody>' +
+               '<tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>' +
+               '<tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>' +
+               '</tbody>' +
+               '</table>');
+});
+
 test('data-each with deeper elements', function() {
     html_equal(render('<ul><li data-each="list"><p>{title}</p></li></ul>',
                  {list: [{title: 'a'},
@@ -542,6 +560,13 @@ test('nested data-each', function() {
     
 });
 
+
+// XXX test fast path translation where translation isn't available,
+// in case of tvar. the tvar should still be executed (check with variable
+// or a translation), and right
+// now I suspect it isn't
+
+// XXX check with tvar that needs to be translated
 
 test("data-trans with text", function() {
     html_equal(render('<p data-trans="">Hello world!</p>', {}),

@@ -184,8 +184,15 @@ obviel.template = {};
         var self = this;
 
         // always compile any dynamic elements on top element
-        self.compile_dynamic_element(el);
+        var has_message_id = self.compile_dynamic_element(el);
 
+        // if we have a message id, we don't want to compile down
+        // into the section
+        // XXX do some checking for illegal constructs
+        if (has_message_id) {
+            return;
+        }
+        
         // always compile any view on top element
         self.compile_view(el);
         
@@ -210,7 +217,14 @@ obviel.template = {};
             return;
         }
         
-        self.compile_dynamic_element(el);
+        var has_message_id = self.compile_dynamic_element(el);
+        
+        // if we have a message id, we don't want to compile down
+        // into the element
+        // XXX do some checking for illegal constructs
+        if (has_message_id) {
+            return;
+        }
 
         self.compile_view(el);
        
@@ -222,17 +236,40 @@ obviel.template = {};
     module.Section.prototype.compile_dynamic_element = function(el) {
         var dynamic_element = new module.DynamicElement(el);
         if (!dynamic_element.is_dynamic()) {
-            return;
+            return false;
         }
-
-        var id = generate_id(el);
         this.dynamic_elements.push({
-            id: id,
-            selector: '#' + id,
+            finder: this.get_el_finder(el),
             dynamic_element: dynamic_element
         });
+        return dynamic_element.message_id !== null;
     };
 
+    module.Section.prototype.get_el_finder = function(el) {
+        var indexes = [];
+        var parent_node = this.el.get(0);
+        var node = el.get(0);
+        while (node !== parent_node) {
+            var children = node.parentNode.childNodes;
+            for (var i = 0; i < children.length; i++) {
+                if (children[i] === node) {
+                    indexes.push(i);
+                    break;
+                }
+            }
+            node = node.parentNode;
+        }
+        indexes.reverse();
+        return function(section_el) {
+            node = section_el.get(0);
+            for (var i in indexes) {
+                var index = indexes[i];
+                node = node.childNodes[index];
+            }
+            return $(node);
+        };
+    };
+    
     module.Section.prototype.compile_view = function(el) {
         var view_element = new module.ViewElement(el);
 
@@ -240,11 +277,8 @@ obviel.template = {};
             return;
         }
 
-        var id = generate_id(el);
-
         this.view_elements.push({
-            id: id,
-            selector: '#' + id,
+            finder: this.get_el_finder(el),
             view_element: view_element
         });
     };
@@ -267,7 +301,7 @@ obviel.template = {};
 
         // generate id before cloning element for sub-section, so
         // id is shared
-        var id = generate_id(el);
+        var finder = this.get_el_finder(el);
 
         // create sub section with copied contents
         var sub_section = new module.Section(el.clone(), data_if, data_with,
@@ -280,8 +314,7 @@ obviel.template = {};
         el.empty();
         
         this.sub_sections.push({
-            id: id,
-            selector: '#' + id,
+            finder: finder,
             sub_section: sub_section
         });
         return true;
@@ -337,7 +370,6 @@ obviel.template = {};
             scope.push(data_each[i]);
             this.render_el($(iteration_clone), scope, translations);
             scope.pop();
-            clean_id($(iteration_clone));
         }
     };
     
@@ -363,8 +395,6 @@ obviel.template = {};
         this.render_views(el, scope, translations);
         
         this.render_sub_sections(el, scope, translations);
-
-        this.render_cleanup(el);
 
         if (this.data_with) {
             scope.pop();
@@ -393,7 +423,7 @@ obviel.template = {};
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = $(value.selector);
+            var dynamic_el = value.finder(el);
             value.dynamic_element.render(dynamic_el, scope, translations);
         });
 
@@ -402,7 +432,7 @@ obviel.template = {};
     module.Section.prototype.render_views = function(el, scope,
                                                                 translations) {
         $.each(this.view_elements, function(index, value) {
-            var view_el = $(value.selector);
+            var view_el = value.finder(el);
             value.view_element.render(view_el, scope, translations);
         });
 
@@ -411,22 +441,11 @@ obviel.template = {};
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
         $.each(this.sub_sections, function(index, value) {
-            var sub_section_el = $(value.selector);
+            var sub_section_el = value.finder(el);
             value.sub_section.render(sub_section_el, scope, translations);
         });
     };
 
-    module.Section.prototype.render_cleanup = function(el) {
-        $.each(this.dynamic_elements, function(index, value) {
-            clean_id($(value.selector));
-        });
-        $.each(this.view_elements, function(index, value) {
-            clean_id($(value.selector));
-        });
-        $.each(this.sub_sections, function(index, value) {
-            clean_id($(value.selector));
-        });
-    };
     
     module.DynamicElement = function(el) {
         this.attr_texts = {};
@@ -507,15 +526,19 @@ obviel.template = {};
                 parts.push(node.nodeValue);
             } else if (node.nodeType === 1) {
                 // ELEMENT_NODE
-                var tvar = $(node).attr('data-tvar');
+                var tvar_el = $(node);
+                var tvar = tvar_el.attr('data-tvar');
                 if (tvar === undefined) {
                     throw new module.CompilationError(
                         el, "data-trans element has sub-elements " +
                             "that are not marked with data-tvar");
                 }
                 parts.push("{" + tvar + "}");
-                self.tvars[tvar] = i;
-                $(node).removeAttr('data-tvar');
+                tvar_el.removeAttr('data-tvar');
+                self.tvars[tvar] = {
+                    index: i,
+                    dynamic: new module.DynamicElement(tvar_el)
+                };
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
                 // no need to do anything, index for tvars will be correct
@@ -607,12 +630,15 @@ obviel.template = {};
         });
     };
 
-    module.DynamicElement.prototype.get_tvar_node = function(el, name) {
-        var index = this.tvars[name];
-        if (index === undefined) {
+    module.DynamicElement.prototype.get_tvar_node = function(el, scope,
+                                                             translated, name) {
+        var tvar_info = this.tvars[name];
+        if (tvar_info === undefined) {
             return null;
         }
-        return el.get(0).childNodes[index];
+        var tvar_node = el.get(0).childNodes[tvar_info.index];
+        tvar_info.dynamic.render($(tvar_node), scope, translated);
+        return tvar_node;
     };
     
     module.DynamicElement.prototype.render_trans = function(el, scope,
@@ -629,7 +655,8 @@ obviel.template = {};
             if (token.type === module.TEXT_TOKEN) {
                 result.push(document.createTextNode(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                var tvar_node = self.get_tvar_node(el, token.value);
+                var tvar_node = self.get_tvar_node(el, scope, translated,
+                                                 token.value);
                 if (tvar_node !== null) {
                     result.push(tvar_node);
                 } else {
