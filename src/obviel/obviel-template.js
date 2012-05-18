@@ -465,7 +465,16 @@ obviel.template = {};
         if (data_trans !== undefined) {
             this._dynamic = true;
             this.compile_message_id(el);
+            this.validate_trans_message_id(el, this.message_id);
             el.removeAttr('data-trans');
+        }
+        // XXX verify that this is within a data-trans
+        var data_tvar = el.attr('data-tvar');
+        if (data_tvar !== undefined) {
+            this._dynamic = true;
+            this.compile_message_id(el);
+            this.validate_tvar_message_id(el, this.message_id);
+            el.removeAttr('data-tvar');
         }
     };
     
@@ -532,7 +541,6 @@ obviel.template = {};
                             "that are not marked with data-tvar");
                 }
                 parts.push("{" + tvar + "}");
-                tvar_el.removeAttr('data-tvar');
                 self.tvars[tvar] = {
                     index: i,
                     dynamic: new module.DynamicElement(tvar_el)
@@ -559,17 +567,15 @@ obviel.template = {};
         // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
         // be merged with text nodes
         var message_id = parts.join('');
-        self.validate_message_id(el, message_id);
         self.message_id = message_id;
     };
 
-    module.DynamicElement.prototype.validate_message_id = function(
-        el, message_id) {
-        if (message_id === '') {
-            throw new module.CompilationError(
-                el, "data-trans used on element with no text to translate");
-            
-        }
+
+    // a tvar of this nature is acceptable while the equivalent data-trans
+    // is not (single name token without text)
+    // <em data-tvar="foo">{who}</em>
+
+    module.DynamicElement.prototype.check_message_id = function(message_id) {
         var tokens = module.tokenize(message_id);
         var name_tokens = 0;
         for (var i in tokens) {
@@ -578,11 +584,46 @@ obviel.template = {};
             // we assume we have something to translate
             if (token.type === module.TEXT_TOKEN) {
                 if (trim(token.value) !== '') {
-                    return;
+                    return null;
                 }
             } else if (token.type === module.NAME_TOKEN) {
                 name_tokens++;
             }
+        }
+        return name_tokens;
+    };
+    
+    module.DynamicElement.prototype.validate_tvar_message_id = function(
+        el, message_id) {
+        if (message_id === '') {
+            throw new module.CompilationError(
+                el, "data-tvar used on element with no text to translate");
+            
+        }
+        var name_tokens = this.check_message_id(message_id);
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
+        }
+        // if we have no text tokens and no name tokens at all
+        // we consider this an error
+        if (name_tokens === 0) {
+            throw new module.CompilationError(
+                el, "data-tvar used on element with no text to translate");
+        }
+    };    
+
+    module.DynamicElement.prototype.validate_trans_message_id = function(
+        el, message_id) {
+        if (message_id === '') {
+            throw new module.CompilationError(
+                el, "data-trans used on element with no text to translate");
+            
+        }
+        var name_tokens = this.check_message_id(message_id);
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
         }
         // if we find no or only a single name token, we consider this
         // an error. more than one name tokens are considered translatable,
@@ -591,7 +632,6 @@ obviel.template = {};
             throw new module.CompilationError(
                 el, "data-trans used on element with no text to translate");
         }
-
     };    
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
@@ -619,12 +659,12 @@ obviel.template = {};
             var children = el.get(0).childNodes;
             for (var key in this.tvars) {
                 var info = this.tvars[key];
-                info.dynamic.render($(children[info.index]), scope, translated);
+                info.dynamic.render($(children[info.index]), scope, translations);
             }
             return;
         }
         // we need to translate and reorganize sub elements
-        this.render_trans(el, scope, translated);
+        this.render_trans(el, scope, translations, translated);
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
@@ -636,17 +676,17 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.get_tvar_node = function(el, scope,
-                                                             translated, name) {
+                                                             translations, name) {
         var tvar_info = this.tvars[name];
         if (tvar_info === undefined) {
             return null;
         }
         var tvar_node = el.get(0).childNodes[tvar_info.index];
-        tvar_info.dynamic.render($(tvar_node), scope, translated);
+        tvar_info.dynamic.render($(tvar_node), scope, translations);
         return tvar_node;
     };
     
-    module.DynamicElement.prototype.render_trans = function(el, scope,
+    module.DynamicElement.prototype.render_trans = function(el, scope, translations,
                                                             translated) {
         var self = this;
         var result = [];
@@ -660,7 +700,7 @@ obviel.template = {};
             if (token.type === module.TEXT_TOKEN) {
                 result.push(document.createTextNode(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                var tvar_node = self.get_tvar_node(el, scope, translated,
+                var tvar_node = self.get_tvar_node(el, scope, translations,
                                                  token.value);
                 if (tvar_node !== null) {
                     result.push(tvar_node);

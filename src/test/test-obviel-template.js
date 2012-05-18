@@ -29,6 +29,7 @@ var Translations = function() {
         'Hello world!': 'Hallo wereld!',
         'Bye world!': 'Tot ziens wereld!',
         'one < two': 'een < twee',
+        'Their message was: "{message}".': 'Hun boodschap was: "{message}".',
         'Hello {who}!': '{who}, hallo!',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!'
     };
@@ -560,8 +561,6 @@ test('nested data-each', function() {
     
 });
 
-// XXX check with tvar that needs to be translated
-
 test("data-trans with text", function() {
     html_equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');
@@ -649,19 +648,47 @@ test('data-trans without text altogether', function() {
     
 });
 
+test('data-trans with just a single data-tvar', function() {
+    raises(function() {
+        render('<p data-trans=""><em data-tvar="something"></em></p>');
+    }, obtemp.CompilationError);
+});
+
 test('data-trans without translation available but with tvar', function() {
     html_equal(render('<p data-trans="">Hey there <em data-tvar="who">{who}</em>!</p>',
                       {who: 'pardner'}),
                '<p>Hey there <em>pardner</em>!</p>');
 });
 
+test('data-trans with translated tvar with variable', function() {
+    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello {who}!</em>".</p>',
+                      {who: 'X'}),
+               '<p>Hun boodschap was: "<em>X, hallo!</em>".</p>');
+});
+
+
+test('data-trans with translated tvar without variable', function() {
+    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello world!</em>".</p>',
+                      {}),
+               '<p>Hun boodschap was: "<em>Hallo wereld!</em>".</p>');
+});
+
+test('data-trans with tvar without text to translate', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <em data-tvar="who"></em>!</p>', {});
+    }, obtemp.CompilationError);
+});
+
+
+test('data-trans with tvar with tvar in it', function() {
+    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello <strong data-tvar="who">{name}</strong>!</em>".</p>',
+                      {name: 'X'}),
+               '<p>Hun boodschap was: "<em><strong>X</strong>, hallo!</em>".</p>');
+});
+
 /* XXX
 
-  tvar implies data-trans
-
-
   tvar should be unique, also compared to variables
-
 
   explicit naming
 */
