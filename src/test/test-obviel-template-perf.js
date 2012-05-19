@@ -118,3 +118,68 @@ test('big table flat with view', function() {
     expect(0);
     
 });
+
+var simple_data = {
+    first: {
+        a: "Hello A",
+        b: "Hello B",
+        c: "Hello C",
+        d: "Hello D",
+        e: "Hello E",
+        f: "Hello F",
+        g: "Hello G",
+        h: "Hello H",
+        i: "Hello I",
+        j: "Hello J"
+    },
+    second: {
+        a: "Bye A",
+        b: "Bye B",
+        c: "Bye C",
+        d: "Bye D",
+        e: "Bye E",
+        f: "Bye F",
+        g: "Bye G",
+        h: "Bye H",
+        i: "Bye I",
+        j: "Bye J"
+    },
+    flag: true
+};
+
+var simple_template = new module.Template(
+'<div class="all">' +
+'<div class="always" data-with="first">' +
+'<p>A: {a}</p>' +
+'<p>B: {b}</p>' +
+'<p>C: {c}</p>' +
+'<p>D: {d}</p>' +
+'<p>E: {e}</p>' +
+'<p>F: {f}</p>' +
+'<p>G: {g}</p>' +
+'<p>H: {h}</p>' +
+'<p>I: {i}</p>' +
+'<p>J: {j}</p>' +
+'</div>' +
+'<div class="sometimes" data-if="flag" data-with="second">' +
+'<p>A: {a}</p>' +
+'<p>B: {b}</p>' +
+'<p>C: {c}</p>' +
+'<p>D: {d}</p>' +
+'<p>E: {e}</p>' +
+'<p>F: {f}</p>' +
+'<p>G: {g}</p>' +
+'<p>H: {h}</p>' +
+'<p>I: {i}</p>' +
+'<p>J: {j}</p>' +
+'</div>' +
+'</div>'
+);
+
+test('simple template repeated', function() {
+    var el = $('<div></div>');
+    for (var i = 0; i < 1000; i++) {
+        simple_template.render(el, simple_data);
+    }
+    expect(0);
+});
