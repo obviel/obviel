@@ -743,7 +743,7 @@ obviel.template = {};
         if (tvar_info === undefined) {
             return null;
         }
-        var tvar_node = el.get(0).childNodes[tvar_info.index];
+        var tvar_node = el.get(0).childNodes[tvar_info.index].cloneNode(true);
         tvar_info.dynamic.render($(tvar_node), scope, translations);
         return tvar_node;
     };
@@ -755,28 +755,27 @@ obviel.template = {};
 
         var tokens = module.cached_tokenize(translated);
 
-        // prepare what to put in place, including possibly
-        // shifting tvar nodes
-        $.each(tokens, function(index, token) {
+        var frag = document.createDocumentFragment();
+        
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
             if (token.type === module.TEXT_TOKEN) {
-                result.push(document.createTextNode(token.value));
+                frag.appendChild(document.createTextNode(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                var tvar_node = self.get_tvar_node(el, scope, translations,
-                                                 token.value);
+                var tvar_node = this.get_tvar_node(el, scope, translations,
+                                                   token.value);
                 if (tvar_node !== null) {
-                    result.push(tvar_node);
+                    frag.appendChild(tvar_node);
                 } else {
-                    result.push(document.createTextNode(
+                    frag.appendChild(document.createTextNode(
                         scope.resolve(token.value)));
                 }
             }
-        });
+        }
+        
         // now move the elements in place
         el.empty();
-        var node = el.get(0);
-        for (var i in result) {
-            node.appendChild(result[i]);
-        }
+        el.get(0).appendChild(frag);
     };
     
     module.DynamicText = function(el, text) {        
