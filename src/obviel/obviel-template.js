@@ -201,6 +201,7 @@ obviel.template = {};
         // into the section
         // XXX do some checking for illegal constructs
         if (has_message_id) {
+            this.compile_fragment(el);
             return;
         }
         
@@ -211,8 +212,19 @@ obviel.template = {};
         el.children().each(function() {
             self.compile_el($(this));
         });
+
+        this.compile_fragment(el);
     };
 
+    module.Section.prototype.compile_fragment = function(el) {
+        var node = el.get(0);
+        var frag = document.createDocumentFragment();
+        while (node.hasChildNodes()) {
+            frag.appendChild(node.removeChild(node.firstChild));
+        }
+        this.frag = frag;
+    };
+    
     module.Section.prototype.compile_el = function(el) {
         var self = this;
 
@@ -413,22 +425,7 @@ obviel.template = {};
     };
     
     module.Section.prototype.render_clone = function(el) {
-        var parent_node = el.get(0);
-
-        // remove all child nodes
-        while (parent_node.hasChildNodes()) {
-            parent_node.removeChild(parent_node.firstChild);
-        }
-
-        // now copy child nodes of clone under parent
-        var cloned_node = this.el.get(0).cloneNode(true);
-
-        var children = cloned_node.childNodes;
-
-        while (cloned_node.hasChildNodes()) {
-            parent_node.appendChild(cloned_node.removeChild(
-                cloned_node.firstChild));
-        }
+        el.get(0).appendChild(this.frag.cloneNode(true));
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
