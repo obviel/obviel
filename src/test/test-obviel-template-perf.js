@@ -98,12 +98,12 @@ for (var i = 0; i < 1000; i++) {
 };
 
 test('big table nested', function() {
-    big_table_nested.render($('#viewdiv'), data);
+    big_table_nested.render($('<div></div>'), data);
     expect(0);
 });
 
 test('big table flat without view', function() {
-    big_table_flat.render($('#viewdiv'), data_flat);
+    big_table_flat.render($('<div></div>'), data_flat);
     expect(0);
 });
 
@@ -114,7 +114,7 @@ test('big table flat with view', function() {
             this.el.append('<td>' + this.obj.a + '</td>');
         }
     });
-    big_table_flat_view.render($('#viewdiv'), data_flat);
+    big_table_flat_view.render($('<div></div>'), data_flat);
     expect(0);
     
 });
