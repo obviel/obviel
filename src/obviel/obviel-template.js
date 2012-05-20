@@ -284,7 +284,7 @@ obviel.template = {};
         }
         indexes.reverse();
         return function(section_el) {
-            node = section_el.get(0);
+            var node = section_el.get(0);
             for (var i in indexes) {
                 var index = indexes[i];
                 node = node.childNodes[index];
