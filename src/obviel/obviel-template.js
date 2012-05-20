@@ -106,15 +106,28 @@ obviel.template = {};
     module.TEXT_TOKEN = 1;
 
 
+    module.Error = function(el, message) {
+        this.el = el;
+        this.message = message;
+    };
+
+    module.Error.prototype.toString = function() {
+        return this.message;
+    };
+    
     module.CompilationError = function(el, message) {
         this.el = el;
         this.message = message;
     };
 
+    module.CompilationError.prototype = new module.Error();
+    
     module.RenderError = function(el, message) {
         this.el = el;
         this.message = message;
     };
+
+    module.RenderError.prototype = new module.Error();
     
     module.Template = function(text) {
         this.section = null;
