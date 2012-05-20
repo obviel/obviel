@@ -286,8 +286,7 @@ obviel.template = {};
         return function(section_el) {
             var node = section_el.get(0);
             for (var i in indexes) {
-                var index = indexes[i];
-                node = node.childNodes[index];
+                node = node.childNodes[indexes[i]];
             }
             return $(node);
         };
