@@ -780,14 +780,21 @@ obviel.template = {};
     
     module.DynamicText = function(el, text) {        
         this.parts = [];
+        this.variables = [];
+      
         var tokens = module.tokenize(text);
         var dynamic = false;
+        
         for (var i in tokens) {
             var token = tokens[i];
             if (token.type === module.TEXT_TOKEN) {
-                this.parts.push(new module.Text(token.value));
+                this.parts.push(token.value);
             } else if (token.type === module.NAME_TOKEN) {
-                this.parts.push(new module.Variable(el, token.value));
+                this.parts.push(null);
+                this.variables.push({
+                    index: i,
+                    value: new module.Variable(el, token.value)
+                });
                 dynamic = true;
             }
         }
@@ -799,11 +806,11 @@ obviel.template = {};
     };
     
     module.DynamicText.prototype.render = function(el, scope) {
-        var result = [];
-        for (var i in this.parts) {
-            var part = this.parts[i];
-            result.push(part.render(el, scope));
-        }
+        var result = this.parts.slice(0);
+        for (var i in this.variables) {
+            var variable = this.variables[i];
+            result[variable.index] = variable.value.render(el, scope);
+        };
         return result.join('');        
     };
 
@@ -847,14 +854,6 @@ obviel.template = {};
         return result.join('');
     };
     
-    module.Text = function(text) {
-        this.text = text;
-    };
-
-    module.Text.prototype.render = function(el, scope) {
-        return this.text;
-    };
-
     var split_name_formatter = function(el, name) {
         var name_parts = name.split('|');
         if (name_parts.length === 1) {
