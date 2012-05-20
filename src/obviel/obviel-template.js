@@ -730,10 +730,11 @@ obviel.template = {};
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
         var node = el.get(0);
-        $.each(this.content_texts, function(index, value) {
-            var text = value.dynamic_text.render(el, scope);
-            node.childNodes[value.index].nodeValue = text;
-        });
+        for (var i = 0; i < this.content_texts.length; i++) {
+            var value = this.content_texts[i];
+            node.childNodes[value.index].nodeValue = value.dynamic_text.render(
+                el, scope);
+        }
     };
 
     module.DynamicElement.prototype.get_tvar_node = function(el, scope,
