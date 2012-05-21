@@ -17,7 +17,7 @@ module("Template Performance", {
     }
 });
 
-var module = obviel.template;
+var obtemp = obviel.template;
 
 /* it's hard to replicate a server-side test, because:
 
@@ -41,14 +41,14 @@ var module = obviel.template;
 // '</ul>');
 
 
-var big_table_nested = new module.Template(
+var big_table_nested = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table">' +
 '<td data-each="@.">{@.}</td>' +
 '</tr>' +
 '</table>');
 
-var big_table_flat = new module.Template(
+var big_table_flat = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table">' +
 '<td>{a}</td>' +
@@ -65,7 +65,7 @@ var big_table_flat = new module.Template(
 '</table>'
 );
 
-var big_table_flat_view = new module.Template(
+var big_table_flat_view = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table" data-view="@.">' +
 '</tr>' +
@@ -147,7 +147,7 @@ var simple_data = {
     flag: true
 };
 
-var simple_template = new module.Template(
+var simple_template = new obtemp.Template(
 '<div class="all">' +
 '<div class="always" data-with="first">' +
 '<p>A: {a}</p>' +
