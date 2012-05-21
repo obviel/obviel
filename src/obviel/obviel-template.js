@@ -291,13 +291,13 @@ obviel.template = {};
             node = node.parentNode;
         }
         indexes.reverse();
-        return function(section_el) {
-            var node = section_el.get(0);
-            for (var i in indexes) {
-                node = node.childNodes[indexes[i]];
-            }
-            return $(node);
-        };
+
+        var c = new module.Codegen('node');
+        for (var i in indexes) {
+            c.push('node = node.childNodes[' + indexes[i] + '];');
+        }
+        c.push('return $(node)');
+        return c.get_function();
     };
     
     module.Section.prototype.compile_view = function(el) {
@@ -437,17 +437,19 @@ obviel.template = {};
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
+        var node = el.get(0);
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = value.finder(el);
+            var dynamic_el = value.finder(node);
             value.dynamic_element.render(dynamic_el, scope, translations);
         });
 
     };
 
     module.Section.prototype.render_views = function(el, scope,
-                                                                translations) {
+                                                     translations) {
+        var node = el.get(0);
         $.each(this.view_elements, function(index, value) {
-            var view_el = value.finder(el);
+            var view_el = value.finder(node);
             value.view_element.render(view_el, scope, translations);
         });
 
@@ -455,8 +457,9 @@ obviel.template = {};
 
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
+        var node = el.get(0);
         $.each(this.sub_sections, function(index, value) {
-            var sub_section_el = value.finder(el);
+            var sub_section_el = value.finder(node);
             value.sub_section.render(sub_section_el, scope, translations);
         });
     };
