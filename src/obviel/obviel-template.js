@@ -476,7 +476,7 @@ obviel.template = {};
     };   
 
     var parse_trans_info = function(trans) {
-        if (trans === undefined) {
+        if (trans === undefined || trans === null) {
             return {
                 text: false,
                 any_translations: false,
@@ -517,7 +517,10 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile = function(el) {
-        var data_trans = el.attr('data-trans');
+        // XXX there appears to be a bug in jQuery .attr so that an empty
+        // string attribute in IE is retrieved as an undefined instead of an
+        // empty string. use plain DOM access instead
+        var data_trans = el[0].getAttribute('data-trans');
         var trans_info = parse_trans_info(data_trans);
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);

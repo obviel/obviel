@@ -561,7 +561,7 @@ test('nested data-each', function() {
     
 });
 
-test("data-trans with text", function() {
+test("data-trans with plain text", function() {
     html_equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');
 });
