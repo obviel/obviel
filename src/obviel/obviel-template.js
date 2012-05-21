@@ -183,8 +183,16 @@ obviel.template = {};
         } else {
             this.data_if = null;
         }
-        this.data_with = data_with;
-        this.data_each = data_each;
+        if (data_with) {
+            this.data_with = module.resolve_func(data_with);
+        } else {
+            this.data_with = null;
+        }
+        if (data_each) {
+            this.data_each = module.resolve_func(data_each);
+        } else {
+            this.data_each = null;
+        }
         this.dynamic_elements = [];
         this.view_elements = [];
         this.sub_sections = [];
@@ -359,7 +367,7 @@ obviel.template = {};
     };
 
     module.Section.prototype.render_each = function(el, scope, translations) {
-        var data_each = scope.resolve(this.data_each);
+        var data_each = this.data_each(scope);
         if (!$.isArray(data_each)) {
             throw new module.RenderError(
                 el, ("data-each must point to an array, not to " +
@@ -397,7 +405,7 @@ obviel.template = {};
     
     module.Section.prototype.render_el = function(el, scope, translations) {
         if (this.data_with) {
-            var data_with = scope.resolve(this.data_with);
+            var data_with = this.data_with(scope);
             if (data_with === undefined) {
                 throw new module.RenderError(el, "data-with '" + data_with + "' " +
                                              "could not be found");
@@ -893,6 +901,8 @@ obviel.template = {};
     module.Variable = function(el, name) {
         var r = split_name_formatter(el, name);
         this.name = r.name;
+        this.func = module.resolve_func(r.name);
+        
         if (r.formatter !== null) {
             this.formatter = formatters.get(r.formatter);
             if (this.formatter === undefined) {
@@ -906,7 +916,7 @@ obviel.template = {};
     };
 
     module.Variable.prototype.render = function(el, scope) {
-        var result = scope.resolve(this.name);
+        var result = this.func(scope);
         if (result === undefined) {
             throw new module.RenderError(el, "variable '" + this.name + "' " +
                                          "could not be found");
@@ -934,6 +944,7 @@ obviel.template = {};
         this.dynamic = true;
         var r = split_name_formatter(el, data_view);
         this.obj_name = r.name;
+        this.func = module.resolve_func(r.name);
         this.view_name = r.formatter;
         if (this.view_name === null) {
             this.view_name = default_view_name;
@@ -945,7 +956,7 @@ obviel.template = {};
     };
 
     module.ViewElement.prototype.render = function(el, scope, translations) {
-        var obj = scope.resolve(this.obj_name);
+        var obj = this.func(scope);
         if (obj === undefined) {
             throw new module.RenderError(
                 el, "data-view object '" + this.property_name + "' " +
@@ -959,14 +970,14 @@ obviel.template = {};
         text = trim(text);
         this.not_enabled = text.charAt(0) === '!';
         if (this.not_enabled) {
-            this.dotted_name = text.slice(1);
+            this.data_if = module.resolve_func(text.slice(1));
         } else {
-            this.dotted_name = text;
+            this.data_if = module.resolve_func(text);
         }
     };
 
     module.IfExpression.prototype.resolve = function(el, scope) {
-        var result = scope.resolve(this.dotted_name);
+        var result = this.data_if(scope);
         if (this.not_enabled) {
             /* XXX jshint doesn't like the == false comparison */
             return (result === undefined ||
@@ -984,11 +995,11 @@ obviel.template = {};
     module.Scope = function(obj) {
         this.stack = [obj];
     };
-                                                      
+    
     module.Scope.prototype.push = function(obj) {
         this.stack.push(obj);
     };
-
+    
     module.Scope.prototype.pop = function() {
         this.stack.pop();
     };
@@ -1018,6 +1029,34 @@ obviel.template = {};
             }
         }
         return obj;
+    };
+    
+    module.resolve_func = function(dotted_name) {
+        var c = new module.Codegen('scope');
+        if (dotted_name === '@.') {
+            c.push('return scope.stack[scope.stack.length - 1];');
+            return c.get_function();
+        }
+        c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');
+        c.push('  var obj = scope.stack[i];');
+        var names = dotted_name.split('.');
+        var name = null;
+        for (var i = 0; i < names.length - 1; i++) {
+            name = names[i];
+            c.push('  obj = obj["' + name + '"];');
+            c.push('  if (obj === undefined) {');
+            c.push('    continue;');
+            c.push('  }');
+        }
+        name = names[names.length - 1];
+        c.push('  obj = obj["' + name + '"];');
+        c.push('  if (obj !== undefined) {');
+        c.push('    return obj;');
+        c.push('  }');
+        
+        c.push('}');
+        c.push('return undefined;' );
+        return c.get_function();
     };
 
     module.Formatters = function() {
@@ -1064,6 +1103,20 @@ obviel.template = {};
 
     is_html_text = function(text) {
         return trim(text).charAt(0) === '<';
+    };
+
+    module.Codegen = function(args) {
+        this.args = args;
+        this.result = [];
+    };
+
+    module.Codegen.prototype.push = function(s) {
+        this.result.push(s);
+    };
+
+    module.Codegen.prototype.get_function = function() {
+        var code = this.result.join('');
+        return new Function(this.args, code);
     };
     
     module.tokenize = function(text) {

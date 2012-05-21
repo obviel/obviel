@@ -887,6 +887,31 @@ test('deeper data-view with data-each', function() {
 //     //}, obtemp.CompilationError);
 // });
 
+test('access variable codegen', function() {
+    var obj = {a: 'foo', b: { bar: 'bar'}};
+    
+    var scope = new obtemp.Scope(obj);
+    var f = obtemp.resolve_func('@.');
+    strictEqual(f(scope), obj);
+
+    f = obtemp.resolve_func('a');
+    equal(f(scope), 'foo');
+
+    f = obtemp.resolve_func('b.bar');
+    equal(f(scope), 'bar');
+
+    scope.push({c: 'C'});
+
+    f = obtemp.resolve_func('c');
+    equal(f(scope), 'C');
+
+    f = obtemp.resolve_func('a');
+    equal(f(scope), 'foo');
+
+    f = obtemp.resolve_func('nonexistent');
+    equal(f(scope), undefined);
+});
+
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);
