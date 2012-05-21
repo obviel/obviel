@@ -4,53 +4,51 @@ Obviel Template
 Introduction
 ------------
 
-Obviel has its own template language. Why? After all, in the past it
-used `JSON-Template`_ as its default template language, and always
-featured pluggable template languages.
-
-.. `JSON-Template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
-
 Obviel Template integrates with Obviel in an important way: sub-views
 can be rendered directly from the template. This allows these views to
 respond to events in the standard Obviel way, including responding to
-object events. With a text-based template language like JSON-Template
-this wasn't possible, as it wasn't aware of DOM elements at all.
+object events. Obviel Template can do this because it's DOM-based, not
+text-based. Doing this with a text-based template language (such as
+JSON Template) isn't possible, as it isn't aware of DOM elements at
+all.
 
 Another powerful feature of Obviel Template is that it supports i18n
-markers directly in the template for the purpose of gettext. This way
-automatic extraction tools can be used to maintain translations of
-strings in the template. This feature is inspired by (server-side)
-Zope Page Templates, but this is not commonly supported by client-side
-template languages.
+markers directly in the template for the purpose of
+internationalization (i18n) of template texts. This way automatic
+extraction tools can be used to maintain translations of strings in
+the template. This feature is inspired by some server-side template
+languages (such as Zope Page Templates), but this is not commonly
+supported by client-side template languages.
 
 Obviel Template is deliberately a very minimal template
-language. Logic should as much be possible be done in code, not
-templates.
+language. Logic should be kept in code, not templates. If you need
+logic, preprocess the object that goes into the template instead.
 
-Interpolation
--------------
+Variables
+---------
 
-Obviel-Template supports interpolation using {} markers in text. It
-looks like this::
+Obviel-Template supports variable interpolation using ``{}`` markers
+in text. It looks like this::
 
   <p>{content}</p>
 
-Combined with a JavaScript object with the following structure::
+If you combine that template with a JavaScript object with the
+following structure::
 
   {
     content: "Hello world!"
   }
 
-this will result in a rendered template like this::
+it will result in a rendered template like this::
 
   <p>Hello world!</p>
 
-If the ``content`` property is not available in the JavaScript object,
-this is considered to be an error and the template will fail with a
-``RenderError`` exception.
+What if the ``content`` property is not available in the JavaScript
+object, and is thus ``undefined``? Obviel Template considers this an
+error and the template will fail with a ``RenderError`` exception.
 
-Dotted names
-------------
+Dotted names in variables
+-------------------------
 
 Objects can be nested::
 
@@ -60,7 +58,8 @@ Objects can be nested::
     }
   }
 
-You can indicate such nested values using a dotted name::
+You can indicate such nested values in a variable using a dotted
+name::
 
   <p>{a.b}</p>
 
@@ -72,11 +71,14 @@ If you refer to a dotted name that does not exist in the data, this is
 an error and the template won't render; you get a ``RenderError``
 exception.
 
+Dotted names also work in directives like ``data-with``, ``data-if``
+and ``data-each``, which we'll see next.
+
 ``data-with`` for scope control
 -------------------------------
 
-You can change the scope in which the template language operates using
-the ``data-with`` directive. Given the same nested structure as before::
+You can change the object in which variables are found with the
+``data-with`` directive. Given the same nested structure as before::
 
   {
     a: {
@@ -96,6 +98,11 @@ Rendering the template with the object will result in this::
     <p>The value</p>
   </div>
 
+``data-with="a"`` indicates that within the ``p`` element, lookups
+will be performed in the ``b`` object primarily (that is the *scope*
+of that element).
+
+
 ``data-with`` must point to an object; it cannot point to strings or
 arrays or other values, and cannot point to a missing value either:
 these are ``RenderError`` errors.
@@ -104,7 +111,7 @@ these are ``RenderError`` errors.
 ----------------------------
 
 Sometimes you want to include an element only if a given value is true
-or not. For the purposes of ``data-if``, a value is false if:
+or not. For the purposes of ``data-if``, a value is *false* if:
 
 * it is the ``false``
 
@@ -118,21 +125,19 @@ or not. For the purposes of ``data-if``, a value is false if:
 
 * it is an empty array
 
-* the value is missing in its scope entirely
+* the value is missing entirely
 
-Otherwise, the value is considered true.
-
-``data-if`` doesn't alter the scope.
+Otherwise, the value is considered *true*.
 
 With ``!``, the behavior of ``data-if`` can be reversed: values that 
 evaluate to false *will* be included.
 
 Consider this template::
 
-  <p data-with="person">Hello {name}!</p>
-  <p data-with="!person">{name} is not present</p>
+  <p data-if="person">Hello {person.name}!</p>
+  <p data-if="!person">{person.name} is not present</p>
 
-here's a data structure with ``person`` present::
+Here's a data structure with ``person`` present::
 
   {
     person: {
@@ -184,7 +189,11 @@ the result will be this::
     <li>Steven</li>
   </ul>
  
-if the array is empty, nothing will be rendered at all. So, this
+Note that ``data-each`` changes the scope (like
+``data-with``). ``data-each`` changes the object in which the
+variables are looked up to each entry in the array, one by one.
+
+If the array is empty, nothing will be rendered at all. So, this
 data::
 
   {
@@ -224,8 +233,8 @@ Interpolating the current object: ``@.``
 ----------------------------------------
 
 Sometimes you want to interpolate the current object or array into the
-document (as JSON), for debugging purposes. For this you can use
-``{@.}`` as well.
+document (as JSON), mostly for debugging purposes. For this you can
+use ``{@.}`` as well.
 
 Consider this data::
 
@@ -250,7 +259,7 @@ Rendering the template with the data will result in this::
 Nested scoping
 --------------
 
-Values in outer scopes are available for interpolation in inner
+Values in outer scopes are available for variables in inner
 scopes. Consider this structure of objects::
 
   {
@@ -274,33 +283,21 @@ In the scope ``a``, we can still access ``c`` and ``d`` (and even
  <p data-with="a">e in scope a: {d.e}</p>
  <p data-with="a">b in a in scope a: {a.a.b}</p>
 
-Including HTML
---------------
-
-Normally interpolation escapes HTML. You can however also include HTML
-in data as HTML.  Consider this data::
+But if you redefine a name in an inner scope, you cannot access the
+value in the outer scope::
 
   {
-    my_html: "<p>Hello</p>"
+    a: {
+      b: 'redefined'
+    }
+    b: 'original'
   }
 
-with this template::
+  <p data-with="a">b in scope a: {b}</p>
 
-  <div>{my_html}</div>
+will therefore get you::
 
-the HTML will be included but escaped. Usually this is what you want,
-especially when dealing with user input::
-
-  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
-
-but sometimes you want to include the HTML literally. You can do this by
-indicating this in the interpolation with ``|html``::
-
-  <div>{my_html|html}></div>
-
-now if you render the same data, you will get this::
-
-  <div><p>Hello</p></div>
+  <p>b in scope a: redefined</p>
 
 ``data-view``
 -------------
@@ -377,6 +374,53 @@ render object ``who``, Obviel Template will do the equivalent of this::
 
 data-view must point to an object. It cannot point to an array or other
 value.
+
+Including HTML
+--------------
+
+Interpolation escapes HTML, so if you try to insert the following::
+
+  {
+    my_html: "<p>Hello</p>"
+  }
+
+with this template::
+
+  <div>{my_html}</div>
+
+the HTML will be included but escaped::
+
+  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
+
+Usually this is what you want, especially when you are dealing with
+user input, for security purposes.
+
+But what if you want to insert some HTML? You can do this using a 
+Normally interpolation escapes HTML. You can however also include HTML
+in data as HTML.  Consider this data::
+
+  {
+    my_html: "<p>Hello</p>"
+  }
+
+with this template::
+
+  <div>{my_html}</div>
+
+the HTML will be included but escaped. Usually this is what you want,
+especially when dealing with user input::
+
+  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
+
+but sometimes you want to include the HTML literally. You can do this by
+indicating this in the interpolation with ``|html``::
+
+  <div>{my_html|html}></div>
+
+now if you render the same data, you will get this::
+
+  <div><p>Hello</p></div>
+
 
 data-i18n
 ---------
