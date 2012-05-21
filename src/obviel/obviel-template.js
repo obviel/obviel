@@ -136,16 +136,16 @@ obviel.template = {};
             text = '<div>' + text + '</div>';
             this.text_template = true;
         }
-        this.compile($(text));
+        this.compile($(text).get(0));
     };
 
     module.Template.prototype.compile = function(el) {
-        var data_if = el.attr('data-if');
-        var data_with = el.attr('data-with');
-        var data_each = el.attr('data-each');
-        el.removeAttr('data-if');
-        el.removeAttr('data-with');
-        el.removeAttr('data-each');
+        var data_if = el.getAttribute('data-if');
+        var data_with = el.getAttribute('data-with');
+        var data_each = el.getAttribute('data-each');
+        el.removeAttribute('data-if');
+        el.removeAttribute('data-with');
+        el.removeAttribute('data-each');
         
         this.section = new module.Section(el, data_if, data_with, data_each);
     };
@@ -158,7 +158,7 @@ obviel.template = {};
         
         // we need to insert the top element into document first so
         // we can hang the rest of the template off it
-        var top_el = $(this.section.el.get(0).cloneNode(false));
+        var top_el = this.section.el.cloneNode(false);
         el.append(top_el);
 
         // now render the template
@@ -172,7 +172,7 @@ obviel.template = {};
             $(top_el).contents().each(function() {
                 node.appendChild(this);
             });
-            top_el.remove();
+            $(top_el).remove();
         }
     };
     
@@ -217,18 +217,22 @@ obviel.template = {};
         self.compile_view(el);
         
         // now compile sub-elements
-        el.children().each(function() {
-            self.compile_el($(this));
-        });
-
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType !== 1) {
+                // skip all non-element nodes
+                continue;
+            }
+            this.compile_el(node);
+        }
+        
         this.compile_fragment(el);
     };
 
     module.Section.prototype.compile_fragment = function(el) {
-        var node = el.get(0);
         var frag = document.createDocumentFragment();
-        while (node.hasChildNodes()) {
-            frag.appendChild(node.removeChild(node.firstChild));
+        while (el.hasChildNodes()) {
+            frag.appendChild(el.removeChild(el.firstChild));
         }
         this.frag = frag;
     };
@@ -258,10 +262,15 @@ obviel.template = {};
         }
 
         self.compile_view(el);
-       
-        el.children().each(function() {
-            self.compile_el($(this));
-        });
+
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType !== 1) {
+                // skip all non-element nodes
+                continue;
+            }            
+            this.compile_el(node);
+        }
     };
 
     module.Section.prototype.compile_dynamic_element = function(el) {
@@ -278,8 +287,8 @@ obviel.template = {};
 
     module.Section.prototype.get_el_finder = function(el) {
         var indexes = [];
-        var parent_node = this.el.get(0);
-        var node = el.get(0);
+        var parent_node = this.el;
+        var node = el;
         while (node !== parent_node) {
             var children = node.parentNode.childNodes;
             for (var i = 0; i < children.length; i++) {
@@ -296,7 +305,7 @@ obviel.template = {};
         for (var i in indexes) {
             c.push('node = node.childNodes[' + indexes[i] + '];');
         }
-        c.push('return $(node)');
+        c.push('return node;');
         return c.get_function();
     };
     
@@ -316,16 +325,26 @@ obviel.template = {};
     module.Section.prototype.compile_sub_section = function(el) {
         var self = this;
 
-        var data_if = el.attr('data-if');
-        var data_with = el.attr('data-with');
-        var data_each = el.attr('data-each');
+        var data_if = null;
+        var data_with = null;
+        var data_each = null;
+
+        if (el.hasAttribute('data-if')) {
+            data_if = el.getAttribute('data-if');
+        }
+        if (el.hasAttribute('data-with')) {
+            data_with = el.getAttribute('data-with');
+        }
+        if (el.hasAttribute('data-each')) {
+            data_each = el.getAttribute('data-each');
+        }
         
-        el.removeAttr('data-if');
-        el.removeAttr('data-with');
-        el.removeAttr('data-each');
+        el.removeAttribute('data-if');
+        el.removeAttribute('data-with');
+        el.removeAttribute('data-each');
         
-        if (data_if === undefined && data_with === undefined &&
-            data_each === undefined) {
+        if (data_if === null && data_with === null &&
+            data_each === null) {
             return false;
         }
 
@@ -334,14 +353,17 @@ obviel.template = {};
         var finder = this.get_el_finder(el);
 
         // create sub section with copied contents
-        var sub_section = new module.Section(el.clone(), data_if, data_with,
-                                            data_each);
+        var sub_section = new module.Section(el.cloneNode(true),
+                                             data_if, data_with,
+                                             data_each);
         // remove any data-view and data-trans attributes that may be there
-        el.removeAttr('data-view');
-        el.removeAttr('data-trans');
+        el.removeAttribute('data-view');
+        el.removeAttribute('data-trans');
         
         // empty sub section of contents
-        el.empty();
+        while (el.hasChildNodes()) {
+            el.removeChild(el.firstChild);
+        }
         
         this.sub_sections.push({
             finder: finder,
@@ -354,7 +376,7 @@ obviel.template = {};
         if (this.data_if) {
             var data_if = this.data_if.resolve(el, scope);
             if (!data_if) {
-                el.remove();
+                el.parentNode.removeChild(el);
                 return;
             }
         }
@@ -375,14 +397,14 @@ obviel.template = {};
         }
         // empty array, so don't render any elements
         if (data_each.length === 0) {
-            el.remove();
+            el.parentNode.removeChild(el);
             return;
         }
 
         // prepare the element to keep cloning back into the
         // DOM for each iteration. this needs to be done here,
         // before its id is removed
-        var iteration_node = el.get(0).cloneNode(false);
+        var iteration_node = el.cloneNode(false);
         
         // render the first iteration on the element
         scope.push(data_each[0]);
@@ -390,15 +412,15 @@ obviel.template = {};
         scope.pop();
 
         // now insert the next iterations after the first iteration
-        var insert_before_node = el.get(0).nextSibling;
-        var parent_node = el.get(0).parentNode;
+        var insert_before_node = el.nextSibling;
+        var parent_node = el.parentNode;
         
         for (var i = 1; i < data_each.length; i++) {
             var iteration_clone = iteration_node.cloneNode(false);
             parent_node.insertBefore(iteration_clone, insert_before_node);
 
             scope.push(data_each[i]);
-            this.render_el($(iteration_clone), scope, translations);
+            this.render_el(iteration_clone, scope, translations);
             scope.pop();
         }
     };
@@ -432,14 +454,13 @@ obviel.template = {};
     };
     
     module.Section.prototype.render_clone = function(el) {
-        el.get(0).appendChild(this.frag.cloneNode(true));
+        el.appendChild(this.frag.cloneNode(true));
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
-        var node = el.get(0);
         $.each(this.dynamic_elements, function(index, value) {
-            var dynamic_el = value.finder(node);
+            var dynamic_el = value.finder(el);
             value.dynamic_element.render(dynamic_el, scope, translations);
         });
 
@@ -447,9 +468,8 @@ obviel.template = {};
 
     module.Section.prototype.render_views = function(el, scope,
                                                      translations) {
-        var node = el.get(0);
         $.each(this.view_elements, function(index, value) {
-            var view_el = value.finder(node);
+            var view_el = value.finder(el);
             value.view_element.render(view_el, scope, translations);
         });
 
@@ -457,9 +477,8 @@ obviel.template = {};
 
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
-        var node = el.get(0);
         $.each(this.sub_sections, function(index, value) {
-            var sub_section_el = value.finder(node);
+            var sub_section_el = value.finder(el);
             value.sub_section.render(sub_section_el, scope, translations);
         });
     };
@@ -479,7 +498,7 @@ obviel.template = {};
     };   
 
     var parse_trans_info = function(trans) {
-        if (trans === undefined || trans === null) {
+        if (trans === null) {
             return {
                 text: false,
                 any_translations: false,
@@ -520,10 +539,10 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile = function(el) {
-        // XXX there appears to be a bug in jQuery .attr so that an empty
-        // string attribute in IE is retrieved as an undefined instead of an
-        // empty string. use plain DOM access instead
-        var data_trans = el[0].getAttribute('data-trans');
+        var data_trans = null;
+        if (el.hasAttribute('data-trans')) {
+            data_trans = el.getAttribute('data-trans');
+        }
         var trans_info = parse_trans_info(data_trans);
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
@@ -533,15 +552,18 @@ obviel.template = {};
             this.validate_trans_message_id(el, this.message_id);
         }
         if (trans_info.any_translations) {
-            el.removeAttr('data-trans');
+            el.removeAttribute('data-trans');
         }
         // XXX verify that this is within a data-trans
-        var data_tvar = el.attr('data-tvar');
-        if (data_tvar !== undefined) {
+        var data_tvar = null;
+        if (el.hasAttribute('data-tvar')) {
+            data_tvar = el.getAttribute('data-tvar');
+        }
+        if (data_tvar !== null) {
             this._dynamic = true;
             this.compile_message_id(el);
             this.validate_tvar_message_id(el, this.message_id);
-            el.removeAttr('data-tvar');
+            el.removeAttribute('data-tvar');
         }
     };
 
@@ -565,9 +587,8 @@ obviel.template = {};
     
     module.DynamicElement.prototype.compile_attr_texts = function(
         el, trans_attributes) {
-        var node = el.get(0);
-        for (var i = 0; i < node.attributes.length; i++) {
-            var attr = node.attributes[i];
+        for (var i = 0; i < el.attributes.length; i++) {
+            var attr = el.attributes[i];
             if (attr.specified != true) {
                 continue;
             }
@@ -596,29 +617,30 @@ obviel.template = {};
     
     module.DynamicElement.prototype.compile_content_texts = function(el) {
         var self = this;
-        el.contents().each(function(index) {
-            var node = this;
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
             if (node.nodeType !== 3) {
-                return;
+                continue;
             }
             if (node.nodeValue === null) {
-                return;
+                continue;
             }
             var dynamic_text = new module.DynamicText(el, node.nodeValue);
             if (dynamic_text.is_dynamic()) {
                 self.content_texts.push({
-                    index: index,
+                    index: i,
                     dynamic_text: dynamic_text
                 });
                 self._dynamic = true;
             }
-        });        
+        }        
     };
 
     module.DynamicElement.prototype.compile_message_id = function(el) {
         var self = this;
         var parts = [];
-        var children = el.get(0).childNodes;
+        var children = el.childNodes;
+        var tvar = null;
         for (var i = 0; i < children.length; i++) {
             var node = children[i];
             if (node.nodeType === 3) {
@@ -626,9 +648,11 @@ obviel.template = {};
                 parts.push(node.nodeValue);
             } else if (node.nodeType === 1) {
                 // ELEMENT_NODE
-                var tvar_el = $(node);
-                var tvar = tvar_el.attr('data-tvar');
-                if (tvar === undefined) {
+                tvar = null;
+                if (node.hasAttribute('data-tvar')) {
+                    tvar = node.getAttribute('data-tvar');
+                }
+                if (tvar === null) {
                     throw new module.CompilationError(
                         el, "data-trans element has sub-elements " +
                             "that are not marked with data-tvar");
@@ -636,7 +660,7 @@ obviel.template = {};
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = {
                     index: i,
-                    dynamic: new module.DynamicElement(tvar_el)
+                    dynamic: new module.DynamicElement(node)
                 };
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
@@ -731,11 +755,11 @@ obviel.template = {};
         $.each(this.attr_texts, function(key, value) {
             var text = value.render(el, scope, translations);
             if (key === 'data-id') {
-                el.removeAttr('data-id');
-                el.attr('id', text);
+                el.removeAttribute('data-id');
+                el.setAttribute('id', text);
                 return;
             }
-            el.attr(key, text);
+            el.setAttribute(key, text);
         });
         // fast path without translations; elements do not need to be
         // reorganized
@@ -749,10 +773,10 @@ obviel.template = {};
             // if translation is original message id, we can use fast path
             this.render_notrans(el, scope);
             // but we do need to render any tvars
-            var children = el.get(0).childNodes;
+            var children = el.childNodes;
             for (var key in this.tvars) {
                 var info = this.tvars[key];
-                info.dynamic.render($(children[info.index]), scope, translations);
+                info.dynamic.render(children[info.index], scope, translations);
             }
             return;
         }
@@ -761,10 +785,9 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
-        var node = el.get(0);
         for (var i = 0; i < this.content_texts.length; i++) {
             var value = this.content_texts[i];
-            node.childNodes[value.index].nodeValue = value.dynamic_text.render(
+            el.childNodes[value.index].nodeValue = value.dynamic_text.render(
                 el, scope);
         }
     };
@@ -775,8 +798,8 @@ obviel.template = {};
         if (tvar_info === undefined) {
             return null;
         }
-        var tvar_node = el.get(0).childNodes[tvar_info.index].cloneNode(true);
-        tvar_info.dynamic.render($(tvar_node), scope, translations);
+        var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
+        tvar_info.dynamic.render(tvar_node, scope, translations);
         return tvar_node;
     };
     
@@ -804,10 +827,14 @@ obviel.template = {};
                 }
             }
         }
-        
+
+        // remove any previous elements
+        while (el.hasChildNodes()) {
+            el.removeChild(el.firstChild);
+        }
+
         // now move the elements in place
-        el.empty();
-        el.get(0).appendChild(frag);
+        el.appendChild(frag);
     };
     
     module.DynamicText = function(el, text) {        
@@ -941,12 +968,15 @@ obviel.template = {};
     };
 
     module.ViewElement = function(el) {
-        var data_view = el.attr('data-view');
-        if (data_view === undefined) {
+        var data_view = null;
+        if (el.hasAttribute('data-view')) {
+            data_view = el.getAttribute('data-view');
+        }
+        if (data_view === null) {
             this.dynamic = false;
             return;
         }
-        el.removeAttr('data-view');
+        el.removeAttribute('data-view');
         this.dynamic = true;
         var r = split_name_formatter(el, data_view);
         this.obj_name = r.name;
@@ -968,7 +998,7 @@ obviel.template = {};
                 el, "data-view object '" + this.property_name + "' " +
                     "could not be found");
         }
-        el.render(obj, this.view_name);
+        $(el).render(obj, this.view_name);
     };
     
     module.IfExpression = function(el, text) {
