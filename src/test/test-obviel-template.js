@@ -177,6 +177,28 @@ test("variable that does not exist", function() {
                  
 });
 
+// attempting to debug IE 7 issues:
+// things to try
+// cloneNode versus jQuery clone
+// attribute set in original HTML versus set manually
+// attribute set using setAttribute versus .attr()
+// attribute retrieved using getAttribute versus .attr()
+
+// test('attribute change detected by innerHTML', function() {
+//     var outer_el = $('<div></div>');
+//     var inner_el = $('<p class="Bar"></p>');
+//     outer_el.append(inner_el);
+//     //inner_el.get(0).setAttribute('class', 'Bar');
+//     //inner_el.attr('class', 'Bar');
+//     var new_outer_el = outer_el.clone();
+//     //new_outer_el.get(0).childNodes[0].setAttribute('class', 'Foo');
+    
+//     $(new_outer_el.get(0).childNodes[0]).attr('class', 'Foo');
+//     // equal(outer_el.children()[0].attr('class'), 'Foo');
+//     equal(new_outer_el.html(), '<P class=Foo></P>');
+//     equal(outer_el.html(), '');
+// });
+
 test('attribute variable', function() {
     html_equal(render('<p class="{a}"></p>', {a: 'Alpha'}),
           '<p class="Alpha"></p>');
