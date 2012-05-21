@@ -86,7 +86,7 @@ A section:
 */
 
 if (obviel === undefined) {
-    obviel = {};
+    var obviel = {};
 }
 
 obviel.template = {};

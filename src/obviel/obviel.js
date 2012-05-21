@@ -3,7 +3,9 @@
   window:true
 */
 
-var obviel = {};
+if (obviel === undefined) {
+    var obviel = {};
+}
 
 (function($, module) {
     module._ifaces = {
@@ -225,8 +227,7 @@ var obviel = {};
         
         compiled_template_promise.done(function(compiled_template) {
             if (compiled_template !== null) {
-                var html = compiled_template.render(self.obj);
-                self.el.html(html);
+                compiled_template.render_on_el(self.el, self.obj);
             }
             
             // BBB passing the arguments is really for backwards compatibility
@@ -651,13 +652,36 @@ var obviel = {};
         this.source = source;
     };
 
+    module.HtmlCompiled.prototype.render_on_el = function(el, obj) {
+        el.html(this.render());
+    };
+    
     module.HtmlCompiled.prototype.render = function(obj) {
         return this.source;
     };
-    
-    module.JsontCompiler = function() {
+
+    module.ObvielTemplateCompiler = function() {
+
     };
 
+    module.ObvielTemplateCompiler.prototype = new module.Compiler();
+
+
+    module.ObvielTemplateCompiler.prototype.get_compiled = function(source) {
+        return new module.ObvielTemplateCompiled(source);
+    };
+
+    module.ObvielTemplateCompiled = function(source) {
+        this.compiled = new obviel.template.Template(source);
+    };
+
+    module.ObvielTemplateCompiled.prototype.render_on_el = function(el, obj) {
+        this.compiled.render(el, obj);
+    };
+
+    module.JsontCompiler = function() {
+    };
+    
     module.JsontCompiler.prototype = new module.Compiler();
 
     module.JsontCompiler.prototype.get_compiled = function(source) {
@@ -667,8 +691,11 @@ var obviel = {};
     module.JsontCompiled = function(source) {
         this.compiled = new jsontemplate.Template(source);
     };
-    
 
+    module.JsontCompiled.prototype.render_on_el = function(el, obj) {
+        el.html(this.render(obj));
+    };
+    
     module.JsontCompiled.prototype.render = function(obj) {
         return this.compiled.expand(obj);
     };
@@ -679,6 +706,9 @@ var obviel = {};
     
     if (jsontemplate !== undefined) {
         module.compilers.register('jsont', new module.JsontCompiler());
+    }
+    if (obviel.template !== undefined) {
+        module.compilers.register('obvt', new module.ObvielTemplateCompiler());
     }
     
     module.view = function(view) {
@@ -754,4 +784,4 @@ var obviel = {};
         }
     );
     
-})(jQuery, obviel, jsontemplate);
+})(jQuery, obviel);

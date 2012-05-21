@@ -1389,3 +1389,35 @@ test('transform content based on view using before', function() {
 
     equal(el.text(), 'The text "Hello world" has 11 characters.');
 });
+
+test('obviel template view', function() {
+    obviel.view({
+        iface: 'test',
+        obvt: '{hello}'
+    });
+
+    var el = $('#viewdiv');
+    el.render({
+        iface: 'test',
+        hello: 'Hello world!'
+    });
+
+    equal(el.text(), 'Hello world!');
+});
+
+test('obviel template with sub elements view', function() {
+    obviel.view({
+        iface: 'test',
+        obvt: '<p>{hello}</p>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({
+        iface: 'test',
+        hello: 'Hello world!'
+    });
+
+    equal(el.children().get(0).nodeName, 'P');
+    equal(el.children().first().text(), 'Hello world!');
+
+});
