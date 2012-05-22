@@ -730,6 +730,36 @@ test('data-trans with tvar with tvar in it', function() {
                '<p>Hun boodschap was: "<em><strong>X</strong>, hallo!</em>".</p>');
 });
 
+test('data-trans with non-unique tvar', function() {
+    raises(function() {
+        render('<p data-trans=""><em data-tvar="message">msg</em><strong data-tvar="message">msg</strong></p>',
+               {});
+    }, obtemp.CompilationError);
+});
+
+test('data-trans with non-unique tvar, matches variable', function() {
+    raises(function() {
+        render('<p data-trans=""><em data-tvar="message">msg</em>{message}</p>',
+               {message: 'X'});
+    }, obtemp.CompilationError);
+});
+
+test('data-trans with non-unique tvar, matches variable other way around', function() {
+    raises(function() {
+        render('<p data-trans="">{message}<em data-tvar="message">msg</em></p>',
+               {message: 'X'});
+    }, obtemp.CompilationError);
+});
+
+test('data-trans with multiple variables of same name is allowed', function() {
+    html_equal(render('<p data-trans="">{message} or {message}</p>',
+                      {message: 'X'}),
+               '<p>X or X</p>');
+});
+
+
+// empty data-tvar element
+
 /* XXX
 
   tvar should be unique, also compared to variables
@@ -901,13 +931,33 @@ test('deeper data-view with data-each', function() {
 });
 
 // XXX data-view with data-trans not allowed
-// XXX data-view with any content that isn't attribute is not allowed
+
+// data-trans on a data-with
+
+// data-trans on a data-if
+
+// data-trans on a data-each
+
+// data-tvar must be within data-trans
 
 // test('data-view with data-trans on same element is not allowed', function() {
 //     //raises(function() {
 //         render('<div data-view="foo" data-trans="bar">foo</div>', {});
 //     //}, obtemp.CompilationError);
 // });
+
+// XXX data-view with any content that isn't attribute is not allowed
+
+// XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
+// and // {} are not allowed in dotted names.
+
+// XXX data-if random nonsense
+
+// XXX data-trans with data-tvar scenario, where data-trans is for attributes
+
+// data-tvar should be unique, also with other variables in same element
+
+
 
 test('access variable codegen', function() {
     var obj = {a: 'foo', b: { bar: 'bar'}};

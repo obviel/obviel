@@ -641,11 +641,29 @@ obviel.template = {};
         var parts = [];
         var children = el.childNodes;
         var tvar = null;
+        var variable_names = {};
+        var tvar_names = {};
+        var tokens = null;
+        var token = null;
+        var j = 0;
         for (var i = 0; i < children.length; i++) {
             var node = children[i];
             if (node.nodeType === 3) {
                 // TEXT_NODE
                 parts.push(node.nodeValue);
+                // need to extract all variables for tvar uniqueness checking
+                tokens = module.tokenize(node.nodeValue);
+                for (j = 0; j < tokens.length; j++) {
+                    token = tokens[j];
+                    if (token.type === module.NAME_TOKEN) {
+                        variable_names[token.value] = null;
+                        if (tvar_names[token.value] !== undefined) {
+                            throw new module.CompilationError(
+                                el, "data-tvar must be unique within data-trans: " +
+                                    token.value);
+                        }
+                    }
+                }
             } else if (node.nodeType === 1) {
                 // ELEMENT_NODE
                 tvar = null;
@@ -657,6 +675,14 @@ obviel.template = {};
                         el, "data-trans element has sub-elements " +
                             "that are not marked with data-tvar");
                 }
+                if (tvar_names[tvar] !== undefined ||
+                    variable_names[tvar] !== undefined) {
+                    throw new module.CompilationError(
+                        el, "data-tvar must be unique within data-trans: " +
+                            tvar);
+                }
+                tvar_names[tvar] = null;
+                
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = {
                     index: i,
@@ -1039,7 +1065,10 @@ obviel.template = {};
     module.Scope.prototype.pop = function() {
         this.stack.pop();
     };
-    
+
+    // note that this function is not used outside of the
+    // translation system; instead function generated with the code
+    // generator is used
     module.Scope.prototype.resolve = function(dotted_name) {
         if (dotted_name === '@.') {
             return this.stack[this.stack.length - 1];
