@@ -985,11 +985,68 @@ test('data-tvar must be within data-trans or data-tvar', function() {
     }, obtemp.CompilationError);
 });
 
-// data-trans on a data-with
+test('data-trans with data-with', function() {
+    html_equal(render('<div data-with="foo" data-trans="">Hello {who}!</div>',
+                      {foo: {who: "X"}}),
+               '<div>X, hallo!</div>');
+    
+});
 
-// data-trans on a data-if
+test('data-trans with data-if where if is true', function() {
+    html_equal(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
+                      {flag: true, who: "X"}),
+               '<div>X, hallo!</div>');
+    
+});
 
-// data-trans on a data-each
+test('data-trans with data-if where if is false', function() {
+    html_equal(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
+                      {flag: false, who: "X"}),
+               '');
+    
+});
+
+test('data-trans with data-each', function() {
+    html_equal(render('<div data-each="entries" data-trans="">Hello {who}!</div>',
+                      {entries: [{who: 'Bob'}, {who: 'Jay'}]}),
+               '<div>Bob, hallo!</div><div>Jay, hallo!</div>');
+});
+
+test('empty data-if is illegal', function() {
+    raises(function() {
+        render('<div data-if="">Foo</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('deeper empty data-if is illegal', function() {
+    raises(function() {
+        render('<div><div data-if="">Foo</div></div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('empty data-each is illegal', function() {
+    raises(function() {
+        render('<div data-each="">Foo</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('deeper empty data-each is illegal', function() {
+    raises(function() {
+        render('<div><div data-each="">Foo</div></div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('empty data-with is illegal', function() {
+    raises(function() {
+        render('<div data-with="">Foo</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('deeper empty data-with is illegal', function() {
+    raises(function() {
+        render('<div><div data-with="">Foo</div></div>', {});
+    }, obtemp.CompilationError);
+});
 
 // XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
 // and // {} are not allowed in dotted names.

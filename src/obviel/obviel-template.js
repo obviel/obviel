@@ -136,18 +136,7 @@ obviel.template = {};
             text = '<div>' + text + '</div>';
             this.text_template = true;
         }
-        this.compile($(text).get(0));
-    };
-
-    module.Template.prototype.compile = function(el) {
-        var data_if = el.getAttribute('data-if');
-        var data_with = el.getAttribute('data-with');
-        var data_each = el.getAttribute('data-each');
-        el.removeAttribute('data-if');
-        el.removeAttribute('data-with');
-        el.removeAttribute('data-each');
-        
-        this.section = new module.Section(el, data_if, data_with, data_each);
+        this.section = new module.Section($(text).get(0), true);
     };
     
     module.Template.prototype.render = function(el, obj, translations) {
@@ -176,8 +165,45 @@ obviel.template = {};
         }
     };
     
-    module.Section = function(el, data_if, data_with, data_each) {
+    module.Section = function(el, root_section) {
         this.el = el;
+
+        var data_if = null;
+        var data_with = null;
+        var data_each = null;
+
+        if (el.hasAttribute('data-if')) {
+            data_if = el.getAttribute('data-if');
+            if (data_if === null || data_if === '') {
+                throw new module.CompilationError(
+                    el, "data-if may not be empty");
+            }
+            el.removeAttribute('data-if'); 
+        }
+        if (el.hasAttribute('data-with')) {
+            data_with = el.getAttribute('data-with');
+            if (data_with === null || data_with == '') {
+                throw new module.CompilationError(
+                    el, "data-with may not be empty");
+            }
+            el.removeAttribute('data-with');
+        }
+        if (el.hasAttribute('data-each')) {
+            data_each = el.getAttribute('data-each');
+            if (data_each === null || data_each == '') {
+                throw new module.CompilationError(
+                    el, "data-with may not be empty");
+            }
+            el.removeAttribute('data-each');
+        }
+
+        if (!root_section && !data_if && !data_with && !data_each) {
+            this.dynamic = false;
+            return;
+        }
+
+        this.dynamic = true;
+        
         if (data_if) {
             this.data_if = new module.IfExpression(el, data_if);
         } else {
@@ -193,10 +219,15 @@ obviel.template = {};
         } else {
             this.data_each = null;
         }
+        
         this.dynamic_elements = [];
         this.view_elements = [];
         this.sub_sections = [];
         this.compile(el);
+    };
+
+    module.Section.prototype.is_dynamic = function() {
+        return this.dynamic;
     };
     
     module.Section.prototype.compile = function(el) {
@@ -324,49 +355,28 @@ obviel.template = {};
     
     module.Section.prototype.compile_sub_section = function(el) {
         var self = this;
-
-        var data_if = null;
-        var data_with = null;
-        var data_each = null;
-
-        if (el.hasAttribute('data-if')) {
-            data_if = el.getAttribute('data-if');
-        }
-        if (el.hasAttribute('data-with')) {
-            data_with = el.getAttribute('data-with');
-        }
-        if (el.hasAttribute('data-each')) {
-            data_each = el.getAttribute('data-each');
-        }
         
-        el.removeAttribute('data-if');
-        el.removeAttribute('data-with');
-        el.removeAttribute('data-each');
+        // create sub section with copied contents
+        var sub_section = new module.Section(el);
         
-        if (data_if === null && data_with === null &&
-            data_each === null) {
+        if (!sub_section.is_dynamic()) {
             return false;
         }
 
-        // generate id before cloning element for sub-section, so
-        // id is shared
-        var finder = this.get_el_finder(el);
+        var old_el = el;
+        
+        // make shallow copy of the element
+        var el = old_el.cloneNode(false);
 
-        // create sub section with copied contents
-        var sub_section = new module.Section(el.cloneNode(true),
-                                             data_if, data_with,
-                                             data_each);
+        // replace original el with shallow clone
+        old_el.parentNode.replaceChild(el, old_el);
+        
         // remove any data-view and data-trans attributes that may be there
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
         
-        // empty sub section of contents
-        while (el.hasChildNodes()) {
-            el.removeChild(el.firstChild);
-        }
-        
         this.sub_sections.push({
-            finder: finder,
+            finder: this.get_el_finder(el),
             sub_section: sub_section
         });
         return true;
