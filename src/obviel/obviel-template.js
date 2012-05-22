@@ -998,6 +998,8 @@ obviel.template = {};
     module.Variable = function(el, name) {
         var r = split_name_formatter(el, name);
         this.name = r.name;
+        validate_dotted_name(el, this.name);
+        
         this.func = module.resolve_func(r.name);
         
         if (r.formatter !== null) {
@@ -1111,7 +1113,6 @@ obviel.template = {};
         if (dotted_name === '@.') {
             return this.stack[this.stack.length - 1];
         }
-        // XXX better dotted name checking, or perhaps in compiler
         var names = dotted_name.split('.');
         for (var i = this.stack.length - 1; i >= 0; i--) {
             var obj = this.stack[i];
@@ -1193,9 +1194,26 @@ obviel.template = {};
     module.set_default_view_name = function(name) {
         default_view_name = name;
     };
-    
-    var _id = 0;
 
+    var valid_name_re = new RegExp('[a-z]+'); //[\w!@#$%^&*()-_+=[];:<>,./?~` ]+');
+
+    var validate_dotted_name = function(el, dotted_name) {
+        dotted_name = trim(dotted_name);
+        if (dotted_name === '') {
+            throw new module.CompilationError(el, 'name cannot be empty');
+        }
+        if (dotted_name === '@.') {
+            return;
+        }
+        var parts = dotted_name.split('.');
+        for (var i = 0; i < parts.length; i++) {
+            if (!valid_name_re.exec(parts[i])) {
+                throw new module.CompilationError(
+                    el, "invalid name: " + dotted_name);
+            }
+        }
+    };
+    
     var starts_with = function(s, startswith) {
         return (s.slice(0, startswith.length) === startswith);
     };
