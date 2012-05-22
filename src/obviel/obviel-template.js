@@ -204,16 +204,16 @@ obviel.template = {};
 
         // always compile any dynamic elements on top element
         var has_message_id = self.compile_dynamic_element(el);
-
+        
         // if we have a message id, we don't want to compile down
-        // into the section
+        // into the section any further
         // XXX do some checking for illegal constructs
         if (has_message_id) {
             this.compile_fragment(el);
             return;
         }
-        
-        // always compile any view on top element
+
+        // compile any view on top element
         self.compile_view(el);
         
         // now compile sub-elements
@@ -551,6 +551,10 @@ obviel.template = {};
             this.compile_message_id(el);
             this.validate_trans_message_id(el, this.message_id);
         }
+        if (trans_info.text && el.hasAttribute('data-view')) {
+            throw new module.CompilationError(
+                el, "data-view not allowed when content is marked with data-trans");
+        }
         if (trans_info.any_translations) {
             el.removeAttribute('data-trans');
         }
@@ -653,6 +657,7 @@ obviel.template = {};
         var tvar = null;
         var variable_names = {};
         var tvar_names = {};
+        var view = null;
         var tokens = null;
         var token = null;
         var j = 0;
@@ -692,11 +697,17 @@ obviel.template = {};
                             tvar);
                 }
                 tvar_names[tvar] = null;
-                
+
+                if (node.hasAttribute('data-view')) {
+                    view = new module.ViewElement(node);
+                } else {
+                    view = null;
+                }
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = {
                     index: i,
-                    dynamic: new module.DynamicElement(node)
+                    dynamic: new module.DynamicElement(node),
+                    view: view
                 };
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
@@ -835,6 +846,9 @@ obviel.template = {};
         }
         var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
         tvar_info.dynamic.render(tvar_node, scope, translations);
+        if (tvar_info.view !== null) {
+            tvar_info.view.render(tvar_node, scope, translations);
+        }
         return tvar_node;
     };
     

@@ -773,19 +773,14 @@ test('data-trans with multiple variables of same name is allowed', function() {
 
 
 // empty data-tvar element is allowed
-
 test('data-trans with empty tvar', function() {
     html_equal(render('<p data-trans="">Hello!<br data-tvar="break"/>Bye!</p>',
                       {}),
                '<p>Hallo!<br/>Tot ziens!</p>');
 });
 
-
-/* XXX
-
-  tvar should be unique, also compared to variables
-
-  explicit naming
+/* 
+  XXX explicit naming for data-trans, data-tvar
 */
 
 test('included html is escaped', function() {
@@ -840,9 +835,6 @@ test('data-view with altered default view', function() {
           '<div><p>Bob</p></div>');
 
 });
-
-
-// XXX data-view with data-trans
 
 test('data-view with data-with', function() {
     obviel.view({
@@ -951,7 +943,42 @@ test('deeper data-view with data-each', function() {
     
 });
 
-// XXX data-view with data-trans not allowed
+test('data-view with data-trans on same element is not allowed', function() {
+    raises(function() {
+        render('<div data-view="foo" data-trans="">foo</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('data-view with data-trans on same element for attributes is allowed', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+
+    html_equal(
+        render('<div data-view="foo" data-trans="title" title="Hello world!">foo</div>',
+               {foo: {iface: 'person', name: 'Bob'}}),
+        '<div title="Hallo wereld!"><p>Bob</p></div>');
+});
+
+test('data-view with data-tvar is allowed', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.empty();
+            this.el.append('<strong>' + this.obj.name + '</strong>');
+        }
+    });
+
+    html_equal(
+        render('<div data-trans="">Hello <span data-tvar="who" data-view="foo"></span>!</div>',
+               {foo: {iface: 'person', name: 'Bob'}}),
+        '<div><span><strong>Bob</strong></span>, hallo!</div>');
+});
+
 
 // data-trans on a data-with
 
@@ -960,14 +987,6 @@ test('deeper data-view with data-each', function() {
 // data-trans on a data-each
 
 // data-tvar must be within data-trans
-
-// test('data-view with data-trans on same element is not allowed', function() {
-//     //raises(function() {
-//         render('<div data-view="foo" data-trans="bar">foo</div>', {});
-//     //}, obtemp.CompilationError);
-// });
-
-// XXX data-view with any content that isn't attribute is not allowed
 
 // XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
 // and // {} are not allowed in dotted names.
