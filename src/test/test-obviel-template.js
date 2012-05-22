@@ -1048,15 +1048,21 @@ test('deeper empty data-with is illegal', function() {
 test('fallback with inner dottedname not in outer scope', function() {
     html_equal(render('<div data-with="a">{foo.bar}</div>',
                       {a: {}, foo: {bar: 'hoi'}}),
-               '<div>Hoi</div>');
+               '<div>hoi</div>');
 });
 
 
 test('fallback with inner dottedname in outer scope but inner is not', function() {
     html_equal(render('<div data-with="a">{foo.bar}</div>',
                       {a: {foo: {}}, foo: {bar: 'hoi'}}),
-               '<div>Hoi</div>');
+               '<div>hoi</div>');
 });
+
+// test('empty variable is literally rendered', function() {
+//     html_equal(render('<div}{}</div>', {}),
+//                '<div>{}</div>');
+// });
+
 
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
