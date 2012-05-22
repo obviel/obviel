@@ -279,9 +279,6 @@ test("data-with with dotted name", function() {
           '<div>Hello</div>');
 });
 
-// XXX test failure if dotted name has non-end name to name that doesn't exist
-// also test with data-with, data-if, data-each
-
 test("data-with with attribute", function() {
     html_equal(render('<div data-with="alpha" class="{beta}"></div>',
                  {alpha: { beta: 'Beta'}}),
@@ -1047,6 +1044,23 @@ test('deeper empty data-with is illegal', function() {
         render('<div><div data-with="">Foo</div></div>', {});
     }, obtemp.CompilationError);
 });
+
+test('fallback with inner dottedname not in outer scope', function() {
+    html_equal(render('<div data-with="a">{foo.bar}</div>',
+                      {a: {}, foo: {bar: 'hoi'}}),
+               '<div>Hoi</div>');
+});
+
+
+test('fallback with inner dottedname in outer scope but inner is not', function() {
+    html_equal(render('<div data-with="a">{foo.bar}</div>',
+                      {a: {foo: {}}, foo: {bar: 'hoi'}}),
+               '<div>Hoi</div>');
+});
+
+// XXX test failure if dotted name has non-end name to name that doesn't exist
+// also test with data-with, data-if, data-each
+
 
 // XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
 // and // {} are not allowed in dotted names.
