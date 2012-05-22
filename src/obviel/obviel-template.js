@@ -560,9 +560,19 @@ obviel.template = {};
             data_tvar = el.getAttribute('data-tvar');
         }
         if (data_tvar !== null) {
+            if (trans_info.text) {
+                throw new module.CompilationError(
+                    el, ("data-trans for non-attribute content and " +
+                         "data-tvar cannot be both on same element"));
+            }
             this._dynamic = true;
             this.compile_message_id(el);
             this.validate_tvar_message_id(el, this.message_id);
+            // we can accept empty tvar message ids; we simply don't
+            // translate the contents in that case
+            if (this.message_id === '') {
+                this.message_id = null;
+            }
             el.removeAttribute('data-tvar');
         }
     };
@@ -738,22 +748,21 @@ obviel.template = {};
     
     module.DynamicElement.prototype.validate_tvar_message_id = function(
         el, message_id) {
-        if (message_id === '') {
-            throw new module.CompilationError(
-                el, "data-tvar used on element with no text to translate");
-            
-        }
-        var name_tokens = this.check_message_id(message_id);
-        // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
-            return;
-        }
-        // if we have no text tokens and no name tokens at all
-        // we consider this an error
-        if (name_tokens === 0) {
-            throw new module.CompilationError(
-                el, "data-tvar used on element with no text to translate");
-        }
+        // if (message_id === '') {
+        //     throw new module.CompilationError(
+        //         el, "data-tvar used on element with no text to translate");
+        // }
+        // var name_tokens = this.check_message_id(message_id);
+        // // we have found non-empty text tokens we can translate them
+        // if (name_tokens === null) {
+        //     return;
+        // }
+        // // if we have no text tokens and no name tokens at all
+        // // we consider this an error
+        // if (name_tokens === 0) {
+        //     throw new module.CompilationError(
+        //         el, "data-tvar used on element with no text to translate");
+        // }
     };    
 
     module.DynamicElement.prototype.validate_trans_message_id = function(

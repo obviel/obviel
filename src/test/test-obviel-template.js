@@ -31,7 +31,8 @@ var Translations = function() {
         'one < two': 'een < twee',
         'Their message was: "{message}".': 'Hun boodschap was: "{message}".',
         'Hello {who}!': '{who}, hallo!',
-        'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!'
+        'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
+        'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!'
     };
 };
 
@@ -670,7 +671,6 @@ test('data-trans without text altogether', function() {
     
 });
 
-// XXX what if you want to translate an attribute on a data-tvar element?
 
 test('data-trans with just a single data-tvar', function() {
     raises(function() {
@@ -717,17 +717,31 @@ test('data-trans with translated tvar without variable', function() {
                '<p>Hun boodschap was: "<em>Hallo wereld!</em>".</p>');
 });
 
-test('data-trans with tvar without text to translate', function() {
-    raises(function() {
-        render('<p data-trans="">Hello <em data-tvar="who"></em>!</p>', {});
-    }, obtemp.CompilationError);
-});
-
-
 test('data-trans with tvar with tvar in it', function() {
     html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello <strong data-tvar="who">{name}</strong>!</em>".</p>',
                       {name: 'X'}),
                '<p>Hun boodschap was: "<em><strong>X</strong>, hallo!</em>".</p>');
+});
+
+
+test('data-trans with data-tvar with data-trans on it for attribute', function() {
+    html_equal(render('<p data-trans="">Hello <em title="Hello world!" data-trans="title" data-tvar="who">{who}</em>!</p>',
+                      {who: 'X'}),
+               '<p><em title="Hallo wereld!">X</em>, hallo!</p>');
+});
+
+test('data-trans with data-tvar with data-trans on it indicating same content not allowed', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <em data-trans="" data-tvar="who">{who}</em>!</p>',
+               {who: 'X'});
+    }, obtemp.CompilationError);
+});
+
+test('data-trans with data-tvar with data-trans on it indicating same content not allowed 2', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <em data-trans="." data-tvar="who">{who}</em>!</p>',
+               {who: 'X'});
+    }, obtemp.CompilationError);
 });
 
 test('data-trans with non-unique tvar', function() {
@@ -758,7 +772,14 @@ test('data-trans with multiple variables of same name is allowed', function() {
 });
 
 
-// empty data-tvar element
+// empty data-tvar element is allowed
+
+test('data-trans with empty tvar', function() {
+    html_equal(render('<p data-trans="">Hello!<br data-tvar="break"/>Bye!</p>',
+                      {}),
+               '<p>Hallo!<br/>Tot ziens!</p>');
+});
+
 
 /* XXX
 
