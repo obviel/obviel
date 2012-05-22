@@ -991,18 +991,10 @@ test('data-tvar must be within data-trans or data-tvar', function() {
 
 // data-trans on a data-each
 
-// data-tvar must be within data-trans
-
 // XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
 // and // {} are not allowed in dotted names.
 
 // XXX data-if random nonsense
-
-// XXX data-trans with data-tvar scenario, where data-trans is for attributes
-
-// data-tvar should be unique, also with other variables in same element
-
-
 
 test('access variable codegen', function() {
     var obj = {a: 'foo', b: { bar: 'bar'}};
