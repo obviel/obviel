@@ -783,7 +783,7 @@ obviel.template = {};
         // we need to translate and reorganize sub elements
         this.render_trans(el, scope, translations, translated);
     };
-
+    
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
         for (var i = 0; i < this.content_texts.length; i++) {
             var value = this.content_texts[i];
@@ -858,13 +858,28 @@ obviel.template = {};
             }
         }
         this._dynamic = dynamic;
+        this.render = this.render_func();
     };
 
     module.DynamicText.prototype.is_dynamic = function() {
         return this._dynamic;
     };
+
+    module.DynamicText.prototype.render_func = function() {
+        var c = new module.Codegen('el, scope, formatter');
+        c.push('var a;');
+        c.push('var result, obj, i, type;');
+        c.push('a = ' + JSON.stringify(this.parts) + ';');
+        for (var i in this.variables) {
+            var variable = this.variables[i];
+            variable.value.render_body(c);
+            c.push('a[' + variable.index + '] = result;');
+        }
+        c.push("return a.join('');");
+        return c.get_function();
+    };
     
-    module.DynamicText.prototype.render = function(el, scope) {
+    module.DynamicText.prototype.render2 = function(el, scope) {
         var result = this.parts.slice(0);
         for (var i in this.variables) {
             var variable = this.variables[i];
@@ -946,9 +961,37 @@ obviel.template = {};
         } else {
             this.formatter = null;
         }
+        this.codegen_render = this.render_func();
     };
 
+    // var result, obj, i type
+    module.Variable.prototype.render_body = function(c) {
+        module.resolve_body(c, this.name);
+        c.push('if (result === undefined) {');
+        c.push(' throw new obviel.template.RenderError(el, "variable ' +
+               "'"  + this.name + "' " +
+               'could not be found");');
+        c.push('}');
+        if (this.formatter !== null) {
+            c.push('result = formatter(result);');
+        }
+        c.push('type = $.type(result);');
+        c.push("if (type === 'object' || type === 'array') {");
+        c.push('  result = JSON.stringify(result, null, 4);');
+        c.push('}'); 
+    };
+    
+    module.Variable.prototype.render_func = function() {
+        var c = new module.Codegen('el, scope, formatter');
+        c.push('var result, obj, i, type;');
+        this.render_body(c);
+        c.push('return result;');
+        return c.get_function();
+    };
+    
     module.Variable.prototype.render = function(el, scope) {
+        return this.codegen_render(el, scope, this.formatter);
+        
         var result = this.func(scope);
         if (result === undefined) {
             throw new module.RenderError(el, "variable '" + this.name + "' " +
@@ -1066,15 +1109,16 @@ obviel.template = {};
         }
         return obj;
     };
-    
-    module.resolve_func = function(dotted_name) {
-        var c = new module.Codegen('scope');
+
+    // used variables: result, i, obj
+    module.resolve_body = function(c, dotted_name) {
         if (dotted_name === '@.') {
-            c.push('return scope.stack[scope.stack.length - 1];');
-            return c.get_function();
+            c.push('result = scope.stack[scope.stack.length - 1];');
+            return;
         }
-        c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');
-        c.push('  var obj = scope.stack[i];');
+        c.push('result = undefined;');
+        c.push('for (i = scope.stack.length - 1; i >= 0; i--) {');
+        c.push('  obj = scope.stack[i];');
         var names = dotted_name.split('.');
         var name = null;
         for (var i = 0; i < names.length - 1; i++) {
@@ -1087,11 +1131,18 @@ obviel.template = {};
         name = names[names.length - 1];
         c.push('  obj = obj["' + name + '"];');
         c.push('  if (obj !== undefined) {');
-        c.push('    return obj;');
+        c.push('    result = obj;');
+        c.push('    break;');
         c.push('  }');
         
         c.push('}');
-        c.push('return undefined;' );
+    };
+    
+    module.resolve_func = function(dotted_name) {
+        var c = new module.Codegen('scope');
+        c.push('var result, i, obj;');
+        module.resolve_body(c, dotted_name);
+        c.push('return result;');
         return c.get_function();
     };
 
