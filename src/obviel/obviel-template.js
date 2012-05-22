@@ -484,13 +484,13 @@ obviel.template = {};
     };
 
     
-    module.DynamicElement = function(el) {
+    module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
         this.content_texts = [];
         this.message_id = null;
         this.tvars = {};
         this._dynamic = false;
-        this.compile(el);
+        this.compile(el, allow_tvar);
     };
 
     module.DynamicElement.prototype.is_dynamic = function() {
@@ -538,7 +538,7 @@ obviel.template = {};
         return result;
     };
     
-    module.DynamicElement.prototype.compile = function(el) {
+    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
         var data_trans = null;
         if (el.hasAttribute('data-trans')) {
             data_trans = el.getAttribute('data-trans');
@@ -564,6 +564,11 @@ obviel.template = {};
             data_tvar = el.getAttribute('data-tvar');
         }
         if (data_tvar !== null) {
+            if (!allow_tvar) {
+                throw new module.CompilationError(
+                    el, ("data-tvar is not allowed outside data-trans or " +
+                         "other data-tvar"));
+            }
             if (trans_info.text) {
                 throw new module.CompilationError(
                     el, ("data-trans for non-attribute content and " +
@@ -706,7 +711,7 @@ obviel.template = {};
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = {
                     index: i,
-                    dynamic: new module.DynamicElement(node),
+                    dynamic: new module.DynamicElement(node, true),
                     view: view
                 };
             } else if (node.nodeType === 8) {
@@ -735,7 +740,7 @@ obviel.template = {};
     };
 
 
-    // a tvar of this nature is acceptable while the equivalent data-trans
+    // XXX a tvar of this nature is acceptable while the equivalent data-trans
     // is not (single name token without text)
     // <em data-tvar="foo">{who}</em>
 

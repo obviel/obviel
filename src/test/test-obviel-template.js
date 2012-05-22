@@ -979,6 +979,11 @@ test('data-view with data-tvar is allowed', function() {
         '<div><span><strong>Bob</strong></span>, hallo!</div>');
 });
 
+test('data-tvar must be within data-trans or data-tvar', function() {
+    raises(function() {
+        render('<div data-tvar="foo">Blah</div>');
+    }, obtemp.CompilationError);
+});
 
 // data-trans on a data-with
 
