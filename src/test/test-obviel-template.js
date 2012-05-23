@@ -1063,6 +1063,35 @@ test('empty variable is literally rendered', function() {
                '<div>{}</div>');
 });
 
+test('variable with double dots is illegal', function() {
+    raises(function() {
+        render('<div>{foo..bar}</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('variable with starting dot is illegal', function() {
+    raises(function() {
+        render('<div>{.foo}</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('variable with ending dot is illegal', function() {
+    raises(function() {
+        render('<div>{foo.}</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('variable with number in it is legal', function() {
+    html_equal(render('<div>{12}</div>', { '12': 'foo'}),
+               '<div>foo</div>');
+});
+
+test('variable with underscore in it is legal', function() {
+    html_equal(render('<div>{foo_bar}</div>', { 'foo_bar': 'hoi'}),
+               '<div>hoi</div>');
+
+});
+
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
 

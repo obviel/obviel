@@ -1195,8 +1195,10 @@ obviel.template = {};
         default_view_name = name;
     };
 
-    var valid_name_re = new RegExp('[a-z]+'); //[\w!@#$%^&*()-_+=[];:<>,./?~` ]+');
-
+    // this might be too restrictive; we can open it up more on the long
+    // run
+    var valid_name_re = new RegExp('[A-Za-z0-9_]+');
+    
     var validate_dotted_name = function(el, dotted_name) {
         dotted_name = trim(dotted_name);
         if (dotted_name === '') {
