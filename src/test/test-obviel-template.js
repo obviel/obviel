@@ -694,6 +694,12 @@ test('data-tvar may not contain data-each', function() {
     }, obtemp.CompilationError);
 });
 
+test('data-trans may contain data-id', function() {
+    html_equal(
+        render('<p data-trans="">Hello <strong data-id="{my_id}" data-tvar="who">{who}</strong>!</p>',
+               {who: 'X', my_id: 'foo'}),
+        '<p><strong id="foo">X</strong>, hallo!</p>');
+});
 
 test('data-trans with just variable, no text', function() {
     raises(function() {
