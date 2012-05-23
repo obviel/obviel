@@ -323,15 +323,19 @@ it will render like this::
 
 This works. But we could also arrange our code so that we have a view
 for the ``person`` iface and use that instead. The advantage of that
-is that we could reuse this view in other places. Let's consider the
-view::
+is that we could reuse this view in other places, and in addition we
+can use an Obviel view to hook up to events and so on. Let's consider
+a view::
 
   obviel.view({
      iface: 'person',
-     ovlt: '<a href="{url}">{name}</a>'
+     obvt: '<a href="{url}">{name}</a>'
   });
 
-now we can change our template to render ``who`` as a view::
+This is a view for the iface ``person``. We use the Obviel Template
+(indicated by ``obvt``) to render the view.
+
+Now we can change our template to render ``who`` as a view::
 
   <p>{greeting} <span data-view="who"></span></p>
 
@@ -339,10 +343,10 @@ The result is still the same::
 
   <p>Hello <span><a href="http://www.example.com/pat_pending">Pat Pending</a></span></p>
 
-The outer template has become more powerful as well: if the object
-indicated by the name ``who`` has another ``iface``, the template will
-still work unchanged. For example, here is a data structure where
-``who`` is a robot::
+By using ``data-view``, you have made the outer template more generic.
+If the object indicated by the name ``who`` has another ``iface``, the
+template will still work unchanged. For example, here is a data
+structure where ``who`` is a robot::
 
   {
     greeting: "Greetings",
@@ -356,7 +360,7 @@ and this is a view for the iface ``robot``::
 
   obviel.view({
      iface: 'robot',
-     ovlt: '{designation}'
+     obvt: '{designation}'
   });
 
 and here is our template again::
@@ -372,8 +376,23 @@ render object ``who``, Obviel Template will do the equivalent of this::
 
   $(el).render(who);
 
-data-view must point to an object. It cannot point to an array or other
-value.
+Sometimes you have multiple views for an ``iface``, distinguished by
+name. You can indicate the name used by ``data-view`` with a ``|``
+character. Here's another view for ``person`` with the name ``extended``::
+
+  obviel.view({
+     iface: 'person',
+     name: 'extended',
+     obvt: 'The person has the name <a href="{url}">{name}</a>'
+  });
+
+
+and here is how you refer to this ``extended`` view::
+
+  <p>{greeting} <span data-view="who|extended"></span></p>
+
+``data-view`` must point to an object. It cannot point to an array or
+other value.
 
 Including HTML
 --------------
@@ -498,6 +517,11 @@ But variables in ids are not allowed, so this is **illegal**::
 To generate an id, you can instead use the ``data-id`` command::
 
   <div data-id="{some_id}"></div>
+
+This works just like any other attribute, so you can put things before
+and after the variable::
+
+  <div data-if="prefix{some_id}postfix"></div>
 
 support for gettext message ids
 -------------------------------

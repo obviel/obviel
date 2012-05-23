@@ -776,6 +776,16 @@ test('data-trans with empty tvar', function() {
                '<p>Hallo!<br/>Tot ziens!</p>');
 });
 
+
+// test('data-trans with implicit data-tvar for sub-element with single variable', function() {
+//     html_equal(render('<p data-trans="">Hello <em>{who}</em>!</p>',
+//                       {who: 'X'}),
+//                '<p>X, hallo!</p>');
+
+// });
+
+
+
 /* 
   XXX explicit naming for data-trans, data-tvar
 */
@@ -832,6 +842,11 @@ test('data-view with altered default view', function() {
           '<div><p>Bob</p></div>');
 
 });
+
+// XXX
+// test('data-view must point to object', function() {
+    
+// });
 
 test('data-view with data-with', function() {
     obviel.view({
