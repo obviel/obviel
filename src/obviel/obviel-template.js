@@ -1064,7 +1064,11 @@ obviel.template = {};
         while (el.hasChildNodes()) {
             el.removeChild(el.firstChild);
         }
-        $(el).render(obj, this.view_name);
+        try {
+            $(el).render(obj, this.view_name);
+        } catch(e if e instanceof obviel.LookupError) {
+            throw new module.RenderError(el, e.toString());
+        }
     };
     
     module.IfExpression = function(el, text) {

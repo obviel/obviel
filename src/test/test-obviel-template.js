@@ -795,8 +795,6 @@ test('included html is escaped', function() {
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
 
-// XXX error when view cannot be found
-
 test('data-view', function() {
     obviel.view({
         iface: 'person',
@@ -868,6 +866,12 @@ test('data-view must point to object', function() {
     raises(function() {
         render('<div data-view="bob"></div>', {bob: 'not_an_object'});
     }, obtemp.RenderError); 
+});
+
+test('data-view cannot find view for object', function() {
+    raises(function() {
+        render('<div data-view="bob"></div>', {bob: {iface: 'person'}});
+    }, obtemp.RenderError);
 });
 
 test('data-view with data-with', function() {
