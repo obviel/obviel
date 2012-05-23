@@ -1229,6 +1229,22 @@ test('illegal variable in data-id is checked', function() {
 });
 
 
+test('insert open {', function() {
+    html_equal(render('<div>{@open}</div>', {}),
+               '<div>{</div>');
+});
+
+test('insert close }', function() {
+    html_equal(render('<div>{@close}</div>', {}),
+               '<div>}</div>');
+});
+
+test('insert open { in data-trans', function() {
+    html_equal(render('<div data-trans="">Hello <em data-tvar="who">{@open}{who}{@close}</em>!</div>',
+                      {who: "X"}),
+               '<div><em>{X}</em>, hallo!</div>');
+});
+
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
 

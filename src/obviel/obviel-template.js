@@ -1104,6 +1104,10 @@ obviel.template = {};
     module.Scope.prototype.resolve = function(dotted_name) {
         if (dotted_name === '@.') {
             return this.stack[this.stack.length - 1];
+        } else if (dotted_name === '@open') {
+            return '{';
+        } else if (dotted_name === '@close') {
+            return '}';
         }
         var names = dotted_name.split('.');
         for (var i = this.stack.length - 1; i >= 0; i--) {
@@ -1132,7 +1136,12 @@ obviel.template = {};
         if (dotted_name === '@.') {
             c.push('return scope.stack[scope.stack.length - 1];');
             return c.get_function();
+        } else if (dotted_name === '@open') {
+            c.push('return "{";');
+        } else if (dotted_name === '@close') {
+            c.push('return "}";');
         }
+        
         c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');
         c.push('  var obj = scope.stack[i];');
         var names = dotted_name.split('.');
@@ -1286,15 +1295,15 @@ obviel.template = {};
             }
             var name_token = text.slice(index, close_index);
             var trimmed_name_token = trim(name_token);
-            if (trimmed_name_token !== '') {
-                result.push({
-                    type: module.NAME_TOKEN,
-                    value: trimmed_name_token
-                });
-            } else {
+            if (trimmed_name_token === '') {
                 result.push({
                     type: module.TEXT_TOKEN,
                     value: '{' + name_token + '}'
+                });
+            } else {
+                result.push({
+                    type: module.NAME_TOKEN,
+                    value: trimmed_name_token
                 });
             }
             index = close_index + 1;
