@@ -391,93 +391,76 @@ and here is how you refer to this ``extended`` view::
 
   <p>{greeting} <span data-view="who|extended"></span></p>
 
+By default, ``data-view`` looks up a view named ``default`` -- the default
+view name for Obviel. If you want to change the way templates look up
+views to use another view globally you can do so in JavaScript::
+
+  obviel.template.set_default_view_name('summary');
+
+from now on if you don't specify the view name explicitly, Obviel will
+look up views by the name of ``summary`` by default. If you decide to
+do this, you would want to do this once per web page before template
+rendering takes place, for instance when the page has just been loaded. Note
+that this does *not* alter the default view name of Obviel itself when
+you use ``el.render(obj)``; this will remain ``default``.
+
 ``data-view`` must point to an object. It cannot point to an array or
 other value.
 
-Including HTML
---------------
+Formatters
+----------
 
-Interpolation escapes HTML, so if you try to insert the following::
+Besides views to insert HTML, for text manipulation Obviel Template also
+supports formatters. Formatters can be registered globally with 
+Obviel Template like this::
 
-  {
-    my_html: "<p>Hello</p>"
-  }
+  obviel.template.register_formatter('upper', function(value) {
+     return value.toUpperCase();
+  });
 
-with this template::
+This registers a formatter ``upper`` which when used will turn any
+string variable to upper case. Here's how we would use it in a template::
 
-  <div>{my_html}</div>
+  <p>{foo|upper}</p>
 
-the HTML will be included but escaped::
+if we render this with the data structure::
 
-  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
+  {foo: 'hello'}
 
-Usually this is what you want, especially when you are dealing with
-user input, for security purposes.
+we'd get the following output::
 
-But what if you want to insert some HTML? You can do this using a 
-Normally interpolation escapes HTML. You can however also include HTML
-in data as HTML.  Consider this data::
+  <p>HELLO</p>
 
-  {
-    my_html: "<p>Hello</p>"
-  }
+Again, formatters cannot be used to include HTML, only text; for
+including HTML you can use views.
 
-with this template::
+You would register formatters only once per web page before template
+rendering takes place, for instance when the page has just been loaded.
 
-  <div>{my_html}</div>
+id support
+----------
 
-the HTML will be included but escaped. Usually this is what you want,
-especially when dealing with user input::
+Obviel templates should be valid HTML fragments. In valid HTML, a id
+should be unique. You can just use ids like for any other HTML::
+ 
+  <div id="foo"></div>
 
-  <div>&lt;p&gt;Hello&lt;/p&gt;</div>
+But variables in ids are not allowed, because it would be too easy to
+have a HTML fragment with the same id (such ``{my_id}``) in multiple
+``id`` attributes. So this is **illegal**::
 
-but sometimes you want to include the HTML literally. You can do this by
-indicating this in the interpolation with ``|html``::
+  <div id="{not_allowed}"></div>
 
-  <div>{my_html|html}></div>
+To generate an id, you can instead use the ``data-id`` directive::
 
-now if you render the same data, you will get this::
+  <div data-id="{some_id}"></div>
 
-  <div><p>Hello</p></div>
+This works just like any other attribute, so you can put things before
+and after the variable::
 
+  <div data-id="prefix{some_id}postfix"></div>
 
-data-i18n
----------
-
-Obviel Template offers the ability to write a template that can be
-shown in other languages as well. If we have a template like this::
-
- <p data-i18n="">Hello world!</p>
-
-we can also show this template in the Dutch language given the appropriate
-translation data::
-
- <p>Hallo wereld!</p>
-
-``data-i18n`` is used to mark up those parts of the template that
-should be translatable, such as attributes and texts. These
-translatable values can contain variables as well:
-
-  <p data-i18n="">Hello {who}!</p>
-
-XXX stuff about po files and spelling
-
-XXX what happens if HTML is in the section marked?
-
-By default, ``data-i18n`` is used to mark the textual content of a tag
-for translation. You can indicate that you want to translate an attribute
-like this::
-
-  <blah data-i18n="title" title="Hello" />
-
-You can indicate multiple attributes by space separated names::
-
-  <blah data-i18n="title other" title="Hello" other="Something" />
-
-You can indicate attributes *and* element contents with the special
-name ``.``:
-
-  <blah data-i18n=". title" title="Hello">Contents</blah>
+This will generate HTML with proper ``id`` attributes.
 
 Order
 -----
@@ -487,51 +470,61 @@ You can combine the attributes ``data-if``, ``data-each``,
 
   <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
 
+The order of execution is as follows :
+
+* ``data-if``
+
+* ``data-each``
+
+* ``data-with``
+
+* ``data-view``
+
+This order holds no matter in what order you define the attributes.
+
 This means that if the value ``a`` is present and true, the ``p``
-element will be included in the rendered template. After this,
-for each of the entries in ``b``, we render the object ``d`` in the
-``c`` scope with a view.
-
-``data-i18n`` will also apply after ``data-if``. ``data-with`` and
-``data-i18n`` do not interact directly, but of course ``data-with`` is
-already applied when any variable interpolation that can affect
-``data-i18n`` happens, so ``data-i18n`` can also be seen as applying
-after ``data-with``.
-
-``data-i18n`` can only be combined with ``data-view`` if ``data-i18n``
-refers to attributes only, not element content; any other combination is
-an error.
-
-id support
-----------
-
-Obviel templates should be valid HTML fragments. In valid HTML, a id
-should be unique. Ids are allowed::
+element will be included in the rendered template (at all). After
+this, for each of the entries in ``b`` (so ``b`` scope, iteratively),
+we render the object ``d`` in the ``c`` scope with a view.
  
-  <div id="foo"></div>
+``data-trans`` for i18n
+------------------------
 
-But variables in ids are not allowed, so this is **illegal**::
+Obviel Template offers the ability to write a template that can be
+shown in other languages as well: you can *internationalize* a
+template. We will discuss the basics of marking up a template so it
+can be translated here, but much more detail is in a separate document
+about i18n.
 
-  <div id="{not_allowed}"></div>
+If we have a template like this::
 
-To generate an id, you can instead use the ``data-id`` command::
+ <p data-trans="">Hello world!</p>
 
-  <div data-id="{some_id}"></div>
+we can also show this template in the Dutch language if the appropriate
+translation is available::
 
-This works just like any other attribute, so you can put things before
-and after the variable::
+ <p>Hallo wereld!</p>
 
-  <div data-if="prefix{some_id}postfix"></div>
+``data-trans``` is used to mark up those parts of the template that
+should be translatable, such as attributes and texts. These
+translatable values can contain variables as well:
 
-support for gettext message ids
--------------------------------
+  <p data-trans="">Hello {who}!</p>
 
-XXX If a message id enters the template, it's automatically translated.
+By default, ``data-trans`` is used to mark the textual content of a
+tag for translation. If you want to mark an attribute as translatable
+you can do it like this::
 
-Formatters
-----------
+  <div data-trans="title" title="Hello" />
 
-...
+You can also mark multiple attributes::
+
+  <div data-trans="title other" title="Hello" other="Something" />
+
+You can indicate attributes *and* textual element content with the
+special name ``.``:
+
+  <div data-trans=". title" title="Hello">Contents</div>
 
 Literals
 --------
@@ -539,9 +532,9 @@ Literals
 Injecting the characters ``{`` and ``}`` can be done using a special
 markup::
 
-  {!open} 
+  {@open} 
 
-  {!close}
+  {@close}
 
 Unsupported XML constructs
 --------------------------
