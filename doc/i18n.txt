@@ -62,4 +62,3 @@ The magic command to create the ``*.pot`` file from ``.jslex`` files::
 It would be nice to automate the whole procedure (perhaps using
 Fanstatic?). It would also be nice if more than one language could be
 loaded into the client at once.
-

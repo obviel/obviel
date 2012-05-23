@@ -632,6 +632,34 @@ test('data-trans with data-tvar and variable in tvar', function() {
           '<p><em>wereld</em>, hallo!</p>');
 });
 
+
+test('implicit data-tvar for variable in element', function() {
+    html_equal(render('<p data-trans="">Hello <em>{who}</em>!</p>',
+                 {who: 'wereld'}),
+          '<p><em>wereld</em>, hallo!</p>');
+});
+
+test('implicit data-tvar for data-view', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.append('<em>' + this.obj.name + '</em>');
+        }
+    });
+
+    html_equal(render('<p data-trans="">Hello <span data-view="who"></span>!</p>',
+                      {who: {iface: 'person', name: 'Bob'}}),
+               '<p><span><em>Bob</em></span>, hallo!</p>');
+});
+
+
+test('implicit data-tvar not allowed for empty sub-element', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <em></em>!</p>',
+               {});
+    }, obtemp.CompilationError);;
+});
+
 test('data-trans with data-tvar and variable in text', function() {
     html_equal(render('<p data-trans="">Hello {qualifier} <em data-tvar="who">{who}</em>!</p>',
                  {who: 'wereld',
@@ -828,14 +856,6 @@ test('data-trans with empty tvar', function() {
                       {}),
                '<p>Hallo!<br/>Tot ziens!</p>');
 });
-
-
-// test('data-trans with implicit data-tvar for sub-element with single variable', function() {
-//     html_equal(render('<p data-trans="">Hello <em>{who}</em>!</p>',
-//                       {who: 'X'}),
-//                '<p>X, hallo!</p>');
-
-// });
 
 
 
@@ -1059,7 +1079,6 @@ test('data-view with data-tvar is allowed', function() {
     obviel.view({
         iface: 'person',
         render: function() {
-            this.el.empty();
             this.el.append('<strong>' + this.obj.name + '</strong>');
         }
     });

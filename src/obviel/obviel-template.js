@@ -629,6 +629,27 @@ obviel.template = {};
         }        
     };
 
+    var implicit_tvar = function(node, view) {
+        if (view !== null) {
+            // data-view exists on element, use name as tvar name
+            return view.obj_name;
+        }
+        // only if we have a single text child node that is a variable
+        // by itself do we have an implicit tvar
+        if (node.childNodes.length !== 1) {
+            return null;   
+        }
+        if (node.childNodes[0].nodeType !== 3) {
+            return null;
+        }
+        var tokens = module.tokenize(node.childNodes[0].nodeValue);
+
+        if (tokens.length !== 1 || tokens[0].type !== module.NAME_TOKEN) {
+            return null;
+        }
+        return tokens[0].value;
+    };
+    
     module.DynamicElement.prototype.compile_message_id = function(el) {
         var self = this;
         var parts = [];
@@ -679,11 +700,20 @@ obviel.template = {};
                 if (node.hasAttribute('data-tvar')) {
                     tvar = node.getAttribute('data-tvar');
                 }
-                if (tvar === null) {
-                    throw new module.CompilationError(
-                        el, "data-trans element has sub-elements " +
-                            "that are not marked with data-tvar");
+                if (node.hasAttribute('data-view')) {
+                    view = new module.ViewElement(node);
+                } else {
+                    view = null;
                 }
+                if (tvar === null) {
+                    tvar = implicit_tvar(node, view);
+                    if (tvar === null) {
+                        throw new module.CompilationError(
+                            el, "data-trans element has sub-elements " +
+                                "that are not marked with data-tvar");
+                    }
+                }
+
                 if (tvar_names[tvar] !== undefined ||
                     variable_names[tvar] !== undefined) {
                     throw new module.CompilationError(
@@ -692,17 +722,13 @@ obviel.template = {};
                 }
                 tvar_names[tvar] = null;
 
-                if (node.hasAttribute('data-view')) {
-                    view = new module.ViewElement(node);
-                } else {
-                    view = null;
-                }
                 parts.push("{" + tvar + "}");
                 self.tvars[tvar] = {
                     index: i,
                     dynamic: new module.DynamicElement(node, true),
                     view: view
                 };
+                
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
                 // no need to do anything, index for tvars will be correct

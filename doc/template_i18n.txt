@@ -1,5 +1,14 @@
-i18n in Obviel Template
-=======================
+Obviel Template i18n
+====================
+
+Introduction
+------------
+
+Obviel Template supports an i18n strategy for templates which allows
+the template developer to mark up those bits of the template that
+are translatable. Obviel also ships with a tool to extract all message
+ids from ``.obvt`` files, much like you would use ``gettext`` itself to
+extract message ids from JavaScript code.
 
 Basic i18n
 ----------
@@ -14,15 +23,15 @@ We can do this with Obviel Template like this::
 
 Where ``trans`` is short for ``translate``.
 
-The message id translatable is now::
+The translatable text is now::
 
   Hello world!
 
-So, an empty ``data-trans`` tells the system that the element content is
-translatable.
+and this is also used as its *message id* in the generated ``.po`` file.
 
-You can also indicate that an attribute is translatable, by naming it
-in ``data-trans``::
+So, an empty ``data-trans`` tells the system that the element content
+is translatable. You can also indicate that an attribute is
+translatable, by naming it in ``data-trans``::
 
   <a title="A title" data-trans="title"></a>
 
@@ -35,12 +44,12 @@ same time for translation::
 
   <a title="A title" data-trans=". title"></a>
 
-Here we use ``.`` to indicate the element content.
+Here we use ``.`` to indicate the textual element content.
 
 Variables
 ---------
 
-In addition, i18n should work with {variable} notations.
+In addition, i18n works with {variable} notations.
 
   <p data-trans="">I saw {thing}.</p>
 
@@ -52,25 +61,30 @@ And this could be translated to Dutch like this::
 
   Ik heb {thing} gezien.
 
-Variables should also be re-orderable::
+The translator simply moves the variable to that part in the text
+where it makes the most sense in that language.
+
+Variables are also be re-orderable::
 
   I saw {thing}. It was {color}.
 
-Could translate to the following Dutch::
+could translate to the following Dutch::
 
   {color} was {thing} dat ik gezien heb.
 
-This looks simple. And for translatable content that's in attributes,
-we're actually done. Unfortunately, complexities occur when we mark up
-an element that contains not only text, but also HTML.
+For HTML elements with simple textual content, and for any
+translatable content that's in HTML attributes, we're done with the
+explanations on how to mark up your template. But complexities occur
+when we mark up an element that contains not only text, but also HTML.
 
-``data-if`` and ``data-with`` in relation to ``data-trans``
------------------------------------------------------------
+``data-trans`` may not contain ``data-if`` and ``data-each``
+------------------------------------------------------------
 
-We introduce the following rule: *``data-with`` and ``data-if`` may
-not be used on elements contained in an element with ``data-trans`` on
-it when that ``data-trans`` indicates the content.* So, the following
-template is **illegal** and will not compile::
+``data-each`` and ``data-if`` may not be used on elements contained in
+an element with ``data-trans`` on it (when ``data-trans`` is used to
+indicate the content of the element as opposed to attributes). 
+
+So, the following template is **illegal** and will not compile::
 
   <div data-trans=""><p data-if="foo">Blah</p></div>
 
@@ -80,13 +94,19 @@ the ``data-trans`` attribute is applied. So, this is allowed::
 
   <p data-if="foo" data-trans="">Hello world</p>
 
-If we're just translating attribute content we're fine too::
+If we're just translating attribute content we're fine as well::
    
   <div title="A title" data-trans="title"><p data-if="foo">Blah</p></div>
 
-We introduce this rule because programmatic manipulation of a message
-id is not recommended in any case, and leads to hard-to-reason about
-situations.
+For the sake of simplicity of implementation, ``data-with`` is also
+not allowed within a ``data-trans``, though this is a restriction that
+could be lifted in the future.
+
+We introduce this rule because programmatic manipulation of
+translatable text results in very hard-to-reason about situations that
+are not really possible to resolve. If you need specific reasoning on
+how to generate translatable text, we recommend you do this inside
+JavaScript in the view definition.
 
 Elements in relation to ``data-trans``
 --------------------------------------
@@ -95,7 +115,8 @@ Let's consider the following (**illegal**) template::
 
   <div data-trans="">The <em>pink</em> elephant.</div>
 
-At first glance, the message id could be this::
+Why is this illegal? After all, at first glance, the translatable text
+could be this::
 
   The pink elephant.
 
@@ -105,12 +126,12 @@ for instance is::
 
   L'éléphant rose.
 
-and we'd expect a translated template looking like this::
+and we'd expect a translated template to look like this::
 
   <div>L'éléphant <em>rose</em>.</div>
 
-but the system has no way of knowing that ``rose`` is the French for
-``pink``, and that it should it be in the `em`` element.
+Obviel Template has no way however of knowing that ``rose`` is the
+French for ``pink``, and that it should it be in the `em`` element.
 
 The general problem will occur with any HTML element contained within
 an element with ``data-trans`` on it.
@@ -118,79 +139,61 @@ an element with ``data-trans`` on it.
 In these cases, we have to help the system a bit by marking up the
 ``em`` element with a ``data-tvar``::
 
-  <div data-trans="">The <em data-tvar="">pink</em> elephant.</div>
+  <div data-trans="">The <em data-tvar="color">pink</em> elephant.</div>
 
 The system will now extract two message ids::
 
-  The {pink} elephant.
+  The {color} elephant.
 
 and::
 
   pink
 
-``data-tvar`` indicates that an element is to be treated as a variable
+So, ``data-tvar`` indicates that an element is to be treated as a variable
 in the content indicated by ``data-trans``.
 
-``data-tvar`` here deduced the variable name from the content of the
-``em`` element (``pink``). This also works when the content is a
-single variable interpolation::
+Nested ``data-trans`` and ``data-tvar``
+---------------------------------------
 
-  <div data-trans="">The <em data-tvar="">{color}</em> elephant.</div>
- 
-In this case, only the first message id is extracted::
+``data-tvar`` on an element implies that its content is translatable
+as well; it is therefore very similar in behavior to
+``data-trans``. This means a ``data-tvar`` may be nested within another
+``data-tvar`` element. For example::
 
-  The {color} elephant.
+  <div data-trans="">This is a <em data-tvar="something">complicated <a data-tvar="thing" href="">scenario</a></em>.</div>
 
-In case the content of the element indicated by ``data-tvar`` is not a
-simple piece of text or a single variable, you need to name the
-translation variable explicitly (otherwise the template won't
-compile)::
+This results in the following pieces of text marked up for translation::
 
-  <p data-trans="">The <em data-tvar="adjective">very {color}</em> elephant.</p>
+  This is a {something}.
 
-This will result in the following two message ids to translate::
+  complicated {thing}
 
-  The {adjective} elephant
+  scenario
 
-and::
+``data-trans`` may not normally be used inside a ``data-trans``, except when
+it is used to mark up attributes::
 
-  very {color}
+  <p data-trans="">Hello <em title="Hello world!" data-trans="title" data-tvar="who">{who}</em>!</p>
 
-There is one exception to the rule that elements in a ``data-trans`` element
-must be marked up with ``data-tvar``: ``data-view`` elements may be
-included freely as well::
+This combination of ``data-trans`` within ``data-trans`` is **illegal** however::
 
-  <p data-trans="">The great <span data-view="foo"></span>.</p>
-
-This will result in a message id like this::
-
-  The great {foo}.
-
-The ``data-tvar`` is implied here.
-
-You can however still use an explicit ``data-tvar`` if you wish::
-
-  <p data-trans="">The great <span data-tvar="something" data-view="foo"></span>.</p>
-
-will result in the following message id::
-
-  The great {something}.
+  <p data-trans="">Hello <em title="Hello world!" data-trans="" data-tvar="who">{who}</em>!</p>
 
 Explicit message ids
 --------------------
 
-In the above examples, the system inferred the message ids from the
-element content or the text of an attribute. In some cases this can
-lead to ambiguous message ids however, and you want to be more
-explicit. You can name message ids by using a special syntax in
-``data-trans``::
+In the above examples, the system will infer the message ids in the
+translation files from the text in the template itself. Because in
+some cases this can lead to ambiguous message ids, you may sometimes
+want to be more explicit. You can name message ids by using a special
+syntax in ``data-trans``::
 
   <p data-trans=":hello_world">Hello world!</p>
 
 In this case, the content of the ``p`` element will get the message id
 ``hello_world``, not ``Hello world!`` as would have been the default.
 
-This is equivalent to the above template::
+The template above is the equivalent of this::
 
   <p data-trans=".:hello_world">Hello world!</p>
 
@@ -205,27 +208,46 @@ and for titles and content combined::
 ``data-tvar`` implies that the content contained in an element is
 translatable too, so we can give it an explicit message id too::
 
-  <p data-trans="">The <em data-tvar=":elephant_color">color</em> elephant.</p>
+  <p data-trans="">The <em data-tvar="color:elephant_color">pink</em> elephant.</p>
 
-and this can be combined with the special name we give it::
+Shortcuts: implied ``data-tvar``
+--------------------------------
 
-  <p data-trans="">The <em data-tvar="adjective:elephant_adjective">very {color}</em> elephant.</p>
+In some cases you may omit ``data-tvar`` on sub-elements in a
+``data-trans``. This can be done when the name of the ``data-tvar``
+can be deduced from the variable inside the ``data-tvar``. This
+template for example::
 
-Nested scenario
----------------
+  <div data-trans="">The <em data-tvar="color">{color}</em> elephant.</div>
 
-``data-tvar`` may be nested inside of other ``data-tvar`` markers, as
-each ``data-tvar`` implies a ``data-trans``. For example::
+may also be expressed like this::
 
-  <div data-trans="">This is a <em data-tvar="something">complicated <a data-tvar="thing" href="">scenario</a></em>.</div>
+  <div data-trans="">The <em>{color}</em> elephant.</div>
 
-this results in the following message ids::
+``data-tvar`` here deduced the variable name from the content of the
+``em`` element (``{color}``). 
 
-  This is a {something}.
+This is only allowed if the element contains only a single variable,
+not when it contains text as well. This for instance is **illegal**::
 
-  complicated {thing}
+  <div data-trans="">The <em>*{color}*</em> elephant.</div>
 
-  scenario
+In this case, you need to actually mark up the ``data-tvar``::
 
+  <div data-trans="">The <em data-tvar="color">*{color}*</em> elephant.</div>
 
+This will result in the following two message ids to translate::
 
+  The {color} elephant
+
+and::
+
+  *{color}*
+
+In case of a ``data-view`` element, you may also omit the ``data-tvar``::
+
+  <p data-trans="">The great <span data-view="foo"></span>.</p>
+
+This will result in a message id like this::
+
+  The great {foo}.

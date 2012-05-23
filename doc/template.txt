@@ -496,8 +496,8 @@ we render the object ``d`` in the ``c`` scope with a view.
 Obviel Template offers the ability to write a template that can be
 shown in other languages as well: you can *internationalize* a
 template. We will discuss the basics of marking up a template so it
-can be translated here, but much more detail is in a separate document
-about i18n.
+can be translated here, but much more detail is in a :doc:`separate document
+about template i18n <template_i18n>`.
 
 If we have a template like this::
 
@@ -529,7 +529,7 @@ special name ``.``:
 
   <div data-trans=". title" title="Hello">Contents</div>
 
-``data-trans`` may not be on an element that also has a ``data-view``.
+Read :doc:`Obviel Template i18n <template_i18n>` for much more detail.
 
 Literals
 --------
