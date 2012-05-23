@@ -18,17 +18,15 @@ There are two phases:
 
 How does compilation work?
 
-* a separated Section is compiled for each data-with and data-if
-  element, or combinations thereof.
+* a separated Section is compiled for each data-with, data-if and
+  data-each element, or combinations thereof.
 
-* Sections are organized in a tree; each section may have sub-sections.
-  The template itself starts with a single Section at the top.
+* Sections are organized in a tree; each section may have
+  sub-sections. The template itself starts with a single Section at
+  the top.
 
-* each element that starts a Section is marked with an id, so that
-  when the template is rendered, sub-section elements can be found quickly.
-
-* each section also maintains a list of dynamic elements: an element with
-  dynamic content. An element becomes dynamic if:
+* each section also maintains a list of dynamic elements: an element
+  with dynamic content. An element becomes dynamic if:
 
   * it has an attribute which uses variable interpolation.
 
@@ -40,48 +38,20 @@ How does compilation work?
 
   * it has a data-tvar directive.
 
-* each dynamic element is also marked in the template with an id for
-  fast access.
+* Sections and dynamic elements are found in a section by following a
+  path of childNode indexes from the Section they are in. This way we
+  avoid having to modify the DOM with temporary ID markers, which is
+  relatively slow and does not allow the rendering of a template on an
+  element unattached to the document.
 
 when rendering a section:
 
-* clone original section (deep copy).
+* clone original section (deep copy) into DOM.
 
 * now find all dynamic elements by id and fill in interpolations
   according to data (and translations).
 
 * render sub-sections and attach them.
-
-Issues:
-
-* explicit ids in repeated sections really are pretty bogus. How do we
-  prevent those? rendering error or explicit data-each construct that
-  can do static checking during compilation time? We need to make sure
-  that the generated ids only exist on the newly inserted iteration
-  and are removed before the next iteration is inserted.
-
-A section:
-
-* is always rendered on an element
-
-* will take care of the dynamic content of that element, because it
-  can take care of textual content. This means that
-  the outer section will *not* take care of that dynamic content,
-  even though the element is in that element's tree by necessity too.
-  We can prevent it by not having dynamic elements register for elements
-  that also start sections, except on the top.
-
-* the Template has a section. This means it takes care of any dynamic content
-  of the element it is rendered on, such as attributes or text.
-
-* when compiling a template we do not treat its top element as one
-  to look for sub-sections.
-
-* when a section is rendered, it will take care of dynamic content on
-  all elements except sub-section elements.
-
-* a Template may just deal with textual content. This means this has a
-  hidden element that is never rendered.
 
 */
 
