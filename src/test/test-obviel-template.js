@@ -648,6 +648,8 @@ test('data-trans with multiple data-tvars', function() {
 
 });
 
+// data-trans should not contain data-if, data-with, data-each
+
 test('data-trans with just variable, no text', function() {
     raises(function() {
         render('<p data-trans="">{hello}</p>', {hello: 'Hello!'});
