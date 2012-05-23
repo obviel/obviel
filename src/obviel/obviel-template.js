@@ -563,7 +563,6 @@ obviel.template = {};
         if (trans_info.any_translations) {
             el.removeAttribute('data-trans');
         }
-        // XXX verify that this is within a data-trans
         var data_tvar = null;
         if (el.hasAttribute('data-tvar')) {
             data_tvar = el.getAttribute('data-tvar');
@@ -744,10 +743,6 @@ obviel.template = {};
         self.message_id = message_id;
     };
 
-
-    // XXX a tvar of this nature is acceptable while the equivalent data-trans
-    // is not (single name token without text)
-    // <em data-tvar="foo">{who}</em>
 
     module.DynamicElement.prototype.check_message_id = function(message_id) {
         var tokens = module.tokenize(message_id);
