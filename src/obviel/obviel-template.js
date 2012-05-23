@@ -164,39 +164,31 @@ obviel.template = {};
             $(top_el).remove();
         }
     };
+
+    var get_directive = function(el, name) {
+        var value = null;
+        if (!el.hasAttribute(name)) {
+            return null;
+        }
+        
+        value = el.getAttribute(name);
+        if (value === null || value === '') {
+            throw new module.CompilationError(
+                el, name + " may not be empty");
+        }
+        
+        el.removeAttribute(name);
+        
+        return value;
+    };
     
     module.Section = function(el, root_section) {
         this.el = el;
 
-        var data_if = null;
-        var data_with = null;
-        var data_each = null;
-
-        if (el.hasAttribute('data-if')) {
-            data_if = el.getAttribute('data-if');
-            if (data_if === null || data_if === '') {
-                throw new module.CompilationError(
-                    el, "data-if may not be empty");
-            }
-            el.removeAttribute('data-if'); 
-        }
-        if (el.hasAttribute('data-with')) {
-            data_with = el.getAttribute('data-with');
-            if (data_with === null || data_with == '') {
-                throw new module.CompilationError(
-                    el, "data-with may not be empty");
-            }
-            el.removeAttribute('data-with');
-        }
-        if (el.hasAttribute('data-each')) {
-            data_each = el.getAttribute('data-each');
-            if (data_each === null || data_each == '') {
-                throw new module.CompilationError(
-                    el, "data-with may not be empty");
-            }
-            el.removeAttribute('data-each');
-        }
-
+        var data_if = get_directive(el, 'data-if');
+        var data_with = get_directive(el, 'data-with');
+        var data_each = get_directive(el, 'data-each');
+        
         if (!root_section && !data_if && !data_with && !data_each) {
             this.dynamic = false;
             return;
@@ -210,11 +202,13 @@ obviel.template = {};
             this.data_if = null;
         }
         if (data_with) {
+            validate_dotted_name(el, data_with);
             this.data_with = module.resolve_func(data_with);
         } else {
             this.data_with = null;
         }
         if (data_each) {
+            validate_dotted_name(el, data_each);
             this.data_each = module.resolve_func(data_each);
         } else {
             this.data_each = null;
@@ -1071,11 +1065,14 @@ obviel.template = {};
         this.el = el;
         text = trim(text);
         this.not_enabled = text.charAt(0) === '!';
+        var name = null;
         if (this.not_enabled) {
-            this.data_if = module.resolve_func(text.slice(1));
+            name = text.slice(1);
         } else {
-            this.data_if = module.resolve_func(text);
+            name = text;
         }
+        validate_dotted_name(el, name);
+        this.data_if = module.resolve_func(name);
     };
 
     module.IfExpression.prototype.resolve = function(el, scope) {

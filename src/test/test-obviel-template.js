@@ -1092,6 +1092,37 @@ test('variable with underscore in it is legal', function() {
 
 });
 
+test('illegal variable in data-trans is checked', function() {
+    raises(function() {
+        render('<div data-trans="">Hello {who.}!</div>', {who: 'X'});
+    }, obtemp.CompilationError);
+});
+
+test('illegal variable in data-tvar is checked', function() {
+    raises(function() {
+        render('<div data-trans="">Hello <em data-tvar="who">{who.}</em>!</div>', {who: 'X'});
+    }, obtemp.CompilationError);
+});
+
+test('illegal variable in data-with is checked', function() {
+    raises(function() {
+        render('<div data-with="foo.">Hello world!</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('illegal variable in data-if is checked', function() {
+    raises(function() {
+        render('<div data-if="foo.">Hello world!</div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('illegal variable in data-each is checked', function() {
+    raises(function() {
+        render('<div data-each="foo.">Hello world!</div>', {});
+    }, obtemp.CompilationError);
+});
+
+
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
 
