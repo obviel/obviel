@@ -1122,6 +1122,18 @@ test('illegal variable in data-each is checked', function() {
     }, obtemp.CompilationError);
 });
 
+test('illegal variable in data-view is checked', function() {
+    raises(function() {
+        render('<div data-view="foo."></div>', {});
+    }, obtemp.CompilationError);
+});
+
+test('illegal variable in data-id is checked', function() {
+    raises(function() {
+        render('<div data-id="{foo.}"></div>', {});
+    }, obtemp.CompilationError);
+});
+
 
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each

@@ -360,12 +360,13 @@ obviel.template = {};
         var old_el = el;
         
         // make shallow copy of the element
-        var el = old_el.cloneNode(false);
+        el = old_el.cloneNode(false);
 
         // replace original el with shallow clone
         old_el.parentNode.replaceChild(el, old_el);
         
         // remove any data-view and data-trans attributes that may be there
+        // XXX still necessary?
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
         
@@ -810,6 +811,8 @@ obviel.template = {};
         $.each(this.attr_texts, function(key, value) {
             var text = value.render(el, scope, translations);
             if (key === 'data-id') {
+                // XXX this implies data-id needs interpolation as opposed
+                // to using it like any other data-x directive
                 el.removeAttribute('data-id');
                 el.setAttribute('id', text);
                 return;
@@ -1028,15 +1031,12 @@ obviel.template = {};
     };
 
     module.ViewElement = function(el) {
-        var data_view = null;
-        if (el.hasAttribute('data-view')) {
-            data_view = el.getAttribute('data-view');
-        }
+        var data_view = get_directive(el, 'data-view'); 
         if (data_view === null) {
             this.dynamic = false;
             return;
         }
-        el.removeAttribute('data-view');
+        validate_dotted_name(el, data_view);
         this.dynamic = true;
         var r = split_name_formatter(el, data_view);
         this.obj_name = r.name;
