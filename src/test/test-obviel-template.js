@@ -1058,11 +1058,10 @@ test('fallback with inner dottedname in outer scope but inner is not', function(
                '<div>hoi</div>');
 });
 
-// test('empty variable is literally rendered', function() {
-//     html_equal(render('<div}{}</div>', {}),
-//                '<div>{}</div>');
-// });
-
+test('empty variable is literally rendered', function() {
+    html_equal(render('<div>{}</div>', {}),
+               '<div>{}</div>');
+});
 
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
