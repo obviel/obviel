@@ -689,6 +689,21 @@ obviel.template = {};
                     }
                 }
             } else if (node.nodeType === 1) {
+                if (node.hasAttribute('data-if')) {
+                    throw new module.CompilationError(
+                        node,
+                        "inside data-trans element data-if may not be used");
+                }
+                if (node.hasAttribute('data-with')) {
+                    throw new module.CompilationError(
+                        node,
+                        "inside data-trans element data-with may not be used");
+                }
+                if (node.hasAttribute('data-each')) {
+                    throw new module.CompilationError(
+                        node,
+                        "inside data-trans element data-each may not be used");
+                }
                 // ELEMENT_NODE
                 tvar = null;
                 if (node.hasAttribute('data-tvar')) {

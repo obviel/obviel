@@ -648,7 +648,52 @@ test('data-trans with multiple data-tvars', function() {
 
 });
 
-// data-trans should not contain data-if, data-with, data-each
+test('data-trans may not contain data-if', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who" data-if="flag">{who}</strong>!',
+               {who: 'X', flag: true});
+    }, obtemp.CompilationError);
+});
+
+// XXX strictly speaking data-with would be okay in data-trans
+test('data-trans may not contain data-with', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who" data-with="something">{who}</strong>!',
+               {something: {who: 'X'}});
+    }, obtemp.CompilationError);
+});
+
+
+test('data-trans may not contain data-each', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who" data-each="a">{who}</strong>!',
+               {who: 'X', a: []});
+    }, obtemp.CompilationError);
+});
+
+test('data-tvar may not contain data-if', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-if="flag">{who}</em></strong>!',
+               {who: 'X', flag: true});
+    }, obtemp.CompilationError);
+});
+
+// XXX strictly speaking data-with would be okay in data-trans
+test('data-tvar may not contain data-with', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-with="something">{who}</em></strong>!',
+               {something: {who: 'X'}});
+    }, obtemp.CompilationError);
+});
+
+
+test('data-tvar may not contain data-each', function() {
+    raises(function() {
+        render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-each="a">{who}</em></strong>!',
+               {who: 'X', a: []});
+    }, obtemp.CompilationError);
+});
+
 
 test('data-trans with just variable, no text', function() {
     raises(function() {
