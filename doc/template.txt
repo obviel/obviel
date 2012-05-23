@@ -478,10 +478,13 @@ The order of execution is as follows :
 
 * ``data-with``
 
-* ``data-view``
+* ``data-view`` or ``data-trans``
 
-This order holds no matter in what order you define the attributes.
+This order holds no matter in what order you define the attributes. 
 
+``data-trans``, which we'll introduce next, also follows after the
+other statements. It's not allowed on an element with ``data-view``.
+ 
 This means that if the value ``a`` is present and true, the ``p``
 element will be included in the rendered template (at all). After
 this, for each of the entries in ``b`` (so ``b`` scope, iteratively),
@@ -525,6 +528,8 @@ You can indicate attributes *and* textual element content with the
 special name ``.``:
 
   <div data-trans=". title" title="Hello">Contents</div>
+
+``data-trans`` may not be on an element that also has a ``data-view``.
 
 Literals
 --------
