@@ -544,9 +544,12 @@ markup::
 Unsupported XML constructs
 --------------------------
 
-The HTML CDATA section implementation in browsers is so inconsistent we
-didn't think it was worth spending time supporting this in templates, given
-its limited utility. Obviel Template therefore has undefined behavior in
-the presence of one in your template: we recommend you don't use any.
+The HTML CDATA section implementation in browsers is so inconsistent
+we didn't think it was worth spending time supporting this in
+templates, given its limited utility. Obviel Template therefore has
+undefined behavior in the presence of a CDATA section in your
+template: we recommend you don't use it. If you want to insert
+extended sequences of text in an element you can already do so with a
+simple variable.
 
-Similarly, process instructions are not supported.
+Process instructions are also not supported.
