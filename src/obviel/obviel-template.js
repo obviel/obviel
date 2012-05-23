@@ -1053,6 +1053,17 @@ obviel.template = {};
                 el, "data-view object '" + this.property_name + "' " +
                     "could not be found");
         }
+        var type = $.type(obj);
+        if (type !== 'object') {
+            throw new module.RenderError(
+                el, 
+                "data-view must point to an object, not to " + type);
+        }
+        
+        // empty element
+        while (el.hasChildNodes()) {
+            el.removeChild(el.firstChild);
+        }
         $(el).render(obj, this.view_name);
     };
     

@@ -795,11 +795,12 @@ test('included html is escaped', function() {
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
 
+// XXX error when view cannot be found
+
 test('data-view', function() {
     obviel.view({
         iface: 'person',
         render: function() {
-            this.el.empty();
             this.el.append('<p>' + this.obj.name + '</p>');
         }
     });
@@ -814,7 +815,6 @@ test('data-view with named view', function() {
         iface: 'person',
         name: 'summary',
         render: function() {
-            this.el.empty();
             this.el.append('<p>' + this.obj.name + '</p>');
         }
     });
@@ -830,7 +830,6 @@ test('data-view with altered default view', function() {
         iface: 'person',
         name: 'summary',
         render: function() {
-            this.el.empty();
             this.el.append('<p>' + this.obj.name + '</p>');
         }
     });
@@ -843,10 +842,33 @@ test('data-view with altered default view', function() {
 
 });
 
-// XXX
-// test('data-view must point to object', function() {
+test('data-view empties element', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
     
-// });
+    html_equal(render('<div data-view="bob"><div>Something</div></div>',
+                      {bob: {iface: 'person',
+                             name: 'Bob'}}),
+               '<div><p>Bob</p></div>');
+
+});
+
+test('data-view must point to object', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+
+    raises(function() {
+        render('<div data-view="bob"></div>', {bob: 'not_an_object'});
+    }, obtemp.RenderError); 
+});
 
 test('data-view with data-with', function() {
     obviel.view({
