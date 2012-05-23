@@ -1233,9 +1233,6 @@ test('illegal variable in data-id is checked', function() {
 // also test with data-with, data-if, data-each
 
 
-// XXX illegal dotted names (empty, non-parseable. security!) quotes, double quotes
-// and // {} are not allowed in dotted names.
-
 // XXX data-if random nonsense
 
 test('access variable codegen', function() {

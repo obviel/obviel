@@ -1218,7 +1218,9 @@ obviel.template = {};
     };
 
     // this might be too restrictive; we can open it up more on the long
-    // run
+    // run. We definitely don't want to open to {}, \, ' and ", as this
+    // could potentially be used to sneak code into the
+    // resolve function code generator.
     var valid_name_re = new RegExp('[A-Za-z0-9_]+');
     
     var validate_dotted_name = function(el, dotted_name) {
