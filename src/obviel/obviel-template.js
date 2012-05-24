@@ -409,7 +409,8 @@ obviel.template = {};
             scope.push(data_with);
         }
 
-        this.render_clone(el);
+
+        el.appendChild(this.frag.cloneNode(true));
         
         this.render_dynamic_elements(el, scope, translations);
 
@@ -420,10 +421,6 @@ obviel.template = {};
         if (this.data_with) {
             scope.pop();
         }
-    };
-    
-    module.Section.prototype.render_clone = function(el) {
-        el.appendChild(this.frag.cloneNode(true));
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
