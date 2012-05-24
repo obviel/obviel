@@ -195,10 +195,8 @@ obviel.template = {};
     };
     
     module.Section.prototype.compile = function(el) {
-        var self = this;
-
         // always compile any dynamic elements on top element
-        var has_message_id = self.compile_dynamic_element(el);
+        var has_message_id = this.compile_dynamic_element(el);
         
         // if we have a message id, we don't want to compile down
         // into the section any further
@@ -209,7 +207,7 @@ obviel.template = {};
         }
 
         // compile any view on top element
-        self.compile_view(el);
+        this.compile_view(el);
         
         // now compile sub-elements
         for (var i = 0; i < el.childNodes.length; i++) {
@@ -233,10 +231,8 @@ obviel.template = {};
     };
     
     module.Section.prototype.compile_el = function(el) {
-        var self = this;
-
         // compile element as sub-section
-        var is_sub_section = self.compile_sub_section(el);
+        var is_sub_section = this.compile_sub_section(el);
 
         // if it's a sub-section, we're done with it
         // we don't want to compile dynamic elements for it,
@@ -247,7 +243,7 @@ obviel.template = {};
             return;
         }
         
-        var has_message_id = self.compile_dynamic_element(el);
+        var has_message_id = this.compile_dynamic_element(el);
         
         // if we have a message id, we don't want to compile down
         // into the element
@@ -256,7 +252,7 @@ obviel.template = {};
             return;
         }
 
-        self.compile_view(el);
+        this.compile_view(el);
 
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
@@ -318,8 +314,6 @@ obviel.template = {};
     };
     
     module.Section.prototype.compile_sub_section = function(el) {
-        var self = this;
-        
         // create sub section with copied contents
         var sub_section = new module.Section(el);
         
@@ -669,7 +663,6 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile_content_texts = function(el) {
-        var self = this;
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
             if (node.nodeType !== 3) {
@@ -680,11 +673,11 @@ obviel.template = {};
             }
             var dynamic_text = new module.DynamicText(el, node.nodeValue);
             if (dynamic_text.is_dynamic()) {
-                self.content_texts.push({
+                this.content_texts.push({
                     index: i,
                     dynamic_text: dynamic_text
                 });
-                self._dynamic = true;
+                this._dynamic = true;
             }
         }        
     };
@@ -711,7 +704,6 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile_message_id = function(el) {
-        var self = this;
         var parts = [];
         var children = el.childNodes;
         var tvar = null;
@@ -787,7 +779,7 @@ obviel.template = {};
                 tvar_names[tvar] = null;
 
                 parts.push("{" + tvar + "}");
-                self.tvars[tvar] = {
+                this.tvars[tvar] = {
                     index: i,
                     dynamic: new module.DynamicElement(node, true),
                     view: view
@@ -815,7 +807,7 @@ obviel.template = {};
         // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
         // be merged with text nodes
         var message_id = parts.join('');
-        self.message_id = message_id;
+        this.message_id = message_id;
     };
 
 
@@ -936,7 +928,6 @@ obviel.template = {};
     
     module.DynamicElement.prototype.render_trans = function(el, scope, translations,
                                                             translated) {
-        var self = this;
         var result = [];
 
         var tokens = module.cached_tokenize(translated);
@@ -1027,7 +1018,6 @@ obviel.template = {};
 
     module.AttributeText.prototype.render_trans = function(
         el, scope, translated) {
-        var self = this;
         var result = [];
         
         var tokens = module.cached_tokenize(translated);
