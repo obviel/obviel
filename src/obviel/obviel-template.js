@@ -183,6 +183,8 @@ obviel.template = {};
         } else {
             this.data_each = null;
         }
+
+        this.el_funcs = { funcs: [], sub: {} };
         
         this.dynamic_elements = [];
         this.view_elements = [];
@@ -269,13 +271,60 @@ obviel.template = {};
         if (!dynamic_element.is_dynamic()) {
             return false;
         }
+        this.register_on_el(el, function(el, scope, translations) {
+            dynamic_element.render(el, scope, translations); });
+        
         this.dynamic_elements.push({
             finder: this.get_el_finder(el),
             dynamic_element: dynamic_element
         });
         return dynamic_element.message_id !== null;
     };
+    
+    module.Section.prototype.register_on_el = function(el, f) {
+        var indexes = this.get_el_indexes(el);
+        var d = this.el_funcs;
+        var sub_d = null;
+        for (var i = 0; i < indexes.length; i++) {
+            sub_d = d[indexes[i]];
+            if (sub_d === undefined) {
+                sub_d = {funcs: [], sub: {}};
+                d.sub[indexes[i]] = sub_d;
+            }
+            d = sub_d; 
+        }
+        d.funcs.push(f);
+    };
 
+    module.Section.prototype.render_registered = function(
+        el_funcs, el, scope, translations) {
+        for (var i in el_funcs.funcs) {
+            el_funcs.funcs[i](el, scope, translations);
+        }
+        for (var j in el_funcs.sub) {
+            this.render_registered(el_funcs.sub[j],
+                                   el.childNodes[j], scope, translations);
+        }
+    };
+
+    module.Section.prototype.get_el_indexes = function(el) {
+        var indexes = [];
+        var parent_node = this.el;
+        var node = el;
+        while (node !== parent_node) {
+            var children = node.parentNode.childNodes;
+            for (var i = 0; i < children.length; i++) {
+                if (children[i] === node) {
+                    indexes.push(i);
+                    break;
+                }
+            }
+            node = node.parentNode;
+        }
+        indexes.reverse();
+        return indexes;
+    };
+    
     module.Section.prototype.get_el_finder = function(el) {
         var indexes = [];
         var parent_node = this.el;
@@ -306,7 +355,10 @@ obviel.template = {};
         if (!view_element.is_dynamic()) {
             return;
         }
-
+        this.register_on_el(el, function(el, scope, translations) {
+            view_element.render(el, scope, translations); });
+   
+        
         this.view_elements.push({
             finder: this.get_el_finder(el),
             view_element: view_element
@@ -333,7 +385,10 @@ obviel.template = {};
         // XXX still necessary?
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
-        
+
+        this.register_on_el(el, function(el, scope, translations) {
+            sub_section.render(el, scope, translations);});
+   
         this.sub_sections.push({
             finder: this.get_el_finder(el),
             sub_section: sub_section
@@ -411,12 +466,14 @@ obviel.template = {};
 
 
         el.appendChild(this.frag.cloneNode(true));
-        
-        this.render_dynamic_elements(el, scope, translations);
 
-        this.render_views(el, scope, translations);
+        this.render_registered(this.el_funcs, el, scope, translations);
         
-        this.render_sub_sections(el, scope, translations);
+        //this.render_dynamic_elements(el, scope, translations);
+
+        //this.render_views(el, scope, translations);
+        
+        //this.render_sub_sections(el, scope, translations);
 
         if (this.data_with) {
             scope.pop();
