@@ -32,7 +32,9 @@ var Translations = function() {
         'Their message was: "{message}".': 'Hun boodschap was: "{message}".',
         'Hello {who}!': '{who}, hallo!',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
-        'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!'
+        'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!',
+        'explicit': 'explicit translated',
+        'explicit_who': 'grote {who}'
     };
 };
 
@@ -859,9 +861,36 @@ test('data-trans with empty tvar', function() {
 
 
 
-/* 
-  XXX explicit naming for data-trans, data-tvar
-*/
+test('data-trans with explicit message id for text content', function() {
+    html_equal(render('<p data-trans=":explicit">test</p>', {}),
+               '<p>explicit translated</p>');
+});
+
+test('data-trans with explicit message id for text content 2', function() {
+    html_equal(render('<p data-trans=".:explicit">test</p>', {}),
+               '<p>explicit translated</p>');
+});
+
+test('data-trans with explicit message id for attribute', function() {
+    html_equal(render('<p data-trans="title:explicit" title="test">test</p>', {}),
+               '<p title="explicit translated">test</p>');
+
+});
+
+test('data-trans with explicit message id for attribute and text', function() {
+    html_equal(render('<p data-trans=".:explicit title:explicit" title="test">test</p>', {}),
+               '<p title="explicit translated">explicit translated</p>');
+
+});
+
+
+test('data-tvar with explicit message id', function() {
+    html_equal(render(
+        '<p data-trans="">Hello <em data-tvar="who:explicit_who">great {who}</em>!</p>',
+        {who: 'maker'}),
+               '<p><em>grote maker</em>, hallo!</p>');
+
+});
 
 test('included html is escaped', function() {
     html_equal(render('<p>{html}</p>', {html: '<em>test</em>'}),

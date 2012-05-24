@@ -537,6 +537,26 @@ obviel.template = {};
         }
         return result;
     };
+
+    var parse_tvar = function(el, tvar) {
+        var parts = tvar.split(':');
+        if (parts.length === 1) {
+            return {
+                tvar: parts[0],
+                message_id: null
+            };
+        } else if (parts.length === 0 ||
+                   parts.length > 2 ||
+                   parts[0] === '' ||
+                   parts[1] === '') {
+            throw new module.CompilationError(
+                el, "illegal content in data-tvar");
+        }
+        return {
+            tvar: parts[0],
+            message_id: parts[1]
+        };
+    };
     
     module.DynamicElement.prototype.compile = function(el, allow_tvar) {
         var data_trans = null;
@@ -579,9 +599,13 @@ obviel.template = {};
                     el, ("data-trans for non-attribute content and " +
                          "data-tvar cannot be both on same element"));
             }
+            var tvar_info = parse_tvar(el, data_tvar);
             this._dynamic = true;
             this.compile_message_id(el);
             this.validate_tvar_message_id(el, this.message_id);
+            if (tvar_info.message_id !== null) {
+                this.message_id = tvar_info.message_id;
+            }
             // we can accept empty tvar message ids; we simply don't
             // translate the contents in that case
             if (this.message_id === '') {
@@ -736,6 +760,10 @@ obviel.template = {};
                 if (node.hasAttribute('data-tvar')) {
                     tvar = node.getAttribute('data-tvar');
                 }
+                if (tvar !== null) {
+                    var tvar_info = parse_tvar(el, tvar);
+                    tvar = tvar_info.tvar;
+                }
                 if (node.hasAttribute('data-view')) {
                     view = new module.ViewElement(node);
                 } else {
@@ -749,7 +777,7 @@ obviel.template = {};
                                 "that are not marked with data-tvar");
                     }
                 }
-
+                
                 if (tvar_names[tvar] !== undefined ||
                     variable_names[tvar] !== undefined) {
                     throw new module.CompilationError(
