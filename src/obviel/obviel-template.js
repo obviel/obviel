@@ -609,20 +609,21 @@ obviel.template = {};
     // IE does URL expansion in href attributes, causing us to
     // introduce this ugly hack to work around it. jQuery uses
     // getAttribute(name, 2) in such cases, but that doesn't work
-    // for *all* href attributes..
-    var base_url = function() {
-        var url = window.location.href;
-        return url.slice(0, window.location.href.lastIndexOf('/')) + '/';
-    };
-    var cached_base_url = base_url();
+    // for *all* href attributes.. but in IE 8 compatibility mode
+    // all this works as expected
+    // var base_url = function() {
+    //     var url = window.location.href;
+    //     return url.slice(0, window.location.href.lastIndexOf('/')) + '/';
+    // };
+    // var cached_base_url = base_url();
     
-    var cleanup_href_attr = function(value) {
-        if (starts_with(value, cached_base_url)) {
-            value = value.slice(cached_base_url.length);
-            value = decodeURIComponent(value);
-        }
-        return value;
-    };
+    // var cleanup_href_attr = function(value) {
+    //     if (starts_with(value, cached_base_url)) {
+    //         value = value.slice(cached_base_url.length);
+    //         value = decodeURIComponent(value);
+    //     }
+    //     return value;
+    // };
     
     module.DynamicElement.prototype.compile_attr_texts = function(
         el, transinfos) {
