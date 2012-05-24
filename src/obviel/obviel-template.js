@@ -472,43 +472,68 @@ obviel.template = {};
         return this._dynamic;
     };   
 
-    var parse_trans_info = function(trans) {
-        if (trans === null) {
-            return {
-                text: false,
-                any_translations: false,
-                attributes: {}
-            };
+    var TransInfo = function(content_id, message_id) {
+        this.content_id = content_id;
+        this.message_id = message_id;
+    };
+
+    var parse_trans_info_part = function(el, text) {
+        var parts = text.split(':');
+        if (parts.length === 1) {
+            return new TransInfo(parts[0], null);
+        } else if (parts.length > 2) {
+            throw new module.CompilationError(
+                el, "illegal content in data-trans");
         }
         
+        if (parts[0] === '') {
+            return new TransInfo('.', parts[1]);
+        }
+        if (parts[0] !== '.' && !el.hasAttribute(parts[0])) {
+            throw new module.CompilationError(
+                el, "data-trans refers to a non-existent attribute");
+        }
+        return new TransInfo(parts[0], parts[1]);
+    };
+    
+    var parse_trans_info = function(el, trans) {
+        if (trans === null) {
+            return {
+                text: null,
+                attributes: {},
+                any_translations: false
+            };
+        }
         // empty string will mean translating text content only
         if (trim(trans) === '') {
             return {
-                text: true,
-                any_translations: true,
-                attributes: {}
+                text: new TransInfo('.', null),
+                attributes: {},
+                any_translations: true
             };
         }
-
+        
         // split with space character
         var parts = trans.split(' ');
         var result = {
-            text: false,
-            any_translations: false,
-            attributes: {}
+            text: null,
+            attributes: {},
+            any_translations: false
         };
+        
         for (var i in parts) {
             var part = trim(parts[i]);
             if (part === '') {
                 continue;
             }
-            if (part === '.') {
-                result.text = true;
+            var trans_info = parse_trans_info_part(el, part);
+            if (trans_info.content_id === '.') {
+                result.text = trans_info;
                 result.any_translations = true;
-                continue;
+            } else {
+                result.attributes[trans_info.content_id] = trans_info;
+                result.any_translations = true;
             }
-            result.attributes[part] = true;
-            result.any_translations = true;
         }
         return result;
     };
@@ -518,17 +543,23 @@ obviel.template = {};
         if (el.hasAttribute('data-trans')) {
             data_trans = el.getAttribute('data-trans');
         }
-        var trans_info = parse_trans_info(data_trans);
+        var trans_info = parse_trans_info(el, data_trans);
+        
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
-        if (trans_info.text) {
+        if (trans_info.text !== null) {
             this._dynamic = true;
             this.compile_message_id(el);
             this.validate_trans_message_id(el, this.message_id);
+            // override with manually specified message id if necessary
+            if (trans_info.text.message_id !== null) {
+                this.message_id = trans_info.text.message_id;
+            }
         }
-        if (trans_info.text && el.hasAttribute('data-view')) {
+        if (trans_info.text !== null && el.hasAttribute('data-view')) {
             throw new module.CompilationError(
-                el, "data-view not allowed when content is marked with data-trans");
+                el,
+                "data-view not allowed when content is marked with data-trans");
         }
         if (trans_info.any_translations) {
             el.removeAttribute('data-trans');
@@ -579,7 +610,7 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.compile_attr_texts = function(
-        el, trans_attributes) {
+        el, transinfos) {
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
             if (attr.specified != true) {
@@ -589,15 +620,20 @@ obviel.template = {};
                 continue;
             }
             var dynamic_text = new module.DynamicText(el, attr.value);
-            if (dynamic_text.is_dynamic() || trans_attributes[attr.name]) {
+            var transinfo = transinfos[attr.name];
+            if (dynamic_text.is_dynamic() || transinfo !== undefined) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
                         el, ("not allowed to use variables (or translation) in id " +
                              "attribute. use data-id instead"));
                 }
-                if (trans_attributes[attr.name]) {
+                if (transinfo !== undefined) {
+                    var message_id = transinfo.message_id;
+                    if (message_id === null) {
+                        message_id = attr.value;
+                    }
                     var attr_text = new module.AttributeText(
-                        dynamic_text, attr.value);
+                        dynamic_text, message_id);
                 } else {
                     var attr_text = new module.AttributeText(
                         dynamic_text, null);
