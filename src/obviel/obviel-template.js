@@ -296,6 +296,23 @@ obviel.template = {};
         d.funcs.push(f);
     };
 
+    // module.Section.prototype.render_registered_func = function() {
+    //     var c = module.Codegen('funcs, el, scope, translations');
+    //     this.codegen_registered(c, this.el_funcs);
+    //     return c.get_function();
+    // };
+    
+    // module.Section.prototype.codegen_registered = function(
+    //     c, el_funcs) {
+    //     for (var i in el_funcs.funcs) {
+    //         c.push('funcs["' + func_id + '"](el, scope, translations);');
+    //     }
+    //     for (var j in el_funcs.sub) {
+    //         c.push('el = el.childNodes[' + j + '];');
+    //         this.codegen_registered(c, el_funcs.sub[j]); 
+    //     }
+    // };
+                                                           
     module.Section.prototype.render_registered = function(
         el_funcs, el, scope, translations) {
         for (var i in el_funcs.funcs) {
@@ -1186,8 +1203,12 @@ obviel.template = {};
         }
         try {
             $(el).render(obj, this.view_name);
-        } catch(e if e instanceof obviel.LookupError) {
-            throw new module.RenderError(el, e.toString());
+        } catch(e) {
+            if (e instanceof obviel.LookupError) {
+                throw new module.RenderError(el, e.toString());
+            } else {
+                throw e;
+            }
         }
     };
     
