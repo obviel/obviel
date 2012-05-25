@@ -31,6 +31,7 @@ var Translations = function() {
         'one < two': 'een < twee',
         'Their message was: "{message}".': 'Hun boodschap was: "{message}".',
         'Hello {who}!': '{who}, hallo!',
+        'Hello {who|upper}!': '{who|upper}, hallo!',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
         'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!',
         'explicit': 'explicit translated',
@@ -142,11 +143,6 @@ test("variable with formatter that does not exist", function() {
         render('{foo|upper}', {foo: 'hello'});
     }, obtemp.CompilationError);
 });
-
-// test("variable with built-in html formatter", function() {
-//     html_equal(render('<div>{foo|html}</div>', {foo: '<p>This is HTML</p>'}),
-//           '<div><p>This is HTML</p></div>');
-// });
 
 test("nested scoping", function() {
     html_equal(render('<div data-with="second">{alpha}{beta}</div>',
@@ -622,6 +618,17 @@ test("data-trans with variable", function() {
           '<p>Fred, hallo!</p>');
 });
 
+test('data-trans with variable and formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    html_equal(render('<p data-trans="">Hello {who|upper}!</p>', {who: "Fred"}),
+          '<p>FRED, hallo!</p>');
+});
+
+// XXX data-trans with implicit tvar with formatter
+// XXX data-trans with implicit tvar with view with name
+
 test('data-trans with data-tvar', function() {
     html_equal(render('<p data-trans="">Hello <em data-tvar="who">world</em>!</p>',
                  {}),
@@ -789,7 +796,6 @@ test('data-trans with translated tvar with variable', function() {
                       {who: 'X'}),
                '<p>Hun boodschap was: "<em>X, hallo!</em>".</p>');
 });
-
 
 test('data-trans with translated tvar without variable', function() {
     html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello world!</em>".</p>',

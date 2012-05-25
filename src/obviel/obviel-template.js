@@ -1018,8 +1018,10 @@ obviel.template = {};
                 if (tvar_node !== null) {
                     frag.appendChild(tvar_node);
                 } else {
+                    // XXX relatively expensive to compile Variable here
                     frag.appendChild(document.createTextNode(
-                        scope.resolve(token.value)));
+                        new module.Variable(el, token.value).render(
+                            el, scope)));
                 }
             }
         }
