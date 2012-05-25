@@ -271,8 +271,9 @@ obviel.template = {};
         if (!dynamic_element.is_dynamic()) {
             return false;
         }
-        this.register_on_el(el, function(el, scope, translations) {
-            dynamic_element.render(el, scope, translations); });
+        
+        // this.register_on_el(el, function(el, scope, translations) {
+        //     dynamic_element.render(el, scope, translations); });
         
         this.dynamic_elements.push({
             finder: this.get_el_finder(el),
@@ -372,8 +373,9 @@ obviel.template = {};
         if (!view_element.is_dynamic()) {
             return;
         }
-        this.register_on_el(el, function(el, scope, translations) {
-            view_element.render(el, scope, translations); });
+        
+        // this.register_on_el(el, function(el, scope, translations) {
+        //     view_element.render(el, scope, translations); });
    
         
         this.view_elements.push({
@@ -403,8 +405,8 @@ obviel.template = {};
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
 
-        this.register_on_el(el, function(el, scope, translations) {
-            sub_section.render(el, scope, translations);});
+        // this.register_on_el(el, function(el, scope, translations) {
+        //     sub_section.render(el, scope, translations);});
    
         this.sub_sections.push({
             finder: this.get_el_finder(el),
@@ -484,13 +486,13 @@ obviel.template = {};
 
         el.appendChild(this.frag.cloneNode(true));
 
-        this.render_registered(this.el_funcs, el, scope, translations);
+        // this.render_registered(this.el_funcs, el, scope, translations);
         
-        //this.render_dynamic_elements(el, scope, translations);
+        this.render_dynamic_elements(el, scope, translations);
 
-        //this.render_views(el, scope, translations);
+        this.render_views(el, scope, translations);
         
-        //this.render_sub_sections(el, scope, translations);
+        this.render_sub_sections(el, scope, translations);
 
         if (this.data_with) {
             scope.pop();
