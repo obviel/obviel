@@ -531,6 +531,8 @@ obviel.template = {};
         this.content_texts = [];
         this.message_id = null;
         this.tvars = {};
+        this.tvar_names = {};
+        this.variable_names = {};
         this._dynamic = false;
         this.compile(el, allow_tvar);
     };
@@ -776,87 +778,94 @@ obviel.template = {};
         }
         return tokens[0].value;
     };
+
+    module.DynamicElement.prototype.check_tvar_uniqueness_for_text_node = function(node) {
+        // need to extract all variables for tvar uniqueness checking
+        var tokens = module.tokenize(node.nodeValue);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                this.variable_names[token.value] = null;
+                if (this.tvar_names[token.value] !== undefined) {
+                    throw new module.CompilationError(
+                        node, "data-tvar must be unique within data-trans: " +
+                            token.value);
+                }
+            }
+        }
+    };
+    
+    module.DynamicElement.prototype.check_data_trans_restrictions = function(el) {
+        if (el.hasAttribute('data-if')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-if may not be used");
+        }
+        if (el.hasAttribute('data-with')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-with may not be used");
+        }
+        if (el.hasAttribute('data-each')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-each may not be used");
+        }
+    };
+
+    module.DynamicElement.prototype.compile_tvar = function(el) {
+        var tvar = null;
+        if (el.hasAttribute('data-tvar')) {
+            tvar = el.getAttribute('data-tvar');
+        }
+        if (tvar !== null) {
+            var tvar_info = parse_tvar(el, tvar);
+            tvar = tvar_info.tvar;
+        }
+        var view = null;
+        if (el.hasAttribute('data-view')) {
+            view = new module.ViewElement(el);
+        }
+        if (tvar === null) {
+            tvar = implicit_tvar(el, view);
+            if (tvar === null) {
+                throw new module.CompilationError(
+                    el, "data-trans element has sub-elements " +
+                        "that are not marked with data-tvar");
+            }
+        }
+        
+        if (this.tvar_names[tvar] !== undefined ||
+            this.variable_names[tvar] !== undefined) {
+            throw new module.CompilationError(
+                el, "data-tvar must be unique within data-trans: " +
+                    tvar);
+        }
+        this.tvar_names[tvar] = null;
+        return {tvar: tvar, view: view};
+    };
     
     module.DynamicElement.prototype.compile_message_id = function(el) {
         var parts = [];
         var children = el.childNodes;
-        var tvar = null;
-        var variable_names = {};
-        var tvar_names = {};
-        var view = null;
-        var tokens = null;
-        var token = null;
+        var tvar_info = null;
         var j = 0;
         for (var i = 0; i < children.length; i++) {
             var node = children[i];
             if (node.nodeType === 3) {
                 // TEXT_NODE
                 parts.push(node.nodeValue);
-                // need to extract all variables for tvar uniqueness checking
-                tokens = module.tokenize(node.nodeValue);
-                for (j = 0; j < tokens.length; j++) {
-                    token = tokens[j];
-                    if (token.type === module.NAME_TOKEN) {
-                        variable_names[token.value] = null;
-                        if (tvar_names[token.value] !== undefined) {
-                            throw new module.CompilationError(
-                                el, "data-tvar must be unique within data-trans: " +
-                                    token.value);
-                        }
-                    }
-                }
-            } else if (node.nodeType === 1) {
-                if (node.hasAttribute('data-if')) {
-                    throw new module.CompilationError(
-                        node,
-                        "inside data-trans element data-if may not be used");
-                }
-                if (node.hasAttribute('data-with')) {
-                    throw new module.CompilationError(
-                        node,
-                        "inside data-trans element data-with may not be used");
-                }
-                if (node.hasAttribute('data-each')) {
-                    throw new module.CompilationError(
-                        node,
-                        "inside data-trans element data-each may not be used");
-                }
-                // ELEMENT_NODE
-                tvar = null;
-                if (node.hasAttribute('data-tvar')) {
-                    tvar = node.getAttribute('data-tvar');
-                }
-                if (tvar !== null) {
-                    var tvar_info = parse_tvar(el, tvar);
-                    tvar = tvar_info.tvar;
-                }
-                if (node.hasAttribute('data-view')) {
-                    view = new module.ViewElement(node);
-                } else {
-                    view = null;
-                }
-                if (tvar === null) {
-                    tvar = implicit_tvar(node, view);
-                    if (tvar === null) {
-                        throw new module.CompilationError(
-                            el, "data-trans element has sub-elements " +
-                                "that are not marked with data-tvar");
-                    }
-                }
+                this.check_tvar_uniqueness_for_text_node(node);
                 
-                if (tvar_names[tvar] !== undefined ||
-                    variable_names[tvar] !== undefined) {
-                    throw new module.CompilationError(
-                        el, "data-tvar must be unique within data-trans: " +
-                            tvar);
-                }
-                tvar_names[tvar] = null;
-
-                parts.push("{" + tvar + "}");
-                this.tvars[tvar] = {
+            } else if (node.nodeType === 1) {
+                // ELEMENT NODE
+                this.check_data_trans_restrictions(node);
+                tvar_info = this.compile_tvar(node);                
+                parts.push("{" + tvar_info.tvar + "}");
+                this.tvars[tvar_info.tvar] = {
                     index: i,
                     dynamic: new module.DynamicElement(node, true),
-                    view: view
+                    view: tvar_info.view
                 };
                 
             } else if (node.nodeType === 8) {
