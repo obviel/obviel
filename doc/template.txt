@@ -562,6 +562,44 @@ rendering takes place, for instance when the page has just been loaded.
 ``data-func``
 -------------
 
+
+.. sidebar:: safe and unsafe operations for ``data-func`
+
+  In general the rule is that any operations that alter the amount of
+  child nodes of the element (or sub-elements) in the DOM are
+  forbidden, though there are some exceptions. We'll go into some
+  (non-exhaustive) detail here.
+
+  Safe:
+
+  * add attribute (i.e. ``attr``).
+
+  * remove attribute (i.e. ``removeAttr``).
+
+  * change attribute  (ie. ``attr`` or ``addClass``).
+
+  * append a new child element at the end of the current element
+    (using ``.append``).
+
+  * change text using ``.text`` as long as the element does not
+    contain any sub-elements but only text content. If it does contain
+    sub-elements, text nodes can still be manipulated as long as they
+    are not removed.
+
+  * replace a child element with another, as long as that other has
+    exactly the same structure (text and sub-elements recursively).
+
+  Unsafe operatons:
+
+  * move a child element (i.e. ``after``, ``before``).
+
+  * remove a child element (i.e. ``remove``, ``empty``).
+
+  * remove text nodes.
+
+  * replace a child element with another that does not have the
+    same structure (text and sub-elements recursively).
+
 In some cases it is more convenient to use JavaScript to manipulate
 the DOM directly (using jQuery) than it would be to use Obviel
 Template constructions to do the job. For this Obviel Template offers
@@ -652,43 +690,6 @@ child elements (or text-nodes). Most DOM manipulations by adding,
 moving or removing elements or text modes are unsafe: it can break
 Obviel Template in unexpected ways, as it relies on the order of child
 nodes to stay the same.
-
-.. sidebar:: safe and unsafe operations for ``data-func`
-
-  In general the rule is that any operations that alter the amount of
-  child nodes of the element (or sub-elements) in the DOM are
-  forbidden, though there are some exceptions. We'll go into some
-  (non-exhaustive) detail here.
-
-  Safe:
-
-  * add attribute (i.e. ``attr``).
-
-  * remove attribute (i.e. ``removeAttr``).
-
-  * change attribute  (ie. ``attr`` or ``addClass``).
-
-  * append a new child element at the end of the current element
-    (using ``.append``).
-
-  * change text using ``.text`` as long as the element does not
-    contain any sub-elements but only text content. If it does contain
-    sub-elements, text nodes can still be manipulated as long as they
-    are not removed.
-
-  * replace a child element with another, as long as that other has
-    exactly the same structure (text and sub-elements recursively).
-
-  Unsafe operatons:
-
-  * move a child element (i.e. ``after``, ``before``).
-
-  * remove a child element (i.e. ``remove``, ``empty``).
-
-  * remove text nodes.
-
-  * replace a child element with another that does not have the
-    same structure (text and sub-elements recursively).
 
 id support
 ----------
