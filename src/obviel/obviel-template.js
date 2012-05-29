@@ -183,6 +183,7 @@ obviel.template = {};
         if (data_each) {
             validate_dotted_name(el, data_each);
             this.data_each = module.resolve_func(data_each);
+            this.data_each_name = data_each.replace('.', '_');
         } else {
             this.data_each = null;
         }
@@ -434,6 +435,19 @@ obviel.template = {};
         }
     };
 
+    var each_info = function(index, name, data_each) {
+        var info = {
+            index: index,
+            length: data_each.length
+        };
+        var each = {};
+        $.extend(each, info);
+        each[name] = info;      
+        return {
+            '@each': each
+        };
+    };
+    
     module.Section.prototype.render_each = function(el, scope, translations) {
         var data_each = this.data_each(scope);
         if (!$.isArray(data_each)) {
@@ -453,8 +467,10 @@ obviel.template = {};
         var iteration_node = el.cloneNode(false);
         
         // render the first iteration on the element
+        scope.push(each_info(0, this.data_each_name, data_each));
         scope.push(data_each[0]);
         this.render_el(el, scope, translations);
+        scope.pop();
         scope.pop();
 
         // now insert the next iterations after the first iteration
@@ -465,8 +481,10 @@ obviel.template = {};
             var iteration_clone = iteration_node.cloneNode(false);
             parent_node.insertBefore(iteration_clone, insert_before_node);
 
+            scope.push(each_info(i, this.data_each_name, data_each));
             scope.push(data_each[i]);
             this.render_el(iteration_clone, scope, translations);
+            scope.pop();
             scope.pop();
         }
     };

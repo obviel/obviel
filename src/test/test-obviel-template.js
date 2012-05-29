@@ -568,6 +568,7 @@ test('data-each with data-trans', function() {
           '<ul><li>Hallo wereld!</li><li>Hallo wereld!</li></ul>');
 });
 
+
 test('nested data-each', function() {
     html_equal(render(
         '<ul><li data-each="outer"><ul><li data-each="inner">{title}</li></ul></li></ul>',
@@ -577,6 +578,31 @@ test('nested data-each', function() {
         ]}),
           '<ul><li><ul><li>a</li><li>b</li></ul></li><li><ul><li>c</li><li>d</li></ul></li></ul>');
     
+});
+
+test('data-each with @each vars', function() {
+    html_equal(render(
+        '<ul><li data-each="list">{@each.index} {@each.length}</li></ul>',
+        {list: [1, 2]}),
+               '<ul><li>0 2</li><li>1 2</li></ul>');
+});
+
+test('data-each with @each vars, explicit loop', function() {
+    html_equal(render(
+        '<ul><li data-each="list">{@each.list.index} {@each.list.length}</li></ul>',
+        {list: [1, 2]}),
+               '<ul><li>0 2</li><li>1 2</li></ul>');
+});
+
+test('data-each with @each vars, nested loop', function() {
+    html_equal(render(
+        '<ul><li data-each="outer"><ul><li data-each="inner">{@each.inner.index} {@each.outer.index}</li></ul></li></ul>',
+        {outer: [
+            {inner: [{title: 'a'}, {title: 'b'}]},
+            {inner: [{title: 'c'}]}
+        ]}),
+               '<ul><li><ul><li>0 0</li><li>1 0</li></ul></li><li><ul><li>0 1</li></ul></li></ul>'
+              );
 });
 
 test("data-trans with plain text", function() {
