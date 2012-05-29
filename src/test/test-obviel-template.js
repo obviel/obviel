@@ -642,6 +642,17 @@ test('data-trans with multiple variables and different formatter', function() {
     }, obtemp.CompilationError);
 });
 
+test('data-trans with multiple variables and same formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    
+    html_equal(
+        render('<p data-trans="">Hello {who|upper}! ({who|upper}?)</p>',
+               {who: "Fred"}),
+        '<p>FRED, hallo! (FRED?)</p>');
+});
+
 // XXX data-trans with implicit tvar with formatter
 // XXX data-trans with implicit tvar with view with name
 
