@@ -5,10 +5,20 @@ Introduction
 ------------
 
 Obviel Template supports an i18n strategy for templates which allows
-the template developer to mark up those bits of the template that
-are translatable. Obviel also ships with a tool to extract all message
-ids from ``.obvt`` files, much like you would use ``gettext`` itself to
-extract message ids from JavaScript code.
+the template developer to mark up those bits of the template that are
+translatable. This is very similar to the way code (such as JavaScript
+code) is marked up for i18n as well (typically using the ``_("string
+to translate")`` construct.
+
+We recommend the use of the Babel_ i18n tool with code that uses
+Obviel. While was primarily written to support Python applications, it
+can also support JavaScript applications. We've written a special
+`Obviel plugin for Babel`_ which teaches it about Obviel Templates, so
+that messages ids can be extracted from them.
+
+.. _Babel: http://babel.edgewall.org/
+
+.. _`Obviel plugin for Babel`: http://pypi.python.org/pypi/babel-obviel
 
 Basic i18n
 ----------
@@ -49,11 +59,28 @@ Here we use ``.`` to indicate the textual element content.
 Variables
 ---------
 
-In addition, i18n works with {variable} notations.
+.. sidebar:: Formatters
+
+  Note that formatters are not included in the message ids, so this::
+
+    <p data-trans="">I saw {thing|my_formatter}.</p>
+ 
+  will use the same message id as this::
+
+    <p data-trans="">I saw {thing}.</p>
+
+  namely::
+
+    I saw {thing}.
+
+  Note: you can include the same variable multiple time in a message
+  id, but you must use the same formatter each time.
+
+i18n works with {variable} notations. This::
 
   <p data-trans="">I saw {thing}.</p>
 
-will extract a message id:
+will imply the following message id::
 
   I saw {thing}.
 
@@ -141,7 +168,7 @@ In these cases, we have to help the system a bit by marking up the
 
   <div data-trans="">The <em data-tvar="color">pink</em> elephant.</div>
 
-The system will now extract two message ids::
+Obviel Template will now try to translate two message ids::
 
   The {color} elephant.
 
@@ -226,6 +253,21 @@ may also be expressed like this::
 
 ``data-tvar`` here deduced the variable name from the content of the
 ``em`` element (``{color}``). 
+
+
+.. sidebar:: named views
+
+  View names are also not included in the message ids, so this::
+
+    <p data-trans="">I saw <span data-view="person|summary"></span>.</p>
+ 
+  will use the same message id as this::
+
+    <p data-trans="">I saw <span data-view="person"></span>.</p>
+
+  namely::
+
+    I saw {person}.
 
 You can also always omit the ``data-tvar`` in case of a ``data-view``
 element::
