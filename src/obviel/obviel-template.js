@@ -135,6 +135,11 @@ obviel.template = {};
             });
             $(top_el).remove();
         }
+
+        // wipe out any elements marked for removal by data-if; these
+        // could not be removed previously so as not to break the
+        // indexed based access to elements
+        $('.obviel-template-removal', el).remove();
     };
 
     var get_directive = function(el, name) {
@@ -175,6 +180,7 @@ obviel.template = {};
         }
         if (data_with) {
             validate_dotted_name(el, data_with);
+            this.data_with_name = data_with;
             this.data_with = module.resolve_func(data_with);
         } else {
             this.data_with = null;
@@ -422,7 +428,7 @@ obviel.template = {};
         if (this.data_if) {
             var data_if = this.data_if.resolve(el, scope);
             if (!data_if) {
-                el.parentNode.removeChild(el);
+                $(el).addClass('obviel-template-removal');
                 return;
             }
         }
@@ -435,10 +441,13 @@ obviel.template = {};
     };
 
     var each_info = function(index, name, data_each) {
+        var even = index % 2 === 0;
         var info = {
             index: index,
             number: index + 1,
-            length: data_each.length
+            length: data_each.length,
+            even: even,
+            odd: !even
         };
         var each = {};
         $.extend(each, info);
@@ -493,7 +502,7 @@ obviel.template = {};
         if (this.data_with) {
             var data_with = this.data_with(scope);
             if (data_with === undefined) {
-                throw new module.RenderError(el, "data-with '" + data_with + "' " +
+                throw new module.RenderError(el, "data-with '" + this.data_with_name + "' " +
                                              "could not be found");
             }
             var type = $.type(data_with);

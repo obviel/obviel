@@ -306,7 +306,14 @@ test("data-if where if is false", function() {
           '');
 });
 
-test('data-if with not where data is false', function() {
+test('data-if in data-with', function() {
+    html_equal(
+        render('<div data-with="something"><p data-if="!flag">not flag</p><p data-if="flag">flag</p></div>',
+              {something: {flag: true}}),
+        '<div><p>flag</p></div>');
+});
+
+test('data-if with not (!) where data is false', function() {
     html_equal(render('<div data-if="!alpha">{beta}</div>',
                  {alpha: false,
                   beta: 'Beta'}),
@@ -499,7 +506,22 @@ test('data-each with deeper elements', function() {
                          {title: 'c'}]}),
           '<ul><li><p>a</p></li><li><p>b</p></li><li><p>c</p></li></ul>');
 });
-     
+
+test('data-each with some element content not rendered', function() {
+    html_equal(render(
+        '<ul><li data-each="list"><p data-if="@.">whatever</p></li></ul>',
+        {list: [true, false]}),
+               '<ul><li><p>whatever</p></li><li></li></ul>');
+});
+
+
+test('data-each with half of element content not rendered', function() {
+    html_equal(render(
+        '<ul><li data-each="list"><p data-if="@.">True</p><p data-if="!@.">False</p></li></ul>',
+        {list: [true, false]}),
+               '<ul><li><p>True</p></li><li><p>False</p></li></ul>');
+});
+
 test('data-each with attributes', function() {
     html_equal(render('<a data-each="list" href="{url}">link</a>',
                  {list: [{url: 'a'},
@@ -611,6 +633,13 @@ test('data-each with @each vars using number', function() {
         '<ul><li data-each="list">{@each.number}</li></ul>',
         {list: ['a', 'b']}),
                '<ul><li>1</li><li>2</li></ul>');
+});
+
+test('data-each with @each vars using even/odd', function() {
+    html_equal(render(
+        '<ul><li data-each="list"><p data-if="@each.even">Even</p><p data-if="@each.odd">Odd</p></li></ul>',
+        {list: ['a', 'b']}),
+               '<ul><li><p>Even</p></li><li><p>Odd</p></li></ul>');
 });
 
 test('data-each with @each vars with dotted name', function() {
