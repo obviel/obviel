@@ -638,7 +638,7 @@ obviel.template = {};
         this.compile_content_texts(el);
         if (trans_info.text !== null) {
             this._dynamic = true;
-            this.compile_message_id(el);
+            this.compile_trans(el);
             this.validate_trans_message_id(el, this.message_id);
             // override with manually specified message id if necessary
             if (trans_info.text.message_id !== null) {
@@ -670,7 +670,7 @@ obviel.template = {};
             }
             var tvar_info = parse_tvar(el, data_tvar);
             this._dynamic = true;
-            this.compile_message_id(el);
+            this.compile_trans(el);
             this.validate_tvar_message_id(el, this.message_id);
             if (tvar_info.message_id !== null) {
                 this.message_id = tvar_info.message_id;
@@ -845,7 +845,7 @@ obviel.template = {};
         return {tvar: tvar, view: view};
     };
     
-    module.DynamicElement.prototype.compile_message_id = function(el) {
+    module.DynamicElement.prototype.compile_trans = function(el) {
         var parts = [];
         var children = el.childNodes;
         var tvar_info = null;
