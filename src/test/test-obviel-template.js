@@ -31,7 +31,7 @@ var Translations = function() {
         'one < two': 'een < twee',
         'Their message was: "{message}".': 'Hun boodschap was: "{message}".',
         'Hello {who}!': '{who}, hallo!',
-        'Hello {who|upper}!': '{who|upper}, hallo!',
+        'Hello {who}! ({who}?)': '{who}, hallo! ({who}?)',
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
         'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!',
         'explicit': 'explicit translated',
@@ -624,6 +624,22 @@ test('data-trans with variable and formatter', function() {
     });
     html_equal(render('<p data-trans="">Hello {who|upper}!</p>', {who: "Fred"}),
           '<p>FRED, hallo!</p>');
+});
+
+
+test('data-trans with multiple variables and different formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    obtemp.register_formatter('lower', function(value) {
+        return value.toLowerCase();
+    });
+
+
+    raises(function() {
+        render('<p data-trans="">Hello {who|upper}! ({who|lower}?)</p>',
+               {who: "Fred"});
+    }, obtemp.CompilationError);
 });
 
 // XXX data-trans with implicit tvar with formatter

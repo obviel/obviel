@@ -781,22 +781,35 @@ obviel.template = {};
         return tokens[0].value;
     };
 
-    module.DynamicElement.prototype.compile_variables_in_trans = function(
+    module.DynamicElement.prototype.compile_trans_text = function(
         node) {
         // need to extract all variables for tvar uniqueness checking
+        var result = [];
         var tokens = module.tokenize(node.nodeValue);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                this.trans_variables[token.value] = new module.Variable(
+                var name_formatter = split_name_formatter(node, token.value);
+                var variable = this.trans_variables[name_formatter.name];
+                if (variable !== undefined &&
+                    variable.full_name !== token.value) {
+                    throw new module.CompilationError(
+                        node, ("same variables in translation " +
+                               "must all use same formatter"));
+                }
+                this.trans_variables[name_formatter.name] = new module.Variable(
                     node.parentNode, token.value);
-                if (this.tvars[token.value] !== undefined) {
+                if (this.tvars[name_formatter.name] !== undefined) {
                     throw new module.CompilationError(
                         node, "data-tvar must be unique within data-trans: " +
                             token.value);
                 }
+                result.push('{' + name_formatter.name + '}');
+            } else {
+                result.push(token.value);
             }
         }
+        return result.join('');
     };
     
     module.DynamicElement.prototype.check_data_trans_restrictions = function(
@@ -858,8 +871,8 @@ obviel.template = {};
             var node = children[i];
             if (node.nodeType === 3) {
                 // TEXT_NODE
-                parts.push(node.nodeValue);
-                this.compile_variables_in_trans(node);
+                var text = this.compile_trans_text(node);
+                parts.push(text);
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
                 this.check_data_trans_restrictions(node);
@@ -1150,6 +1163,7 @@ obviel.template = {};
     module.Variable = function(el, name) {
         var r = split_name_formatter(el, name);
         this.name = r.name;
+        this.full_name = name;
         validate_dotted_name(el, this.name);
         
         this.func = module.resolve_func(r.name);
