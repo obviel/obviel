@@ -9,6 +9,7 @@ Contents:
    features
    manual
    template
+   template_i18n
    form
    traject
    api
