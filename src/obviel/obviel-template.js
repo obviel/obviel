@@ -717,8 +717,8 @@ obviel.template = {};
             if (dynamic_text.is_dynamic() || transinfo !== undefined) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
-                        el, ("not allowed to use variables (or translation) in id " +
-                             "attribute. use data-id instead"));
+                        el, ("not allowed to use variables (or translation) " +
+                             "in id attribute. use data-id instead"));
                 }
                 if (transinfo !== undefined) {
                     var message_id = transinfo.message_id;
@@ -778,7 +778,8 @@ obviel.template = {};
         return tokens[0].value;
     };
 
-    module.DynamicElement.prototype.compile_variables_in_trans = function(node) {
+    module.DynamicElement.prototype.compile_variables_in_trans = function(
+        node) {
         // need to extract all variables for tvar uniqueness checking
         var tokens = module.tokenize(node.nodeValue);
         for (var i = 0; i < tokens.length; i++) {
@@ -795,7 +796,8 @@ obviel.template = {};
         }
     };
     
-    module.DynamicElement.prototype.check_data_trans_restrictions = function(el) {
+    module.DynamicElement.prototype.check_data_trans_restrictions = function(
+        el) {
         if (el.hasAttribute('data-if')) {
             throw new module.CompilationError(
                 el,
@@ -1016,8 +1018,8 @@ obviel.template = {};
         return document.createTextNode(variable.render(el, scope));
     };
     
-    module.DynamicElement.prototype.render_trans = function(el, scope, translations,
-                                                            translated) {
+    module.DynamicElement.prototype.render_trans = function(
+        el, scope, translations, translated) {
         var result = [];
 
         var tokens = module.cached_tokenize(translated);
