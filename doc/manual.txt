@@ -76,21 +76,6 @@ We'll go into what you can put in for ``some_selector`` and
 
 .. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
 
-.. sidebar:: Alternative template languages for Obviel
-
-  Besides Obviel Template, Obviel also supports alternative template
-  languages. In the past Obviel's recommend template language was
-  `JSON template`_. This is a good text-based template language, but
-  was replaced with Obviel Template as this integrates with Obviel's
-  other features better.
-
-  If you want Obviel's json-template support, you can include JSON
-  template (but this is optional)::
-
-    <script type="text/javascript" src="/path/to/json-template.js"></script>
- 
-  .. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
-
 Rendering a view
 ----------------
 
@@ -387,20 +372,34 @@ If both ``html`` and ``html_url`` are found on a view or a model, the
 ``html`` property has precedence. The ``html`` and ``html_url``
 properties of the model have precedence over any defined on the view.
 
-``jsont`` and ``jsont_url``: JSON template
+``obvt`` and ``obvt_url``: Obviel Template
 ------------------------------------------
 
+.. sidebar:: Alternative template languages for Obviel
+
+  Besides Obviel Template, Obviel also supports alternative template
+  languages. In the past Obviel's recommended template language was
+  `JSON template`_. This is a good text-based template language, but
+  was replaced with Obviel Template as this integrates with Obviel's
+  other features better.
+
+  If you want Obviel's json-template support, you can include JSON
+  template (but this is optional)::
+
+    <script type="text/javascript" src="/path/to/json-template.js"></script>
+ 
+  .. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
+
 A combination of static HTML and jQuery scripting is certainly dynamic
-enough, but sometimes using a template language can result in more
-readable code. By default support for `JSON template`_ is
-included. Obviel also provides an API to extend it to support other
-template languages.
+enough, but you can write a lot more compact and readable code by
+using a template language. Obviel includes a template language
+custom-written for Obviel called :doc:`Obviel Template <template>`.
+Obviel also provides an API to extend it to support other template
+languages.
 
-.. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
-
-The properties ``jsont`` and ``jsont_url`` work like ``html`` and
-``html_url`` and can be provided both by the view and the model. Let's
-look at an example::
+How do you use Obviel Template? The properties ``obvt`` and
+``obvt_url`` work like ``html`` and ``html_url`` and can be provided
+both by the view and the model. Let's look at an example::
 
   obviel.view({
     iface: 'person',
@@ -415,9 +414,13 @@ This will result in::
 
   <div>John</div>
 
-When rendering a JSON template, the object being rendered is combined
-with the template and the resulting HTML is inserted into the element
-that ``render`` was invoked for.
+When rendering an Obviel Template, the object being rendered is
+combined with the template and the resulting DOM elements are added to
+the element on which ``render`` was invoked.
+
+Obviel Template has many features, including the ability to directly
+render sub-objects within the template language. Read the
+:doc:`template documentation <template>` for much more information.
 
 Rendering Sub-Objects
 ---------------------
@@ -495,6 +498,70 @@ We'll also create a view for ``list``::
      }
   });
 
+.. sidebar:: the ``subviews`` property
+
+  Obviel also offers a declarative way to define subviews using
+  selectors. Now that Obviel Template can render subviews directly we
+  recommend you use, as it's easier to understand and less
+  verbose. For completeness however we will discuss the selector-based
+  approach here.
+
+  For example::
+
+    obviel.view({
+      html: '<div class="foo"></div>',
+      subviews: {
+        '.foo': 'attr'
+      }
+    });
+
+  This does the same thing as the examples in the main text.
+
+  The ``subviews`` property, if available, should define a mapping
+  from jQuery selector to model property name. If the view has a
+  ``render`` function, subviews are rendered after the ``render``
+  function of the view has been executed.
+
+  So, if you have this view::
+
+    obviel.view({
+       subviews: {
+          '#alpha': 'alpha',
+          '#beta': 'beta_url'
+    });
+
+  And render it with the following context object::
+
+    {
+     alpha: {text: 'foo'},
+     beta_url: '/beta.json'
+    }
+
+  the system will, in effect, call::
+
+    $('#alpha', this.el).render({text: 'foo'})
+
+  and::
+
+    $('#beta', this.el).render('/beta.json') 
+
+  If you want to invoke a subview with a specific name, you can provide
+  a name for subviews by passing an array instead of a string as the 
+  value of the subviews mapping::
+
+    obviel.view({
+      subviews: {
+          '#selector': ['foo', 'name']
+      }
+    });
+
+  Here, a subview is registered for the selector ``#selector``, the
+  data is looked up on the context object using property name ``foo``,
+  and the view is looked up using ``name``.
+
+  Note that if a callback is provided to render(), it will be called
+  after the main view and all its subviews are done rendering.
+
 This creates a ``ul`` element in the DOM and renders each entry in the
 ``entries`` list as a ``li`` element with text in it. Note the use of
 the common JavaScript technique of assigning ``this`` to another local
@@ -524,9 +591,54 @@ to render.
 Partitioning code into views is useful: it's the Obviel way. You'll
 find it makes your code a lot easier to manage.
 
-You can write the sub-view rendering code manually and often it is not
-cumbersome, but for some common cases Obviel provides a facility to
-automate this, see :ref:`subviews`.
+You can write the sub-view rendering code manually like we did above,
+but Obviel Template offers a shorter and simpler way.
+
+First, let's look again at how we invoke a sub-view by hand in a
+render method::
+
+  obviel.view({
+    html: '<div class="foo"></div>',
+    render: function() {
+       $('.foo', this.el).render(this.obj.attr);
+    }
+  });
+
+This will render a subview on the element matched by class ``foo`` for
+the model indicated by ``this.obj.attr``. ``this.obj.attr`` may be a
+sub-object or a URL referring to another object.
+
+Doing this by hand is not too bad, but Obviel also allows you to do this
+from templates::
+
+  obviel.view({
+    obvt: '<div data-view="attr"></div>
+  });
+
+Wow, that's a lot shorter! 
+
+For clarity we've spelled out everything before using the most
+low-level Obviel concepts. What you really should be doing is use
+Obviel Template. Here is the example of pages with lists and texts on
+it again, but using Obviel Template instead of JavaScript code::
+
+    obviel.view({
+       iface: 'text',
+       obvt: '<p>{text}</p>'
+    });
+
+    obviel.view({
+       iface: 'list',
+       obvt: '<ul><li data-each="entries">{@.}</li></ul>'
+    });
+
+
+    obviel.view({
+       iface: 'page',
+       obvt: '<div data-each="parts" data-view="@."></div>'
+    });
+
+As you can see, that has cleaned up the code a lot!
  
 Obviel and hyperlinks
 ---------------------
@@ -742,8 +854,6 @@ this. You can supply a callback by passing a function to the
 You can use ``this`` in the callback to refer to the view that invoked
 the callback.
 
-.. _subviews:
-
 Additional methods
 ------------------
 
@@ -814,80 +924,6 @@ Now the new view can be registered like this::
 
 You can also create your own base classes that derive from ``View``
 that provide extra functionality, and inherit from them.
-
-Subviews
---------
-
-As we have discussed earlier, many views are composed out of other
-views.
-
-You can invoke sub-views by hand in a render method, like this::
-
-  obviel.view({
-    render: function() {
-       $('.foo', this.el).render(this.obj.attr);
-    }
-  });
-
-This will render a subview on the element matched by class ``foo`` for
-the model indicated by ``this.obj.attr``. ``this.obj.attr`` may be a
-sub-object or a URL referring to another object.
-
-Doing this by hand is not too bad, but Obviel also allows a shorter,
-declarative way to express this::
-
-  views.view({
-    subviews: {
-      '.foo': 'attr'
-    }
-  });
-
-This does the same thing as the previous example.
-
-The ``subviews`` property, if available, should define a mapping from
-jQuery selector to model property name. If the view has a ``render``
-function, subviews are rendered after the ``render`` function of the
-view has been executed.
-
-So, if you have this view::
-
-   views.view({
-     subviews: {
-        '#alpha': 'alpha',
-        '#beta': 'beta_url'
-   });
-
-And render it with the following context object::
-
-  {
-   alpha: {text: 'foo'},
-   beta_url: '/beta.json'
-  }
-
-the system will, in effect, call::
-
-  $('#alpha', this.el).render({text: 'foo'})
-
-and::
-
-  $('#beta', this.el).render('/beta.json') 
-
-If you want to invoke a subview with a specific name, you can provide
-a name for subviews by passing an array instead of a string as the
-value of the subviews mapping::
-
-  views.view({
-    subviews: {
-        '#selector': ['foo', 'name']
-    }
-  });
-
-Here, a subview is registered for the selector ``#selector``, the data is looked
-up on the context object using property name ``foo``, and the view is looked
-up using ``name``.
-
-Note that if a callback is provided to render(), it will be called after the
-main view and all its subviews are done rendering.
 
 Declarative Event Registration
 ------------------------------
