@@ -257,8 +257,8 @@ will render like this::
     <li>Jay</li>
   </ul>
 
-Special ``@each`` variable
---------------------------
+``@each`` variable
+------------------
 
 ``data-each`` supports the special variable ``@each``. This variable
 contains some useful properties during the construction of loops:
