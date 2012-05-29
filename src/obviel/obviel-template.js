@@ -1,7 +1,8 @@
 /*global obviel: true, jQuery: true, template_url: true
-  alert: true , browser: true, document: true, app_url: true,
+  alert: true , browser: true, document: true, app_url: true, 
   window: true, jsontemplate: true, Gettext: true, json_locale_data: true
 */
+/*jshint evil: true */
 
 /*
 
@@ -69,7 +70,8 @@ obviel.template = {};
     var formatters = null;
     var default_view_name = null;
     var resolve_in_obj = null;
-        
+    var validate_dotted_name;
+    
     var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
 
     module.NAME_TOKEN = 0;
@@ -360,8 +362,8 @@ obviel.template = {};
         indexes.reverse();
 
         var c = new module.Codegen('node');
-        for (var i in indexes) {
-            c.push('node = node.childNodes[' + indexes[i] + '];');
+        for (var j in indexes) {
+            c.push('node = node.childNodes[' + indexes[j] + '];');
         }
         c.push('return node;');
         return c.get_function();
@@ -704,9 +706,10 @@ obviel.template = {};
     
     module.DynamicElement.prototype.compile_attr_texts = function(
         el, transinfos) {
+        var attr_text;
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
-            if (attr.specified != true) {
+            if (attr.specified !== true) {
                 continue;
             }
             if (attr.value === null) {
@@ -725,10 +728,10 @@ obviel.template = {};
                     if (message_id === null) {
                         message_id = attr.value;
                     }
-                    var attr_text = new module.AttributeText(
+                    attr_text = new module.AttributeText(
                         dynamic_text, message_id);
                 } else {
-                    var attr_text = new module.AttributeText(
+                    attr_text = new module.AttributeText(
                         dynamic_text, null);
                 }
                 this.attr_texts[attr.name] = attr_text;
@@ -1083,7 +1086,7 @@ obviel.template = {};
         for (var i in this.variables) {
             var variable = this.variables[i];
             result[variable.index] = variable.value.render(el, scope);
-        };
+        }
         return result.join('');        
     };
 
@@ -1378,7 +1381,7 @@ obviel.template = {};
     // resolve function code generator.
     var valid_name_re = new RegExp('[A-Za-z0-9_]+');
     
-    var validate_dotted_name = function(el, dotted_name) {
+    validate_dotted_name = function(el, dotted_name) {
         dotted_name = trim(dotted_name);
         if (dotted_name === '') {
             throw new module.CompilationError(el, 'name cannot be empty');
