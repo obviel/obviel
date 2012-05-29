@@ -653,8 +653,29 @@ test('data-trans with multiple variables and same formatter', function() {
         '<p>FRED, hallo! (FRED?)</p>');
 });
 
-// XXX data-trans with implicit tvar with formatter
-// XXX data-trans with implicit tvar with view with name
+test('data-trans with implicit tvar with formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    
+    html_equal(
+        render('<p data-trans="">Hello <em>{who|upper}</em>!</p>',
+               {who: "Fred"}),
+        '<p><em>FRED</em>, hallo!</p>');
+});
+
+test('data-trans with view based tvar with name', function() {
+    obviel.view({
+        iface: 'person',
+        name: 'summary',
+        render: function() {
+            this.el.text('the ' + this.obj.name);
+        }
+    });
+    html_equal(render('<p data-trans="">Hello <em data-view="who|summary" />!</p>',
+                      {who: {iface: 'person', name: 'Fred'}}),
+               '<p><em>the Fred</em>, hallo!</p>');
+});
 
 test('data-trans with data-tvar', function() {
     html_equal(render('<p data-trans="">Hello <em data-tvar="who">world</em>!</p>',

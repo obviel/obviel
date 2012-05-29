@@ -778,7 +778,8 @@ obviel.template = {};
         if (tokens.length !== 1 || tokens[0].type !== module.NAME_TOKEN) {
             return null;
         }
-        return tokens[0].value;
+        var name_formatter = split_name_formatter(node, tokens[0].value);
+        return name_formatter.name;
     };
 
     module.DynamicElement.prototype.compile_trans_text = function(
