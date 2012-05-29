@@ -1,5 +1,5 @@
-/*global jQuery:true, template_url:true, jsontemplate:false
-  alert:true , browser:true, document:true, app_url:true,
+/*global jQuery:true, obviel:true, jsontemplate:false
+  alert:true , browser:true, document:true,
   window:true
 */
 
