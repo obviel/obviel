@@ -1440,9 +1440,18 @@ obviel.template = {};
         return new Function(this.args, code);
     };
 
-    module.translate = function(translations, message_id) {
-        var translation = translations.gettext(message_id);
-        
+    module.translate_args = function(translation, arguments) {
+        var tokens = module.tokenize(translation);
+        var result = [];
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                result.push(arguments[token.value]);
+            } else if (token.type === module.TEXT_TOKEN) {
+                result.push(token.value);
+            }
+        }
+        return result.join('');
     };
     
     module.tokenize = function(text) {

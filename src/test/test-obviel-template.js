@@ -1378,6 +1378,11 @@ test('access variable codegen', function() {
     equal(f(scope), undefined);
 });
 
+test('translate_args', function() {
+    equal(obtemp.translate_args('Hello {who}!', {who: "world"}),
+          'Hello world!');
+});
+
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);
