@@ -988,8 +988,8 @@ obviel.template = {};
             this.render_notrans(el, scope);
             return;
         }
-        var translated = translations.gettext(this.message_id);
-        if (translated === this.message_id) {
+        var translation = translations.gettext(this.message_id);
+        if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             this.render_notrans(el, scope);
             // but we do need to render any tvars
@@ -1001,7 +1001,7 @@ obviel.template = {};
             return;
         }
         // we need to translate and reorganize sub elements
-        this.render_trans(el, scope, translations, translated);
+        this.render_trans(el, scope, translations, translation);
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
@@ -1037,10 +1037,10 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.render_trans = function(
-        el, scope, translations, translated) {
+        el, scope, translations, translation) {
         var result = [];
 
-        var tokens = cached_tokenize(translated);
+        var tokens = cached_tokenize(translation);
 
         var frag = document.createDocumentFragment();
         
@@ -1117,20 +1117,20 @@ obviel.template = {};
             this.message_id === null) {
             return this.dynamic.render(el, scope);
         }
-        var translated = translations.gettext(this.message_id);
-        if (translated === this.message_id) {
+        var translation = translations.gettext(this.message_id);
+        if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             return this.dynamic.render(el, scope);
         }
         // we need to translate and reorganize sub elements
-        return this.render_trans(el, scope, translated);
+        return this.render_trans(el, scope, translation);
     };
 
     module.AttributeText.prototype.render_trans = function(
-        el, scope, translated) {
+        el, scope, translation) {
         var result = [];
         
-        var tokens = cached_tokenize(translated);
+        var tokens = cached_tokenize(translation);
 
         // prepare what to put in place, including possibly
         // shifting tvar nodes
@@ -1438,6 +1438,11 @@ obviel.template = {};
     module.Codegen.prototype.get_function = function() {
         var code = this.result.join('');
         return new Function(this.args, code);
+    };
+
+    module.translate = function(translations, message_id) {
+        var translation = translations.gettext(message_id);
+        
     };
     
     module.tokenize = function(text) {
