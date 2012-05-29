@@ -65,9 +65,8 @@ obviel.template = {};
 (function($, module) {
 
     // will define these later, is to please jshint
-    var is_html_text = null;
-    var trim = null;
-    var formatters = null;
+    var is_html_text, trim;
+    var formatters, funcs;
     var default_view_name = null;
     var resolve_in_obj = null;
     var validate_dotted_name;
@@ -188,7 +187,7 @@ obviel.template = {};
             this.data_each = null;
         }
 
-        this.el_funcs = { funcs: [], sub: {} };
+        //this.el_funcs = { funcs: [], sub: {} };
         
         this.dynamic_elements = [];
         this.view_elements = [];
@@ -551,6 +550,7 @@ obviel.template = {};
         this.attr_texts = {};
         this.content_texts = [];
         this.message_id = null;
+        this.func = null;
         this.tvars = {};
         this.trans_variables = {};
         this._dynamic = false;
@@ -656,6 +656,8 @@ obviel.template = {};
         
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
+        this.compile_func(el);
+        
         if (trans_info.text !== null) {
             this._dynamic = true;
             this.compile_trans(el);
@@ -801,6 +803,19 @@ obviel.template = {};
         return name_formatter.name;
     };
 
+    module.DynamicElement.prototype.compile_func = function(el) {
+        var func_name = get_directive(el, 'data-func');
+        if (func_name === null) {
+            return;
+        }
+        this._dynamic = true;
+        this.func = funcs.get(func_name);
+        if (this.func === undefined) {
+            throw new module.CompilationError(
+                el, "cannot find func with name: " + func_name);
+        }
+    };
+    
     module.DynamicElement.prototype.compile_trans_text = function(
         node) {
         // need to extract all variables for tvar uniqueness checking
@@ -988,6 +1003,7 @@ obviel.template = {};
     };    
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
+        // XXX make this a for .. in loop for performance
         $.each(this.attr_texts, function(key, value) {
             var text = value.render(el, scope, translations);
             if (key === 'data-id') {
@@ -1004,6 +1020,7 @@ obviel.template = {};
         if (translations === undefined || translations === null ||
             this.message_id === null) {
             this.render_notrans(el, scope);
+            this.render_func(el, scope, translations);
             return;
         }
         var translation = translations.gettext(this.message_id);
@@ -1016,10 +1033,12 @@ obviel.template = {};
                 var info = this.tvars[key];
                 info.dynamic.render(children[info.index], scope, translations);
             }
+            this.render_func(el, scope, translations);
             return;
         }
         // we need to translate and reorganize sub elements
         this.render_trans(el, scope, translations, translation);
+        this.render_func(el, scope, translations);
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
@@ -1085,6 +1104,16 @@ obviel.template = {};
 
         // now move the elements in place
         el.appendChild(frag);
+    };
+
+    module.DynamicElement.prototype.render_func = function(
+        el, scope, translations) {
+        if (this.func === null) {
+            return;
+        }
+        this.func($(el),
+                  function(name) { return scope.resolve(name); },
+                  translations);
     };
     
     module.DynamicText = function(el, text) {        
@@ -1377,23 +1406,23 @@ obviel.template = {};
         return c.get_function();
     };
 
-    module.Formatters = function() {
+    module.Registry = function() {
         this.clear();
     };
-
-    module.Formatters.prototype.register = function(name, f) {
-        this.formatters[name] = f;
+    
+    module.Registry.prototype.register = function(name, f) {
+        this.registrations[name] = f;
     };
 
-    module.Formatters.prototype.get = function(name) {
-        return this.formatters[name];
+    module.Registry.prototype.get = function(name) {
+        return this.registrations[name];
     };
 
-    module.Formatters.prototype.clear = function() {
-        this.formatters = {};
+    module.Registry.prototype.clear = function() {
+        this.registrations = {};
     };
     
-    formatters = new module.Formatters();
+    formatters = new module.Registry();
 
     module.register_formatter = function(name, f) {
         formatters.register(name, f);
@@ -1402,7 +1431,17 @@ obviel.template = {};
     module.clear_formatters = function() {
         formatters.clear();
     };
+    
+    funcs = new module.Registry();
 
+    module.register_func = function(name, f) {
+        funcs.register(name, f);
+    };
+
+    module.clear_funcs = function() {
+        funcs.clear();
+    };
+   
     default_view_name = 'default';
 
     module.set_default_view_name = function(name) {

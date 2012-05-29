@@ -8,6 +8,7 @@ module("Template", {
     },
     teardown: function() {
         obviel.template.clear_formatters();
+        obviel.template.clear_funcs();
         obviel.clear_registry();
         obviel.compilers.clear_cache();
         obviel.template.set_default_view_name('default');
@@ -603,6 +604,100 @@ test('data-each with @each vars, nested loop', function() {
         ]}),
                '<ul><li><ul><li>0 0</li><li>1 0</li></ul></li><li><ul><li>0 1</li></ul></li></ul>'
               );
+});
+
+test('data-func', function() {
+    obtemp.register_func('addattr', function(el) {
+        el.attr('magic', "Magic!");
+    });
+    
+    html_equal(render(
+        '<p data-func="addattr">Hello world!</p>', {}),
+               '<p magic="Magic!">Hello world!</p>');
+    
+});
+
+test('data-func with variable', function() {
+    obtemp.register_func('addattr', function(el, variable) {
+        el.attr('magic', variable('foo'));
+    });
+    
+    html_equal(render(
+        '<p data-func="addattr">Hello world!</p>', {foo: "Foo!"}),
+               '<p magic="Foo!">Hello world!</p>');
+    
+});
+
+test('data-func with data-with', function() {
+    obtemp.register_func('addattr', function(el, variable) {
+        el.attr('magic', variable('foo'));
+    });
+    
+    html_equal(render(
+        '<p data-with="sub" data-func="addattr">Hello world!</p>',
+        {sub: {foo: "Foo!"}}),
+               '<p magic="Foo!">Hello world!</p>');
+
+});
+
+test('data-func with data-if where if is true', function() {
+    obtemp.register_func('addattr', function(el, variable) {
+        el.attr('magic', variable('foo'));
+    });
+    
+    html_equal(render(
+        '<p data-if="flag" data-func="addattr">Hello world!</p>',
+        {foo: "Foo!", flag: true}),
+               '<p magic="Foo!">Hello world!</p>');
+});
+
+
+test('data-func with data-if where if is false', function() {
+    obtemp.register_func('addattr', function(el, variable) {
+        el.attr('magic', variable('foo'));
+    });
+    
+    html_equal(render(
+        '<p data-if="flag" data-func="addattr">Hello world!</p>',
+        {foo: "Foo!", flag: false}),
+               '');
+});
+
+test('data-func with data-trans', function() {
+    obtemp.register_func('addattr', function(el, variable) {
+        el.attr('magic', variable('foo'));
+        // translation has happened before data-func is called
+        equal(el.text(), 'Hallo wereld!');
+    });
+    
+    html_equal(render(
+        '<p data-trans="" data-func="addattr">Hello world!</p>',
+        {foo: "Foo!"}),
+               '<p magic="Foo!">Hallo wereld!</p>');
+});
+
+test('data-func with data-each', function() {
+    obtemp.register_func('even-odd', function(el, variable) {
+        if (variable('@each.index') % 2 === 0) {
+            el.addClass('even');
+        } else {
+            el.addClass('odd');
+        }
+    });
+    
+    html_equal(render(
+        '<p data-each="list" data-func="even-odd">{@.}</p>',
+        {list: [0, 1, 2, 3]}),
+               '<p class="even">0</p><p class="odd">1</p><p class="even">2</p><p class="odd">3</p>'
+              );
+});
+
+
+test('data-func where func is missing', function() {
+    raises(function() {
+        render('<p data-trans="" data-func="addattr">Hello world!</p>',
+               {foo: "Foo!"});
+    }, obtemp.CompilationError);
 });
 
 test("data-trans with plain text", function() {
