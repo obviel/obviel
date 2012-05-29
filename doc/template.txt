@@ -766,7 +766,7 @@ translation is available::
 
  <p>Hallo wereld!</p>
 
-``data-trans``` is used to mark up those parts of the template that
+``data-trans`` is used to mark up those parts of the template that
 should be translatable, such as attributes and texts. These
 translatable values can contain variables as well:
 
