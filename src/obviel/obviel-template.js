@@ -531,8 +531,7 @@ obviel.template = {};
         this.content_texts = [];
         this.message_id = null;
         this.tvars = {};
-        this.tvar_names = {};
-        this.variable_names = {};
+        this.trans_variables = {};
         this._dynamic = false;
         this.compile(el, allow_tvar);
     };
@@ -779,14 +778,15 @@ obviel.template = {};
         return tokens[0].value;
     };
 
-    module.DynamicElement.prototype.check_tvar_uniqueness_for_text_node = function(node) {
+    module.DynamicElement.prototype.compile_variables_in_trans = function(node) {
         // need to extract all variables for tvar uniqueness checking
         var tokens = module.tokenize(node.nodeValue);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                this.variable_names[token.value] = null;
-                if (this.tvar_names[token.value] !== undefined) {
+                this.trans_variables[token.value] = new module.Variable(
+                    node.parentNode, token.value);
+                if (this.tvars[token.value] !== undefined) {
                     throw new module.CompilationError(
                         node, "data-tvar must be unique within data-trans: " +
                             token.value);
@@ -835,13 +835,12 @@ obviel.template = {};
             }
         }
         
-        if (this.tvar_names[tvar] !== undefined ||
-            this.variable_names[tvar] !== undefined) {
+        if (this.tvars[tvar] !== undefined ||
+            this.trans_variables[tvar] !== undefined) {
             throw new module.CompilationError(
                 el, "data-tvar must be unique within data-trans: " +
                     tvar);
         }
-        this.tvar_names[tvar] = null;
         return {tvar: tvar, view: view};
     };
     
@@ -855,7 +854,7 @@ obviel.template = {};
             if (node.nodeType === 3) {
                 // TEXT_NODE
                 parts.push(node.nodeValue);
-                this.check_tvar_uniqueness_for_text_node(node);
+                this.compile_variables_in_trans(node);
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
                 this.check_data_trans_restrictions(node);
@@ -993,8 +992,8 @@ obviel.template = {};
         }
     };
 
-    module.DynamicElement.prototype.get_tvar_node = function(el, scope,
-                                                             translations, name) {
+    module.DynamicElement.prototype.get_tvar_node = function(
+        el, scope,translations, name) {
         var tvar_info = this.tvars[name];
         if (tvar_info === undefined) {
             return null;
@@ -1005,6 +1004,16 @@ obviel.template = {};
             tvar_info.view.render(tvar_node, scope, translations);
         }
         return tvar_node;
+    };
+
+    module.DynamicElement.prototype.get_variable_node = function(
+        el, scope, name) {
+        var variable = this.trans_variables[name];
+        if (variable === undefined) {
+            throw new module.RenderError(
+                el, "unknown variable in translation: " + name);   
+        }
+        return document.createTextNode(variable.render(el, scope));
     };
     
     module.DynamicElement.prototype.render_trans = function(el, scope, translations,
@@ -1025,10 +1034,8 @@ obviel.template = {};
                 if (tvar_node !== null) {
                     frag.appendChild(tvar_node);
                 } else {
-                    // XXX relatively expensive to compile Variable here
-                    frag.appendChild(document.createTextNode(
-                        new module.Variable(el, token.value).render(
-                            el, scope)));
+                    frag.appendChild(this.get_variable_node(
+                        el, scope, token.value));
                 }
             }
         }
