@@ -437,6 +437,7 @@ obviel.template = {};
     var each_info = function(index, name, data_each) {
         var info = {
             index: index,
+            number: index + 1,
             length: data_each.length
         };
         var each = {};

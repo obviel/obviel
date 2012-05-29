@@ -606,6 +606,20 @@ test('data-each with @each vars, nested loop', function() {
               );
 });
 
+test('data-each with @each vars using number', function() {
+    html_equal(render(
+        '<ul><li data-each="list">{@each.number}</li></ul>',
+        {list: ['a', 'b']}),
+               '<ul><li>1</li><li>2</li></ul>');
+});
+
+test('data-each with @each vars with dotted name', function() {
+    html_equal(render(
+        '<ul><li data-each="sub.list">{@each.sub_list.number}</li></ul>',
+        {sub: {list: ['a', 'b']}}),
+               '<ul><li>1</li><li>2</li></ul>');
+});
+
 test('data-func', function() {
     obtemp.register_func('addattr', function(el) {
         el.attr('magic', "Magic!");
