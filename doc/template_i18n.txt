@@ -227,8 +227,19 @@ may also be expressed like this::
 ``data-tvar`` here deduced the variable name from the content of the
 ``em`` element (``{color}``). 
 
-This is only allowed if the element contains only a single variable,
-not when it contains text as well. This for instance is **illegal**::
+You can also always omit the ``data-tvar`` in case of a ``data-view``
+element::
+
+  <p data-trans="">The great <span data-view="foo"></span>.</p>
+
+This will result in a message id like this::
+
+  The great {foo}.
+
+Omitting ``data-tvar`` not allowed when an element contains something
+else than just a single variable, such as text or sub-elements. This
+for instance is **illegal** as it contains text (``*``) within the
+``em`` element::
 
   <div data-trans="">The <em>*{color}*</em> elephant.</div>
 
@@ -243,11 +254,3 @@ This will result in the following two message ids to translate::
 and::
 
   *{color}*
-
-In case of a ``data-view`` element, you may also omit the ``data-tvar``::
-
-  <p data-trans="">The great <span data-view="foo"></span>.</p>
-
-This will result in a message id like this::
-
-  The great {foo}.
