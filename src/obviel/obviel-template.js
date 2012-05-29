@@ -856,7 +856,6 @@ obviel.template = {};
                 // TEXT_NODE
                 parts.push(node.nodeValue);
                 this.check_tvar_uniqueness_for_text_node(node);
-                
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
                 this.check_data_trans_restrictions(node);
@@ -867,7 +866,6 @@ obviel.template = {};
                     dynamic: new module.DynamicElement(node, true),
                     view: tvar_info.view
                 };
-                
             } else if (node.nodeType === 8) {
                 // COMMENT_NODE
                 // no need to do anything, index for tvars will be correct
