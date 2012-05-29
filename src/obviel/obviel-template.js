@@ -71,6 +71,7 @@ obviel.template = {};
     var default_view_name = null;
     var resolve_in_obj = null;
     var validate_dotted_name;
+    var cached_tokenize;
     
     var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
 
@@ -1039,7 +1040,7 @@ obviel.template = {};
         el, scope, translations, translated) {
         var result = [];
 
-        var tokens = module.cached_tokenize(translated);
+        var tokens = cached_tokenize(translated);
 
         var frag = document.createDocumentFragment();
         
@@ -1129,7 +1130,7 @@ obviel.template = {};
         el, scope, translated) {
         var result = [];
         
-        var tokens = module.cached_tokenize(translated);
+        var tokens = cached_tokenize(translated);
 
         // prepare what to put in place, including possibly
         // shifting tvar nodes
@@ -1511,7 +1512,7 @@ obviel.template = {};
 
     var MAX_CACHED_TEXT_LENGTH = 100;
     
-    module.cached_tokenize = function(text) {
+    cached_tokenize = function(text) {
         // don't cache if it's too big
         if (text.length > MAX_CACHED_TEXT_LENGTH) {
             return module.tokenize(text);
