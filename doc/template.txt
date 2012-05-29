@@ -74,6 +74,34 @@ exception.
 Dotted names also work in directives like ``data-with``, ``data-if``
 and ``data-each``, which we'll see next.
 
+Interpolating the current object: ``@.``
+----------------------------------------
+
+In Obviel Template, special variables start with ``@``, and ``@.``
+means "the current object". This can be useful for debugging
+templates: you can see what the current object is somewhere. The
+current object will be serialized to JSON into the rendered template.
+
+Consider this data::
+
+  {
+    title: "Foo"
+  }
+
+and this template::
+
+  <div>
+    {@.}
+  </div>
+
+Rendering the template with the data will result in this::
+
+  <div>
+    {
+      title: "Foo"
+    }
+  </div>
+
 ``data-with`` for scope control
 -------------------------------
 
@@ -229,32 +257,125 @@ will render like this::
     <li>Jay</li>
   </ul>
 
-Interpolating the current object: ``@.``
-----------------------------------------
+Special ``@each`` variable
+--------------------------
 
-Sometimes you want to interpolate the current object or array into the
-document (as JSON), mostly for debugging purposes. For this you can
-use ``{@.}`` as well.
+``data-each`` supports the special variable ``@each``. This variable
+contains some useful properties during the construction of loops:
 
-Consider this data::
+* ``index`` - the index of the current iteration, starting at 0
+
+* ``number`` - the number of the current iteration, starting at 1
+
+* `length`` - the length of the list
+
+* ``even`` - ``true`` if the index is an even number
+
+* ``odd`` -- ``true`` if the index is an odd number
+
+For example::
+
+  <ul>
+    <li data-each="persons">{@each.index}</li>
+  </ul>
+
+will render (with three items in the list) as follows::
+
+  <ul>
+    <li>0</li>
+    <li>1</li>
+    <li>2/li>
+  </ul>
+
+To support nested use of ``data-each``, ``@each`` also supports a
+variable named after the variable that is currently being looped
+through, in this example ``persons``::
+
+  <ul>
+    <li data-each="persons">{@each.persons.index}</li>
+  </ul>
+
+which will do the same as the previous template.
+
+Let's look at how this is used in a nested ``data-each``. Here's the data::
+
+  {outer: [
+    {inner: ['a', 'b', 'c']},
+    {inner: ['d', 'e']}
+  ]}
+
+And here's a template::
+
+  <ul>
+    <li data-each="outer">
+      <ul>
+        <li data-each="inner">
+        value: {@.} outer: {@each.outer.number} inner: {@each.inner.number}
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+If you used this template with the data, you would get this output::
+
+  <ul>
+    <li>
+      <ul>
+        <li>
+        value: a outer: 1 inner: 1
+        </li>
+        <li>
+        value: b outer: 1 inner: 2
+        </li>
+        <li>
+        value: c outer: 1 inner: 3
+        </li>
+      </ul>
+    </li>
+    <li>
+      <ul>
+        <li>
+        value: d outer: 2 inner: 1
+        </li>
+        <li>
+        value: e outer: 2 inner: 2
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+What if the variable ``data-each`` goes through is a dotted name - how
+is it used with ``data-each``? You can addres it by replacing the
+periods by underscores. For instance, given this data::
 
   {
-    title: "Foo"
+    something: {
+      persons: ["Bob", "Steven", "Jay"]
+    }
   }
 
 and this template::
 
-  <div>
-    {@.}
-  </div>
+  <ul>
+    <li data-each="something.persons">{@each.something_persons.number}</li>
+  </ul>
 
-Rendering the template with the data will result in this::
+you will get this as a result::
 
-  <div>
-    {
-      title: "Foo"
-    }
-  </div>
+  <ul>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+  </ul>
+
+So to address ``something.persons`` in a loop, you use
+``something_persons``, with the ``.`` replaced by ``_``.
+
+Sometimes, to support various user interface designs, you want to add
+a special ``class`` into the DOM depending on some ``@each`` value,
+for instance when the index is even or odd. Obviel Template supports
+such special use cases with ``data-func``, about which we'll talk in a
+later section.
 
 Nested scoping
 --------------
@@ -432,10 +553,142 @@ we'd get the following output::
   <p>HELLO</p>
 
 Again, formatters cannot be used to include HTML, only text; for
-including HTML you can use views.
+including HTML you can use views. To do some special DOM manipulation,
+you can also consider ``data-func``.
 
 You would register formatters only once per web page before template
 rendering takes place, for instance when the page has just been loaded.
+
+``data-func``
+-------------
+
+In some cases it is more convenient to use JavaScript to manipulate
+the DOM directly (using jQuery) than it would be to use Obviel
+Template constructions to do the job. For this Obviel Template offers
+a special directive to plug custom functions into the template
+rendering process called ``data-func``. ``data-func`` should be used
+as a facility of last resort: first consider the normal Obviel
+Template functionality.
+
+To see what ``data-func`` does, let's consider a simple (but pretty
+useless) case first. We register the func ``magic``::
+
+  obviel.template.register_func('magic', function(el) {
+     el.attr('magic', 'Magic!');
+  });
+
+Once this registration has been made, we can use it within a template,
+for instance this one::
+
+  <p data-func="magic">Hello world!</p>
+
+Once the template is rendered, we'll see this::
+
+  <p magic="Magic!">Hello world!</p>
+
+Of course, this functionality is pretty useless, as we could just have
+written a template like this::
+
+  <p magic="Magic!">Hello world!</p>
+
+``data-func`` really starts to be useful in complex cases in
+combination with ``data-each``. Let's consider the case where we want
+to add an ``even`` and ``odd`` class to each iteration. We could write
+a template like this::
+
+  <ul>
+    <li data-each="list">
+      <p data-if="even" class="even">{@.}</p>
+      <p data-if="odd" class="odd">{@.}</p>
+    </li>
+  </ul>
+
+This template has various problems:: 
+
+* we have to write the ``p`` bit twice
+
+* what if we wanted to place the class on ``li``?
+
+It's actually easy to express this rule in JavaScript::
+
+  var evenodd = function(el, variable) {
+     if (variable('@each.even')) {
+        el.addClass('even');
+     } else {
+        el.addClass('odd');
+     }
+  };
+
+With ``data-func`` you can plug this functionality into template rendering.
+First we need to register the useful function globally for our application::
+
+  obviel.template.register_func('evenodd', evenodd);
+
+And then we can use it so we only have to write ``p`` once::
+
+  <ul>
+    <li data-each="list">
+      <p data-func="evenodd">{@.}</p>
+    </li>
+  </ul>
+
+Or to use it to add the class to ``li`` directly::
+
+  <ul>
+    <li data-each="list" data-func="evenodd">
+      <p>{@.}</p>
+    </li>
+  </ul>
+
+Using ``data-func`` you can supplement Obviel Template with
+functionality particular to your application's templates. This is
+especially useful for generic functionalities that extend the template
+language, such as adding classes in ``data-each``, where we can rely
+on the existence of a special variable ``@each`` to exist.
+
+Note that you should *only* use ``data-func`` to *change* the element,
+for instance by manipulating its attributes, *not* to add or remove
+child elements (or text-nodes). Most DOM manipulations by adding,
+moving or removing elements or text modes are unsafe: it can break
+Obviel Template in unexpected ways, as it relies on the order of child
+nodes to stay the same.
+
+.. sidebar:: safe and unsafe operations for ``data-func`
+
+  In general the rule is that any operations that alter the amount of
+  child nodes of the element (or sub-elements) in the DOM are
+  forbidden, though there are some exceptions. We'll go into some
+  (non-exhaustive) detail here.
+
+  Safe:
+
+  * add attribute (i.e. ``attr``).
+
+  * remove attribute (i.e. ``removeAttr``).
+
+  * change attribute  (ie. ``attr`` or ``addClass``).
+
+  * append a new child element at the end of the current element
+    (using ``.append``).
+
+  * change text using ``.text`` as long as the element does not
+    contain any sub-elements but only text content. If it does contain
+    sub-elements, text nodes can still be manipulated as long as they
+    are not removed.
+
+  * replace a child element with another, as long as that other has
+    exactly the same structure (text and sub-elements recursively).
+
+  Unsafe operatons:
+
+  * move a child element (i.e. ``after``, ``before``).
+
+  * remove a child element (i.e. ``remove``, ``empty``).
+
+  * remove text nodes.
+
+  * replace a child element with another that does not have the
+    same structure (text and sub-elements recursively).
 
 id support
 ----------
@@ -465,8 +718,8 @@ This will generate HTML with proper ``id`` attributes.
 Order
 -----
 
-You can combine the attributes ``data-if``, ``data-each``,
-``data-with``, and ``data-view`` on an element::
+You can combine the various ``data-`` directive attributes on an
+element::
 
   <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
 
@@ -480,15 +733,19 @@ The order of execution is as follows :
 
 * ``data-view`` or ``data-trans``
 
-This order holds no matter in what order you define the attributes. 
+* ``data-func``
 
-``data-trans``, which we'll introduce next, also follows after the
-other statements. It's not allowed on an element with ``data-view``.
- 
 This means that if the value ``a`` is present and true, the ``p``
 element will be included in the rendered template (at all). After
 this, for each of the entries in ``b`` (so ``b`` scope, iteratively),
 we render the object ``d`` in the ``c`` scope with a view.
+
+This order holds no matter in what order you define the attributes.
+
+``data-trans``, which we'll introduce next, also follows after the
+other statements. It's not allowed on an element with ``data-view``.
+
+``data-func`` is always executed last for an element.
  
 ``data-trans`` for i18n
 ------------------------
