@@ -75,6 +75,8 @@ Look at a quick overview of :doc:`Obviel features <features>`
 
 Read the :doc:`Obviel core manual <manual>`.
 
+Read about :doc:`Obviel Templates <template>`.
+
 Read about :doc:`Obviel forms <form>`.
 
 Read about :doc:`the Traject routing library <traject>`.

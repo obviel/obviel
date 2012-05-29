@@ -40,26 +40,25 @@ How to include Obviel on your web page
 
 First you need to know how to include Obviel on a web page. You need
 to make sure that ``src/obviel.js`` is published somewhere on your web
-server. You also need jQuery_, and optionally `JSON template`_.
+server. You also need jQuery_, and optionally (but recommended!)
+``src/obviel-template.js``.
 
 .. _jQuery: http://jquery.com/
-
-.. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
 
 To include Obviel, you first need jQuery as a dependency::
 
    <script type="text/javascript" src="/path/to/jquery-1.6.1.js"></script>
- 
-If you want Obviel's json-template support, you can include JSON
-template (but this is optional)::
 
-  <script type="text/javascript" src="/path/to/json-template.js"></script>
- 
+If you want to use Obviel Template (optional but strongly recommended),
+you need to include it::
+
+    <script type="text/javascript" src="/path/to/obviel-template.js"></script>
+  
 Finally, you need to include Obviel core itself::
   
   <script type="text/javascript" src="/path/to/obviel.js"></script>
 
-Obviel is now available as ``obviel`` in your JavaScript code. 
+Obviel is now available as ``obviel`` in your JavaScript code.
 
 Here is a suggestion on how to structure your code, using the
 `JavaScript module pattern`_ (global import)::
@@ -76,6 +75,21 @@ We'll go into what you can put in for ``some_selector`` and
 ``some_object_or_url`` below.
 
 .. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
+
+.. sidebar:: Alternative template languages for Obviel
+
+  Besides Obviel Template, Obviel also supports alternative template
+  languages. In the past Obviel's recommend template language was
+  `JSON template`_. This is a good text-based template language, but
+  was replaced with Obviel Template as this integrates with Obviel's
+  other features better.
+
+  If you want Obviel's json-template support, you can include JSON
+  template (but this is optional)::
+
+    <script type="text/javascript" src="/path/to/json-template.js"></script>
+ 
+  .. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
 
 Rendering a view
 ----------------

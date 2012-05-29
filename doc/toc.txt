@@ -8,6 +8,7 @@ Contents:
 
    features
    manual
+   template
    form
    traject
    api
