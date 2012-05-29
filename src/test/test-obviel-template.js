@@ -1,6 +1,6 @@
 /*global module:false obviel:false test:false ok:false same:false $:false
   equal:false raises:false asyncTest:false start:false deepEqual: false
-  stop:false  */
+  stop:false strictEqual:false */
 
 module("Template", {
     setup: function() {
@@ -666,7 +666,7 @@ test('implicit data-tvar not allowed for empty sub-element', function() {
     raises(function() {
         render('<p data-trans="">Hello <em></em>!</p>',
                {});
-    }, obtemp.CompilationError);;
+    }, obtemp.CompilationError);
 });
 
 test('data-trans with data-tvar and variable in text', function() {
