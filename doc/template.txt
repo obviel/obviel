@@ -768,7 +768,7 @@ translation is available::
 
 ``data-trans`` is used to mark up those parts of the template that
 should be translatable, such as attributes and texts. These
-translatable values can contain variables as well:
+translatable values can contain variables as well::
 
   <p data-trans="">Hello {who}!</p>
 
