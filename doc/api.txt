@@ -391,19 +391,21 @@ Everything is in the ``obviel.template`` namespace.
       takes a single message id argument that returns the translated
       text. Optional argument.
 
-.. function:: translate_args(translation, variables)
+.. function:: variables(translation, variables)
 
-  A simple way to interpolate variables into a translation.
+  A simple way to interpolate variables into a text, in particular for
+  the purposes of i18n.
 
-  Given a translation with variables (marked with ``{`` and ``}``)
-  like would be returned for template translation, and an object
-  (hash) of arguments, interpolate arguments into translation. This
-  can be used from JavaScript to interpolate Obviel-like variables.
+  Given a text with variables (marked with ``{`` and ``}``) and an
+  object (hash) of variables, interpolate variables into text. This
+  can be used from JavaScript to interpolate Obviel Template-like
+  translation variables, instead of jsgettext's ``strargs``, which
+  only works with positional values.
 
-  :param string translation: The translated text.
-  :param object arguments: Variables to use to replace variables in the text 
-     with.
-  :returns: The translated text with variables interpolated.
+  :param string text: The text (with variables).
+  :param object arguments: A key-value mapping where the key is the 
+    variable name.
+  :returns: The text with variables interpolated.
 
 .. function:: tokenize(text)
   

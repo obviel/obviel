@@ -10,3 +10,8 @@ Here's a `form demo`_.
 Here is a demo of some Obviel patterns_, along with jGrowl integration.
 
 .. _`patterns`: _static/demo/patterns-demo.html
+
+Here's a demo of `i18n of JavaScript`_ with jsgettext.
+
+.. _`i18n of JavaScript`: _static/demo/i18n-js-demo.html
+
