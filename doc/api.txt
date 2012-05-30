@@ -303,7 +303,7 @@ also define some convenience methods.
     the object on the element. This is useful for instance when the
     underlying object has changed.
 
-Obviel template
+Obviel Template
 ===============
 
 Everything is in the ``obviel.template`` namespace.
@@ -333,6 +333,42 @@ Everything is in the ``obviel.template`` namespace.
   .. attribute:: message
 
     Message describing what went wrong during rendering.
+
+.. function:: register_formatter(name, func)
+
+  Register a formatter. Is done when the UI starts up (per page),
+  before any templates are compiled.
+
+  :param string name: the name of the formatter. This is how it is
+    addressed in the template language (using ``{foo|formatter_name}``).
+  :param function func: the formatting function. It gets the text (string)
+    to format as its argument and should return the formatted text.
+
+.. function:: clear_formatters()
+
+   Clear all previously registered formatters. Typically used during
+   unit test teardown.
+
+.. function:: register_func(name, func)
+
+  Register a element adjustment function. Is done when the UI starts
+  up (per page), before any templates are compiled.
+
+  :param string name: the name of the func. This is how it is
+    addressed in the template language (using ``data-func="func_name"``).
+  :param function func:  the function that manipulates the element. This 
+    function takes 1 to 3 arguments: the jQuery element ``el`` to manipulate, 
+    a ``variable`` resolver function (optional) and a ``translations``
+    object (optional). Should manipulate the element, for instance by
+    using ``el.addClass``. The ``variable`` resolver function can
+    be used by the function to look up variables; get the value of
+    variables in the current scope by calling it with a variable
+    name as a string (``variable(variable_name)``).
+
+.. function:: clear_funcs()
+
+   Clear all previously registered funcs. Typically used during
+   unit test teardown.
 
 .. class:: Template
 
@@ -381,11 +417,11 @@ Everything is in the ``obviel.template`` namespace.
     ``NAME_TOKEN`` this is the name between ``{`` and ``}``, in case
     of ``TEXT_TOKEN`` this is the text.
 
-Obviel forms
+Obviel Forms
 ============
 
-A form structure is normally returned from the server-side. It should
-have iface ``viewform``.
+A form structure is could be returned from the server-side but an also
+be defined on the client. It should have the iface ``viewform``.
 
 Form options
 ++++++++++++

@@ -28,11 +28,23 @@ Hyperlinking
 HTML generation
 ---------------
 
+* Loops, conditionals and variables, deliberately kept sweet and
+  simple.
+
+* Sub-view rendering: Obviel views can be rendered directly from a
+  template, making it very easy to compose complex UIs using Obviel
+  views.
+
+* Internationalization support: mark up parts of your template so they
+  can be extracted as message ids and be translated when the template
+  renders.
+
+* Extensible with custom formatters and functions that adjust elements
+  by DOM manipulation.
+
 * Support for client or server-side HTML generation.
 
 * Support for static HTML inclusion.
-
-* JSON Template template language support.
 
 * Pluggable system for client-side template languages, so that other
   client-side template languages can be plugged in.

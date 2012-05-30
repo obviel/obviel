@@ -39,8 +39,9 @@ Client-side templating
 ----------------------
 
 If you're going to build a rich client-side application, why not use a
-client-side templating engine? Obviel supports JSON Template out of the
-box and allows you to integrate others.
+client-side templating engine? Obviel has an integrated (but optional)
+template language that features sub-view rendering and a powerful
+gettext-based internationalization system.
 
 Form library
 ------------
