@@ -562,7 +562,6 @@ rendering takes place, for instance when the page has just been loaded.
 ``data-func``
 -------------
 
-
 .. sidebar:: safe and unsafe operations for ``data-func`
 
   In general the rule is that any operations that alter the amount of
@@ -602,11 +601,11 @@ rendering takes place, for instance when the page has just been loaded.
 
 In some cases it is more convenient to use JavaScript to manipulate
 the DOM directly (using jQuery) than it would be to use Obviel
-Template constructions to do the job. For this Obviel Template offers
-a special directive to plug custom functions into the template
-rendering process called ``data-func``. ``data-func`` should be used
-as a facility of last resort: first consider the normal Obviel
-Template functionality.
+Template constructions to do the job. For these cases Obviel Template
+offers a special directive to plug custom functions into the template
+rendering process directly, called ``data-func``. ``data-func`` should
+be used as a facility of last resort: if in doubt, use the normal
+Obviel Template functionality, because it will be easier to read.
 
 To see what ``data-func`` does, let's consider a simple (but pretty
 useless) case first. We register the func ``magic``::
@@ -645,7 +644,7 @@ This template has various problems::
 
 * we have to write the ``p`` bit twice
 
-* what if we wanted to place the class on ``li``?
+* what if we wanted to place the ``class`` on ``li`` instead of on ``p``?
 
 It's actually easy to express this rule in JavaScript::
 
@@ -657,8 +656,9 @@ It's actually easy to express this rule in JavaScript::
      }
   };
 
-With ``data-func`` you can plug this functionality into template rendering.
-First we need to register the useful function globally for our application::
+With ``data-func`` you can plug this functionality into template
+rendering.  First we need to register the useful function globally for
+our application::
 
   obviel.template.register_func('evenodd', evenodd);
 
