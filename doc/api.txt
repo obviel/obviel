@@ -303,6 +303,84 @@ also define some convenience methods.
     the object on the element. This is useful for instance when the
     underlying object has changed.
 
+Obviel template
+===============
+
+Everything is in the ``obviel.template`` namespace.
+  
+.. class:: CompilationError
+
+  Exception. Something went wrong during compilation of a template.
+
+  .. attribute:: el
+
+    The JavaScript DOM node, typically an element node, on which compilation
+    failed.
+
+  .. attribute:: message
+
+    Message describing what went wrong during compilation.
+
+.. class:: RenderError
+
+  Exception. Something went wrong during compilation of a template.
+
+  .. attribute:: el
+
+    The JavaScript DOM node, typically an element node, on which rendering
+    failed.
+
+  .. attribute:: message
+
+    Message describing what went wrong during rendering.
+
+.. class:: Template
+
+  A template. To instantiate and compile, create a new ``Template``
+  object with a ``text`` argument. The ``text`` argument should be
+  a HTML fragment that will be compiled. 
+
+  Can throw :class:`CompilationError` if the text could not be compiled.
+
+  .. function:: render(el, obj, translations)
+
+    Render template on jQuery element ``el``, using ``obj`` to resolve
+    variables, and using ``translations`` to look up translations.
+
+    :param object el: jQuery element to render the template on.
+    :param object obj: Object to render. Variables in the templates
+      will be resolved from ``obj``.
+    :param object translations: A translations lookup registry. Used
+      to look up message ids. Must define a method ``gettext`` that
+      takes a single message id argument that returns the translated
+      text. Optional argument.
+
+.. function:: translate_args(translation, variables)
+
+  A simple way to interpolate variables into a translation.
+
+  Given a translation with variables (marked with ``{`` and ``}``)
+  like would be returned for template translation, and an object
+  (hash) of arguments, interpolate arguments into translation. This
+  can be used from JavaScript to interpolate Obviel-like variables.
+
+  :param string translation: The translated text.
+  :param object arguments: Variables to use to replace variables in the text 
+     with.
+  :returns: The translated text with variables interpolated.
+
+.. function:: tokenize(text)
+  
+  Tokenize text using Obviel Template rules. Name tokens are marked by
+  ``{`` and ``}``, the rest are text tokens.
+
+  :param string text: Text to tokenize.
+  :returns: an array of token objects. Each token object has a 
+    ``type`` property that indicates the token type (``NAME_TOKEN`` or
+    ``TEXT_TOKEN``, and a ``value`` property. In case of
+    ``NAME_TOKEN`` this is the name between ``{`` and ``}``, in case
+    of ``TEXT_TOKEN`` this is the text.
+
 Obviel forms
 ============
 
@@ -762,6 +840,8 @@ provide some methods. This is the typical pattern::
 
 Traject
 =======
+
+Everything is in the ``traject`` namespace.
 
 .. class:: ParseError
 
