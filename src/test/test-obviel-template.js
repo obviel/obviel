@@ -1542,8 +1542,8 @@ test('access variable codegen', function() {
     equal(f(scope), undefined);
 });
 
-test('translate_variables', function() {
-    equal(obtemp.translate_variables('Hello {who}!', {who: "world"}),
+test('variables', function() {
+    equal(obtemp.variables('Hello {who}!', {who: "world"}),
           'Hello world!');
 });
 

@@ -1508,8 +1508,8 @@ obviel.template = {};
         return new Function(this.args, code);
     };
 
-    module.translate_variables = function(translation, variables) {
-        var tokens = module.tokenize(translation);
+    module.variables = function(text, variables) {
+        var tokens = module.tokenize(text);
         var result = [];
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
