@@ -531,30 +531,30 @@ obviel.template = {};
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
                                                                 translations) {
-        $.each(this.dynamic_elements, function(index, value) {
+        for (var i in this.dynamic_elements) {
+            var value = this.dynamic_elements[i];
             var dynamic_el = value.finder(el);
             value.dynamic_element.render(dynamic_el, scope, translations);
-        });
-
+        }
     };
 
     module.Section.prototype.render_views = function(el, scope,
                                                      translations) {
-        $.each(this.view_elements, function(index, value) {
+        for (var i in this.view_elements) {
+            var value = this.view_elements[i];
             var view_el = value.finder(el);
             value.view_element.render(view_el, scope, translations);
-        });
-
+        }
     };
 
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             translations) {
-        $.each(this.sub_sections, function(index, value) {
+        for (var i in this.sub_sections) {
+            var value = this.sub_sections[i];
             var sub_section_el = value.finder(el);
             value.sub_section.render(sub_section_el, scope, translations);
-        });
+        }
     };
-
     
     module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
@@ -1191,13 +1191,14 @@ obviel.template = {};
 
         // prepare what to put in place, including possibly
         // shifting tvar nodes
-        $.each(tokens, function(index, token) {
+        for (var i in tokens) {
+            var token = tokens[i];
             if (token.type === module.TEXT_TOKEN) {
                 result.push(token.value);
             } else if (token.type === module.NAME_TOKEN) {
                 result.push(scope.resolve(token.value));
             }
-        });
+        }
         return result.join('');
     };
     
