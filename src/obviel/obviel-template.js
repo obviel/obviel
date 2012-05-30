@@ -1508,7 +1508,7 @@ obviel.template = {};
         return new Function(this.args, code);
     };
 
-    module.translate_args = function(translation, variables) {
+    module.translate_variables = function(translation, variables) {
         var tokens = module.tokenize(translation);
         var result = [];
         for (var i = 0; i < tokens.length; i++) {
