@@ -40,8 +40,14 @@ Client-side templating
 
 If you're going to build a rich client-side application, why not use a
 client-side templating engine? Obviel has an integrated (but optional)
-template language that features sub-view rendering and a powerful
-gettext-based internationalization system.
+template language that features sub-view rendering and i18n support.
+
+Internationalization support
+----------------------------
+
+It should be possible to create a single Web UI for multiple
+languages. Obviel has powerful gettext-based internationalization
+(i18n) support for both JavaScript (using jsgettext) and templates.
 
 Form library
 ------------
@@ -60,13 +66,6 @@ inverse: construct paths for objects. With Traject you can make
 dynamic single-page user interfaces that work with hyperlinks and the
 browser back button.
 
-Download Obviel
----------------
-
-`Download`_ Obviel here!
-
-.. _`Download`: http://bitbucket.org/obviel/obviel/downloads
-
 Learning more
 -------------
 
@@ -78,9 +77,12 @@ Read the :doc:`Obviel core manual <manual>`.
 
 Read about :doc:`Obviel Templates <template>`.
 
-Read about :doc:`Obviel forms <form>`.
+Read about :doc:`Obviel Forms <form>`.
 
 Read about :doc:`the Traject routing library <traject>`.
+
+You have a project and now you want to internationalize it (i18n). Obviel
+has extensive :doc:`i18n support <i18n>`.
 
 We also have :doc:`API documentation <api>`.
 
@@ -94,3 +96,10 @@ Want to hack on Obviel? Here are some useful :doc:`notes on
 development <development>`.
 
 Review the :doc:`table of contents <toc>`.
+
+Download Obviel
+---------------
+
+`Download`_ Obviel here!
+
+.. _`Download`: http://bitbucket.org/obviel/obviel/downloads

@@ -25,8 +25,8 @@ Hyperlinking
 * Supports bootstrapping single-page applications from a single URL;
   all the rest of the information can be retrieved through hyperlinks.
 
-HTML generation
----------------
+Templates for HTML generation
+-----------------------------
 
 * Loops, conditionals and variables, deliberately kept sweet and
   simple.
@@ -48,6 +48,13 @@ HTML generation
 
 * Pluggable system for client-side template languages, so that other
   client-side template languages can be plugged in.
+
+Internationalization
+--------------------
+
+* Supports i18n of both plain JavaScript and Obviel templates.
+
+* Documented, gettext-style i18n workflow.
 
 Obviel Forms
 ------------

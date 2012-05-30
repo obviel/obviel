@@ -102,7 +102,7 @@ applications, it also supports JavaScript applications.
 
 .. _Babel: http://babel.edgewall.org/
 
-.. sidebar:: why Babel and not ``xgettext``?
+.. sidebar:: why ``babel extract`` and not ``xgettext``?
 
   ``xgettext`` is the standard GNU gettext tool to extract message ids
   from JavaScript code. Unfortunately this tool still does not have
@@ -118,6 +118,9 @@ applications, it also supports JavaScript applications.
 
   Plus you'll get to use the plugin for Babel to extract translatable
   content from ``.obvt`` files too!
+
+  We do use the standard GNU gettext ``msginit`` and ``msgmerge``
+  however.
 
   .. _JsLex: http://pypi.python.org/pypi/jslex
 
@@ -156,9 +159,11 @@ Creating ``.po`` files
 
 For each language our project has translations for, we now need to
 create a ``.po`` file from our ``.pot`` file. You can do this with the
-GNU gettext tool suite, using the ``msginit`` tool::
+GNU gettext tool suite, using the ``msginit`` tool (`details about msginit`_)::
 
  $ msginit -l fr_FR -i myproject.pot -o myproject-fr_FR.po
+
+.. _`details about msginit`: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/msginit-Invocation.html
 
 .. sidebar:: Why ``msginit`` and not ``pybabel``?
 
@@ -178,7 +183,7 @@ file looks like::
   msgid "Hello world!"
   msgstr ""
 
-In fact very similar to our ``.pot`` file. 
+This is in fact very similar to our ``.pot`` file!
 
 We can now edit the file to add the French translations::
 
@@ -186,11 +191,26 @@ We can now edit the file to add the French translations::
   msgid "Hello world!"
   msgstr "Bonjour monde!"
 
-In practice, you would give this file to the translator to
-French. They can then edit it directly to add or update the
-translations, or use some GUI tool that can work with ``.po``
-files. When they are done, they would give the file back to you.
+In practice, you would likely give this file to someone else: the
+person translating the application to French. They can then edit it
+directly to add or update the translations, or use some GUI tool that
+can work with ``.po`` files. When they are done, they would give the
+file back to you.
 
+Updating ``.po`` files
+----------------------
+
+When your project evolves, you will likely add new texts to translate,
+or change or remove existing ones. You can use the ``babel extract``
+tool as usual to extract a new ``.pot`` file containing all the
+current translation texts. You can then use the GNU gettext
+msgmerge tool (details_) to update your existing ``.po`` files so that the
+new translatable texts become available to your translators::
+   
+  $ msgmerge -U myproject-fr_FR.po myproject.pot
+
+.. _details: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/msgmerge-Invocation.html
+ 
 Creating ``.js`` files from the ``.po`` files
 ---------------------------------------------
 

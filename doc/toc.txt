@@ -10,6 +10,7 @@ Contents:
    manual
    template
    template_i18n
+   i18n
    form
    traject
    api
