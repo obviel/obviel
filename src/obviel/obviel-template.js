@@ -1013,18 +1013,18 @@ obviel.template = {};
     };    
     
     module.DynamicElement.prototype.render = function(el, scope, translations) {        
-        // XXX make this a for .. in loop for performance
-        $.each(this.attr_texts, function(key, value) {
+        for (var key in this.attr_texts) {
+            var value = this.attr_texts[key];
             var text = value.render(el, scope, translations);
             if (key === 'data-id') {
                 // XXX this implies data-id needs interpolation as opposed
                 // to using it like any other data-x directive
                 el.removeAttribute('data-id');
                 el.setAttribute('id', text);
-                return;
+                continue;
             }
             el.setAttribute(key, text);
-        });
+        };
         // fast path without translations; elements do not need to be
         // reorganized
         if (translations === undefined || translations === null ||
