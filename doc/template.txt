@@ -562,7 +562,7 @@ rendering takes place, for instance when the page has just been loaded.
 ``data-func``
 -------------
 
-.. sidebar:: safe and unsafe operations for ``data-func`
+.. sidebar:: safe and unsafe operations for ``data-func``
 
   In general the rule is that any operations that alter the amount of
   child nodes of the element (or sub-elements) in the DOM are
