@@ -21,6 +21,22 @@ CHANGES
   to objects and the inverse: constructing paths for objects. See the
   documentation for more detail.
 
+* Obviel Forms now uses a special view for the iface
+  ``obviel_forms_error_area`` to render error areas. You can define a
+  view and render your own error area. In this view create an element
+  with id ``this.obj.field_error_id`` to hold the field error message,
+  and an element with id ``this.obj.global_error_id`` to hold the
+  global error message.
+  
+* Obviel Forms now sends an event soon as an error message is set or
+  cleared. The event names are ``field-error.obviel-forms``,
+  ``field-error-clear.obviel-forms``, ``global-error.obviel-forms``,
+  ``global-error-clear.obviel-forms``. The events are sent to the
+  element on which the error message is rendered, and will bubble up
+  (so you can catch them on a higher level). The ``target`` property
+  of the event will also have a reference to the element on which the
+  message was set.
+
 0.11.1 (2012-01-14)
 ===================
 

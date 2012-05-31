@@ -199,3 +199,33 @@ this case ``http://example.com/submit``.
 Nested and repeating structures come naturally to Obviel forms: a
 nested field's data is simply a sub-object of ``data``, and a
 repeating field's data is an array of sub-objects.
+
+Error events
+------------
+
+When Obviel Forms sets an error message (either field-error or
+global-error) for a field, or clears such an error message, an event
+is sent to the element on which the message is set. The event names are:
+
+* ``field-error.obviel-forms``: a field error is set
+
+* ``field-error-clear.obviel-forms``: a field error is cleared
+
+* ``global-error.obviel-forms``: a global error is set
+
+* ``global-error-clear.obviel-forms``: a global error is cleared
+
+These events bubble up the DOM, so you can bind to these events on a
+higher level, such as the form or the document. The ``event`` object
+passed to the handler has a ``target`` property that can be used to
+retrieve the element on which the message was set.
+
+Overriding the error area
+-------------------------
+
+You can override the way the error area per fields looks by
+registering a view on the special ``obviel_forms_error_area``
+iface. You need to do this after the obviel-forms file has been
+included. In it you should make sure of creating two elements which
+can contain text content that have the id ``this.obj.field_error_id``
+and ``this.obj.global_error_id``, so that the errors can be rendered.

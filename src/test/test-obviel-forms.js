@@ -2996,7 +2996,7 @@ test("global errors", function() {
     equal(field_global_a.text(), 'must be smaller than b');
     equal(form_error_el.text(), '2 fields did not validate');
     // and in the widget
-    equal(field_global_a.parent_view().global_error(),
+    equal(field_global_a.parent().parent().parent_view().global_error(),
           'must be smaller than b');
     
     // make the global validation problem go away again
@@ -3705,4 +3705,189 @@ test('display label', function () {
     var field_el = $('#obviel-field-test-a', form_el);
 
     equal(field_el.text(), 'Alpha');
+});
+
+test("modify error area", function() {
+    // override error area rendering
+    // XXX test runner for forms doesn't clean this up yet
+
+    obviel.view({
+        iface: 'obviel_forms_error_area',
+        jsont: ('<div class="obviel-error-wrapper">' +
+                '<div class="obviel-error-content">' +
+                '<div class="obviel-error-arrow"></div>' +
+                '<div id="{field_error_id}" class="obviel-field-error"></div>' +
+                '<div id="{global_error_id}" class="obviel-global-error"></div>' +
+                '</div>' +
+                '</div>')
+    });
+ 
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data,
+        
+        errors: errors
+    });
+
+    // check whether newly rendered data is there
+    equal($('.obviel-error-arrow', el).length, 1);
+
+    // change so we get an error
+    var form_el = $('form', el);
+    var field_el = $('#obviel-field-test-a', form_el);
+    field_el.val('foo'); // not an int
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    // now check whether error information is indeed updated
+    equal($('#obviel-field-error-test-a', el).text(), 'not a number');
+});
+
+test("error events", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A',
+                validate: {
+                }
+            }]
+        },
+        data: data,
+        
+        errors: errors
+    });
+
+    var form_el = $('form', el);
+
+    // bind to error event
+    
+    form_el.bind('field-error.obviel-forms', function(ev) {
+        $(ev.target).parents('.obviel-field').addClass('foo');
+    });
+
+       
+    form_el.bind('field-error-clear.obviel-forms', function(ev) {
+        $(ev.target).parents('.obviel-field').removeClass('foo');
+    });
+ 
+    var field_el = $('#obviel-field-test-a', form_el);
+    field_el.val('foo'); // not an int
+    var ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+
+    ok(field_el.parents('.obviel-field').hasClass('foo'));
+
+    field_el.val(1); // an int
+    ev = new $.Event('change');
+    ev.target = field_el;
+    field_el.trigger(ev);
+    
+    ok(!field_el.parents('.obviel-field').hasClass('foo'));
+});
+
+test("global error events", function() {
+    var el = $('#viewdiv');
+    var data = {};
+    var errors = {};
+    var global_errors = {};
+    
+    // monkey patch jquery's ajax() so we can test
+    var original_ajax = $.ajax;
+    var ajax_options;
+    $.ajax = function(options) {
+        var defer = $.Deferred();      
+        ajax_options = options;
+        if (options.url == 'validate') {
+            var data = $.parseJSON(options.data);
+            if (data.a > data.b) {
+                defer.resolve({
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                });
+                return defer.promise();
+            }
+        }
+        defer.resolve({});
+        return defer.promise();
+    };
+
+    el.render({
+        ifaces: ['viewform'],
+        form: {
+            name: 'test',
+            widgets: [{
+                ifaces: ['integer_field'],
+                name: 'a',
+                title: 'A',
+                description: 'A'
+            }, {
+                ifaces: ['integer_field'],
+                name: 'b',
+                title: 'B',
+                description: 'B'
+            }]
+        },
+        validation_url: 'validate',
+        data: data,
+        errors: errors,
+        global_errors: global_errors
+    });
+    var form_el = $('form', el);
+    var field_a_el = $('#obviel-field-test-a', form_el);
+    var field_b_el = $('#obviel-field-test-b', form_el);
+
+    form_el.bind('global-error.obviel-forms', function(ev) {
+        $(ev.target).parents('.obviel-field').addClass('foo');
+    });
+    form_el.bind('global-error-clear.obviel-forms', function(ev) {
+        $(ev.target).parents('.obviel-field').removeClass('foo');
+    });
+
+    // set up global error situation
+    field_a_el.val('10');
+    field_b_el.val('1');
+    var view = el.view();
+    view.submit({});
+
+    equal(global_errors.a, 'must be smaller than b');
+    equal(global_errors.b, 'must be greater than a');
+
+    // the event has triggered for both fields
+    ok(field_a_el.parents('.obviel-field').hasClass('foo'));
+    ok(field_b_el.parents('.obviel-field').hasClass('foo'));
+
+    // make the global validation problem go away again
+    field_b_el.val('100');
+    view.submit({});
+
+    // the clear event has triggered for both fields
+    ok(!field_a_el.parents('.obviel-field').hasClass('foo'));
+    ok(!field_b_el.parents('.obviel-field').hasClass('foo'));
+    
+    $.ajax = original_ajax;
 });
