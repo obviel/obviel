@@ -618,6 +618,32 @@ You could use ``data-repeat`` to generate a whole series of elements::
 ``attribute``: dynamically generating attributes
 ------------------------------------------------
 
+.. sidebar:: ``attribute`` with void elements
+
+  In HTML, the following elements are **void**, meaning they may not
+  contain any element or text content: ``area``, ``base``, ``br``,
+  ``col``, ``command``, ``embed``, ``hr``, ``img``, ``input``,
+  ``keygen``, ``link``, ``meta``, ``param``, ``source``, ``track``,
+  ``wbr``. In addition, there are two elements that may only contain
+  text content (``title`` and ``textarea``).
+
+  This also means you cannot put an ``attribute`` element inside of
+  such an element. What then if you have a void element such as
+  ``input`` and you want to generate its attributes dynamically? You
+  combine ``element`` with ``attribute``.
+
+  So instead of this (**illegal**)::
+
+    <input>
+      <attribute data-if="flag" data-name="type" data-value="{type}" />
+    </input>
+
+  you write this:: 
+
+    <element data-name="input">
+      <attribute data-if="flag" data-name="type" data-value="{type}" />
+    </element>
+
 Normally you'd generate a dynamic attribute like this::
 
    <a href="{url}">{title}</a>
