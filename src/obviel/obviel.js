@@ -3,7 +3,7 @@
   window:true
 */
 
-if (obviel === undefined) {
+if (typeof obviel === "undefined") {
     var obviel = {};
 }
 
@@ -24,12 +24,21 @@ if (obviel === undefined) {
         this.obj = obj;
         this.name = name;
     };
-
+    
     module.LookupError.prototype.toString = function() {
         var ifaces = module.ifaces(this.obj);
         var ifaces_s = ifaces.join(', ');
         return ("view lookup error for ifaces [" + ifaces_s +
                 "] and name '" + this.name + "'");
+    };
+
+    
+    module.CompilerError = function(message) {
+        this.message = message;
+    };
+
+    module.CompilerError.prototype.toString = function() {
+        return "CompilerError: " + this.message;
     };
     
     /**
@@ -671,6 +680,18 @@ if (obviel === undefined) {
         return new module.ObvielTemplateCompiled(source);
     };
 
+    module.FailingCompiler = function(name) {
+        this.name = name;
+    };
+
+    module.FailingCompiler.prototype = new module.Compiler();
+
+    module.FailingCompiler.prototype.get_compiled = function(source) {
+        throw new module.CompilerError("compiler not installed for: " +
+                                       this.name);
+    };
+    
+    
     module.ObvielTemplateCompiled = function(source) {
         this.compiled = new obviel.template.Template(source);
     };
@@ -704,11 +725,15 @@ if (obviel === undefined) {
     
     module.compilers.register('html', new module.HtmlCompiler());
     
-    if (jsontemplate !== undefined) {
+    if (typeof jsontemplate !== "undefined") {
         module.compilers.register('jsont', new module.JsontCompiler());
+    } else {
+        module.compilers.register('jsont', new module.FailingCompiler('jsont'));
     }
     if (obviel.template !== undefined) {
         module.compilers.register('obvt', new module.ObvielTemplateCompiler());
+    } else {
+        module.compilers.register('obvt', new module.FailingCompiler('obvt'));
     }
     
     module.view = function(view) {
