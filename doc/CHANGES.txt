@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0b (unreleased)
+1.0b (2012-05-31)
 =================
 
 * Added Obviel Template language implementation. This replaces
