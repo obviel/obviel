@@ -3713,11 +3713,11 @@ test("modify error area", function() {
 
     obviel.view({
         iface: 'obviel_forms_error_area',
-        jsont: ('<div class="obviel-error-wrapper">' +
+        obvt: ('<div class="obviel-error-wrapper">' +
                 '<div class="obviel-error-content">' +
                 '<div class="obviel-error-arrow"></div>' +
-                '<div id="{field_error_id}" class="obviel-field-error"></div>' +
-                '<div id="{global_error_id}" class="obviel-global-error"></div>' +
+                '<div data-id="{field_error_id}" class="obviel-field-error"></div>' +
+                '<div data-id="{global_error_id}" class="obviel-global-error"></div>' +
                 '</div>' +
                 '</div>')
     });
