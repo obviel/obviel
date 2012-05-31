@@ -378,6 +378,14 @@ test('data-if with value if defined', function() {
                '<textarea style="width: 10em;"></textarea>');
 });
 
+
+test('data-if with value if not defined', function() {
+    // textarea has replaceable text content, can only contain text..
+    html_equal(render('<element data-name="textarea"><attribute data-if="width" data-name="style" data-value="width: {width}em;" /></element>',
+                      {}),
+               '<textarea></textarea>');
+});
+
 test("data-if where if is 0", function() {
     html_equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: 0,
