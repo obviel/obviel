@@ -56,7 +56,7 @@ when rendering a section:
 
 */
 
-if (obviel === undefined) {
+if (typeof obviel === "undefined") {
     var obviel = {};
 }
 
