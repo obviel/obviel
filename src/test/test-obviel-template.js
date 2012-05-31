@@ -371,6 +371,13 @@ test("data-if where if is undefined", function() {
           '');
 });
 
+test('data-if with value if defined', function() {
+    // textarea has replaceable text content, can only contain text..
+    html_equal(render('<element data-name="textarea"><attribute data-if="width" data-name="style" data-value="width: {width}em;" /></element>',
+                      {width: 10}),
+               '<textarea style="width: 10em;"></textarea>');
+});
+
 test("data-if where if is 0", function() {
     html_equal(render('<div data-if="alpha">{beta}</div>',
                 {alpha: 0,
@@ -1470,6 +1477,12 @@ test('dynamically generated attribute without data-value is an error', function(
     raises(function() {
         render('<attribute data-name="name">content</attribute>');
     }, obtemp.CompilationError);
+});
+
+test('dynamically generated attribute in void element', function() {
+    html_equal(
+        render('<element data-name="input"><attribute data-name="class" data-value="foo" /></element>', {}),
+        '<input class="foo" />');
 });
 
 test('block in element', function() {
