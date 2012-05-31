@@ -1369,6 +1369,104 @@ test('data-trans with data-each', function() {
                '<div>Bob, hallo!</div><div>Jay, hallo!</div>');
 });
 
+test("element element by itself", function() {
+    html_equal(render('<element class="foo" data-name="{name}">Content</element>',
+                      {name: 'p'}),
+               '<p class="foo">Content</p>');
+});
+
+
+test('element element without data-name is an error', function() {
+    raises(function() {
+        render('<element>content</element>');
+    }, obtemp.CompilationError);
+});
+
+test("deeper element element", function() {
+    html_equal(render('<div><element class="foo" data-name="{name}">Content</element></div>',
+                      {name: 'span'}),
+               '<div><span class="foo">Content</span></div>');
+});
+
+test('deeper element element with data-if and dynamic content where flag is true', function() {
+    html_equal(render('<div><element class="foo" data-if="flag" data-name="{name}"><em>{content}</em></element></div>',
+                      {name: 'span', content: "Hello world", flag: true}),
+               '<div><span class="foo"><em>Hello world</em></span></div>');
+});
+
+test('deeper element element with data-if and dynamic content where flag is false', function() {
+    html_equal(render('<div><element class="foo" data-if="flag" data-name="{name}"><em>{content}</em></element></div>',
+                      {name: 'span', content: "Hello world", flag: false}),
+               '<div></div>');
+});
+
+test("element element with data-each", function() {
+    html_equal(render('<element data-each="list" data-name="{@.}">Content</element>',
+                      {list: ['p', 'span']}),
+               '<p>Content</p><span>Content</span>');
+});
+
+test('dynamically generated attribute', function() {
+    html_equal(render('<p><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+                      {}),
+               '<p class="foo">Hello world!</p>');
+});
+
+
+test('dynamically generated attribute, data-if where if is true', function() {
+    html_equal(render('<p><attribute data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
+                      {flag: true, name: 'class', value: 'foo'}),
+               '<p class="foo">Hello world!</p>');
+});
+
+test('dynamically generated attribute, data-if where if is false', function() {
+    html_equal(render('<p><attribute data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
+                      {flag: false, name: 'class', value: 'foo'}),
+               '<p>Hello world!</p>');
+});
+
+test('dynamically generated attribute in section', function() {
+    html_equal(render('<p data-if="flag"><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+                      {flag: true}),
+               '<p class="foo">Hello world!</p>');
+    
+});
+
+test('dynamically generated attribute in section where data-if is false', function() {
+    html_equal(render('<p data-if="flag"><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+                      {flag: false}),
+               '');
+    
+});
+
+test('dynamically generated attribute on top', function() {
+    var text = '<attribute data-name="class" data-value="bar"/>';
+    var template = new obtemp.Template(text);
+    var el = $("<div></div>");
+    var translations = new Translations();
+    template.render(el, {}, translations);
+    html_equal(el.html(), '');
+    equal(el.attr('class'), 'bar');
+});
+
+test('dynamically generated attributes for list case', function() {
+    html_equal(render('<ul><li data-each="list"><attribute data-if="@each.even" data-name="class" data-value="even" /><attribute data-if="@each.odd" data-name="class" data-value="odd" /><p>{@.}</p></li></ul',
+                      {list: ['a', 'b']}),
+               '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
+});
+
+test('dynamically generated attribute without data-name is an error', function() {
+    raises(function() {
+        render('<attribute data-value="value">content</attribute>');
+    }, obtemp.CompilationError);
+});
+
+test('dynamically generated attribute without data-value is an error', function() {
+    raises(function() {
+        render('<attribute data-name="name">content</attribute>');
+    }, obtemp.CompilationError);
+});
+
 test('empty data-if is illegal', function() {
     raises(function() {
         render('<div data-if="">Foo</div>', {});
@@ -1546,7 +1644,6 @@ test('variables', function() {
     equal(obtemp.variables('Hello {who}!', {who: "world"}),
           'Hello world!');
 });
-
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);

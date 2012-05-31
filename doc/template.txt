@@ -559,6 +559,67 @@ you can also consider ``data-func``.
 You would register formatters only once per web page before template
 rendering takes place, for instance when the page has just been loaded.
 
+``element``: dynamically generating elements
+--------------------------------------------
+
+Normally you'd generate an element by simply including it in the template,
+for instance a ``p`` element like this::
+
+  <p>Hello world</p>
+
+In some cases however you want to be able to dynamically decide the
+name of the element based on the data. Obviel Template supports a
+special ``element`` element that lets you do this. This is the
+equivalent of the above template::
+
+  <element data-name="p">Hello world</element>
+
+When this is rendered, you'll see this just like with the first example::
+
+  <p>Hello world</p>
+
+What this lets you do is dynamically generate element names::
+
+  <element data-name="{my_element_name}"></element>
+
+You could use ``data-repeat`` to generate a whole series of elements::
+
+  <element data-repeat="tags" data-name="{@.}"></element>
+
+``attribute``: dynamically generating attributes
+------------------------------------------------
+
+Normally you'd generate a dynamic attribute like this::
+
+   <a href="{url}">{title}</a>
+
+but sometimes this isn't good enough: in particular, we sometimes want
+to be able to generate attributes that are only there if some
+condition is true. Obviel Template has a special ``attribute`` element
+that lets you do this. The equivalent of the above example using
+the ``attribute`` element looks like this::
+
+  <a><attribute data-name="url" data-value="{url}"/>{title}</a>
+
+What will happen when this template is rendered is the same as in the
+first example::
+
+  <a href="/some/url">Some Title</a>
+
+``attribute`` will always apply to the element it is directly contained in.
+
+This construct is helpful because you can use ``data-if`` for conditional
+attributes now::
+
+  <a><attribute data-if="flag" data-name="url" data-value="{url}" />{title}</a>
+
+Now, the ``url`` attribute will appear *only* if ``flag`` is true.
+
+In combination with ``data-each`` this can be used to dynamically
+generate multiple attributes from data::
+
+  <a><attribute data-each="attributes" data-name="{name}" data-value="{value}" />{title}</a>
+
 ``data-func``
 -------------
 
@@ -605,7 +666,8 @@ Template constructions to do the job. For these cases Obviel Template
 offers a special directive to plug custom functions into the template
 rendering process directly, called ``data-func``. ``data-func`` should
 be used as a facility of last resort: if in doubt, use the normal
-Obviel Template functionality, because it will be easier to read.
+Obviel Template functionality, because the template will probably be
+easier to understand.
 
 To see what ``data-func`` does, let's consider a simple (but pretty
 useless) case first. We register the func ``magic``::
@@ -635,18 +697,41 @@ a template like this::
 
   <ul>
     <li data-each="list">
-      <p data-if="even" class="even">{@.}</p>
-      <p data-if="odd" class="odd">{@.}</p>
+      <p data-if="@each.even" class="even">{@.}</p>
+      <p data-if="@each.odd" class="odd">{@.}</p>
     </li>
   </ul>
 
-This template has various problems:: 
+This template has various problems:
 
 * we have to write the ``p`` bit twice
 
 * what if we wanted to place the ``class`` on ``li`` instead of on ``p``?
 
-It's actually easy to express this rule in JavaScript::
+We could also use dynamically generated attributes to solve this case::
+
+  <ul>
+    <li data-each="list">
+      <p>
+        <attribute data-if="@each.even" data-name="class" data-value="even"/>
+        <attribute data-if="@each.odd" data-name="class" data-value="odd" />
+        {@.}
+      </p>
+    </li>
+  </ul>
+
+This would also allow us to generate the ``class`` attribute on the ``li``::
+
+  <ul>
+    <li data-each="list">
+      <attribute data-if="@each.even" data-name="class" data-value="even"/>
+      <attribute data-if="@each.odd" data-name="class" data-value="odd" />
+      <p>{@.}</p>
+    </li>
+  </ul>
+
+This a reasonable solution. But it's still pretty verbose, and it's
+just so easy to express a rule like this in JavaScript with jQuery::
 
   var evenodd = function(el, variable) {
      if (variable('@each.even')) {
@@ -662,7 +747,7 @@ our application::
 
   obviel.template.register_func('evenodd', evenodd);
 
-And then we can use it so we only have to write ``p`` once::
+And then we can use it on ``p``::
 
   <ul>
     <li data-each="list">
@@ -678,11 +763,33 @@ Or to use it to add the class to ``li`` directly::
     </li>
   </ul>
 
+We can now also support more complex situations, where we don't want
+to add a ``class`` attribute on even or odd, but every third item::
+
+  var everythird = function(el, variable) {
+     if (variable('@each.index') % 3 === 0) {
+        el.addClass('third');
+     }
+  };
+
+  obviel.template.register_func('everythird', everythird);
+
+and then use it::
+
+  <ul>
+    <li data-each="list" data-func="everythird">
+      <p>{@.}</p>
+    </li>
+  </ul>
+
+``everythird`` cannot be expressed using Obviel Template alone, but is
+easy to express using a custom fuction.
+
 Using ``data-func`` you can supplement Obviel Template with
-functionality particular to your application's templates. This is
-especially useful for generic functionalities that extend the template
-language, such as adding classes in ``data-each``, where we can rely
-on the existence of a special variable ``@each`` to exist.
+functionality particular to your application. This is especially
+useful for generic functionalities that extend the template language,
+such as adding classes in ``data-each``, where we can rely on the
+existence of a special variable ``@each`` to exist.
 
 Note that you should *only* use ``data-func`` to *change* the element,
 for instance by manipulating its attributes, *not* to add or remove

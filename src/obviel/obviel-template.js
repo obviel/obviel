@@ -140,6 +140,40 @@ obviel.template = {};
         // could not be removed previously so as not to break the
         // indexed based access to elements
         $('.obviel-template-removal', el).remove();
+        // swap in those elements that had a dynamic element name
+        $('.obviel-template-dynamic-element-name', el).each(function() {
+            var new_el = $(render_dynamic_element(this));
+            new_el.removeClass('obviel-template-dynamic-element-name');
+            if (new_el.attr('class') === '') {
+                new_el.removeAttr('class');
+            }
+        });
+    };
+
+    var render_dynamic_element = function(el) {
+        var name = get_directive(el, 'data-name');
+        var new_el = document.createElement(name);
+        var i;
+        
+        // copy over all attributes from old element
+        for (i = 0; i < el.attributes.length; i++) {
+            var attr = el.attributes[i];
+            if (attr.specified !== true) {
+                continue;
+            }
+            if (attr.value === null) {
+                continue;
+            }
+            new_el.setAttribute(attr.name, attr.value);
+        }
+
+        // copy over all sub-elements from old element
+        for (i = 0; i < el.childNodes.length; i++) {
+            var child = el.childNodes[i];
+            new_el.appendChild(child);
+        }
+        el.parentNode.replaceChild(new_el, el);
+        return new_el;
     };
 
     var get_directive = function(el, name) {
@@ -474,7 +508,11 @@ obviel.template = {};
         // DOM for each iteration. this needs to be done here,
         // before its id is removed
         var iteration_node = el.cloneNode(false);
-        
+
+        // store some information about the first iteration
+        var insert_before_node = el.nextSibling;
+        var parent_node = el.parentNode;
+
         // render the first iteration on the element
         scope.push(each_info(0, this.data_each_name, data_each));
         scope.push(data_each[0]);
@@ -483,9 +521,6 @@ obviel.template = {};
         scope.pop();
 
         // now insert the next iterations after the first iteration
-        var insert_before_node = el.nextSibling;
-        var parent_node = el.parentNode;
-        
         for (var i = 1; i < data_each.length; i++) {
             var iteration_clone = iteration_node.cloneNode(false);
             parent_node.insertBefore(iteration_clone, insert_before_node);
@@ -563,6 +598,7 @@ obviel.template = {};
         this.func = null;
         this.tvars = {};
         this.trans_variables = {};
+        this.attribute_element = false;
         this._dynamic = false;
         this.compile(el, allow_tvar);
     };
@@ -663,10 +699,12 @@ obviel.template = {};
             data_trans = el.getAttribute('data-trans');
         }
         var trans_info = parse_trans_info(el, data_trans);
-        
+
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
         this.compile_func(el);
+        this.compile_dynamic_element(el);
+        this.compile_dynamic_attribute(el);
         
         if (trans_info.text !== null) {
             this._dynamic = true;
@@ -813,6 +851,35 @@ obviel.template = {};
         return name_formatter.name;
     };
 
+
+    module.DynamicElement.prototype.compile_dynamic_element = function(el) {
+        if (el.nodeName !== 'ELEMENT') {
+            return;
+        }
+        if (!el.hasAttribute('data-name')) {
+            throw new module.CompilationError(
+                el, "element tag must have a data-name attribute");
+        }
+        $(el).addClass('obviel-template-dynamic-element-name');
+    };
+
+    module.DynamicElement.prototype.compile_dynamic_attribute = function(el) {
+        if (el.nodeName !== 'ATTRIBUTE') {
+            return;
+        }
+        if (!el.hasAttribute('data-name')) {
+            throw new module.CompilationError(
+                el, "attribute tag must have a data-name attribute");
+        }
+        if (!el.hasAttribute('data-value')) {
+            throw new module.CompilationError(
+                el, "attribute tag must have a data-value attribute");
+        }
+        $(el).addClass('obviel-template-removal');
+        this.attribute_element = true;
+        this._dynamic = true;
+    };
+        
     module.DynamicElement.prototype.compile_func = function(el) {
         var func_name = get_directive(el, 'data-func');
         if (func_name === null) {
@@ -1030,7 +1097,7 @@ obviel.template = {};
         if (translations === undefined || translations === null ||
             this.message_id === null) {
             this.render_notrans(el, scope);
-            this.render_func(el, scope, translations);
+            this.finalize_render(el, scope, translations);
             return;
         }
         var translation = translations.gettext(this.message_id);
@@ -1039,16 +1106,16 @@ obviel.template = {};
             this.render_notrans(el, scope);
             // but we do need to render any tvars
             var children = el.childNodes;
-            for (var key in this.tvars) {
+            for (key in this.tvars) {
                 var info = this.tvars[key];
                 info.dynamic.render(children[info.index], scope, translations);
             }
-            this.render_func(el, scope, translations);
+            this.finalize_render(el, scope, translations);
             return;
         }
         // we need to translate and reorganize sub elements
         this.render_trans(el, scope, translations, translation);
-        this.render_func(el, scope, translations);
+        this.finalize_render(el, scope, translations);
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
@@ -1116,6 +1183,15 @@ obviel.template = {};
         el.appendChild(frag);
     };
 
+    module.DynamicElement.prototype.render_attribute_element = function(el) {
+        if (!this.attribute_element) {
+            return;
+        }
+        var name = get_directive(el, 'data-name');
+        var value = get_directive(el, 'data-value');
+        el.parentNode.setAttribute(name, value);
+    };
+
     module.DynamicElement.prototype.render_func = function(
         el, scope, translations) {
         if (this.func === null) {
@@ -1124,6 +1200,13 @@ obviel.template = {};
         this.func($(el),
                   function(name) { return scope.resolve(name); },
                   translations);
+    };
+    
+    
+    module.DynamicElement.prototype.finalize_render = function(
+        el, scope, translations) {
+        this.render_attribute_element(el);
+        this.render_func(el, scope, translations);
     };
     
     module.DynamicText = function(el, text) {        
