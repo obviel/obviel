@@ -1472,6 +1472,50 @@ test('dynamically generated attribute without data-value is an error', function(
     }, obtemp.CompilationError);
 });
 
+test('block in element', function() {
+    html_equal(render('<div><block>Hello world!</block></div>', {}),
+               '<div>Hello world!</div>');
+});
+
+test('block with multiple elements inside it', function() {
+    html_equal(render('<div><block><p>Hello</p><p>world!</p></block></div>', {}),
+               '<div><p>Hello</p><p>world!</p></div>');
+});
+
+test('block on top', function() {
+    html_equal(render('<block>Hello world!</block>', {}),
+               'Hello world!');
+});
+
+test('block with data-if where if is true', function() { 
+    html_equal(render('<div><block data-if="flag">Hello world!</block>Something</div>',
+                      {flag: true}),
+               '<div>Hello world!Something</div>');
+});
+
+test('block with data-if where if is false', function() { 
+    html_equal(render('<div><block data-if="flag">Hello world!</block>Something</div>',
+                      {flag: false}),
+               '<div>Something</div>');
+});
+
+test('block with data-each', function() {
+    html_equal(render('<block data-each="list">{@.}</block>',
+                      {list: ['a', 'b']}),
+               'ab');
+});
+
+test('block in block', function() {
+    html_equal(render('A<block>B<block>C</block>D</block>', {}),
+               'ABCD');
+});
+
+test('block with data-trans', function() {
+    html_equal(render('<block data-trans="">Hello world!</block>', {}),
+               'Hallo wereld!');
+});
+
+
 test('empty data-if is illegal', function() {
     raises(function() {
         render('<div data-if="">Foo</div>', {});

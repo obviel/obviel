@@ -559,6 +559,35 @@ you can also consider ``data-func``.
 You would register formatters only once per web page before template
 rendering takes place, for instance when the page has just been loaded.
 
+``block``: element that disappears
+----------------------------------
+
+Obviel Template has element-based directives (``data-if``,
+``data-each``, etc). But sometimes you just want to conditionally or
+repeatedly include a piece of text, not an element. You can support this
+use case by using the special ``block`` element. Once the template has
+rendered, the ``block`` element will disappear from the result.
+
+So::
+
+  Hello? <block data-if="again">HELLO?</block>
+
+with this data::
+
+  { again: true }
+
+will render like this::
+
+  Hello? HELLO?
+
+and with ``again`` set to ``false``::
+
+  {again: false}
+
+will render like this::
+
+  Hello?
+ 
 ``element``: dynamically generating elements
 --------------------------------------------
 

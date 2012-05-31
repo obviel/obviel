@@ -148,6 +148,15 @@ obviel.template = {};
                 new_el.removeAttr('class');
             }
         });
+        // remove any block tags
+        $('.obviel-template-block', el).each(function() {
+            var frag = document.createDocumentFragment();
+            while (this.hasChildNodes()) {
+                frag.appendChild(this.removeChild(this.firstChild));
+            }
+            this.parentNode.insertBefore(frag, this.nextSibling);
+            this.parentNode.removeChild(this);
+        });
     };
 
     var render_dynamic_element = function(el) {
@@ -705,6 +714,7 @@ obviel.template = {};
         this.compile_func(el);
         this.compile_dynamic_element(el);
         this.compile_dynamic_attribute(el);
+        this.compile_block(el);
         
         if (trans_info.text !== null) {
             this._dynamic = true;
@@ -879,7 +889,14 @@ obviel.template = {};
         this.attribute_element = true;
         this._dynamic = true;
     };
-        
+
+    module.DynamicElement.prototype.compile_block = function(el) {
+        if (el.nodeName !== 'BLOCK') {
+            return;
+        }
+        $(el).addClass('obviel-template-block');
+    };
+    
     module.DynamicElement.prototype.compile_func = function(el) {
         var func_name = get_directive(el, 'data-func');
         if (func_name === null) {
