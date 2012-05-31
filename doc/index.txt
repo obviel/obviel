@@ -100,6 +100,7 @@ Review the :doc:`table of contents <toc>`.
 Download Obviel
 ---------------
 
-`Download`_ Obviel here!
+`Download`_ Obviel! See also the :doc:`changelog <CHANGES>`.
 
 .. _`Download`: http://bitbucket.org/obviel/obviel/downloads
+

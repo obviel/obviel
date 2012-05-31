@@ -18,6 +18,7 @@ Contents:
    community
    integration
    development
+   CHANGES
 
 Indices and tables
 ==================
