@@ -4,6 +4,17 @@ CHANGES
 0.12 (unreleased)
 =================
 
+* Added Obviel Template language implementation. This replaces
+  JSON-Template as Obviel's preferred template language. Obviel Forms
+  makes use of it internally. Obviel Template supports features such
+  as sub-views and i18n. See the documentation for more detail.
+
+* i18n documentation: how to do i18n with Obviel.
+
+* Added Traject library. This library allows routing of paths to
+  objects and the inverse: constructing paths for objects. See the
+  documentation for more detail.
+
 * Added ``transformer`` hook. This allows Obviel to transform content
   it retrieves from the server using URLs and hyperlinks.
 
@@ -16,10 +27,6 @@ CHANGES
   before rendering (including before template rendering). This is useful
   to manipulate ``this.obj`` to add extra information before the template
   is rendered.
-
-* Added obviel-traject library. This library allows routing of paths
-  to objects and the inverse: constructing paths for objects. See the
-  documentation for more detail.
 
 * Obviel Forms now uses a special view for the iface
   ``obviel_forms_error_area`` to render error areas. You can define a
