@@ -148,8 +148,8 @@ obviel.template = {};
                 new_el.removeAttr('class');
             }
         });
-        // remove any block tags
-        $('.obviel-template-block', el).each(function() {
+        // remove any unwrap tags
+        $('.obviel-template-unwrap', el).each(function() {
             var frag = document.createDocumentFragment();
             while (this.hasChildNodes()) {
                 frag.appendChild(this.removeChild(this.firstChild));
@@ -718,9 +718,7 @@ obviel.template = {};
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
         this.compile_func(el);
-        this.compile_element_element(el);
-        this.compile_attribute_element(el);
-        this.compile_block_element(el);
+        this.compile_dyn(el);
         
         if (trans_info.text !== null) {
             this._dynamic = true;
@@ -867,11 +865,21 @@ obviel.template = {};
         return name_formatter.name;
     };
 
-
-    module.DynamicElement.prototype.compile_element_element = function(el) {
-        if (el.nodeName !== 'ELEMENT') {
+    module.DynamicElement.prototype.compile_dyn = function(el) {
+        var data_dyn = get_directive(el, 'data-dyn');
+        if (data_dyn === null) {
             return;
         }
+        if (data_dyn === 'element') {
+            this.compile_element_element(el);
+        } else if (data_dyn === 'attribute') {
+            this.compile_attribute_element(el);
+        } else if (data_dyn === 'unwrap') {
+            this.compile_unwrap_element(el);
+        }
+    };
+    
+    module.DynamicElement.prototype.compile_element_element = function(el) {
         if (!el.hasAttribute('data-name')) {
             throw new module.CompilationError(
                 el, "element tag must have a data-name attribute");
@@ -880,9 +888,6 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.compile_attribute_element = function(el) {
-        if (el.nodeName !== 'ATTRIBUTE') {
-            return;
-        }
         if (!el.hasAttribute('data-name')) {
             throw new module.CompilationError(
                 el, "attribute tag must have a data-name attribute");
@@ -896,11 +901,8 @@ obviel.template = {};
         this._dynamic = true;
     };
 
-    module.DynamicElement.prototype.compile_block_element = function(el) {
-        if (el.nodeName !== 'BLOCK') {
-            return;
-        };
-        $(el).addClass('obviel-template-block');
+    module.DynamicElement.prototype.compile_unwrap_element = function(el) {
+        $(el).addClass('obviel-template-unwrap');
     };
     
     module.DynamicElement.prototype.compile_func = function(el) {
@@ -1212,11 +1214,14 @@ obviel.template = {};
         }
         var name = get_directive(el, 'data-name');
         var value = get_directive(el, 'data-value');
-        var parent = el.parentNode;
-        if (parent.hasAttribute(name)) {
-            value = parent.getAttribute(name) + ' ' + value;
+        
+        // use jQuery to make attribute access more uniform (style in IE, etc)
+        var parent = $(el.parentNode);
+        
+        if (parent.attr(name)) {
+            value = parent.attr(name) + ' ' + value;
         }
-        parent.setAttribute(name, value);
+        parent.attr(name, value);
     };
 
     module.DynamicElement.prototype.render_func = function(

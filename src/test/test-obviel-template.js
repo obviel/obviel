@@ -373,7 +373,7 @@ test("data-if where if is undefined", function() {
 
 test('data-if with value if defined', function() {
     // textarea has replaceable text content, can only contain text..
-    html_equal(render('<element data-name="textarea"><attribute data-if="width" data-name="style" data-value="width: {width}em;" /></element>',
+    html_equal(render('<div data-dyn="element" data-name="textarea"><div data-dyn="attribute" data-if="width" data-name="style" data-value="width: {width}em;" /></div>',
                       {width: 10}),
                '<textarea style="width: 10em;"></textarea>');
 });
@@ -381,7 +381,7 @@ test('data-if with value if defined', function() {
 
 test('data-if with value if not defined', function() {
     // textarea has replaceable text content, can only contain text..
-    html_equal(render('<element data-name="textarea"><attribute data-if="width" data-name="style" data-value="width: {width}em;" /></element>',
+    html_equal(render('<div data-dyn="element" data-name="textarea"><div data-dyn="attribute" data-if="width" data-name="style" data-value="width: {width}em;" /></div>',
                       {}),
                '<textarea></textarea>');
 });
@@ -1385,7 +1385,7 @@ test('data-trans with data-each', function() {
 });
 
 test("element element by itself", function() {
-    html_equal(render('<element class="foo" data-name="{name}">Content</element>',
+    html_equal(render('<div data-dyn="element" class="foo" data-name="{name}">Content</div>',
                       {name: 'p'}),
                '<p class="foo">Content</p>');
 });
@@ -1393,69 +1393,69 @@ test("element element by itself", function() {
 
 test('element element without data-name is an error', function() {
     raises(function() {
-        render('<element>content</element>');
+        render('<div data-dyn="element">content</div>');
     }, obtemp.CompilationError);
 });
 
 test("deeper element element", function() {
-    html_equal(render('<div><element class="foo" data-name="{name}">Content</element></div>',
+    html_equal(render('<div><div data-dyn="element" class="foo" data-name="{name}">Content</div></div>',
                       {name: 'span'}),
                '<div><span class="foo">Content</span></div>');
 });
 
 test('deeper element element with data-if and dynamic content where flag is true', function() {
-    html_equal(render('<div><element class="foo" data-if="flag" data-name="{name}"><em>{content}</em></element></div>',
+    html_equal(render('<div><div data-dyn="element" class="foo" data-if="flag" data-name="{name}"><em>{content}</em></div></div>',
                       {name: 'span', content: "Hello world", flag: true}),
                '<div><span class="foo"><em>Hello world</em></span></div>');
 });
 
 test('deeper element element with data-if and dynamic content where flag is false', function() {
-    html_equal(render('<div><element class="foo" data-if="flag" data-name="{name}"><em>{content}</em></element></div>',
+    html_equal(render('<div><div data-dyn="element" class="foo" data-if="flag" data-name="{name}"><em>{content}</em></div></div>',
                       {name: 'span', content: "Hello world", flag: false}),
                '<div></div>');
 });
 
 test("element element with data-each", function() {
-    html_equal(render('<element data-each="list" data-name="{@.}">Content</element>',
+    html_equal(render('<div data-dyn="element" data-each="list" data-name="{@.}">Content</div>',
                       {list: ['p', 'span']}),
                '<p>Content</p><span>Content</span>');
 });
 
 test('dynamically generated attribute', function() {
-    html_equal(render('<p><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+    html_equal(render('<p><span data-dyn="attribute" data-name="class" data-value="foo"/>Hello world!</p>',
                       {}),
                '<p class="foo">Hello world!</p>');
 });
 
 
 test('dynamically generated attribute, data-if where if is true', function() {
-    html_equal(render('<p><attribute data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
+    html_equal(render('<p><span data-dyn="attribute" data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
                       {flag: true, name: 'class', value: 'foo'}),
                '<p class="foo">Hello world!</p>');
 });
 
 test('dynamically generated attribute, data-if where if is false', function() {
-    html_equal(render('<p><attribute data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
+    html_equal(render('<p><span data-dyn="attribute" data-if="flag" data-name="{name}" data-value="{value}"/>Hello world!</p>',
                       {flag: false, name: 'class', value: 'foo'}),
                '<p>Hello world!</p>');
 });
 
 test('dynamically generated attribute in section', function() {
-    html_equal(render('<p data-if="flag"><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+    html_equal(render('<p data-if="flag"><span data-dyn="attribute" data-name="class" data-value="foo"/>Hello world!</p>',
                       {flag: true}),
                '<p class="foo">Hello world!</p>');
     
 });
 
 test('dynamically generated attribute in section where data-if is false', function() {
-    html_equal(render('<p data-if="flag"><attribute data-name="class" data-value="foo"/>Hello world!</p>',
+    html_equal(render('<p data-if="flag"><span data-dyn="attribute" data-name="class" data-value="foo"/>Hello world!</p>',
                       {flag: false}),
                '');
     
 });
 
 test('dynamically generated attribute on top', function() {
-    var text = '<attribute data-name="class" data-value="bar"/>';
+    var text = '<div data-dyn="attribute" data-name="class" data-value="bar"/>';
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     var translations = new Translations();
@@ -1465,74 +1465,93 @@ test('dynamically generated attribute on top', function() {
 });
 
 test('dynamically generated attributes for list case', function() {
-    html_equal(render('<ul><li data-each="list"><attribute data-if="@each.even" data-name="class" data-value="even" /><attribute data-if="@each.odd" data-name="class" data-value="odd" /><p>{@.}</p></li></ul',
+    html_equal(render('<ul><li data-each="list"><span data-dyn="attribute" data-if="@each.even" data-name="class" data-value="even" /><span data-dyn="attribute" data-if="@each.odd" data-name="class" data-value="odd" /><p>{@.}</p></li></ul',
                       {list: ['a', 'b']}),
                '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
 });
 
-test('dynamically generated attribute multiple times with same name', function() {
-    html_equal(render('<p><attribute data-name="style" data-value="width: 15em;" /><attribute data-name="style" data-value="height: 16em;" /></p>', {}),
-               '<p style="width: 15em; height: 16em;"></p>');
+
+test('dynamically generated attribute multiple times for class', function() {
+    html_equal(render('<p><span data-dyn="attribute" data-name="class" data-value="a" /><span data-dyn="attribute" data-name="class" data-value="b" /></p>', {}),
+               '<p class="a b"></p>');
 });
+
+// XXX setting style multiple times in IE is fubar, even when using
+// jQuery to do the thing. a single time does work..
+// test('dynamically generated attribute multiple times for style', function() {
+//     var text = '<div><span data-dyn="attribute" data-name="style" data-value="width: 15em;" /><span data-dyn="attribute" data-name="style" data-value="height: 16em;" /></div>';
+//     // var template = new obtemp.Template(text);
+//     var el = $("<div></div>");
+//     el.attr('style', 'width: 50em;');
+//     //el.attr('style', el.attr('style') + ' height: 40em;');
+    
+//     equal(el.attr('style'), 'foo');
+//     // // template.render(el, {});
+//     // // equal(el.get(0).childNodes[0].style, 'foo');
+    
+    
+//    // html_equal(render(text, {}),
+//    //           '<div style="width: 15em; height: 16em;"></div>');
+// });
 
 test('dynamically generated attribute without data-name is an error', function() {
     raises(function() {
-        render('<attribute data-value="value">content</attribute>');
+        render('<div data-dyn="attribute" data-value="value" />');
     }, obtemp.CompilationError);
 });
 
 test('dynamically generated attribute without data-value is an error', function() {
     raises(function() {
-        render('<attribute data-name="name">content</attribute>');
+        render('<div data-dyn="attribute" data-name="name" />');
     }, obtemp.CompilationError);
 });
 
 test('dynamically generated attribute in void element', function() {
     html_equal(
-        render('<element data-name="input"><attribute data-name="class" data-value="foo" /></element>', {}),
+        render('<div data-dyn="element" data-name="input"><div data-dyn="attribute" data-name="class" data-value="foo" /></div>', {}),
         '<input class="foo" />');
 });
 
-test('block in element', function() {
-    html_equal(render('<div><block>Hello world!</block></div>', {}),
+test('unwrap in element', function() {
+    html_equal(render('<div><div data-dyn="unwrap">Hello world!</div></div>', {}),
                '<div>Hello world!</div>');
 });
 
-test('block with multiple elements inside it', function() {
-    html_equal(render('<div><block><p>Hello</p><p>world!</p></block></div>', {}),
+test('unwrap with multiple elements inside it', function() {
+    html_equal(render('<div><div data-dyn="unwrap"><p>Hello</p><p>world!</p></div></div>', {}),
                '<div><p>Hello</p><p>world!</p></div>');
 });
 
-test('block on top', function() {
-    html_equal(render('<block>Hello world!</block>', {}),
+test('unwrap on top', function() {
+    html_equal(render('<div data-dyn="unwrap">Hello world!</div>', {}),
                'Hello world!');
 });
 
-test('block with data-if where if is true', function() { 
-    html_equal(render('<div><block data-if="flag">Hello world!</block>Something</div>',
+test('unwrap with data-if where if is true', function() { 
+    html_equal(render('<div><div data-dyn="unwrap" data-if="flag">Hello world!</div>Something</div>',
                       {flag: true}),
                '<div>Hello world!Something</div>');
 });
 
-test('block with data-if where if is false', function() { 
-    html_equal(render('<div><block data-if="flag">Hello world!</block>Something</div>',
+test('unwrap with data-if where if is false', function() { 
+    html_equal(render('<div><div data-dyn="unwrap" data-if="flag">Hello world!</div>Something</div>',
                       {flag: false}),
                '<div>Something</div>');
 });
 
-test('block with data-each', function() {
-    html_equal(render('<block data-each="list">{@.}</block>',
+test('unwrap with data-each', function() {
+    html_equal(render('<div data-dyn="unwrap" data-each="list">{@.}</div>',
                       {list: ['a', 'b']}),
                'ab');
 });
 
-test('block in block', function() {
-    html_equal(render('A<block>B<block>C</block>D</block>', {}),
+test('unwrap in unwrap', function() {
+    html_equal(render('A<div data-dyn="unwrap">B<div data-dyn="unwrap">C</div>D</div>', {}),
                'ABCD');
 });
 
-test('block with data-trans', function() {
-    html_equal(render('<block data-trans="">Hello world!</block>', {}),
+test('unwrap with data-trans', function() {
+    html_equal(render('<div data-dyn="unwrap" data-trans="">Hello world!</div>', {}),
                'Hallo wereld!');
 });
 

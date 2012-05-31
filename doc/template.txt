@@ -559,18 +559,18 @@ you can also consider ``data-func``.
 You would register formatters only once per web page before template
 rendering takes place, for instance when the page has just been loaded.
 
-``block``: element that disappears
-----------------------------------
+``data-dyn="unwrap"``: element that disappears
+-----------------------------------------------
 
 Obviel Template has element-based directives (``data-if``,
 ``data-each``, etc). But sometimes you just want to conditionally or
 repeatedly include a piece of text, not an element. You can support this
-use case by using the special ``block`` element. Once the template has
-rendered, the ``block`` element will disappear from the result.
+use case by using the special ``unwrap`` element. Once the template has
+rendered, the ``unwrap`` element will disappear from the result.
 
 So::
 
-  Hello? <block data-if="again">HELLO?</block>
+  Hello? <span data-dyn="unwrap" data-if="again">HELLO?</span>
 
 with this data::
 
@@ -588,8 +588,8 @@ will render like this::
 
   Hello?
  
-``element``: dynamically generating elements
---------------------------------------------
+``data-dyn="element"``: dynamically generating elements
+--------------------------------------------------------
 
 Normally you'd generate an element by simply including it in the template,
 for instance a ``p`` element like this::
@@ -598,10 +598,10 @@ for instance a ``p`` element like this::
 
 In some cases however you want to be able to dynamically decide the
 name of the element based on the data. Obviel Template supports a
-special ``element`` element that lets you do this. This is the
+special ``data-dyn`` directive that lets you do this. This is the
 equivalent of the above template::
 
-  <element data-name="p">Hello world</element>
+  <div data-dyn="element" data-name="p">Hello world</div>
 
 When this is rendered, you'll see this just like with the first example::
 
@@ -609,16 +609,16 @@ When this is rendered, you'll see this just like with the first example::
 
 What this lets you do is dynamically generate element names::
 
-  <element data-name="{my_element_name}"></element>
+  <div data-dyn="element" data-name="{my_element_name}"></div>
 
 You could use ``data-repeat`` to generate a whole series of elements::
 
-  <element data-repeat="tags" data-name="{@.}"></element>
+  <div data-dyn="element" data-repeat="tags" data-name="{@.}"></div>
 
-``attribute``: dynamically generating attributes
-------------------------------------------------
+``data-dyn="attribute"``: dynamically generating attributes
+-----------------------------------------------------------
 
-.. sidebar:: ``attribute`` with void elements
+.. sidebar:: ``data-dyn="attribute"`` with void elements
 
   In HTML, the following elements are **void**, meaning they may not
   contain any element or text content: ``area``, ``base``, ``br``,
@@ -627,7 +627,7 @@ You could use ``data-repeat`` to generate a whole series of elements::
   ``wbr``. In addition, there are two elements that may only contain
   text content (``title`` and ``textarea``).
 
-  This also means you cannot put an ``attribute`` element inside of
+  This also means you cannot put an attribute element inside of
   such an element. What then if you have a void element such as
   ``input`` and you want to generate its attributes dynamically? You
   combine ``element`` with ``attribute``.
@@ -635,14 +635,14 @@ You could use ``data-repeat`` to generate a whole series of elements::
   So instead of this (**illegal**)::
 
     <input>
-      <attribute data-if="flag" data-name="type" data-value="{type}" />
+      <span data-dyn="attribute" data-if="flag" data-name="type" data-value="{type}" />
     </input>
 
   you write this:: 
 
-    <element data-name="input">
-      <attribute data-if="flag" data-name="type" data-value="{type}" />
-    </element>
+    <div data-dyn="element" data-name="input">
+      <div data-dyn="attribute" data-if="flag" data-name="type" data-value="{type}" />
+    </div>
 
 Normally you'd generate a dynamic attribute like this::
 
@@ -654,7 +654,7 @@ condition is true. Obviel Template has a special ``attribute`` element
 that lets you do this. The equivalent of the above example using
 the ``attribute`` element looks like this::
 
-  <a><attribute data-name="url" data-value="{url}"/>{title}</a>
+  <a><span data-dyn="atribute" data-name="url" data-value="{url}"/>{title}</a>
 
 What will happen when this template is rendered is the same as in the
 first example::
@@ -666,14 +666,14 @@ first example::
 This construct is helpful because you can use ``data-if`` for conditional
 attributes now::
 
-  <a><attribute data-if="flag" data-name="url" data-value="{url}" />{title}</a>
+  <a><span data-dyn="attribute" data-if="flag" data-name="url" data-value="{url}" />{title}</a>
 
 Now, the ``url`` attribute will appear *only* if ``flag`` is true.
 
 In combination with ``data-each`` this can be used to dynamically
 generate multiple attributes from data::
 
-  <a><attribute data-each="attributes" data-name="{name}" data-value="{value}" />{title}</a>
+  <a><span data-dyn="attribute" data-each="attributes" data-name="{name}" data-value="{value}" />{title}</a>
 
 You can generate the same attribute multiple times, in this case the
 content is added to the existing attribute, with a space character for
@@ -682,8 +682,8 @@ multiple classes dynamically to an element and have some show up only
 if a condition is true. This::
 
   <div>
-    <attribute data-name="class" data-value="{first}" />
-    <attribute data-if="flag" data-name="class" data-value="{second}" />
+    <span data-dyn="attribute" data-name="class" data-value="{first}" />
+    <span data-dyn="attribute" data-if="flag" data-name="class" data-value="{second}" />
   </div>
 
 combined with this data::
