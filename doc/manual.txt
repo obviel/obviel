@@ -53,6 +53,18 @@ If you want to use Obviel Template (optional but strongly recommended),
 you need to include it::
 
     <script type="text/javascript" src="/path/to/obviel-template.js"></script>
+
+.. sidebar:: Obviel Template on IE
+
+  Obviel Template is only supported on IE 8 and above. To use Obviel Template,
+  you need to tell it to use the JavaScript version of IE 8, otherwise
+  some features are not supported. You do this by including this on your
+  web page::
+
+    <meta http-equiv="X-UA-Compatible" content="IE=8" />
+
+  Please let us know whether this gives you any problems; if so we'll consider
+  ways to make Obviel work without this snippet.
   
 Finally, you need to include Obviel core itself::
   
