@@ -159,8 +159,7 @@ obviel.template = {};
         });
     };
 
-    var render_dynamic_element = function(el) {
-        var name = get_directive(el, 'data-name');
+    var morph_element = function(el, name) {
         var new_el = document.createElement(name);
         var i;
         
@@ -181,8 +180,15 @@ obviel.template = {};
             var child = el.childNodes[i];
             new_el.appendChild(child);
         }
+
+        // put new element in its place
         el.parentNode.replaceChild(new_el, el);
         return new_el;
+    };
+    
+    var render_dynamic_element = function(el) {
+        var name = get_directive(el, 'data-name');
+        return morph_element(el, name);
     };
 
     var get_directive = function(el, name) {
@@ -712,9 +718,9 @@ obviel.template = {};
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
         this.compile_func(el);
-        this.compile_dynamic_element(el);
-        this.compile_dynamic_attribute(el);
-        this.compile_block(el);
+        this.compile_element_element(el);
+        this.compile_attribute_element(el);
+        this.compile_block_element(el);
         
         if (trans_info.text !== null) {
             this._dynamic = true;
@@ -862,7 +868,7 @@ obviel.template = {};
     };
 
 
-    module.DynamicElement.prototype.compile_dynamic_element = function(el) {
+    module.DynamicElement.prototype.compile_element_element = function(el) {
         if (el.nodeName !== 'ELEMENT') {
             return;
         }
@@ -873,7 +879,7 @@ obviel.template = {};
         $(el).addClass('obviel-template-dynamic-element-name');
     };
 
-    module.DynamicElement.prototype.compile_dynamic_attribute = function(el) {
+    module.DynamicElement.prototype.compile_attribute_element = function(el) {
         if (el.nodeName !== 'ATTRIBUTE') {
             return;
         }
@@ -890,10 +896,10 @@ obviel.template = {};
         this._dynamic = true;
     };
 
-    module.DynamicElement.prototype.compile_block = function(el) {
+    module.DynamicElement.prototype.compile_block_element = function(el) {
         if (el.nodeName !== 'BLOCK') {
             return;
-        }
+        };
         $(el).addClass('obviel-template-block');
     };
     
