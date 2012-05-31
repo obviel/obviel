@@ -1189,7 +1189,11 @@ obviel.template = {};
         }
         var name = get_directive(el, 'data-name');
         var value = get_directive(el, 'data-value');
-        el.parentNode.setAttribute(name, value);
+        var parent = el.parentNode;
+        if (parent.hasAttribute(name)) {
+            value = parent.getAttribute(name) + ' ' + value;
+        }
+        parent.setAttribute(name, value);
     };
 
     module.DynamicElement.prototype.render_func = function(

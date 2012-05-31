@@ -620,6 +620,41 @@ generate multiple attributes from data::
 
   <a><attribute data-each="attributes" data-name="{name}" data-value="{value}" />{title}</a>
 
+You can generate the same attribute multiple times, in this case the
+content is added to the existing attribute, with a space character for
+a separator.  This is for instance useful when you want to add
+multiple classes dynamically to an element and have some show up only
+if a condition is true. This::
+
+  <div>
+    <attribute data-name="class" data-value="{first}" />
+    <attribute data-if="flag" data-name="class" data-value="{second}" />
+  </div>
+
+combined with this data::
+ 
+  { 
+    first: 'first',
+    second: 'second',
+    flag: true
+  }
+
+will result in this output::
+
+  <div class="first second"></div>
+
+but with this data::
+
+  { 
+    first: 'first',
+    second: 'second',
+    flag: false
+  }
+
+you'd get this output::
+
+  <div class="first"></div>
+
 ``data-func``
 -------------
 

@@ -1455,6 +1455,11 @@ test('dynamically generated attributes for list case', function() {
                '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
 });
 
+test('dynamically generated attribute multiple times with same name', function() {
+    html_equal(render('<p><attribute data-name="style" data-value="width: 15em;" /><attribute data-name="style" data-value="height: 16em;" /></p>', {}),
+               '<p style="width: 15em; height: 16em;"></p>');
+});
+
 test('dynamically generated attribute without data-name is an error', function() {
     raises(function() {
         render('<attribute data-value="value">content</attribute>');
