@@ -1,6 +1,6 @@
 /*global obviel: true, jQuery: true, template_url: true
   alert: true , browser: true, document: true, app_url: true, 
-  window: true, jsontemplate: true, Gettext: true, json_locale_data: true
+  window: true, Gettext: true, json_locale_data: true
 */
 /*jshint evil: true */
 

@@ -383,7 +383,7 @@ properties of the model have precedence over any defined on the view.
   was replaced with Obviel Template as this integrates with Obviel's
   other features better.
 
-  If you want Obviel's json-template support, you can include JSON
+  If you want Obviel's JSON template support, you can include JSON
   template (but this is optional)::
 
     <script type="text/javascript" src="/path/to/json-template.js"></script>
