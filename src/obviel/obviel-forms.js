@@ -1074,11 +1074,11 @@ obviel.forms = {};
             iface: 'input_field',
             obvt:
                 '<div class="obviel-field-input">' +
-                '<element data-name="input" type="text" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
-                '<attribute data-if="width" data-name="style" data-value="width: {width}em;" />' +
-                '<attribute data-if="validate.max_length" data-name="max_length" data-value="validate.max_length" />' +
-                '<attribute data-if="disabled" data-name="disabled" data-value="disabled" />' +
-                '</element>' +
+                '<div data-dyn="element" data-name="input" type="text" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+                '<div data-dyn="attribute" data-if="width" data-name="style" data-value="width: {width}em;" />' +
+                '<div data-dyn="attribute" data-if="validate.max_length" data-name="max_length" data-value="validate.max_length" />' +
+                '<div data-dyn="attribute" data-if="disabled" data-name="disabled" data-value="disabled" />' +
+                '</div>' +
                 '</div>'
         };
         $.extend(d, settings);
@@ -1178,11 +1178,11 @@ obviel.forms = {};
             iface: 'text_field',
             obvt:
             '<div class="obviel-field-input">' +
-            '<element data-name="textarea" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
-            '<attribute data-if="width" data-name="style" data-value="width: {width}em;" />' +
-            '<attribute data-if="height" data-name="style" data-value="height: {height}em;" />' +
-            '<attribute data-if="disabled" data-name="disabled" data-value="disabled" />' +
-            '</element>' +
+            '<div data-dyn="element" data-name="textarea" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+            '<div data-dyn="attribute" data-if="width" data-name="style" data-value="width: {width}em;" />' +
+            '<div data-dyn="attribute" data-if="height" data-name="style" data-value="height: {height}em;" />' +
+            '<div data-dyn="attribute" data-if="disabled" data-name="disabled" data-value="disabled" />' +
+            '</div>' +
             '</div>'
         };
         $.extend(d, settings);
@@ -1453,11 +1453,11 @@ obviel.forms = {};
         var d = {
             iface: 'boolean_field',
             obvt:
-            '<div class="obviel-field-input"><block data-if="label"><block data-if="label_before_input">{label}</block></block>' +
-            '<element data-name="input" type="checkbox" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
-            '<attribute data-if="disabled" data-name="disabled" data-value="disabled" />' +    
-            '</element>' +
-            '<block data-if="label"><block data-if="!label_before_input">{label}</block></block>' +
+            '<div class="obviel-field-input"><div data-dyn="unwrap" data-if="label"><div data-dyn="unwrap" data-if="label_before_input">{label}</div></div>' +
+            '<div data-dyn="element" data-name="input" type="checkbox" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+            '<div data-dyn="attribute" data-if="disabled" data-name="disabled" data-value="disabled" />' +    
+            '</div>' +
+            '<div data-dyn="unwrap" data-if="label"><div data-dyn="unwrap" data-if="!label_before_input">{label}</div></div>' +
             '</div>'
         };
         $.extend(d, settings);
@@ -1489,8 +1489,8 @@ obviel.forms = {};
             obvt:
             '<div class="obviel-field-input">' +
             '<select name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
-            '<attribute data-if="width" data-name="style" data-value="width: {width}em;" />' +
-            '<attribute data-if="disabled" data-name="disabled" data-value="disabled" />' +
+            '<div data-dyn="attribute" data-if="width" data-name="style" data-value="width: {width}em;" />' +
+            '<div data-dyn="attribute" data-if="disabled" data-name="disabled" data-value="disabled" />' +
             '<option data-if="empty_option" value="">{empty_option}</option>' +
             '<option data-each="choices" value="{value}">{label}</option>' +
             '</select>'
