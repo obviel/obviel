@@ -614,7 +614,7 @@ You could also use ``data-repeat`` to generate a whole series of elements::
 
   <div data-el="{@.}" data-repeat="tags"></div>
 
-``data-attr`: dynamically generating attributes
+``data-attr``: dynamically generating attributes
 ------------------------------------------------
 
 .. sidebar:: ``data-attr`` with void elements
