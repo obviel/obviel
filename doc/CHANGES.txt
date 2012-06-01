@@ -5,9 +5,8 @@ CHANGES
 ==================
 
 * Unfortunately ``<element>``, ``<attribute>`` and ``<block>`` did not
-  work well in IE. I have instead introduced the ``data-dyn``
-  directive, which gets the ``element``, ``attribute`` or ``unwrap``
-  value.
+  work well in IE. Instead you can now use ``data-el``, ``data-attr``
+  and ``data-unwrap`` on any DOM element.
 
 1.0b (2012-05-31)
 =================
