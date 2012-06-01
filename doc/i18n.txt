@@ -7,7 +7,7 @@ Introduction
 You have a project that uses Obviel for its user interface, and now
 you want it to work in multiple languages. For this you need to adjust
 your application to support multiple languages, a process known as
-"internationalization", or "i18n" for short (as "internationalisation"
+"internationalization", or "i18n" for short (as "internationalization"
 has 18 letters between the 'i' and the 'n').
 
 How do you go about this? 
@@ -175,7 +175,7 @@ GNU gettext tool suite, using the ``msginit`` tool (`details about msginit`_)::
   does let us do what we want. (if you can figure out how to use
   ``pybabel init`` for this purpose, let us know!)
 
-This command says we want to create a specific ``.po` file for the
+This command says we want to create a specific ``.po`` file for the
 French language locale (``fr_FR``). This is what the generated ``.po``
 file looks like::
 
