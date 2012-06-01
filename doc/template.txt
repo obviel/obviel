@@ -815,8 +815,8 @@ We could also use dynamically generated attributes to solve this case::
   <ul>
     <li data-each="list">
       <p>
-        <attribute data-if="@each.even" data-name="class" data-value="even"/>
-        <attribute data-if="@each.odd" data-name="class" data-value="odd" />
+        <span data-if="@each.even" data-attr="class" data-value="even"/>
+        <span data-if="@each.odd"  data-attr="class" data-value="odd" />
         {@.}
       </p>
     </li>
@@ -826,8 +826,8 @@ This would also allow us to generate the ``class`` attribute on the ``li``::
 
   <ul>
     <li data-each="list">
-      <attribute data-if="@each.even" data-name="class" data-value="even"/>
-      <attribute data-if="@each.odd" data-name="class" data-value="odd" />
+      <span data-if="@each.even" data-attr="class" data-value="even"/>
+      <span data-if="@each.odd" data-attr="class" data-value="odd" />
       <p>{@.}</p>
     </li>
   </ul>
