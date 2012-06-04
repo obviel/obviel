@@ -236,7 +236,7 @@ if (typeof obviel === "undefined") {
         
         compiled_template_promise.done(function(compiled_template) {
             if (compiled_template !== null) {
-                compiled_template.render_on_el(self.el, self.obj);
+                compiled_template.render(self);
             }
             
             // BBB passing the arguments is really for backwards compatibility
@@ -661,14 +661,10 @@ if (typeof obviel === "undefined") {
         this.source = source;
     };
 
-    module.HtmlCompiled.prototype.render_on_el = function(el, obj) {
-        el.html(this.render());
+    module.HtmlCompiled.prototype.render = function(view) {
+        view.el.html(this.source);
     };
     
-    module.HtmlCompiled.prototype.render = function(obj) {
-        return this.source;
-    };
-
     module.ObvielTemplateCompiler = function() {
 
     };
@@ -696,8 +692,8 @@ if (typeof obviel === "undefined") {
         this.compiled = new obviel.template.Template(source);
     };
 
-    module.ObvielTemplateCompiled.prototype.render_on_el = function(el, obj) {
-        this.compiled.render(el, obj);
+    module.ObvielTemplateCompiled.prototype.render = function(view) {
+        this.compiled.render(view.el, view.obj, {handlers: view});
     };
 
     module.JsontCompiler = function() {
@@ -713,12 +709,8 @@ if (typeof obviel === "undefined") {
         this.compiled = new jsontemplate.Template(source);
     };
 
-    module.JsontCompiled.prototype.render_on_el = function(el, obj) {
-        el.html(this.render(obj));
-    };
-    
-    module.JsontCompiled.prototype.render = function(obj) {
-        return this.compiled.expand(obj);
+    module.JsontCompiled.prototype.render = function(view) {
+        view.el.html(this.compiled.expand(view.obj));
     };
     
     module.compilers = new module.Compilers();

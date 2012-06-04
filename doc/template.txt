@@ -559,6 +559,27 @@ you can also consider ``data-func``.
 You would register formatters only once per web page before template
 rendering takes place, for instance when the page has just been loaded.
 
+``data-handler``: registering event handlers
+--------------------------------------------
+
+You can register handlers for various DOM events on particular
+elements using ``data-handler``.  If you use Obviel Template with
+an Obviel view, methods on the view will handle the events.
+
+For instance, if you want to register a handler for the ``click``
+event on a ``div``, you can do it like this::
+
+  <div data-handler="click|some_function">Click here!</click>
+
+When the user now clicks on the ``div`` element, the function
+indicated by ``some_function`` will be executed. Obviel Template will
+try to lookup ``some_function`` in the ``handlers`` property that can
+be passed with the ``context`` argument to render. In case Obviel
+views are in use, this will be the view.
+
+It is a ``RenderError`` if the function is not availabe on the view
+during render time.
+
 ``data-unwrap``: element that disappears
 ----------------------------------------
 
@@ -924,38 +945,6 @@ and after the variable::
   <div data-id="prefix{some_id}postfix"></div>
 
 This will generate HTML with proper ``id`` attributes.
-
-Order
------
-
-You can combine the various ``data-`` directive attributes on an
-element::
-
-  <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
-
-The order of execution is as follows :
-
-* ``data-if``
-
-* ``data-each``
-
-* ``data-with``
-
-* ``data-view`` or ``data-trans``
-
-* ``data-func``
-
-This means that if the value ``a`` is present and true, the ``p``
-element will be included in the rendered template (at all). After
-this, for each of the entries in ``b`` (so ``b`` scope, iteratively),
-we render the object ``d`` in the ``c`` scope with a view.
-
-This order holds no matter in what order you define the attributes.
-
-``data-trans``, which we'll introduce next, also follows after the
-other statements. It's not allowed on an element with ``data-view``.
-
-``data-func`` is always executed last for an element.
  
 ``data-trans`` for i18n
 ------------------------
@@ -997,6 +986,42 @@ special name ``.``:
   <div data-trans=". title" title="Hello">Contents</div>
 
 Read :doc:`Obviel Template i18n <template_i18n>` for much more detail.
+
+Order
+-----
+
+The order of execution of operations on an element is as follows :
+
+* ``data-if``
+
+* ``data-each``
+
+* ``data-with``
+
+* ``data-view`` or ``data-trans``
+
+* ``data-attr``
+
+* ``data-func``
+
+* ``data-el``, ``data-unwrap``
+
+For example, you could combine directives like this::
+
+  <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
+
+This means that if the value ``a`` is present and true, the ``p``
+element will be included in the rendered template (at all). After
+this, for each of the entries in ``b`` (so ``b`` scope, iteratively),
+we render the object ``d`` in the ``c`` scope with a view.
+
+This order holds no matter in what order you define the attributes.
+
+``data-trans`` is at the same level as ``data-view``. It's not allowed
+on an element with ``data-view``.
+
+``data-attr`` and ``data-func`` are executed last for an element, and
+finally elements are transformed using ``data-el`` or ``data-unwrap``.
 
 Literals
 --------

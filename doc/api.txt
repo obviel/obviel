@@ -378,18 +378,31 @@ Everything is in the ``obviel.template`` namespace.
 
   Can throw :class:`CompilationError` if the text could not be compiled.
 
-  .. function:: render(el, obj, translations)
+  .. function:: render(el, obj, context)
 
     Render template on jQuery element ``el``, using ``obj`` to resolve
-    variables, and using ``translations`` to look up translations.
+    variables, and using ``context`` as the rendering context.
 
     :param object el: jQuery element to render the template on.
     :param object obj: Object to render. Variables in the templates
       will be resolved from ``obj``.
-    :param object translations: A translations lookup registry. Used
-      to look up message ids. Must define a method ``gettext`` that
-      takes a single message id argument that returns the translated
-      text. Optional argument.
+    :param object context: This is an object that may have two
+      properties:
+
+      ``translations``
+        A translations lookup registry. Used to look up
+        message ids. Must define a method ``gettext`` that takes a
+        single message id argument that returns the translated
+        text. If not supplied no translations are looked up.
+
+      ``handlers``
+        A handlers lookup registry. Used to look up handler
+        functions for ``data-handler`` that will be called when an
+        event is triggered. If Obviel Template is used within an
+        Obviel view, the registry will be the view object itself, so a
+        method of the view object will be called. It is an error to 
+        use a ``data-handler`` directive in a template without there
+        being a ``handlers`` registry passed in.
 
 .. function:: variables(translation, variables)
 

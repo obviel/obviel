@@ -100,7 +100,7 @@ obviel.template = {};
     };
 
     module.RenderError.prototype = new module.Error();
-    
+
     module.Template = function(text) {
         this.section = null;
         this.text_template = false;
@@ -111,9 +111,12 @@ obviel.template = {};
         this.section = new module.Section($(text).get(0), true);
     };
     
-    module.Template.prototype.render = function(el, obj, translations) {
+    module.Template.prototype.render = function(el, obj, context) {
         var scope = new module.Scope(obj);
-
+        if (!context) {
+            context = { translations: null, handlers: null};
+        }
+        
         // clear the element first
         el.empty();
         
@@ -123,7 +126,7 @@ obviel.template = {};
         el.append(top_el);
 
         // now render the template
-        this.section.render(top_el, scope, translations);
+        this.section.render(top_el, scope, context);
 
         // if we inserted a text template, we've inserted a virtual top
         // div element. we have to remove it again, just leaving the
@@ -326,8 +329,8 @@ obviel.template = {};
             return false;
         }
         
-        // this.register_on_el(el, function(el, scope, translations) {
-        //     dynamic_element.render(el, scope, translations); });
+        // this.register_on_el(el, function(el, scope, context) {
+        //     dynamic_element.render(el, scope, context); });
         
         this.dynamic_elements.push({
             finder: this.get_el_finder(el),
@@ -352,7 +355,7 @@ obviel.template = {};
     };
 
     // module.Section.prototype.render_registered_func = function() {
-    //     var c = module.Codegen('funcs, el, scope, translations');
+    //     var c = module.Codegen('funcs, el, scope, context');
     //     this.codegen_registered(c, this.el_funcs);
     //     return c.get_function();
     // };
@@ -360,7 +363,7 @@ obviel.template = {};
     // module.Section.prototype.codegen_registered = function(
     //     c, el_funcs) {
     //     for (var i in el_funcs.funcs) {
-    //         c.push('funcs["' + func_id + '"](el, scope, translations);');
+    //         c.push('funcs["' + func_id + '"](el, scope, context);');
     //     }
     //     for (var j in el_funcs.sub) {
     //         c.push('el = el.childNodes[' + j + '];');
@@ -369,13 +372,13 @@ obviel.template = {};
     // };
                                                            
     module.Section.prototype.render_registered = function(
-        el_funcs, el, scope, translations) {
+        el_funcs, el, scope, context) {
         for (var i in el_funcs.funcs) {
-            el_funcs.funcs[i](el, scope, translations);
+            el_funcs.funcs[i](el, scope, context);
         }
         for (var j in el_funcs.sub) {
             this.render_registered(el_funcs.sub[j],
-                                   el.childNodes[j], scope, translations);
+                                   el.childNodes[j], scope, context);
         }
     };
 
@@ -428,8 +431,8 @@ obviel.template = {};
             return;
         }
         
-        // this.register_on_el(el, function(el, scope, translations) {
-        //     view_element.render(el, scope, translations); });
+        // this.register_on_el(el, function(el, scope, context) {
+        //     view_element.render(el, scope, context); });
    
         
         this.view_elements.push({
@@ -459,8 +462,8 @@ obviel.template = {};
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
 
-        // this.register_on_el(el, function(el, scope, translations) {
-        //     sub_section.render(el, scope, translations);});
+        // this.register_on_el(el, function(el, scope, context) {
+        //     sub_section.render(el, scope, context);});
    
         this.sub_sections.push({
             finder: this.get_el_finder(el),
@@ -469,7 +472,7 @@ obviel.template = {};
         return true;
     };
     
-    module.Section.prototype.render = function(el, scope, translations) {
+    module.Section.prototype.render = function(el, scope, context) {
         if (this.data_if) {
             var data_if = this.data_if.resolve(el, scope);
             if (!data_if) {
@@ -479,9 +482,9 @@ obviel.template = {};
         }
 
         if (this.data_each) {
-            this.render_each(el, scope, translations);
+            this.render_each(el, scope, context);
         } else {
-            this.render_el(el, scope, translations);
+            this.render_el(el, scope, context);
         }
     };
 
@@ -502,7 +505,7 @@ obviel.template = {};
         };
     };
     
-    module.Section.prototype.render_each = function(el, scope, translations) {
+    module.Section.prototype.render_each = function(el, scope, context) {
         var data_each = this.data_each(scope);
         if (!$.isArray(data_each)) {
             throw new module.RenderError(
@@ -527,7 +530,7 @@ obviel.template = {};
         // render the first iteration on the element
         scope.push(each_info(0, this.data_each_name, data_each));
         scope.push(data_each[0]);
-        this.render_el(el, scope, translations);
+        this.render_el(el, scope, context);
         scope.pop();
         scope.pop();
 
@@ -538,13 +541,13 @@ obviel.template = {};
 
             scope.push(each_info(i, this.data_each_name, data_each));
             scope.push(data_each[i]);
-            this.render_el(iteration_clone, scope, translations);
+            this.render_el(iteration_clone, scope, context);
             scope.pop();
             scope.pop();
         }
     };
     
-    module.Section.prototype.render_el = function(el, scope, translations) {
+    module.Section.prototype.render_el = function(el, scope, context) {
         if (this.data_with) {
             var data_with = this.data_with(scope);
             if (data_with === undefined) {
@@ -562,13 +565,13 @@ obviel.template = {};
 
         el.appendChild(this.frag.cloneNode(true));
 
-        // this.render_registered(this.el_funcs, el, scope, translations);
+        // this.render_registered(this.el_funcs, el, scope, context);
         
-        this.render_dynamic_elements(el, scope, translations);
+        this.render_dynamic_elements(el, scope, context);
 
-        this.render_views(el, scope, translations);
+        this.render_views(el, scope, context);
         
-        this.render_sub_sections(el, scope, translations);
+        this.render_sub_sections(el, scope, context);
 
         if (this.data_with) {
             scope.pop();
@@ -576,35 +579,37 @@ obviel.template = {};
     };
     
     module.Section.prototype.render_dynamic_elements = function(el, scope,
-                                                                translations) {
+                                                                context) {
         for (var i in this.dynamic_elements) {
             var value = this.dynamic_elements[i];
             var dynamic_el = value.finder(el);
-            value.dynamic_element.render(dynamic_el, scope, translations);
+            value.dynamic_element.render(dynamic_el, scope, context);
         }
     };
 
     module.Section.prototype.render_views = function(el, scope,
-                                                     translations) {
+                                                     context) {
         for (var i in this.view_elements) {
             var value = this.view_elements[i];
             var view_el = value.finder(el);
-            value.view_element.render(view_el, scope, translations);
+            value.view_element.render(view_el, scope, context);
         }
     };
 
     module.Section.prototype.render_sub_sections = function(el, scope,
-                                                            translations) {
+                                                            context) {
         for (var i in this.sub_sections) {
             var value = this.sub_sections[i];
             var sub_section_el = value.finder(el);
-            value.sub_section.render(sub_section_el, scope, translations);
+            value.sub_section.render(sub_section_el, scope, context);
         }
     };
     
     module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
         this.content_texts = [];
+        this.handler_event = null;
+        this.handler_name = null;
         this.message_id = null;
         this.func = null;
         this.tvars = {};
@@ -713,6 +718,7 @@ obviel.template = {};
 
         this.compile_attr_texts(el, trans_info.attributes);
         this.compile_content_texts(el);
+        this.compile_data_handler(el);
         this.compile_func(el);
         this.compile_data_el(el);
         this.compile_data_attr(el);
@@ -861,6 +867,21 @@ obviel.template = {};
         }
         var name_formatter = split_name_formatter(node, tokens[0].value);
         return name_formatter.name;
+    };
+
+    module.DynamicElement.prototype.compile_data_handler = function(el) {
+        if (!el.hasAttribute('data-handler')) {
+            return;
+        }
+        var name_formatter = split_name_formatter(
+            el, el.getAttribute('data-handler'));
+        if (!name_formatter.formatter) {
+            throw new module.CompilationError(
+                el, "data-handler: handler function name is not specified");
+        }
+        this.handler_event = name_formatter.name;
+        this.handler_name = name_formatter.formatter;
+        this._dynamic = true;
     };
     
     module.DynamicElement.prototype.compile_data_el = function(el) {
@@ -1103,10 +1124,10 @@ obviel.template = {};
         }
     };    
     
-    module.DynamicElement.prototype.render = function(el, scope, translations) {        
+    module.DynamicElement.prototype.render = function(el, scope, context) {        
         for (var key in this.attr_texts) {
             var value = this.attr_texts[key];
-            var text = value.render(el, scope, translations);
+            var text = value.render(el, scope, context);
             if (key === 'data-id') {
                 // XXX this implies data-id needs interpolation as opposed
                 // to using it like any other data-x directive
@@ -1118,13 +1139,13 @@ obviel.template = {};
         };
         // fast path without translations; elements do not need to be
         // reorganized
-        if (translations === undefined || translations === null ||
+        if (context.translations === undefined || context.translations === null ||
             this.message_id === null) {
             this.render_notrans(el, scope);
-            this.finalize_render(el, scope, translations);
+            this.finalize_render(el, scope, context);
             return;
         }
-        var translation = translations.gettext(this.message_id);
+        var translation = context.translations.gettext(this.message_id);
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             this.render_notrans(el, scope);
@@ -1132,14 +1153,14 @@ obviel.template = {};
             var children = el.childNodes;
             for (key in this.tvars) {
                 var info = this.tvars[key];
-                info.dynamic.render(children[info.index], scope, translations);
+                info.dynamic.render(children[info.index], scope, context);
             }
-            this.finalize_render(el, scope, translations);
+            this.finalize_render(el, scope, context);
             return;
         }
         // we need to translate and reorganize sub elements
-        this.render_trans(el, scope, translations, translation);
-        this.finalize_render(el, scope, translations);
+        this.render_trans(el, scope, context, translation);
+        this.finalize_render(el, scope, context);
     };
 
     module.DynamicElement.prototype.render_notrans = function(el, scope) {
@@ -1151,15 +1172,15 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.get_tvar_node = function(
-        el, scope,translations, name) {
+        el, scope, context, name) {
         var tvar_info = this.tvars[name];
         if (tvar_info === undefined) {
             return null;
         }
         var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
-        tvar_info.dynamic.render(tvar_node, scope, translations);
+        tvar_info.dynamic.render(tvar_node, scope, context);
         if (tvar_info.view !== null) {
-            tvar_info.view.render(tvar_node, scope, translations);
+            tvar_info.view.render(tvar_node, scope, context);
         }
         return tvar_node;
     };
@@ -1175,7 +1196,7 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.render_trans = function(
-        el, scope, translations, translation) {
+        el, scope, context, translation) {
         var result = [];
 
         var tokens = cached_tokenize(translation);
@@ -1187,7 +1208,7 @@ obviel.template = {};
             if (token.type === module.TEXT_TOKEN) {
                 frag.appendChild(document.createTextNode(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                var tvar_node = this.get_tvar_node(el, scope, translations,
+                var tvar_node = this.get_tvar_node(el, scope, context,
                                                    token.value);
                 if (tvar_node !== null) {
                     frag.appendChild(tvar_node);
@@ -1223,21 +1244,44 @@ obviel.template = {};
         parent.attr(name, value);
     };
 
-    module.DynamicElement.prototype.render_func = function(
-        el, scope, translations) {
+    module.DynamicElement.prototype.render_data_handler = function(el, context) {
+        if (!this.handler_name) {
+            return;
+        }
+        if (context.handlers === null || context.handlers === undefined) {
+            throw new module.RenderError(
+                el, "cannot render data-handler for event '" +
+                    this.handler_event + "' and handler '" +
+                    this.handler_name + "' because no " +
+                    "handlers object was supplied");
+        }
+        var f = context.handlers[this.handler_name];
+        if (f === undefined) {
+            throw new module.RenderError(
+                el, "cannot render data-handler for event '" +
+                    this.handler_event + "' and handler '" +
+                    this.handler_name + "' because handler function " +
+                    "could not be found");
+        }
+        $(el).bind(this.handler_event, f);
+    };
+    
+    module.DynamicElement.prototype.render_data_func = function(
+        el, scope, context) {
         if (this.func === null) {
             return;
         }
         this.func($(el),
                   function(name) { return scope.resolve(name); },
-                  translations);
+                  context);
     };
     
     
     module.DynamicElement.prototype.finalize_render = function(
-        el, scope, translations) {
+        el, scope, context) {
         this.render_data_attr(el);
-        this.render_func(el, scope, translations);
+        this.render_data_handler(el, context);
+        this.render_data_func(el, scope, context);
     };
     
     module.DynamicText = function(el, text) {        
@@ -1281,14 +1325,13 @@ obviel.template = {};
         this.message_id = message_id;
     };
 
-    module.AttributeText.prototype.render = function(el, scope,
-                                                     translations) {
+    module.AttributeText.prototype.render = function(el, scope, context) {
         // fast path without translations
-        if (translations === undefined || translations === null ||
+        if (context.translations === undefined || context.translations === null ||
             this.message_id === null) {
             return this.dynamic.render(el, scope);
         }
-        var translation = translations.gettext(this.message_id);
+        var translation = context.translations.gettext(this.message_id);
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             return this.dynamic.render(el, scope);
@@ -1394,7 +1437,7 @@ obviel.template = {};
         return this.dynamic;
     };
 
-    module.ViewElement.prototype.render = function(el, scope, translations) {
+    module.ViewElement.prototype.render = function(el, scope, context) {
         var obj = this.func(scope);
         if (obj === undefined) {
             throw new module.RenderError(

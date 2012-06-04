@@ -940,61 +940,96 @@ that provide extra functionality, and inherit from them.
 Declarative Event Registration
 ------------------------------
 
+
+.. sidebar:: Declarative event handler hookup
+
+  Instead of hooking up the event handler directly in the template,
+  it's also possible to declaratively hook up event handlers in
+  Obviel, using jQuery selectors. This approach is template-language
+  agnostic and thus will work with alternative template languages for
+  Obviel as well.
+
+  For the example given in this section, here's what it looks like with 
+  declarative event handlers::
+
+    obviel.view({ 
+      iface: 'foo',
+      events: {
+          click: {
+             '#some_id': function(ev) {
+               $('#click_result, ev.view.el).text('clicked!");
+             }
+         }
+      }
+    });
+
+  The event handler gets a jQuery event object, but this object will
+  have a special property ``view`` which is the view that this event
+  is associated with.
+
+  You can also express this with a view method as the handler::
+
+    obviel.view({
+      iface: 'foo',
+      render: function() {},
+      events: {
+         click: {
+           '#some_id': 'handle_click'
+         }
+      },
+      handle_click: function(ev) {
+         this.el.text('clicked!");
+      }
+    });
+
+  All declaratively defined events are registered after the view has
+  been rendered.
+
 Often a view will need to attach event handlers to elements rendered
-by the view. You can do this by hand::
+by the view. You can do this by hand using jQuery::
 
   obviel.view({ 
-     iface: 'foo', 
+     iface: 'foo',
+     obvt: '<div id="press">Click me!</div><div id="click_result"></div>', 
      render: function() {
         var self = this;
-        $('#some_id', self.el).click(function() {
-           self.el.text("clicked!");
+        $('#press', this.el).click(function(ev) {
+           $('#click_result', self.el).text('clicked!');
         });
      }
   });
 
-Like with subviews, Obviel allows a declarative way to hook up events. Here
-is the equivalent of the above::
+Let's refactor this first to use a method on the view for the event
+handler::
 
   obviel.view({ 
-    iface: 'foo',
-    render: function() {},
-    events: {
-        click: {
-           '#some_id': function(ev) {
-             ev.view.el.text('clicked!");
-           }
-       }
-    }
+     iface: 'foo',
+     obvt: '<div id="press">Click me!</div><div id="click_result"></div>', 
+     render: function() {
+        $('#press', this.el).click(this.click_handler);
+     },
+     click_handler: function(ev) {
+        $('#click_result', this.el).text('clicked!');
+     }
   });
 
-Like standard jQuery, the event handler gets an event object, but this
-object will have a special property ``view`` which is the view that
-this event is associated with.
+We can now hook up the event handler using Obviel Template instead, using
+the ``data-handler`` directive::
 
-There is another way to express this::
-
-  obviel.view({
-    iface: 'foo',
-    render: function() {},
-    events: {
-       click: {
-         '#some_id': 'handle_click'
-       }
-    },
-    handle_click: function(ev) {
-       this.el.text('clicked!");
-    }
+  obviel.view({ 
+     iface: 'foo',
+     obvt: '<div data-handler="click|click_handler">Click me!</div><div id="click_result"></div>', 
+     click_handler: function(ev) {
+        $('#click_result', this.el).text('clicked!');
+     }
   });
 
-In this case instead of directly hooking up the event handler, we
-refer to a method of the view itself as the event handler. You can
-refer to the view and its properties using ``this`` just like you do
-with ``render``. The event handler also receives the usual event
-object as the first argument.
+Now it's immediately clear by reading the template which events are
+being handled. In addition, Obviel will automatically clean up these
+event handlers if this view is ever cleaned up.
 
-All declaratively defined events are registered after the view has
-been rendered.
+Note that the event handling function gets a jQuery event object as its
+first argument (just like any normal jQuery event handler).
 
 Declarative Object Events
 -------------------------

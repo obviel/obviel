@@ -52,7 +52,7 @@ var render = function(text, obj) {
     var template = new obtemp.Template(text);
     var el = $("<div></div>"); // if you want to see it, use $('#viewdiv')
     var translations = new Translations();
-    template.render(el, obj, translations);
+    template.render(el, obj, {translations: translations});
     return el.html();
 };
 
@@ -1459,7 +1459,7 @@ test('data-attr on top', function() {
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     var translations = new Translations();
-    template.render(el, {}, translations);
+    template.render(el, {}, {translations: translations});
     html_equal(el.html(), '');
     equal(el.attr('class'), 'bar');
 });
@@ -1690,6 +1690,52 @@ test('insert open { in data-trans', function() {
     html_equal(render('<div data-trans="">Hello <em data-tvar="who">{@open}{who}{@close}</em>!</div>',
                       {who: "X"}),
                '<div><em>{X}</em>, hallo!</div>');
+});
+
+
+test('data-handler working', function() {
+    var handler_called = false;
+    var handlers = {
+        my_handler: function(ev) {
+            handler_called = true;
+        }
+    };
+    
+    var template = new obtemp.Template(
+        '<div id="one" data-handler="click|my_handler">Click here</div>');
+      
+    var el = $('<div></div>');
+    template.render(el, {}, { handlers: handlers});
+    $('#one', el).trigger('click');
+    equal(handler_called, true);
+});
+
+test('data-handler no handlers supplied', function() {
+    var handler_called = false;
+        
+    
+    var template = new obtemp.Template(
+        '<div id="one" data-handler="click|my_handler">Click here</div>');
+      
+    var el = $('<div></div>');
+    raises(function() {
+        template.render(el, {}, {});
+    }, obtemp.RenderError);
+});
+
+test('data-handler specific handler not supplied', function() {
+    var handler_called = false;
+    
+    var handlers = {
+    };
+
+    var template = new obtemp.Template(
+        '<div id="one" data-handler="click|my_handler">Click here</div>');
+      
+    var el = $('<div></div>');
+    raises(function() {
+        template.render(el, {}, {handlers: handlers});
+    }, obtemp.RenderError);
 });
 
 // XXX test failure if dotted name has non-end name to name that doesn't exist

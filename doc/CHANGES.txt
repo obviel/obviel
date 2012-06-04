@@ -8,6 +8,9 @@ CHANGES
   work well in IE. Instead you can now use ``data-el``, ``data-attr``
   and ``data-unwrap`` on any DOM element.
 
+* Introduce ``data-handler`` directive to hook up events directly from
+  template. With Obviel, this will hook up events to view directly.
+
 1.0b (2012-05-31)
 =================
 

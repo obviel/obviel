@@ -1421,3 +1421,23 @@ test('obviel template with sub elements view', function() {
     equal(el.children().first().text(), 'Hello world!');
 
 });
+
+test('obviel template with event handler hooking up to view', function() {
+    var clicked = false;
+    
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id" data-handler="click|handle_click">Click here!</div>',
+        handle_click: function(ev) {
+            clicked = true;
+        }
+    });
+
+    var el = $('#viewdiv');
+    el.render({ iface: 'test'});
+
+    $('#some_id', el).trigger('click');
+
+    equal(clicked, true);
+});
+     
