@@ -114,7 +114,7 @@ obviel.template = {};
     module.Template.prototype.render = function(el, obj, context) {
         var scope = new module.Scope(obj);
         if (!context) {
-            context = { translations: null, handlers: null};
+            context = { translations: null, get_handler: null};
         }
         
         // clear the element first
@@ -1248,15 +1248,15 @@ obviel.template = {};
         if (!this.handler_name) {
             return;
         }
-        if (context.handlers === null || context.handlers === undefined) {
+        if (context.get_handler === null || context.get_handler === undefined) {
             throw new module.RenderError(
                 el, "cannot render data-handler for event '" +
                     this.handler_event + "' and handler '" +
-                    this.handler_name + "' because no " +
-                    "handlers object was supplied");
+                    this.handler_name + "' because no get_handler function " +
+                    "was supplied");
         }
-        var f = context.handlers[this.handler_name];
-        if (f === undefined) {
+        var f = context.get_handler(this.handler_name);
+        if (f === undefined || f === null) {
             throw new module.RenderError(
                 el, "cannot render data-handler for event '" +
                     this.handler_event + "' and handler '" +

@@ -263,6 +263,21 @@ if (typeof obviel === "undefined") {
         });
     };
 
+    module.View.prototype.get_handler = function(name) {
+        var self = this;
+        var f = this[name];
+        
+        if (f === undefined) {
+            return null;
+        }
+        
+        return function(ev) {
+            ev.view = self;
+            ev.args = Array.prototype.slice.call(arguments, 1);
+            f.call(self, ev);
+        };
+    };
+    
     module.View.prototype.wrap_handler = function(handler) {
         var self = this;
         var wrapped_handler = null;
@@ -693,7 +708,10 @@ if (typeof obviel === "undefined") {
     };
 
     module.ObvielTemplateCompiled.prototype.render = function(view) {
-        this.compiled.render(view.el, view.obj, {handlers: view});
+        var get_handler = function(name) {
+            return view.get_handler(name);
+        };
+        this.compiled.render(view.el, view.obj, {get_handler: get_handler});
     };
 
     module.JsontCompiler = function() {

@@ -1700,19 +1700,22 @@ test('data-handler working', function() {
             handler_called = true;
         }
     };
+
+    var get_handler = function(name) {
+        return handlers[name];
+    };
     
     var template = new obtemp.Template(
         '<div id="one" data-handler="click|my_handler">Click here</div>');
       
     var el = $('<div></div>');
-    template.render(el, {}, { handlers: handlers});
+    template.render(el, {}, { get_handler: get_handler});
     $('#one', el).trigger('click');
     equal(handler_called, true);
 });
 
 test('data-handler no handlers supplied', function() {
     var handler_called = false;
-        
     
     var template = new obtemp.Template(
         '<div id="one" data-handler="click|my_handler">Click here</div>');
@@ -1726,15 +1729,16 @@ test('data-handler no handlers supplied', function() {
 test('data-handler specific handler not supplied', function() {
     var handler_called = false;
     
-    var handlers = {
+    var get_handler = function(name) {
+        return null;
     };
-
+    
     var template = new obtemp.Template(
         '<div id="one" data-handler="click|my_handler">Click here</div>');
       
     var el = $('<div></div>');
     raises(function() {
-        template.render(el, {}, {handlers: handlers});
+        template.render(el, {}, {get_handler: get_handler});
     }, obtemp.RenderError);
 });
 

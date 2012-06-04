@@ -1440,4 +1440,24 @@ test('obviel template with event handler hooking up to view', function() {
 
     equal(clicked, true);
 });
+
+test('obviel template, event handler can access view correctly', function() {
+    
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id" data-handler="click|handle_click">Click here!</div>',
+        handle_click: function(ev) {
+            this.obj.clicked = true;
+        }
+    });
+
+    var el = $('#viewdiv');
+    var test = {iface: 'test', clicked: false};
+    
+    el.render(test);
+
+    $('#some_id', el).trigger('click');
+
+    equal(test.clicked, true);
+});
      
