@@ -103,12 +103,21 @@ obviel.template = {};
 
     module.Template = function(text) {
         this.section = null;
-        this.text_template = false;
+        this.no_top_el_template = false;
         if (!is_html_text(text)) {
             text = '<div>' + text + '</div>';
-            this.text_template = true;
+            this.no_top_el_template = true;
         }
-        this.section = new module.Section($(text).get(0), true);
+        var parsed = $(text);
+        var top_el = parsed;
+        if (parsed.length !== 1) {
+            top_el = $('<div></div>');
+            parsed.each(function(index, el) {
+                top_el.append(el);
+            });
+            this.no_top_el_template = true;
+        }
+        this.section = new module.Section(top_el.get(0), true);
     };
     
     module.Template.prototype.render = function(el, obj, context) {
@@ -128,10 +137,11 @@ obviel.template = {};
         // now render the template
         this.section.render(top_el, scope, context);
 
-        // if we inserted a text template, we've inserted a virtual top
+        // if we inserted a text template, or a template with
+        // multiple elements on top, we've inserted a virtual top
         // div element. we have to remove it again, just leaving the
         // underlying nodes
-        if (this.text_template) {
+        if (this.no_top_el_template) {
             var node = el.get(0);
             $(top_el).contents().each(function() {
                 node.appendChild(this);

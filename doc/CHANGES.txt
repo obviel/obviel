@@ -11,6 +11,9 @@ CHANGES
 * Introduce ``data-handler`` directive to hook up events directly from
   template. With Obviel, this will hook up events to view directly.
 
+* The template constructor now accepts templates that consist of
+  multiple elements on top ("<p>first</p><p>second</p>").
+
 1.0b (2012-05-31)
 =================
 

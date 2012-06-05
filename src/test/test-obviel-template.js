@@ -115,6 +115,11 @@ test('variable and sub element', function() {
 });
 
 
+test('two elements', function() {
+    html_equal(render('<p>First</p><p>Second</p>', {}),
+               '<p>First</p><p>Second</p>');
+});
+
 test('variable in sub element', function() {
     html_equal(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
                '<p>a <em>nice</em> day, sir!</p>');
