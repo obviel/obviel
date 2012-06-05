@@ -120,6 +120,16 @@ test('two elements', function() {
                '<p>First</p><p>Second</p>');
 });
 
+test('element with text following', function() {
+    html_equal(render('<p>First</p>more', {}),
+               '<p>First</p>more');
+});
+
+test('text with element following', function() {
+    html_equal(render('more<p>First</p>', {}),
+               'more<p>First</p>');
+});
+
 test('variable in sub element', function() {
     html_equal(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
                '<p>a <em>nice</em> day, sir!</p>');
@@ -1478,6 +1488,17 @@ test('data-attr on top, multi element template', function() {
     html_equal(el.html(), '<div>Another</div>');
     equal(el.attr('class'), 'bar');
 });
+
+test('data-attr on top with text following', function() {
+    var text = '<div data-attr="class" data-value="bar"/>More';
+    var template = new obtemp.Template(text);
+    var el = $("<div></div>");
+    var translations = new Translations();
+    template.render(el, {}, {translations: translations});
+    html_equal(el.html(), 'More');
+    equal(el.attr('class'), 'bar');
+});
+
 
 test('data-attr in data-each', function() {
     html_equal(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul',

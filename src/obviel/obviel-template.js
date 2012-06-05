@@ -102,17 +102,26 @@ obviel.template = {};
     module.RenderError.prototype = new module.Error();
 
     module.Template = function(text) {
-        this.text_template = false;
-        if (!is_html_text(text)) {
-            text = '<div>' + text + '</div>';
-            this.text_template = true;
+        // allow us to deal with partial templates
+        // (only text or an element plus top-level text,
+        // or multiple top-level elements)
+        text = '<div>' + text + '</div>';
+        
+        var parsed = $(text).get(0);
+
+        var parts = [];
+        
+        for (var i = 0; i < parsed.childNodes.length; i++) {
+            var node = parsed.childNodes[i];
+            if (node.nodeType === 1) {
+                // ELEMENT
+                parts.push(new module.Section(node, true));
+            } else if (node.nodeType === 3) {
+                // TEXT
+                parts.push(new module.DynamicText(node, node.nodeValue));
+            }
         }
-        var parsed = $(text);
-        var sections = [];
-        $.each(parsed, function(index, el) {
-            sections.push(new module.Section(el, true));
-        });
-        this.sections = sections;
+        this.parts = parts;
     };
     
     module.Template.prototype.render = function(el, obj, context) {
@@ -123,28 +132,12 @@ obviel.template = {};
          
         // clear the element first
         el.empty();
-        
-        // we need to insert the top element into document first so
-        // we can hang the rest of the template off it
-        $.each(this.sections, function(index, section) {
-            var top_el = section.el.cloneNode(false);
-            el.append(top_el);
-            
-            // now render the template
-            section.render(top_el, scope, context);
-        });
-        // if we inserted a text template, we've inserted a virtual top
-        // div element. we have to remove it again, just leaving the
-        // underlying nodes
-        if (this.text_template) {
-            var top_el = el.children().first(); // $(this.sections[0].el);
-            var node = el.get(0);
-            top_el.contents().each(function() {
-                node.appendChild(this);
-            });
-            top_el.remove();
-        }
 
+        var node = el.get(0);
+        for (var i = 0; i < this.parts.length; i++) {
+            this.parts[i].render_root(node, scope, context);
+        }
+        
         // wipe out any elements marked for removal by data-if; these
         // could not be removed previously so as not to break the
         // indexed based access to elements
@@ -506,6 +499,13 @@ obviel.template = {};
         }
     };
 
+    module.Section.prototype.render_root = function(el, scope, context) {
+        var top_el = this.el.cloneNode(false);
+        // append first, so that parentNode is available
+        el.appendChild(top_el);
+        this.render(top_el, scope, context);
+    };
+    
     var each_info = function(index, name, data_each) {
         var even = index % 2 === 0;
         var info = {
@@ -1350,6 +1350,11 @@ obviel.template = {};
         return result.join('');        
     };
 
+    module.DynamicText.prototype.render_root = function(el, scope, context) {
+        var node = document.createTextNode(this.render(el, scope));
+        el.appendChild(node);
+    };
+    
     module.AttributeText = function(dynamic, message_id) {
         this.dynamic = dynamic;
         this.message_id = message_id;
