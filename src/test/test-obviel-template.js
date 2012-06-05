@@ -1764,6 +1764,33 @@ test('data-handler with data-el', function() {
     
 });
 
+test('data-handler multiple on same el', function() {
+    var first_handler_called = false;
+    var second_handler_called = false;
+    var handlers = {
+        first_handler: function(ev) {
+            first_handler_called = true;
+        },
+        second_handler: function(ev) {
+            second_handler_called = true;
+        }
+    };
+
+    var get_handler = function(name) {
+        return handlers[name];
+    };
+    
+    var template = new obtemp.Template(
+        '<div id="one" data-handler="click|first_handler blur|second_handler">Click here</div>');
+      
+    var el = $('<div></div>');
+    template.render(el, {}, { get_handler: get_handler});
+    $('#one', el).trigger('click');
+    $('#one', el).trigger('blur');
+    equal(first_handler_called, true); 
+    equal(second_handler_called, true);
+});
+
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
 

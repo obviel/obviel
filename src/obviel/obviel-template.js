@@ -620,8 +620,7 @@ obviel.template = {};
     module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
         this.content_texts = [];
-        this.handler_event = null;
-        this.handler_name = null;
+        this.handlers = [];
         this.message_id = null;
         this.func = null;
         this.tvars = {};
@@ -882,17 +881,25 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.compile_data_handler = function(el) {
-        if (!el.hasAttribute('data-handler')) {
+        var data_handler = get_directive(el, 'data-handler');
+        if (data_handler === null) {
             return;
         }
-        var name_formatter = split_name_formatter(
-            el, el.getAttribute('data-handler'));
-        if (!name_formatter.formatter) {
+        var name_formatters = split_name_formatters(el, data_handler);
+        if (name_formatters.length === 0) {
             throw new module.CompilationError(
-                el, "data-handler: handler function name is not specified");
+                el, 'data-handler: must have content');
         }
-        this.handler_event = name_formatter.name;
-        this.handler_name = name_formatter.formatter;
+        for (var i = 0; i < name_formatters.length; i++) {
+            var name_formatter = name_formatters[i];
+    
+            if (!name_formatter.formatter) {
+                throw new module.CompilationError(
+                    el, "data-handler: handler function name is not specified");
+            }
+            this.handlers.push({event_name: name_formatter.name,
+                                handler_name: name_formatter.formatter});
+        }
         this._dynamic = true;
     };
     
@@ -1257,25 +1264,29 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.render_data_handler = function(el, context) {
-        if (!this.handler_name) {
+        if (this.handlers.length === 0) {
             return;
         }
-        if (context.get_handler === null || context.get_handler === undefined) {
-            throw new module.RenderError(
-                el, "cannot render data-handler for event '" +
-                    this.handler_event + "' and handler '" +
-                    this.handler_name + "' because no get_handler function " +
-                    "was supplied");
+            
+        for (var i = 0; i < this.handlers.length; i++) {
+            var handler = this.handlers[i];
+            if (context.get_handler === null || context.get_handler === undefined) {
+                throw new module.RenderError(
+                    el, "cannot render data-handler for event '" +
+                        handler.event_name + "' and handler '" +
+                        handler.handler_name + "' because no get_handler function " +
+                        "was supplied");
+            }
+            var f = context.get_handler(handler.handler_name);
+            if (f === undefined || f === null) {
+                throw new module.RenderError(
+                    el, "cannot render data-handler for event '" +
+                        handler.event_name + "' and handler '" +
+                        handler.handler_name + "' because handler function " +
+                        "could not be found");
+            }
+            $(el).bind(handler.event_name, f);
         }
-        var f = context.get_handler(this.handler_name);
-        if (f === undefined || f === null) {
-            throw new module.RenderError(
-                el, "cannot render data-handler for event '" +
-                    this.handler_event + "' and handler '" +
-                    this.handler_name + "' because handler function " +
-                    "could not be found");
-        }
-        $(el).bind(this.handler_event, f);
     };
     
     module.DynamicElement.prototype.render_data_func = function(
@@ -1369,6 +1380,16 @@ obviel.template = {};
             }
         }
         return result.join('');
+    };
+
+    var split_name_formatters = function(el, text) {
+        var parts = trim(text).split(' ');
+        var result = [];
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            result.push(split_name_formatter(el, part));
+        }
+        return result;
     };
     
     var split_name_formatter = function(el, name) {
