@@ -178,15 +178,27 @@ obviel.template = {};
             }
             new_el.setAttribute(attr.name, attr.value);
         }
-
+        
         // copy over all sub-elements from old element
         for (i = 0; i < el.childNodes.length; i++) {
             var child = el.childNodes[i];
             new_el.appendChild(child);
         }
 
+        // copy all events
+        var events = $(el).data('events');
+        if (events !== undefined) {
+            $.each(events, function(key, value) {
+                $.each(value, function(sub, v) {
+                    $(new_el).bind(v.type, v.handler);
+                });
+            });
+        }
+
         // put new element in its place
         el.parentNode.replaceChild(new_el, el);
+
+
         return new_el;
     };
     

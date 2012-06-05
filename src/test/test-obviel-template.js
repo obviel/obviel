@@ -1742,6 +1742,28 @@ test('data-handler specific handler not supplied', function() {
     }, obtemp.RenderError);
 });
 
+test('data-handler with data-el', function() {
+    var handler_called = false;
+    var handlers = {
+        my_handler: function(ev) {
+            handler_called = true;
+        }
+    };
+
+    var get_handler = function(name) {
+        return handlers[name];
+    };
+    
+    var template = new obtemp.Template(
+        '<span data-el="div" id="one" data-handler="click|my_handler">Click here</span>');
+      
+    var el = $('<div></div>');
+    template.render(el, {}, { get_handler: get_handler});
+    $('#one', el).trigger('click');
+    equal(handler_called, true);
+    
+});
+
 // XXX test failure if dotted name has non-end name to name that doesn't exist
 // also test with data-with, data-if, data-each
 
