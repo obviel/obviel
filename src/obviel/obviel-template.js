@@ -102,22 +102,17 @@ obviel.template = {};
     module.RenderError.prototype = new module.Error();
 
     module.Template = function(text) {
-        this.section = null;
-        this.no_top_el_template = false;
+        this.text_template = false;
         if (!is_html_text(text)) {
             text = '<div>' + text + '</div>';
-            this.no_top_el_template = true;
+            this.text_template = true;
         }
         var parsed = $(text);
-        var top_el = parsed;
-        if (parsed.length !== 1) {
-            top_el = $('<div></div>');
-            parsed.each(function(index, el) {
-                top_el.append(el);
-            });
-            this.no_top_el_template = true;
-        }
-        this.section = new module.Section(top_el.get(0), true);
+        var sections = [];
+        $.each(parsed, function(index, el) {
+            sections.push(new module.Section(el, true));
+        });
+        this.sections = sections;
     };
     
     module.Template.prototype.render = function(el, obj, context) {
@@ -125,28 +120,29 @@ obviel.template = {};
         if (!context) {
             context = { translations: null, get_handler: null};
         }
-        
+         
         // clear the element first
         el.empty();
         
         // we need to insert the top element into document first so
         // we can hang the rest of the template off it
-        var top_el = this.section.el.cloneNode(false);
-        el.append(top_el);
-
-        // now render the template
-        this.section.render(top_el, scope, context);
-
-        // if we inserted a text template, or a template with
-        // multiple elements on top, we've inserted a virtual top
+        $.each(this.sections, function(index, section) {
+            var top_el = section.el.cloneNode(false);
+            el.append(top_el);
+            
+            // now render the template
+            section.render(top_el, scope, context);
+        });
+        // if we inserted a text template, we've inserted a virtual top
         // div element. we have to remove it again, just leaving the
         // underlying nodes
-        if (this.no_top_el_template) {
+        if (this.text_template) {
+            var top_el = el.children().first(); // $(this.sections[0].el);
             var node = el.get(0);
-            $(top_el).contents().each(function() {
+            top_el.contents().each(function() {
                 node.appendChild(this);
             });
-            $(top_el).remove();
+            top_el.remove();
         }
 
         // wipe out any elements marked for removal by data-if; these
@@ -1263,10 +1259,11 @@ obviel.template = {};
         }
         var name = get_directive(el, 'data-attr');
         var value = get_directive(el, 'data-value');
-        
-        // use jQuery to make attribute access more uniform (style in IE, etc)
+
         var parent = $(el.parentNode);
         
+        // use jQuery to make attribute access more uniform (style in IE, etc)
+            
         if (parent.attr(name)) {
             value = parent.attr(name) + ' ' + value;
         }

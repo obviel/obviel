@@ -1460,4 +1460,23 @@ test('obviel template, event handler can access view correctly', function() {
 
     equal(test.clicked, true);
 });
-     
+
+test('obviel data-each with data-attr inside', function() {
+    obviel.view({
+        iface: 'outer',
+        obvt: '<ul><li data-each="items" data-view="@."></li></ul>'
+    });
+    obviel.view({
+        iface: 'inner',
+        obvt: '<div data-attr="class" data-value="done" /><div>Foo</div>'
+    });
+
+    var el = $('#viewdiv');
+    var test = {iface: 'outer', items: [{iface: 'inner'}, {iface: 'inner'}]};
+
+    el.render(test);
+
+    $('li', el).each(function(index, el) {
+        ok($(el).hasClass('done'));
+    });
+});

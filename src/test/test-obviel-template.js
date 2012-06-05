@@ -1459,13 +1459,23 @@ test('data-attr in section where data-if is false', function() {
     
 });
 
-test('data-attr on top', function() {
+test('data-attr on top, single element template', function() {
     var text = '<div data-attr="class" data-value="bar"/>';
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     var translations = new Translations();
     template.render(el, {}, {translations: translations});
     html_equal(el.html(), '');
+    equal(el.attr('class'), 'bar');
+});
+
+test('data-attr on top, multi element template', function() {
+    var text = '<div data-attr="class" data-value="bar"/><div>Another</div>';
+    var template = new obtemp.Template(text);
+    var el = $("<div></div>");
+    var translations = new Translations();
+    template.render(el, {}, {translations: translations});
+    html_equal(el.html(), '<div>Another</div>');
     equal(el.attr('class'), 'bar');
 });
 
