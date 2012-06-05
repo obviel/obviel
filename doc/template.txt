@@ -577,6 +577,11 @@ try to lookup ``some_function`` in the ``handlers`` property that can
 be passed with the ``context`` argument to render. In case Obviel
 views are in use, this will be the view.
 
+To bind more than one event handler on an element at the same time, 
+separate them by a space character::
+
+  <div data-handler="click|on_click dblclick|on_dblclick">Click here!</div>
+
 It is a ``RenderError`` if the function is not availabe on the view
 during render time.
 
