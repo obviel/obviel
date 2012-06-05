@@ -12,7 +12,10 @@ CHANGES
   template. With Obviel, this will hook up events to view directly.
 
 * The template constructor now accepts templates that consist of
-  multiple elements on top ("<p>first</p><p>second</p>").
+  multiple elements on top ("<p>first</p><p>second</p>"). It also
+  accepts templates that are a piece of text and an element following
+  ("text<p>following</p>") or are an element followed by a piece of
+  text ("<p>first</p>followed").
 
 1.0b (2012-05-31)
 =================
