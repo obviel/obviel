@@ -586,24 +586,6 @@ test('view with html_script', function() {
 });
 
 
-test('view with html_el', function() {
-    var render_called = 0;
-    obviel.view({
-        iface: 'html',
-        html_el: 'html_el_id',
-        render: function() {
-            render_called++;
-        }
-    });
-
-    $('#viewdiv').render(
-        {ifaces: ['html']},
-        function() {
-            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
-            equal(render_called, 1);
-        });
-});
-
 asyncTest('view with html_url', function() {
     var render_called = 0;
     obviel.view({
@@ -702,28 +684,6 @@ test('json_script view', function() {
             start();
         });
 });
-
-test('json_el view', function() {
-     obviel.view({
-         iface: 'jt',
-         jsont_el: 'jsont_el_id'
-     });
-
-    // a bit of implementation detail to get the cache
-    var cache = obviel.compilers.compilers['jsont'].compiled_cache;
-    
-    equal(cache['el_jsont_el_id'], undefined);
-    
-    $('#viewdiv').render(
-        {foo: 'the value', ifaces: ['jt']},
-        function(element, view, context) {
-            equal($.trim($('#viewdiv').text()), 'the value');
-            // we can find it in the cache now
-            ok(cache['el_jsont_el_id']);
-            start();
-        });
-});
-
 
 asyncTest('jsont view', function() {
      obviel.view({
@@ -1489,21 +1449,6 @@ test('obviel template obvt_script', function() {
     obviel.view({
         iface: 'test',
         obvt_script: 'obvt_script_id'
-    });
-
-    var el = $('#viewdiv');
-    el.render({
-        iface: 'test',
-        world: 'world'
-    });
-
-    equal(html_lower(el.html()), 'hello <em>world</em>');
-});
-
-test('obviel template obvt_el', function() {
-    obviel.view({
-        iface: 'test',
-        obvt_el: 'obvt_el_id'
     });
 
     var el = $('#viewdiv');

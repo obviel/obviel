@@ -146,6 +146,18 @@ obviel.template = {};
         // could not be removed previously so as not to break the
         // indexed based access to elements
         $('.obviel-template-removal', el).remove();
+
+        // data-id becomes id
+        $('.obviel-template-data-id', el).each(function() {
+            var data_id = get_directive(this, 'data-id');
+            this.setAttribute('id', data_id);
+            var el = $(this);
+            el.removeClass('obviel-template-data-id');
+            if (el.attr('class') === '') {
+                el.removeAttr('class');
+            }
+        });
+
         // swap in those elements that had a dynamic element name
         $('.obviel-template-data-el', el).each(function() {
             var data_el = get_directive(this, 'data-el');
@@ -741,6 +753,7 @@ obviel.template = {};
         this.compile_content_texts(el);
         this.compile_data_handler(el);
         this.compile_func(el);
+        this.compile_data_id(el);
         this.compile_data_el(el);
         this.compile_data_attr(el);
         this.compile_data_unwrap(el);
@@ -911,6 +924,21 @@ obviel.template = {};
                                 handler_name: name_formatter.formatter});
         }
         this._dynamic = true;
+    };
+
+    module.DynamicElement.prototype.compile_data_id = function(el) {
+        if (!el.hasAttribute('data-id')) {
+            return;
+        }
+        // non-destructively read data-id attribute, leave it in place
+        // so variables can be used in it            
+        var data_id = el.getAttribute('data-id');
+        if (!data_id) {
+            throw new module.CompilationError(
+                el, "data-id cannot be empty");
+        }
+        
+        $(el).addClass('obviel-template-data-id');
     };
     
     module.DynamicElement.prototype.compile_data_el = function(el) {
@@ -1157,13 +1185,6 @@ obviel.template = {};
         for (var key in this.attr_texts) {
             var value = this.attr_texts[key];
             var text = value.render(el, scope, context);
-            if (key === 'data-id') {
-                // XXX this implies data-id needs interpolation as opposed
-                // to using it like any other data-x directive
-                el.removeAttribute('data-id');
-                el.setAttribute('id', text);
-                continue;
-            }
             el.setAttribute(key, text);
         };
         // fast path without translations; elements do not need to be

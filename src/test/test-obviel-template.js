@@ -256,6 +256,11 @@ test("data-id", function() {
           '<p id="Foo"></p>');
 });
 
+test('non-dynamic data-id', function() {
+    html_equal(render('<p data-id="foo"></p>', {}),
+          '<p id="foo"></p>');
+});
+
 test("data-with", function() {
     html_equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
           '<p>Hello</p>');

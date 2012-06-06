@@ -17,6 +17,12 @@ CHANGES
   ("text<p>following</p>") or are an element followed by a piece of
   text ("<p>first</p>followed").
 
+* Templates can be inlined in a ``<compiler_name>_script`` section 
+  in the HTML document.
+ 
+* Fix a bug in ``data-id`` generation where ``data-id="not_a_variable"``
+  wasn't correctly handled.
+
 1.0b (2012-05-31)
 =================
 

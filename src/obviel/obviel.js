@@ -568,11 +568,6 @@ if (typeof obviel === "undefined") {
             return {id: 'script_' + source_script,
                     source: $('#' + source_script).html()};
         }
-        var source_el = obj[identifier + '_el'];
-        if (source_el !== undefined) {
-            return {id: 'el_' + source_el,
-                    source: $('#' + source_el)};
-        }
         var source_url = obj[identifier + '_url'];
         if (source_url !== undefined) {
             return {id: source_url,
@@ -673,9 +668,6 @@ if (typeof obviel === "undefined") {
     };
     
     module.HtmlCompiled = function(source) {
-        if (source instanceof $) {
-            source = source.html();
-        }
         this.source = source;
     };
 
@@ -727,9 +719,6 @@ if (typeof obviel === "undefined") {
     };
 
     module.JsontCompiled = function(source) {
-        if (source instanceof $) {
-            source = source.html();
-        }
         this.compiled = new jsontemplate.Template(source);
     };
 

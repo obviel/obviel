@@ -434,20 +434,16 @@ Obviel Template has many features, including the ability to directly
 render sub-objects within the template language. Read the
 :doc:`template documentation <template>` for much more information.
 
-Loading templates from the page (``_el`` and ``_script``)
----------------------------------------------------------
+Loading templates from the page (``_script``)
+---------------------------------------------
 
 Besides loading up html or obvt templates directly
 (``<compiler_name>``) or from a separate url
 (``<compiler_name>_url``), you can also load up templates from the web
-page itself. Two ways to do this are supported. The ``_script``
-approach is more appropriate for ``html`` and ``jsont``, whereas
-the ``_el`` approach is more appropriate for ``obvt`` templates.
+page itself, using ``<compiler_name>_script``.
 
-**<compiler_name>_script**
-
-This loads up the template from a ``script`` tag on the web page. If
-you have a web page that includes the following::
+``<compiler_name>_script`` loads up the template from a ``script`` tag
+on the web page. If you have a web page that includes the following::
 
   <script type="text/template" id="my_id">Hello <em>world</em!</script>
 
@@ -459,33 +455,6 @@ you can refer to this by id, as follows::
   );
 
 This also works for ``obvt_script`` and ``jsont_script``.
-
-**<compiler_name>_el**
-
-This loads up the template from a (hidden) element on the web page. If you
-have a web page that includes the following::
-
-  <div style="display:none" id="my_id">Hello <em>world</em!</script>
-
-You can refer to it by id, like this::
-
-  obviel.view(
-     iface: 'foo',
-     obvt_el: 'my_id'
-  );
-
-This also works for ``html_el``. Using``jsont_el`` is possible but makes
-no sense, because not all JSON Templates will be valid HTML (it being a
-text-based templating language).
-
-For ``html_el`` and ``obvt_el`` using this approach has the benefit
-that HTML validators and HTML editors will automatically be aware that
-the content of the template is actual HTML (any Obviel Template should
-be a valid HTML snippet). 
-
-There may also be slight performance benefit in case of ``obvt_el``,
-as the HTML does not need to be parsed anymore; it will have been
-parsed when the document loaded.
 
 Rendering Sub-Objects
 ---------------------
