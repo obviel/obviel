@@ -1,2 +1,0 @@
-<a data-if="done" id="clear-completed" data-handler="click|clear_completed">Clear {done} completed items</a>
-<div class="todo-count"><b>{remaining}</b> items left</div>

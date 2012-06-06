@@ -58,7 +58,6 @@ body {
 }
 
 #main {
-//	display: none;
 }
 
 #todo-list {
@@ -132,7 +131,6 @@ body {
 }
 
 #todoapp footer {
-//	display: none;
 	margin: 0 -20px -20px -20px;
 	overflow: hidden;
 	color: #555555;

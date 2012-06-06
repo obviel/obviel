@@ -1,7 +1,7 @@
 (function($, obviel) {
     obviel.view({
         iface: 'todos',
-        obvt_url: 'todos.obvt',
+        obvt_script: 'obvt-todos',
         object_events: {
             update: 'rerender',
             update_stats: 'update_stats'
@@ -58,7 +58,7 @@
     
     obviel.view({
         iface: 'stats',
-        obvt_url: 'todo-stats.obvt',
+        obvt_script: 'obvt-todo-stats',
         clear_completed: function() {
             var new_items = [];
             $.each(todos.items, function(index, item) {
@@ -73,7 +73,7 @@
     
     obviel.view({
         iface: 'todo',
-        obvt_url: 'todo.obvt',
+        obvt_script: 'obvt-todo',
         object_events: {
             update: 'rerender'
         },
@@ -101,7 +101,7 @@
 
     obviel.view({
         iface: 'todo-editing',
-        obvt_url: 'todo-editing.obvt',
+        obvt_script: 'obvt-todo-editing',
         object_events: {
             update: 'rerender'
         },
@@ -141,7 +141,7 @@
         }
     };
 
-    $(document).ready(function() {    
+    $(document).ready(function() {
         $('#todoapp').render(todos);
     });
 }(jQuery, obviel));
