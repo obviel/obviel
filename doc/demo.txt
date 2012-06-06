@@ -3,7 +3,8 @@ Demo code
 
 We are working on building up demo code for Obviel. 
 
-Here is an extended `todo list application`_. This is based on TodoMVC_.
+Here is an extended `todo list application`_. This is an Obviel implementation
+of the TodoMVC_ application.
 
 .. _`todo list application`: _static/demo/todos/index.html
 
