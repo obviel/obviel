@@ -618,7 +618,7 @@ if (typeof obviel === "undefined") {
     
     module.Compiler = function() {
         this.url_cache = {};
-        this.source_cache = {};
+        this.compiled_cache = {};
     };
 
     module.Compiler.prototype.get_compiled = function(source) {
@@ -627,17 +627,17 @@ if (typeof obviel === "undefined") {
 
     module.Compiler.prototype.clear_cache = function() {
         this.url_cache = {};
-        this.source_cache = {};
+        this.compiled_cache = {};
     };
     
     module.Compiler.prototype.compile = function(identifier, source) {
         var self = this;
-        var cached_compiled = self.source_cache[identifier];
+        var cached_compiled = self.compiled_cache[identifier];
         if (cached_compiled !== undefined) {
             return cached_compiled;
         }
         var compiled = self.get_compiled(source);
-        self.source_cache[identifier] = compiled;
+        self.compiled_cache[identifier] = compiled;
         return compiled;
     };
 
@@ -670,12 +670,6 @@ if (typeof obviel === "undefined") {
     
     module.HtmlCompiler.prototype.get_compiled = function(source) {
         return new module.HtmlCompiled(source);
-    };
-
-    module.HtmlCompiler.prototype.compile = function(identifier, source) {
-        // don't need source-level caching for HtmlCompiler, as
-        // compilation takes no time and this would only waste storage
-        return this.get_compiled(source);
     };
     
     module.HtmlCompiled = function(source) {
@@ -733,6 +727,9 @@ if (typeof obviel === "undefined") {
     };
 
     module.JsontCompiled = function(source) {
+        if (source instanceof $) {
+            source = source.html();
+        }
         this.compiled = new jsontemplate.Template(source);
     };
 
