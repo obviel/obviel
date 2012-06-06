@@ -557,56 +557,62 @@ if (typeof obviel === "undefined") {
             compiler.clear_cache();
         });
     };
+
+    var get_source = function(identifier, obj) {
+        var source = obj[identifier];
+        if (source !== undefined) {
+            return {id: source, source: source};
+        }
+        var source_script = obj[identifier + '_script'];
+        if (source_script !== undefined) {
+            return {id: 'script_' + source_script,
+                    source: $('#' + source_script).html()};
+        }
+        var source_el = obj[identifier + '_el'];
+        if (source_el !== undefined) {
+            return {id: 'el_' + source_el,
+                    source: $('#' + source_el)};
+        }
+        var source_url = obj[identifier + '_url'];
+        if (source_url !== undefined) {
+            return {id: source_url,
+                    url: source_url};
+        }
+        return null;
+    };
     
     module.Compilers.prototype.get_compiled = function(view, obj) {
-        var self = this;
-
-        var source = null;
-        var source_url = null;
-
-        var found_compiler = null;
-        $.each(self.compilers, function(identifier, compiler) {
-            source = obj[identifier];
-            if (source !== undefined) {
-                found_compiler = compiler;
-                return false;
+        var source_info = null;
+        
+        for (identifier in this.compilers) {
+            var compiler = this.compilers[identifier];
+            source_info = get_source(identifier, obj);
+            if (source_info !== null) {
+                source_info.compiler = compiler;
+                break;
             }
-
-            source_url = obj[identifier + '_url'];
-            if (source_url !== undefined) {
-                found_compiler = compiler;
-                return false;
+            source_info = get_source(identifier, view);
+            if (source_info !== null) {
+                source_info.compiler = compiler;
+                break;
             }
-
-            source = view[identifier];
-            if (source !== undefined) {
-                found_compiler = compiler;
-                return false;
-            }
-
-            source_url = view[identifier + '_url'];
-            if (source_url !== undefined) {
-                found_compiler = compiler;
-                return false;
-            }
-            
-            return true;
-        });
+        }
 
         var defer = $.Deferred();
         
-        if (found_compiler === null) {
+        if (source_info === null) {
             defer.resolve(null);
             return defer.promise();
         }
-        
-        if (source !== undefined) {
-            var compiled = found_compiler.compile(source);
+
+        if (source_info.source !== undefined) {
+            var compiled = source_info.compiler.compile(
+                source_info.id, source_info.source);
             defer.resolve(compiled);
             return defer.promise();
         }
         
-        return found_compiler.compile_url(source_url);
+        return source_info.compiler.compile_url(source_info.url);
     };
 
     
@@ -624,14 +630,14 @@ if (typeof obviel === "undefined") {
         this.source_cache = {};
     };
     
-    module.Compiler.prototype.compile = function(source) {
+    module.Compiler.prototype.compile = function(identifier, source) {
         var self = this;
-        var cached_compiled = self.source_cache[source];
+        var cached_compiled = self.source_cache[identifier];
         if (cached_compiled !== undefined) {
             return cached_compiled;
         }
         var compiled = self.get_compiled(source);
-        self.source_cache[source] = compiled;
+        self.source_cache[identifier] = compiled;
         return compiled;
     };
 
@@ -666,13 +672,16 @@ if (typeof obviel === "undefined") {
         return new module.HtmlCompiled(source);
     };
 
-    module.HtmlCompiler.prototype.compile = function(source) {
+    module.HtmlCompiler.prototype.compile = function(identifier, source) {
         // don't need source-level caching for HtmlCompiler, as
         // compilation takes no time and this would only waste storage
         return this.get_compiled(source);
     };
     
     module.HtmlCompiled = function(source) {
+        if (source instanceof $) {
+            source = source.html();
+        }
         this.source = source;
     };
 

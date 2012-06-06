@@ -373,8 +373,10 @@ Everything is in the ``obviel.template`` namespace.
 .. class:: Template
 
   A template. To instantiate and compile, create a new ``Template``
-  object with a ``text`` argument. The ``text`` argument should be
-  a HTML fragment that will be compiled. 
+  object with a ``text`` argument. The ``text`` argument should be a
+  HTML fragment that will be compiled, or alternatively a jQuery
+  selector indicating an element to be compiled (everything in it will
+  be compiled).
 
   Can throw :class:`CompilationError` if the text could not be compiled.
 

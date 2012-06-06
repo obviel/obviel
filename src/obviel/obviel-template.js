@@ -102,15 +102,19 @@ obviel.template = {};
     module.RenderError.prototype = new module.Error();
 
     module.Template = function(text) {
-        // allow us to deal with partial templates
-        // (only text or an element plus top-level text,
-        // or multiple top-level elements)
-        text = '<div>' + text + '</div>';
+        var parsed;
+        // if text is already a jQuery selector, we already have parsed
+        if (text instanceof $) {
+            parsed = text.get(0);
+        } else {
+            // allow us to deal with partial templates
+            // (only text or an element plus top-level text,
+            // or multiple top-level elements)
+            text = '<div>' + text + '</div>';
+            parsed = $(text).get(0);
+        }
         
-        var parsed = $(text).get(0);
-
         var parts = [];
-        
         for (var i = 0; i < parsed.childNodes.length; i++) {
             var node = parsed.childNodes[i];
             if (node.nodeType === 1) {

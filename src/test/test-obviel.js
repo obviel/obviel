@@ -567,6 +567,43 @@ test('view with html', function() {
         });
 });
 
+test('view with html_script', function() {
+    var render_called = 0;
+    obviel.view({
+        iface: 'html',
+        html_script: 'html_script_id',
+        render: function() {
+            render_called++;
+        }
+    });
+
+    $('#viewdiv').render(
+        {ifaces: ['html']},
+        function() {
+            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
+            equal(render_called, 1);
+        });
+});
+
+
+test('view with html_el', function() {
+    var render_called = 0;
+    obviel.view({
+        iface: 'html',
+        html_el: 'html_el_id',
+        render: function() {
+            render_called++;
+        }
+    });
+
+    $('#viewdiv').render(
+        {ifaces: ['html']},
+        function() {
+            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
+            equal(render_called, 1);
+        });
+});
+
 asyncTest('view with html_url', function() {
     var render_called = 0;
     obviel.view({
@@ -1403,6 +1440,36 @@ test('obviel template view', function() {
     });
 
     equal(el.text(), 'Hello world!');
+});
+
+test('obviel template obvt_script', function() {
+    obviel.view({
+        iface: 'test',
+        obvt_script: 'obvt_script_id'
+    });
+
+    var el = $('#viewdiv');
+    el.render({
+        iface: 'test',
+        world: 'world'
+    });
+
+    equal(html_lower(el.html()), 'hello <em>world</em>');
+});
+
+test('obviel template obvt_el', function() {
+    obviel.view({
+        iface: 'test',
+        obvt_el: 'obvt_el_id'
+    });
+
+    var el = $('#viewdiv');
+    el.render({
+        iface: 'test',
+        world: 'world'
+    });
+
+    equal(html_lower(el.html()), 'hello <em>world</em>');
 });
 
 test('obviel template with sub elements view', function() {
