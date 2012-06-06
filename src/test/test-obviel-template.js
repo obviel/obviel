@@ -890,6 +890,22 @@ test('implicit data-tvar for variable in element', function() {
           '<p><em>wereld</em>, hallo!</p>');
 });
 
+test('implicit data-tvar for variable in element when no translation available', function() {
+    html_equal(render('<p data-trans="">Greetings <em>{who}</em>!</p>',
+                 {who: 'wereld'}),
+          '<p>Greetings <em>wereld</em>!</p>');
+});
+
+test('data-tvar for variable in element when no translations are available', function() {
+    var text = '<p data-trans="">Greetings <em data-tvar="who">{who}</em>!</p>';
+    var template = new obtemp.Template(text);
+    var el = $("<div></div>");
+    template.render(el, {who: 'wereld'}, {});
+    var html = el.html();
+
+    html_equal(html, '<p>Greetings <em>wereld</em>!</p>'); 
+});
+
 test('implicit data-tvar for data-view', function() {
     obviel.view({
         iface: 'person',

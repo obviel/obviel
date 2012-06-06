@@ -1164,13 +1164,18 @@ obviel.template = {};
         };
         // fast path without translations; elements do not need to be
         // reorganized
-        if (context.translations === undefined || context.translations === null ||
-            this.message_id === null) {
+        if (this.message_id === null) {
             this.render_notrans(el, scope);
             this.finalize_render(el, scope, context);
             return;
         }
-        var translation = context.translations.gettext(this.message_id);
+        
+        var translation = this.message_id;
+        if (context.translations !== null &&
+            context.translations !== undefined) {
+            translation = context.translations.gettext(this.message_id);
+        }
+        
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             this.render_notrans(el, scope);
@@ -1195,7 +1200,7 @@ obviel.template = {};
                 el, scope);
         }
     };
-
+    
     module.DynamicElement.prototype.get_tvar_node = function(
         el, scope, context, name) {
         var tvar_info = this.tvars[name];
