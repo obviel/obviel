@@ -1,4 +1,38 @@
 (function($, obviel) {
+    // the application model
+    var todos = {
+        iface: 'todos',
+        items: []
+    };
+
+    // a clear function removing a todo from the application
+    var clear = function(todo) {
+        for (var i = 0; i < todos.items.length; i++) {
+            if (todos.items[i] === todo) {
+                todos.items.splice(i, 1);
+                break;
+            }
+        }
+    };
+    
+    // create a special stats model from the todos
+    var get_stats = function(todos) {
+        var remaining = 0;
+        var done = 0;
+        var amount = 0;
+        $.each(todos.items, function(index, todo) {
+            if (todo.done) {
+                done += 1;
+            } else {
+                remaining += 1;
+            }
+            amount += 1;
+        });
+        return {iface: 'stats', remaining: remaining, done: done,
+                amount: amount};
+    };
+
+    // a view for the whole todos application
     obviel.view({
         iface: 'todos',
         obvt_script: 'obvt-todos',
@@ -40,22 +74,7 @@
         }
     });
 
-    var get_stats = function(todos) {
-        var remaining = 0;
-        var done = 0;
-        var amount = 0;
-        $.each(todos.items, function(index, todo) {
-            if (todo.done) {
-                done += 1;
-            } else {
-                remaining += 1;
-            }
-            amount += 1;
-        });
-        return {iface: 'stats', remaining: remaining, done: done,
-                amount: amount};
-    };
-    
+    // a view for the stats
     obviel.view({
         iface: 'stats',
         obvt_script: 'obvt-todo-stats',
@@ -70,7 +89,8 @@
             $(todos).trigger('update');
         }
     });
-    
+
+    // a view for an individual todo item, not editable
     obviel.view({
         iface: 'todo',
         obvt_script: 'obvt-todo',
@@ -99,6 +119,7 @@
         }
     });
 
+    // a view for an editable todo item
     obviel.view({
         iface: 'todo-editing',
         obvt_script: 'obvt-todo-editing',
@@ -127,20 +148,7 @@
     });
     
 
-    var todos = {
-        iface: 'todos',
-        items: []
-    };
-
-    var clear = function(todo) {
-        for (var i = 0; i < todos.items.length; i++) {
-            if (todos.items[i] === todo) {
-                todos.items.splice(i, 1);
-                break;
-            }
-        }
-    };
-
+    // when the document is ready, render the app model
     $(document).ready(function() {
         $('#todoapp').render(todos);
     });
