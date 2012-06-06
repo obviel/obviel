@@ -33,3 +33,8 @@ Thank you
 * KNMP / Z-Index
 
 * Fourdigits
+
+Also
+----
+
+The TodoMVC project to base the todo example on.

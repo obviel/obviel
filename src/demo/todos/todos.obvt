@@ -1,0 +1,18 @@
+<header>
+  <h1>Todos</h1>
+  <input data-handler="keypress|create_on_enter" id="new-todo" type="text" 
+    placeholder="What needs to be done?" />
+</header>
+
+<section id="main" data-if="items">
+  <input data-handler="click|toggle_all" id="toggle-all" type="checkbox"/>
+  <label for="toggle-all">Mark all as complete</label>
+  <ul id="todo-list">
+    <li data-each="items" data-view="@."></li>
+  </ul>
+</section>
+
+<footer>
+  <a id="clear-completed">Clear completed</a>
+  <div id="todo-count"></div>
+</footer>

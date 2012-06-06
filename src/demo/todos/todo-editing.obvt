@@ -1,0 +1,1 @@
+<input data-handler="keypress|update_on_enter blur|close" class="edit" type="text" value="{title}" /> 
