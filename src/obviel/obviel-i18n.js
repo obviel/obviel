@@ -67,9 +67,11 @@ var _ = null;
         };
     };
 
-    // XXX domain/locale order inconsistent with set_locale..
     // XXX can this be called to override translations for a particular domain?
-    module.register_translation = function(domain, locale, translation_source) {
+    module.register_translation = function(locale, translation_source, domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
         var translations = domains[domain];
         if (translations === undefined) {
             translations = {};
@@ -84,16 +86,19 @@ var _ = null;
 
     var current_gt = new Gettext();
     var current_locale = null;
-    var current_domain = null;
+    var current_domain = 'default';
     
     module.clear_locale = function() {
         // XXX goes into the insides of jsgettext...
         Gettext._locale_data = undefined;
         current_locale = null;
-        current_domain = null;
+        current_domain = 'default';
     };
     
     module.set_locale = function(locale, domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
         // bail out early if we have to do nothing
         if (locale === current_locale && domain == current_domain) {
             return;

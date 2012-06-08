@@ -20,9 +20,20 @@ var setup_translations = function() {
                                                 'Bonjour monde!'});
     var nl_NL = i18n.create_translation_source({'Hello world!':
                                                 'Hallo wereld!'});
-    i18n.register_translation('i18ntest', 'en_US', en_US);
-    i18n.register_translation('i18ntest', 'fr_FR', fr_FR);
-    i18n.register_translation('i18ntest', 'nl_NL', nl_NL);
+    i18n.register_translation('en_US', en_US, 'i18ntest');
+    i18n.register_translation('fr_FR', fr_FR, 'i18ntest');
+    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
+};
+
+var setup_translations_default_domain = function() {
+    var en_US = i18n.create_empty_translation_source();
+    var fr_FR = i18n.create_translation_source({'Hello world!':
+                                                'Bonjour monde!'});
+    var nl_NL = i18n.create_translation_source({'Hello world!':
+                                                'Hallo wereld!'});
+    i18n.register_translation('en_US', en_US);
+    i18n.register_translation('fr_FR', fr_FR);
+    i18n.register_translation('nl_NL', nl_NL);
 };
 
 var setup_translations_multi_domains = function() {
@@ -31,9 +42,9 @@ var setup_translations_multi_domains = function() {
                                                 'Bonjour monde!'});
     var nl_NL = i18n.create_translation_source({'Hello world!':
                                                 'Hallo wereld!'});
-    i18n.register_translation('i18ntest', 'en_US', en_US);
-    i18n.register_translation('i18ntest', 'fr_FR', fr_FR);
-    i18n.register_translation('i18ntest', 'nl_NL', nl_NL);
+    i18n.register_translation('en_US', en_US, 'i18ntest');
+    i18n.register_translation('fr_FR', fr_FR, 'i18ntest');
+    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
 
     // now register second domain called 'other'
     en_US = i18n.create_empty_translation_source();
@@ -42,9 +53,9 @@ var setup_translations_multi_domains = function() {
     nl_NL = i18n.create_translation_source({'Bye world!':
                                             'Tot ziens wereld!'});
 
-    i18n.register_translation('other', 'en_US', en_US);
-    i18n.register_translation('other', 'fr_FR', fr_FR);
-    i18n.register_translation('other', 'nl_NL', nl_NL);
+    i18n.register_translation('en_US', en_US, 'other');
+    i18n.register_translation('fr_FR', fr_FR, 'other');
+    i18n.register_translation('nl_NL', nl_NL, 'other');
 };
 
 test('no locale set', function() {
@@ -207,12 +218,20 @@ test('switch domain using set_locale, translating fr_Fr locale', function() {
     equal(_('Bye world!'), 'Au revoir monde!');
 });
 
+test("default domain", function() {
+    setup_translations_default_domain();
+
+    i18n.set_locale('fr_FR');
+
+    equal(_("Hello world!"), 'Bonjour monde!');
+});
+
 test('get_locale without locale set', function() {
     equal(i18n.get_locale(), null);
 });
 
 test('get_domain without locale set', function() {
-    equal(i18n.get_domain(), null);
+    equal(i18n.get_domain(), 'default');
 });
 
 test('get_locale with locale set', function() {
