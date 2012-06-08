@@ -25,7 +25,11 @@ var _ = null;
     module.create_translation_source = function(data) {
         return function() {
             var defer = $.Deferred();
-            defer.resolve(data);
+            var massaged_data = {};
+            for (msgid in data) {
+                massaged_data[msgid] = [null, data[msgid]];
+            };
+            defer.resolve(massaged_data);
             return defer.promise();
         };
     };

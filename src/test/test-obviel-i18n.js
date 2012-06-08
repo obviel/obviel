@@ -17,9 +17,9 @@ var i18n = obviel.i18n;
 var setup_translations = function() {
     var en_US = i18n.create_empty_translation_source();
     var fr_FR = i18n.create_translation_source({'Hello world!':
-                                                [null, 'Bonjour monde!']});
+                                                'Bonjour monde!'});
     var nl_NL = i18n.create_translation_source({'Hello world!':
-                                                [null, 'Hallo wereld!']});
+                                                'Hallo wereld!'});
     i18n.register_translation('i18ntest', 'en_US', en_US);
     i18n.register_translation('i18ntest', 'fr_FR', fr_FR);
     i18n.register_translation('i18ntest', 'nl_NL', nl_NL);
@@ -28,9 +28,9 @@ var setup_translations = function() {
 var setup_translations_multi_domains = function() {
     var en_US = i18n.create_empty_translation_source();
     var fr_FR = i18n.create_translation_source({'Hello world!':
-                                                [null, 'Bonjour monde!']});
+                                                'Bonjour monde!'});
     var nl_NL = i18n.create_translation_source({'Hello world!':
-                                                [null, 'Hallo wereld!']});
+                                                'Hallo wereld!'});
     i18n.register_translation('i18ntest', 'en_US', en_US);
     i18n.register_translation('i18ntest', 'fr_FR', fr_FR);
     i18n.register_translation('i18ntest', 'nl_NL', nl_NL);
@@ -38,9 +38,9 @@ var setup_translations_multi_domains = function() {
     // now register second domain called 'other'
     en_US = i18n.create_empty_translation_source();
     fr_FR = i18n.create_translation_source({'Bye world!':
-                                            [null, 'Au revoir monde!']});
+                                            'Au revoir monde!'});
     nl_NL = i18n.create_translation_source({'Bye world!':
-                                            [null, 'Tot ziens wereld!']});
+                                            'Tot ziens wereld!'});
 
     i18n.register_translation('other', 'en_US', en_US);
     i18n.register_translation('other', 'fr_FR', fr_FR);
