@@ -39,7 +39,7 @@ var _ = null;
         };
     };
     
-    module.create_translation_source_from_url = function(url) {
+    module.create_translation_source_from_json_url = function(url) {
         return function() {
             var defer = $.Deferred();
             $.ajax({
