@@ -66,7 +66,8 @@ var _ = null;
             return defer.promise();
         };
     };
-    
+
+    // XXX domain/locale order inconsistent with set_locale..
     // XXX can this be called to override translations for a particular domain?
     module.register_translation = function(domain, locale, translation_source) {
         var translations = domains[domain];
