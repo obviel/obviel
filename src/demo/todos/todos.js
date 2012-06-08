@@ -1,4 +1,12 @@
 (function($, obviel) {
+    var en_US = obviel.i18n.create_empty_translation_source();
+    var nl_NL = obviel.i18n.create_translation_source_from_json_url(
+        'todos-nl_NL.json');
+    obviel.i18n.register_translation('en_US', en_US);
+    obviel.i18n.register_translation('nl_NL', nl_NL);
+
+    obviel.i18n.set_locale('nl_NL');
+    
     // the application model
     var todos = {
         iface: 'todos',

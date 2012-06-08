@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="todos.css"/>
     <script type="text/javascript" src="../../dependencies/jquery.js"></script>
     <script type="text/javascript" src="../../dependencies/Gettext.js"></script>
+    <script type="text/javascript" src="../../obviel/obviel-i18n.js"></script>
     <script type="text/javascript" src="../../obviel/obviel-template.js"></script>
     <script type="text/javascript" src="../../obviel/json2.js"></script>
     <script type="text/javascript" src="../../obviel/obviel.js"></script>
+    <script type="text/javascript" src="todos-nl_NL.js"></script>
     <script type="text/javascript" src="todos.js"></script>
   </head>
   <body>
@@ -27,28 +29,28 @@
     
     <script type="text/template" id="obvt-todos">
       <header>
-        <h1>Todos</h1>
+        <h1 data-trans="">Todos</h1>
         <input data-handler="keypress|create_on_enter" id="new-todo" type="text" 
-               placeholder="What needs to be done?" />
+               data-trans="placeholder" placeholder="What needs to be done?" />
       </header>
       
       <section id="main" data-if="items">
         <input data-handler="click|toggle_all" id="toggle-all" type="checkbox"/>
-        <label for="toggle-all">Mark all as complete</label>
+        <label for="toggle-all" data-trans="">Mark all as complete</label>
         <ul id="todo-list">
           <li data-each="items" data-view="@."></li>
         </ul>
       </section>
       
       <footer>
-        <a id="clear-completed">Clear completed</a>
+        <a id="clear-completed" data-trans="">Clear completed</a>
         <div id="todo-count"></div>
       </footer>
     </script>
 
     <script type="text/template" id="obvt-todo-stats">
-      <a data-if="done" id="clear-completed" data-handler="click|clear_completed">Clear {done} completed items</a>
-      <div class="todo-count"><b>{remaining}</b> items left</div>
+      <a data-if="done" id="clear-completed" data-handler="click|clear_completed" data-trans="">Clear {done} completed items</a>
+      <div class="todo-count" data-trans=""><b>{remaining}</b> items left</div>
     </script>
 
     <script type="text/template" id="obvt-todo">
