@@ -27,7 +27,12 @@ var _ = null;
             var defer = $.Deferred();
             var massaged_data = {};
             for (msgid in data) {
-                massaged_data[msgid] = [null, data[msgid]];
+                var value = data[msgid];
+                if ($.type(value) === 'string') {
+                    massaged_data[msgid] = [null, data[msgid]];
+                } else {
+                    massaged_data[msgid] = value;
+                }
             };
             defer.resolve(massaged_data);
             return defer.promise();
