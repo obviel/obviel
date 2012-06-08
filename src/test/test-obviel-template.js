@@ -52,7 +52,11 @@ var render = function(text, obj) {
     var template = new obtemp.Template(text);
     var el = $("<div></div>"); // if you want to see it, use $('#viewdiv')
     var translations = new Translations();
-    template.render(el, obj, {translations: translations});
+    var get_translation = function(msgid) {
+        return translations.gettext(msgid);
+    };
+    template.render(el, obj, {get_translation: get_translation});
+    
     return el.html();
 };
 
@@ -1494,8 +1498,7 @@ test('data-attr on top, single element template', function() {
     var text = '<div data-attr="class" data-value="bar"/>';
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
-    var translations = new Translations();
-    template.render(el, {}, {translations: translations});
+    template.render(el, {}, {});
     html_equal(el.html(), '');
     equal(el.attr('class'), 'bar');
 });
@@ -1504,8 +1507,7 @@ test('data-attr on top, multi element template', function() {
     var text = '<div data-attr="class" data-value="bar"/><div>Another</div>';
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
-    var translations = new Translations();
-    template.render(el, {}, {translations: translations});
+    template.render(el, {}, {});
     html_equal(el.html(), '<div>Another</div>');
     equal(el.attr('class'), 'bar');
 });
@@ -1514,8 +1516,7 @@ test('data-attr on top with text following', function() {
     var text = '<div data-attr="class" data-value="bar"/>More';
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
-    var translations = new Translations();
-    template.render(el, {}, {translations: translations});
+    template.render(el, {}, {});
     html_equal(el.html(), 'More');
     equal(el.attr('class'), 'bar');
 });

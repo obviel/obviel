@@ -358,7 +358,7 @@ Everything is in the ``obviel.template`` namespace.
     addressed in the template language (using ``data-func="func_name"``).
   :param function func:  the function that manipulates the element. This 
     function takes 1 to 3 arguments: the jQuery element ``el`` to manipulate, 
-    a ``variable`` resolver function (optional) and a ``translations``
+    a ``variable`` resolver function (optional) and a ``context``
     object (optional). Should manipulate the element, for instance by
     using ``el.addClass``. The ``variable`` resolver function can
     be used by the function to look up variables; get the value of
@@ -391,20 +391,17 @@ Everything is in the ``obviel.template`` namespace.
     :param object context: This is an object that may have two
       properties:
 
-      ``translations``
-        A translations lookup registry. Used to look up
-        message ids. Must define a method ``gettext`` that takes a
-        single message id argument that returns the translated
-        text. If not supplied no translations are looked up.
+      ``get_translation``
+        A function that takes a single string argument and returns the
+        translation for that string. If no translation is available
+        the string itself should be returned. If not supplied no
+        translations are looked up. Used by ``data-trans``.
 
-      ``handlers``
-        A handlers lookup registry. Used to look up handler
-        functions for ``data-handler`` that will be called when an
-        event is triggered. If Obviel Template is used within an
-        Obviel view, the registry will be the view object itself, so a
-        method of the view object will be called. It is an error to 
-        use a ``data-handler`` directive in a template without there
-        being a ``handlers`` registry passed in.
+      ``get_handler``
+        A function that gets a single name argument and returns the
+        handler that matches that name. If no handler can be found by
+        that name, ``null`` should be returned. Used by
+        ``data-handler``.
 
 .. function:: variables(translation, variables)
 

@@ -131,7 +131,7 @@ obviel.template = {};
     module.Template.prototype.render = function(el, obj, context) {
         var scope = new module.Scope(obj);
         if (!context) {
-            context = { translations: null, get_handler: null};
+            context = { get_translation: null, get_handler: null};
         }
          
         // clear the element first
@@ -1196,9 +1196,10 @@ obviel.template = {};
         }
         
         var translation = this.message_id;
-        if (context.translations !== null &&
-            context.translations !== undefined) {
-            translation = context.translations.gettext(this.message_id);
+        var get_translation = context.get_translation;
+        if (get_translation !== null &&
+            get_translation !== undefined) {
+            translation = get_translation(this.message_id);
         }
         
         if (translation === this.message_id) {
@@ -1391,12 +1392,15 @@ obviel.template = {};
     };
 
     module.AttributeText.prototype.render = function(el, scope, context) {
+        var get_translation = context.get_translation;
+        
         // fast path without translations
-        if (context.translations === undefined || context.translations === null ||
+        if (get_translation === undefined ||
+            get_translation === null ||
             this.message_id === null) {
             return this.dynamic.render(el, scope);
         }
-        var translation = context.translations.gettext(this.message_id);
+        var translation = get_translation(this.message_id);
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             return this.dynamic.render(el, scope);
