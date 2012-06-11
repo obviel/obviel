@@ -161,7 +161,7 @@ test("variable with formatter", function() {
 test("variable with formatter that does not exist", function() {
     raises(function() {
         render('{foo|upper}', {foo: 'hello'});
-    }, obtemp.CompilationError);
+    }, obtemp.RenderError);
 });
 
 test("nested scoping", function() {
@@ -779,7 +779,7 @@ test('data-func where func is missing', function() {
     raises(function() {
         render('<p data-trans="" data-func="addattr">Hello world!</p>',
                {foo: "Foo!"});
-    }, obtemp.CompilationError);
+    }, obtemp.RenderError);
 });
 
 test("data-trans with plain text", function() {

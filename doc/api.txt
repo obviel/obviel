@@ -336,13 +336,22 @@ Everything is in the ``obviel.template`` namespace.
 
 .. function:: register_formatter(name, func)
 
-  Register a formatter. Is done when the UI starts up (per page),
-  before any templates are compiled.
+  Register a global formatter. Is done when the UI starts up (per
+  page), before any templates are compiled. Note that with Obviel
+  you can also use view methods as formatters.
 
   :param string name: the name of the formatter. This is how it is
     addressed in the template language (using ``{foo|formatter_name}``).
   :param function func: the formatting function. It gets the text (string)
     to format as its argument and should return the formatted text.
+
+.. function:: get_formatter(name)
+
+  Return a global formatter. If no formatter can be found,
+  ``undefined`` is returned.
+
+  :param string name: the name of the formatter to look up.
+  :returns: the formatter function or ``undefined``.
 
 .. function:: clear_formatters()
 
@@ -351,8 +360,9 @@ Everything is in the ``obviel.template`` namespace.
 
 .. function:: register_func(name, func)
 
-  Register a element adjustment function. Is done when the UI starts
-  up (per page), before any templates are compiled.
+  Register a global element adjustment function. Is done when the UI
+  starts up (per page), before any templates are compiled. Note that
+  with Obviel you can use view methods as funcs
 
   :param string name: the name of the func. This is how it is
     addressed in the template language (using ``data-func="func_name"``).
@@ -364,6 +374,14 @@ Everything is in the ``obviel.template`` namespace.
     be used by the function to look up variables; get the value of
     variables in the current scope by calling it with a variable
     name as a string (``variable(variable_name)``).
+
+.. function:: get_func(name)
+
+  Return a global element adjustment function. If no func can be found,
+  ``undefined`` is returned.
+
+  :param string name: the name of the func to look up.
+  :returns: the func or ``undefined``.
 
 .. function:: clear_funcs()
 
@@ -388,7 +406,7 @@ Everything is in the ``obviel.template`` namespace.
     :param object el: jQuery element to render the template on.
     :param object obj: Object to render. Variables in the templates
       will be resolved from ``obj``.
-    :param object context: This is an object that may have two
+    :param object context: This is an object that may have these
       properties:
 
       ``get_translation``
@@ -402,6 +420,29 @@ Everything is in the ``obviel.template`` namespace.
         handler that matches that name. If no handler can be found by
         that name, ``null`` should be returned. Used by
         ``data-handler``.
+
+      ``get_formatter``
+        A function that gets a single name argument and returns the
+        formatter function that matches that name. This function will
+        get a single value argument and should return the formatted
+        value.  If no formatter can be found by that name, ``null`` or
+        ``undefined`` should be returned. Used by
+        ``{variable|formatter}``. If no ``get_formatter`` is supplied,
+        the template engine will use globally registered formatters
+        (using ``obviel.template.register_formatter``). See also
+        :func:`register_formatter`.
+
+      ``get_func``
+        A function that gets a single name argument and returns the
+        element manipulation function that matches that name. This
+        function will get three arguments: the element to manipulate,
+        a variable lookup function and a context. If no func can be
+        found by that name, ``null`` or ``undefined`` should be
+        returned. Used by ``data-func`` to look up the func. If no
+        ``get_func`` is supplied, the template engine will use
+        globally registred funcs (using
+        ``obviel.template.register_func``). See also
+        :func:`register_func`.
 
 .. function:: variables(translation, variables)
 

@@ -1516,6 +1516,71 @@ test('obviel template, event handler can access view correctly', function() {
     equal(test.clicked, true);
 });
 
+test('obviel template, formatter lookup on view', function() {
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id">{value|my_formatter}</div>',
+        my_formatter: function(value) {
+            return value.toUpperCase();
+        }
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'test', value: 'the value'});
+    equal($('#some_id').text(), 'THE VALUE');
+});
+
+test('obviel template, formatter lookup falls back to globally registered', function() {
+    
+    obviel.template.register_formatter(
+        'my_formatter',
+        function(value) {
+            return value + ' BUT GLOBAL!';
+        });
+    
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id">{value|my_formatter}</div>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'test', value: 'the value'});
+    equal($('#some_id').text(), 'the value BUT GLOBAL!');
+});
+
+
+test('obviel template, data-func lookup on view', function() {
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id" data-func="my_func"></div>',
+        my_func: function(el) {
+            el.attr('class', 'FOO');
+        }
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'test'});
+    equal($('#some_id').attr('class'), 'FOO');
+});
+
+test('obviel template, data-func lookup falls back to globally registered', function() {
+    
+    obviel.template.register_func(
+        'my_func',
+        function(el) {
+            el.attr('class', 'FOO');
+        });
+    
+    obviel.view({
+        iface: 'test',
+        obvt: '<div id="some_id" data-func="my_func"></div>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'test'});
+    equal($('#some_id').attr('class'), 'FOO');
+});
+
 test('obviel data-each with data-attr inside', function() {
     obviel.view({
         iface: 'outer',
@@ -1536,7 +1601,8 @@ test('obviel data-each with data-attr inside', function() {
     });
 });
 
-test('jquery 1.7.2 incompatibility', function() {
+// this broke in the transition from jQuery 1.6.x to 1.7.
+test('fallback to global event handler for detached element', function() {
 
     obviel.view({
         iface: 'person',

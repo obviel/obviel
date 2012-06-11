@@ -715,9 +715,24 @@ if (typeof obviel === "undefined") {
     };
 
     module.ObvielTemplateCompiled.prototype.render = function(view) {
-        var context = {};
-        context.get_handler = function(name) {
-            return view.get_handler(name);
+        var context = {
+            get_handler: function(name) {
+                return view.get_handler(name);
+            },
+            get_formatter: function(name) {
+                var formatter = view[name];
+                if (!formatter) {
+                    formatter = obviel.template.get_formatter(name);
+                }
+                return formatter;
+            },
+            get_func: function(name) {
+                var func = view[name];
+                if (!func) {
+                    func = obviel.template.get_func(name);
+                }
+                return func;
+            }
         };
         
         // we get a _ from somewhere, probably obviel.i18n

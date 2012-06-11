@@ -131,9 +131,18 @@ obviel.template = {};
     module.Template.prototype.render = function(el, obj, context) {
         var scope = new module.Scope(obj);
         if (!context) {
-            context = { get_translation: null, get_handler: null};
+            context = { get_translation: null, get_handler: null };
+        
         }
-         
+        // use global get_formatter if nothing more specific was registered
+        if (!context.get_formatter) {
+            context.get_formatter = module.get_formatter;
+        }
+        // use global get_func if nothing more specific was registered
+        if (!context.get_func) {
+            context.get_func = module.get_func;
+        }
+        
         // clear the element first
         el.empty();
 
@@ -644,7 +653,7 @@ obviel.template = {};
         this.content_texts = [];
         this.handlers = [];
         this.message_id = null;
-        this.func = null;
+        this.func_name = null;
         this.tvars = {};
         this.trans_variables = {};
         this.has_data_attr = false;
@@ -987,12 +996,8 @@ obviel.template = {};
         if (func_name === null) {
             return;
         }
+        this.func_name = func_name;
         this._dynamic = true;
-        this.func = funcs.get(func_name);
-        if (this.func === undefined) {
-            throw new module.CompilationError(
-                el, "cannot find func with name: " + func_name);
-        }
     };
     
     module.DynamicElement.prototype.compile_trans_text = function(
@@ -1190,7 +1195,7 @@ obviel.template = {};
         // fast path without translations; elements do not need to be
         // reorganized
         if (this.message_id === null) {
-            this.render_notrans(el, scope);
+            this.render_notrans(el, scope, context);
             this.finalize_render(el, scope, context);
             return;
         }
@@ -1204,7 +1209,7 @@ obviel.template = {};
         
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
-            this.render_notrans(el, scope);
+            this.render_notrans(el, scope, context);
             // but we do need to render any tvars
             var children = el.childNodes;
             for (key in this.tvars) {
@@ -1219,11 +1224,12 @@ obviel.template = {};
         this.finalize_render(el, scope, context);
     };
 
-    module.DynamicElement.prototype.render_notrans = function(el, scope) {
+    module.DynamicElement.prototype.render_notrans = function(el, scope,
+                                                              context) {
         for (var i = 0; i < this.content_texts.length; i++) {
             var value = this.content_texts[i];
             el.childNodes[value.index].nodeValue = value.dynamic_text.render(
-                el, scope);
+                el, scope, context);
         }
     };
     
@@ -1242,13 +1248,13 @@ obviel.template = {};
     };
 
     module.DynamicElement.prototype.get_variable_node = function(
-        el, scope, name) {
+        el, scope, context, name) {
         var variable = this.trans_variables[name];
         if (variable === undefined) {
             throw new module.RenderError(
                 el, "unknown variable in translation: " + name);   
         }
-        return document.createTextNode(variable.render(el, scope));
+        return document.createTextNode(variable.render(el, scope, context));
     };
     
     module.DynamicElement.prototype.render_trans = function(
@@ -1270,7 +1276,7 @@ obviel.template = {};
                     frag.appendChild(tvar_node);
                 } else {
                     frag.appendChild(this.get_variable_node(
-                        el, scope, token.value));
+                        el, scope, context, token.value));
                 }
             }
         }
@@ -1329,12 +1335,18 @@ obviel.template = {};
     
     module.DynamicElement.prototype.render_data_func = function(
         el, scope, context) {
-        if (this.func === null) {
+        if (this.func_name === null) {
             return;
         }
-        this.func($(el),
-                  function(name) { return scope.resolve(name); },
-                  context);
+        var func = context.get_func(this.func_name);
+        if (!func) {
+            throw new module.RenderError(
+                el, 'cannot render data-func because cannot find func: ' +
+                    this.func_name);
+        }
+        func($(el),
+             function(name) { return scope.resolve(name); },
+             context);
     };
     
     
@@ -1372,17 +1384,17 @@ obviel.template = {};
         return this._dynamic;
     };
     
-    module.DynamicText.prototype.render = function(el, scope) {
+    module.DynamicText.prototype.render = function(el, scope, context) {
         var result = this.parts.slice(0);
         for (var i in this.variables) {
             var variable = this.variables[i];
-            result[variable.index] = variable.value.render(el, scope);
+            result[variable.index] = variable.value.render(el, scope, context);
         }
         return result.join('');        
     };
 
     module.DynamicText.prototype.render_root = function(el, scope, context) {
-        var node = document.createTextNode(this.render(el, scope));
+        var node = document.createTextNode(this.render(el, scope, context));
         el.appendChild(node);
     };
     
@@ -1459,32 +1471,28 @@ obviel.template = {};
     module.Variable = function(el, name) {
         var r = split_name_formatter(el, name);
         this.name = r.name;
+        this.formatter = r.formatter;
         this.full_name = name;
         validate_dotted_name(el, this.name);
         
-        this.func = module.resolve_func(r.name);
-        
-        if (r.formatter !== null) {
-            this.formatter = formatters.get(r.formatter);
-            if (this.formatter === undefined) {
-                throw new module.CompilationError(
-                    el, "cannot find formatter with name: " +
-                        r.formatter);
-            }
-        } else {
-            this.formatter = null;
-        }
+        this.get_value = module.resolve_func(r.name);
     };
-
-    module.Variable.prototype.render = function(el, scope) {
-        var result = this.func(scope);
+    
+    module.Variable.prototype.render = function(el, scope, context) {
+        var result = this.get_value(scope);
         if (result === undefined) {
             throw new module.RenderError(el, "variable '" + this.name + "' " +
                                          "could not be found");
         }
 
         if (this.formatter !== null) {
-            result = this.formatter(result);
+            var formatter = context.get_formatter(this.formatter);
+            if (!formatter) {
+                throw new module.RenderError(
+                    el, "cannot find formatter with name: " +
+                        this.formatter);
+            }
+            result = formatter(result);
         }
         
         // if we want to render an object, pretty-print it
@@ -1505,7 +1513,7 @@ obviel.template = {};
         this.dynamic = true;
         var r = split_name_formatter(el, data_view);
         this.obj_name = r.name;
-        this.func = module.resolve_func(r.name);
+        this.get_value = module.resolve_func(r.name);
         this.view_name = r.formatter;
         if (this.view_name === null) {
             this.view_name = default_view_name;
@@ -1517,7 +1525,7 @@ obviel.template = {};
     };
 
     module.ViewElement.prototype.render = function(el, scope, context) {
-        var obj = this.func(scope);
+        var obj = this.get_value(scope);
         if (obj === undefined) {
             throw new module.RenderError(
                 el, "data-view object '" + this.property_name + "' " +
@@ -1675,6 +1683,10 @@ obviel.template = {};
         formatters.register(name, f);
     };
 
+    module.get_formatter = function(name) {
+        return formatters.get(name);
+    };
+    
     module.clear_formatters = function() {
         formatters.clear();
     };
@@ -1685,6 +1697,10 @@ obviel.template = {};
         funcs.register(name, f);
     };
 
+    module.get_func = function(name) {
+        return funcs.get(name);
+    };
+    
     module.clear_funcs = function() {
         funcs.clear();
     };

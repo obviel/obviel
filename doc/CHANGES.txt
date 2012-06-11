@@ -39,6 +39,11 @@ CHANGES
   dependencies directory out of the Obviel directory; this is where it
   belonged all along.
 
+* Formatters and funcs can now be more flexibility plugged into Obviel
+  Template, just like translations and event handlers. Obviel core
+  makes use of this by looking up formatters and funcs on the view
+  first, then if it cannot be found there, in the global registries.
+  
 1.0b (2012-05-31)
 =================
 
