@@ -41,7 +41,7 @@ test('empty form', function() {
     equal($('.form-field', form_el).length, 0);
 });
 
-test('form with one field', function() {
+test('simple form with one field', function() {
     var el = $('#viewdiv');
     el.render({
         ifaces: ['viewform'],
