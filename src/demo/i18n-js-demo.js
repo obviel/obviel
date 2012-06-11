@@ -1,7 +1,7 @@
 (function() {
     var fr_FR = obviel.i18n.create_translation_source(
         {'Hello world!': 'Bonjour monde!'});
-    obviel.i18n.register_translation('app', 'fr_FR', fr_FR);
+    obviel.i18n.register_translation('fr_FR', fr_FR, 'app');
 
     $(document).ready(function() {
         // will not be translated as no locale has yet been set
