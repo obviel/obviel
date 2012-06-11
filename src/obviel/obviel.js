@@ -277,6 +277,18 @@ if (typeof obviel === "undefined") {
             f.call(self, ev);
         };
     };
+
+    module.View.prototype.get_method_by_name = function(name) {
+        var self = this;
+        var f = this[name];
+        if (f === undefined) {
+            return null;
+        }
+        return function() {
+            var args = Array.prototype.slice.call(arguments);      
+            return f.apply(self, args);
+        };
+    };
     
     module.View.prototype.wrap_handler = function(handler) {
         var self = this;
@@ -720,14 +732,14 @@ if (typeof obviel === "undefined") {
                 return view.get_handler(name);
             },
             get_formatter: function(name) {
-                var formatter = view[name];
+                var formatter = view.get_method_by_name(name);
                 if (!formatter) {
                     formatter = obviel.template.get_formatter(name);
                 }
                 return formatter;
             },
             get_func: function(name) {
-                var func = view[name];
+                var func = view.get_method_by_name(name);
                 if (!func) {
                     func = obviel.template.get_func(name);
                 }

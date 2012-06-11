@@ -1581,6 +1581,22 @@ test('obviel template, data-func lookup falls back to globally registered', func
     equal($('#some_id').attr('class'), 'FOO');
 });
 
+test('obviel template, data-func which refers to view', function() {
+    obviel.view({
+        iface: 'foo',
+        obvt: '<div id="alpha" data-func="some_func"></div>',
+        some_func: function(el, variable, context) {
+            if (this.obj.flag) {
+                el.addClass('foo');
+            }
+        }
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'foo', flag: true});
+    ok($('#alpha').hasClass('foo'));
+});
+    
 test('obviel data-each with data-attr inside', function() {
     obviel.view({
         iface: 'outer',
