@@ -7,14 +7,6 @@ if (typeof obviel === "undefined") {
     var obviel = {};
 }
 
-if (typeof _ === 'undefined') {
-    // if obviel.i18n providing a _ isn't installed, we make our own
-    // that doesn't do any translations
-    var _ = function(msgid) {
-        return msgid;
-    };
-};
-
 (function($, module) {    
     module._ifaces = {
         'base': []
@@ -711,11 +703,17 @@ if (typeof _ === 'undefined') {
     };
 
     module.ObvielTemplateCompiled.prototype.render = function(view) {
-        var get_handler = function(name) {
+        var context = {};
+        context.get_handler = function(name) {
             return view.get_handler(name);
         };
-        this.compiled.render(view.el, view.obj, {get_translation: _,
-                                                 get_handler: get_handler});
+        
+        // we get a _ from somewhere, probably obviel.i18n
+        if (typeof _ !== 'undefined') {
+            context.get_translation = _;
+        };
+
+        this.compiled.render(view.el, view.obj, context);
     };
 
     module.JsontCompiler = function() {
