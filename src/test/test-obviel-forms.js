@@ -29,6 +29,36 @@ module("Forms", {
 // * autocomplete logic
 // * datepicker logic
 
+test('basic data link sanity check', function() {
+    var link_context = {
+        twoWay: true,
+        name: 'foo',
+        convert: function(value, source, target) {
+            return value;
+        },
+        convertBack: function(value, source, target) {
+            return value;
+        }
+    };
+
+    var el = $('#viewdiv');
+    var form_el = $('<form></form>');
+    var input_el = $('<input name="foo" type="text" value="" />');
+    form_el.append(input_el);
+    el.append(form_el);
+
+    var data = { foo: 'hoi' };
+    input_el.link(data, {foo: link_context});
+    form_el.link(data);
+    
+    $(data).setField('foo', 'dag');
+    equal(input_el.val(), 'dag');
+    input_el.val('something else');
+    input_el.trigger('change');
+    equal(data.foo, 'something else');
+    
+});
+
 test('empty form', function() {
     var el = $('#viewdiv');
     el.render({
@@ -881,12 +911,8 @@ test("composite datalink", function() {
     
     field_a_el.val('foo');
     field_b_el.val('not an int'); // not an int
-    var ev = new $.Event('change');
-    ev.target = field_a_el;
-    field_a_el.trigger(ev);
-    ev = new $.Event('change');
-    ev.target = field_b_el;
-    field_b_el.trigger(ev);
+    field_a_el.trigger('change');
+    field_b_el.trigger('change');
 
     equal(errors.composite.a, '');
     equal(errors.composite.b, 'not a number');
@@ -895,9 +921,7 @@ test("composite datalink", function() {
 
     // now put in the right value
     field_b_el.val('3');
-    ev = new $.Event('change');
-    ev.target = field_b_el;
-    field_b_el.trigger(ev);
+    field_b_el.trigger('change');
     equal(errors.composite.b, '');
     equal(data.composite.b, 3);
 });
@@ -1038,17 +1062,9 @@ test("nested composite datalink", function() {
     field_composite_composite_b_el.val('3');
     field_composite_b_el.val('4');
     
-    var ev = new $.Event('change');
-    ev.target = field_composite_composite_a_el;
-    field_composite_composite_a_el.trigger(ev);
-
-    ev = new $.Event('change');
-    ev.target = field_composite_composite_b_el;
-    field_composite_composite_b_el.trigger(ev);
-    
-    ev = new $.Event('change');
-    ev.target = field_composite_b_el;
-    field_composite_b_el.trigger(ev);
+    field_composite_composite_a_el.trigger('change');
+    field_composite_composite_b_el.trigger('change');
+    field_composite_b_el.trigger('change');
 
     equal(data.composite.composite.a, 'foo');
     equal(data.composite.composite.b, 3);
@@ -1145,12 +1161,8 @@ test("repeating datalink", function() {
     
     field_a_el.val('foo');
     field_b_el.val('not an int'); // not an int
-    var ev = new $.Event('change');
-    ev.target = field_a_el;
-    field_a_el.trigger(ev);
-    ev = new $.Event('change');
-    ev.target = field_b_el;
-    field_b_el.trigger(ev);
+    field_a_el.trigger('change');
+    field_b_el.trigger('change');
 
     equal(errors.repeating[0].a, '');
     equal(errors.repeating[0].b, 'not a number');
@@ -1159,9 +1171,7 @@ test("repeating datalink", function() {
 
     // now put in the right value
     field_b_el.val('3');
-    ev = new $.Event('change');
-    ev.target = field_b_el;
-    field_b_el.trigger(ev);
+    field_b_el.trigger('change');
     equal(errors.repeating[0].b, '');
     equal(data.repeating[0].b, 3);
 });
@@ -1317,9 +1327,7 @@ test("repeating back datalink", function() {
 
 
 var change = function(el) {
-    var ev = new $.Event('change');
-    ev.target = el;
-    el.trigger(ev);
+    el.trigger('change');
 };
 
 test("repeating remove item", function() {
@@ -1577,9 +1585,7 @@ test("textline datalink", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, 'foo');
 });
 
@@ -1633,16 +1639,14 @@ test("integer datalink conversion error", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not an int
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, 'not a number');
     equal(field_el.parent_view().error(), 'not a number');
     // the value is undefined
     equal(data.a, undefined);
 });
 
-test("integer datalink", function() {
+test("integer datalink without error", function() {
     var el = $('#viewdiv');
     var data = {}; 
     el.render({
@@ -1663,9 +1667,7 @@ test("integer datalink", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, 3);
 });
 
@@ -1715,9 +1717,7 @@ test("float datalink", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3.3');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, 3.3);
 });
 
@@ -1793,9 +1793,7 @@ test("decimal datalink", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('3.3');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, '3.3');
 });
 
@@ -1872,23 +1870,17 @@ test("boolean datalink", function() {
     var field_el = $('#obviel-field-test-a', form_el);
 
     // starts as off
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, false);
     
     // set to on
     field_el.attr('checked', true);
-    ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, true);
 
     // turn off again
     field_el.attr('checked', false);
-    ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, false);
 });
 
@@ -1944,9 +1936,7 @@ test("choice datalink", function() {
     var field_el = $('#obviel-field-test-a', form_el);    
     
     field_el.val('foo');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, 'foo');
 });
 
@@ -1974,9 +1964,7 @@ test("choice datalink empty", function() {
     var field_el = $('#obviel-field-test-a', form_el);    
     equal(field_el.length, 1);
     field_el.val('');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, null);
 });
 
@@ -2238,9 +2226,7 @@ test("field error rendering", function() {
     var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     // we now expect the error
     var error_el = $('.obviel-field-error', form_el);
     equal(error_el.text(), 'value too short');
@@ -2284,9 +2270,7 @@ test("no_validation control should not be disabled", function() {
     var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     // we now expect the error
     // the form displays that there's an error
     var form_error_el = $('.obviel-formerror', el);
@@ -2326,9 +2310,7 @@ test("field error clearing", function() {
     var field_el = $('#obviel-field-test-text', form_el);
     // put in a value that's too short, so should trigger error
     field_el.val('fo');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     // we now expect the error
     var error_el = $('.obviel-field-error', form_el);
     equal(error_el.text(), 'value too short');
@@ -2340,9 +2322,7 @@ test("field error clearing", function() {
     
     // now we put in a correct value
     field_el.val('long enough');
-    ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     // we now expect the error to be gone
     equal(error_el.text(), '');
     // the errors object should also be cleared
@@ -3361,9 +3341,7 @@ test("datepicker datalink", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('01/02/10');
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(data.a, '2010-01-02');
 });
 
@@ -3416,9 +3394,7 @@ test("datepicker datalink conversion error", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not a datetime
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, 'invalid date');
     equal(data.a, undefined);
 });
@@ -3461,14 +3437,12 @@ test("autocomplete set values", function () {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('Qux'); // invalid value
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, 'unknown value');
     equal(data.a, 'foo');
 
     field_el.val('Bar');
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, '');
     equal(data.a, 'bar');
 });
@@ -3502,9 +3476,7 @@ test("autocomplete requiredness", function () {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val(''); // empty while it's required
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, 'this field is required');
 });
 
@@ -3615,9 +3587,7 @@ test("autocomplete url set values", function () {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('Doo'); // invalid value
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, 'unknown value');
     equal(data.a, 'foo');
 
@@ -3627,7 +3597,7 @@ test("autocomplete url set values", function () {
     view.source({term: 'Qux'}, function () {});
 
     field_el.val('Bar');
-    field_el.trigger(ev);
+    field_el.trigger('change');
     equal(errors.a, '');
     equal(data.a, 'bar');
 
@@ -3751,9 +3721,7 @@ test("modify error area", function() {
     var form_el = $('form', el);
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not an int
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     // now check whether error information is indeed updated
     equal($('#obviel-field-error-test-a', el).text(), 'not a number');
 });
@@ -3796,16 +3764,12 @@ test("error events", function() {
  
     var field_el = $('#obviel-field-test-a', form_el);
     field_el.val('foo'); // not an int
-    var ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
 
     ok(field_el.parents('.obviel-field').hasClass('foo'));
 
     field_el.val(1); // an int
-    ev = new $.Event('change');
-    ev.target = field_el;
-    field_el.trigger(ev);
+    field_el.trigger('change');
     
     ok(!field_el.parents('.obviel-field').hasClass('foo'));
 });

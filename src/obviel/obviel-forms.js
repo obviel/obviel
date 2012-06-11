@@ -690,9 +690,7 @@ obviel.forms = {};
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
         var field_el = $('#obviel-field-' + this.obj.prefixed_name);
-        var ev = new $.Event('change');
-        ev.target = field_el;
-        field_el.trigger(ev);
+        field_el.trigger('change');
     };
 
     obviel.iface('composite_field', 'widget');
