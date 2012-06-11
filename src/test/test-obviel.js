@@ -1535,3 +1535,18 @@ test('obviel data-each with data-attr inside', function() {
         ok($(el).hasClass('done'));
     });
 });
+
+test('jquery 1.7.2 incompatibility', function() {
+
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.text(this.obj.name);
+        }
+    });
+
+    var el = $('<div></div>');
+    el.render({iface: 'person', name: 'foo'});
+
+    equal(el.text(), 'foo');
+});

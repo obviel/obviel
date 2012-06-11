@@ -1170,7 +1170,7 @@ test('included html is escaped', function() {
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
 
-test('data-view', function() {
+test('data-view by itself', function() {
     obviel.view({
         iface: 'person',
         render: function() {

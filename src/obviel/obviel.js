@@ -218,8 +218,19 @@ if (typeof obviel === "undefined") {
     module.View.prototype.before = function() {
         // a noop, but can be overridden to manipulate obj
     };
+
+
+    // render_handled is a hack to make sure that we handle render
+    // events globally if we are dealing with an unattached element
+    // in jQuery 1.6.4 events would fall back to $(document) level handlers
+    // no matter what, but in jQuery 1.7 and later this would not happen anymore
+    // for unattached elements, only for attached ones
+    // XXX I wish there were a way to register an event handler globally no
+    // matter what. see: http://bugs.jquery.com/ticket/11891
+    var render_handled = false;
     
     module.View.prototype.do_render = function() {
+        render_handled = true;
         var self = this;
         // run cleanup for any previous view if this view isn't ephemeral
         if (!self.ephemeral) {
@@ -483,6 +494,10 @@ if (typeof obviel === "undefined") {
         var ev = $.Event('render.obviel');
         ev.view = view; // XXX can we add our own attributes to event objects?
         view.el.trigger(ev);
+        if (!render_handled) {
+            $(document).trigger(ev);
+            render_handled = false;
+        }
     };
 
     module.Registry.prototype.render = function(el, obj, name,
@@ -812,7 +827,7 @@ if (typeof obviel === "undefined") {
         }
     };
 
-    $(document).bind(
+    $(document).on(
         'render.obviel',
         function(ev) {
             ev.view.do_render($(ev.target));
