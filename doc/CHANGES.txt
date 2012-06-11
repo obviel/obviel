@@ -34,6 +34,11 @@ CHANGES
 * While Obviel may continue to work with older jQuery versions for a
   while, we're going to target jQuery 1.7.2 now for our testing.
 
+* the json2 dependency, which takes care of JSON generation
+  compatibility for Internet Explorer, has been moved to the
+  dependencies directory out of the Obviel directory; this is where it
+  belonged all along.
+
 1.0b (2012-05-31)
 =================
 
