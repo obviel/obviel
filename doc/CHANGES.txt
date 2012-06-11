@@ -23,6 +23,14 @@ CHANGES
 * Fix a bug in ``data-id`` generation where ``data-id="not_a_variable"``
   wasn't correctly handled.
 
+* Change Obviel to be compatible with jQuery 1.7.2. There were two issues:
+ 
+  * Obviel relied on document-level event handlers to be triggered
+    even for disconnected events.
+
+  * Obviel Forms used a cargo-culted pattern for sending 'change'
+    events; replaced this with shorter el.trigger('change').
+
 1.0b (2012-05-31)
 =================
 
