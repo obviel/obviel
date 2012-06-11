@@ -962,7 +962,6 @@ that provide extra functionality, and inherit from them.
 Declarative Event Registration
 ------------------------------
 
-
 .. sidebar:: Declarative event handler hookup
 
   Instead of hooking up the event handler directly in the template,
@@ -1052,6 +1051,52 @@ event handlers if this view is ever cleaned up.
 
 Note that the event handling function gets a jQuery event object as its
 first argument (just like any normal jQuery event handler).
+
+Per view formatters and funcs
+-----------------------------
+
+Consider the following view with a template that uses a formatter::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '{my_variable|some_formatter}'
+  });
+
+When you render this view, ``some_formatter`` will be looked up in the
+global formatter registry. You can use Obviel Templates's
+:func:`register_formatter` to fill it when the application starts. 
+
+You can however also define this formatter on the view itself::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '{my_variable|some_formatter}',
+     some_formatter: function(value) {
+        return value + " formatted";
+     }
+  });
+
+Now ``some_formatter`` will be called on the view to render ``my_variable``.
+
+The same approach works for ``data-func``::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '<div data-func="some_func"></div>',
+     some_func: function(el, variable, context) {
+        if (variable('flag')) {
+           el.addClass('foo');
+        }
+     }
+  });
+
+when you now render the view with this object::
+
+  {
+    flag: true,
+  }
+
+the class ``foo`` will be added to the ``div`` in the template.
 
 Declarative Object Events
 -------------------------
