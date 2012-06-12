@@ -170,5 +170,11 @@ obviel.i18n = {};
         template_domain = domain;
         return module.get_translation_func(domain);
     };
-    
+
+
+    // alias
+    if (typeof obviel.template !== 'undefined') {
+        module.variables = obviel.template.variables;
+    };
+
 }(jQuery, obviel.i18n));
