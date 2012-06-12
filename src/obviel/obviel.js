@@ -178,6 +178,9 @@ if (typeof obviel === "undefined") {
             events: {},
             object_events: {}
         };
+        if (typeof obviel.i18n !== 'undefined') {
+            d.domain = obviel.i18n.get_template_domain();
+        }
         $.extend(d, settings);
         $.extend(this, d);
     };
@@ -746,10 +749,9 @@ if (typeof obviel === "undefined") {
                 return func;
             }
         };
-        
-        // we get a _ from somewhere, probably obviel.i18n
-        if (typeof _ !== 'undefined') {
-            context.get_translation = _;
+        if (typeof obviel.i18n !== 'undefined') {
+            context.get_translation = obviel.i18n.get_translation_func(
+                view.domain);
         };
 
         this.compiled.render(view.el, view.obj, context);

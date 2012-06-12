@@ -9,11 +9,7 @@ if (typeof obviel === "undefined") {
 
 obviel.i18n = {};
 
-var _ = null;
-
 (function($, module) {
-    var domains = {};
-
     module.I18nError = function(message) {
         this.message = message;
     };
@@ -22,7 +18,9 @@ var _ = null;
         return 'I18nError: ' + this.message;
     };
     
-    module.create_translation_source = function(data) {
+    var domains = {};
+    
+    module.translation_source = function(data) {
         return function() {
             var defer = $.Deferred();
             var massaged_data = {};
@@ -39,7 +37,7 @@ var _ = null;
         };
     };
     
-    module.create_translation_source_from_json_url = function(url) {
+    module.translation_source_from_json_url = function(url) {
         return function() {
             var defer = $.Deferred();
             $.ajax({
@@ -53,16 +51,19 @@ var _ = null;
             return defer.promise();
         };
     };
+    
+    var make_empty_translation = function() {
+        return {'': {}};
+    };
 
     // a translation source that doesn't translate
     // this is needed because just passing in {} as the translations
     // will trip of jsgettext in thinking the domain cannot be found
-    module.create_empty_translation_source = function() {
+    module.empty_translation_source = function() {
         return function() {
             var defer = $.Deferred();
             // make up a message id that will never occur in real life
-            defer.resolve({'!@#$%NEVEREVERTRANSLATED':
-                           [null, 'This translation will never happen']});
+            defer.resolve(make_empty_translation());
             return defer.promise();
         };
     };
@@ -80,35 +81,27 @@ var _ = null;
         translations[locale] = translation_source;
     };
 
+    
     module.clear_translations = function() {
         domains = {};
     };
 
     var current_gt = new Gettext();
     var current_locale = null;
-    var current_domain = 'default';
+    var template_domain = 'default';
     
     module.clear_locale = function() {
         // XXX goes into the insides of jsgettext...
         Gettext._locale_data = undefined;
         current_locale = null;
-        current_domain = 'default';
     };
     
-    module.set_locale = function(locale, domain) {
-        if (domain === undefined) {
-            domain = 'default';
-        }
+    module.set_locale = function(locale) {
         // bail out early if we have to do nothing
-        if (locale === current_locale && domain == current_domain) {
-            return;
-        }
         if (locale === current_locale) {
-            module.set_domain(domain);
             return;
         }
         current_locale = locale;
-        current_domain = domain;
         
         var locale_data = {};
 
@@ -127,14 +120,14 @@ var _ = null;
             });
             promises.push(promise);
         }
+        
         var subviews_promise = $.when.apply(null, promises);
         subviews_promise.done(function() {
             // XXX really convince Gettext to forget about previous data
             Gettext._locale_data = undefined;
-            if (domains[domain] === undefined) {
-                throw new module.I18nError("Unknown domain: " + domain);
-            }
-            current_gt = new Gettext({domain: domain,
+            // just pick a random domain to pass into gettext; we don't
+            /// use this feature anyway
+            current_gt = new Gettext({domain: d,
                                       locale_data: locale_data});
         });
     };
@@ -143,19 +136,39 @@ var _ = null;
         return current_locale;
     };
     
-    module.get_domain = function() {
-        return current_domain;
+    module.get_translation = function(msgid, domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
+        return current_gt.dgettext(domain, msgid);
     };
-    
-    module.set_domain = function(domain) {
+
+    module.get_template_domain = function() {
+        return template_domain;
+    };
+
+    module.get_translation_func = function(domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
         if (domains[domain] === undefined) {
             throw new module.I18nError("Unknown domain: " + domain);
         }
-        current_domain = domain;
-        current_gt.textdomain(domain);
+        return function(msgid) {
+            return module.get_translation(msgid, domain);
+        };
     };
     
-    _ = function(msgid) {
-        return current_gt.gettext(msgid);
+    module.domain = function(domain) {
+        
+        if (domain === undefined) {
+           domain = 'default';
+        }
+        if (domains[domain] === undefined) {
+            throw new module.I18nError("Unknown domain: " + domain);
+        }
+        template_domain = domain;
+        return module.get_translation_func(domain);
     };
+    
 }(jQuery, obviel.i18n));
