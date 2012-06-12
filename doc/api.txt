@@ -1133,3 +1133,112 @@ Everything is in the ``traject`` namespace.
   :returns: The path for ``obj`` according to the patterns.
 
   Can throw :class:`LocationError` in case the object can not be located.
+
+Obviel i18n
+===========
+
+Everything is in the ``obviel.i18n`` namespace.
+  
+.. class:: I18nError
+
+  Exception. Something went wrong during translation; in particular a locale
+  or domain cannot be found.
+
+  .. attribute:: message
+
+    Message describing what went wrong.
+
+.. function:: translation_source(data)
+
+  Create a source of translations from mapping.
+
+  :param object data: A mapping from the language used in the source code to
+    the language being translated to. Alternatively can use a more complicated
+    jsgettext array structure as values.
+  :returns: The translation source.
+
+.. function:: translation_source_from_json_url(url)
+
+  Create a source of translations from a URL.
+
+  :param string url: A URL to a JSON object that contains a jsgettext-based
+    translation.
+  :returns: The translation source.
+
+.. function:: empty_translation_source()
+
+  Create an empty source of translations. This means no translation
+  will take place. This can be useful to register the translations for
+  the locale that the UI is written in.
+
+  :returns: The translation source.
+
+.. function:: register_translation(locale, translation_source[, domain])
+
+  Register a translation source for a locale and a domain.
+  
+  :param string locale: A locale identifier, such as ``en_US``.
+  :param translation_source: A translation source.
+  :param domain: The i18n domain for the translations. If domain is not 
+    specified, the ``default`` domain is used.
+
+.. function:: clear_translations()
+
+  Clear the translations. Useful during test teardown.
+
+.. function:: set_locale(locale)
+
+  Changes the locale that the application is working in to a new one.
+
+  :param string locale: A locale identifier, such as ``en_US``.
+  
+.. function:: clear_locale()
+
+  Clears the locale that the application is working in to an empty one.
+  Useful during test teardown.
+
+.. function:: get_locale()
+
+  Returns the current locale.
+
+.. function:: get_translation(msgid, domain)
+
+  Gives back the translation for a msgid in a particular domain, given
+  the current locale.
+
+  :param string msgid: The message id or text to translate.
+  :param string domain: The translation domain.
+  :returns: The translation for msgid in the domain.
+
+.. function:: get_translation_func(domain)
+ 
+  Gives back a function that takes the msgid and returns the
+  translation in the domain.
+
+  :param string domain: The translation domain.
+  :returns: A function that can be given a msgid to return the translation
+    in the specified domain.
+
+.. function:: domain(domain)
+
+  Set up a domain for a module. Intended to be called at the top of
+  your module, like this::
+
+     var _ = obviel.i18n.domain('foo');
+
+  This changes the template domain to ``foo``, and also returns a function
+  that when called with a message id, will return the translation in the domain
+  ``foo``. The convention is to assign this to ``_`` so that extraction tools
+  can extract occurrences from .js source code.
+
+  :param string domain: The translation domain.
+  :returns: A function that can be given a msgid to return the translation
+    in the specified domain.
+
+.. function:: get_template_domain()
+
+  Gives back the default domain in use by Obviel templates.
+
+
+
+
