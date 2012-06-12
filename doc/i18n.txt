@@ -13,32 +13,35 @@ has 18 letters between the 'i' and the 'n').
 How do you go about this? 
 
 The idea is that you mark up all translatable texts in your project's
-code (``.js`` and ``.obvt`` files) in a special way. Then when your
-application runs for the marked up pieces of text a translations
-registry is consulted. If a translation is found for a marked up piece
-of text, it is used instead of the original text.
+code (``.js`` and ``.obvt`` files) in a special way. When your
+application runs, marked text is looked up in a translation source.
+If a translation is found for a marked up piece of text, it is used
+instead of the original text. By changing the locale you can change
+which translation sources are in use.
 
 A special extraction tool can be used to extract the marked up pieces
-of text from ``.js`` and ``.obvt`` files, so that they can be given to
-human translators for translation.
+of text from ``.js``, ``.html`` and ``.obvt`` files, so that they can
+be given to human translators for translation.
 
 Now let's go into some more detail.
 
-JavaScript i18n with jsgettext
-------------------------------
+JavaScript i18n
+---------------
 
 Imagine we have this piece of JavaScript code we want to i18n::
 
   alert("Hello world!");
 
-This application has been written with one language in mind, in
-this case English. But if the application runs with another language,
-for instance French, we'd like to see the popup in that language (for
-instance "Bonjour monde!") instead of in English.
+This application has been written with one language in mind, in this
+case English. Now we want to modify the application so that if the
+application runs with another language (for instance French) we will
+see the popup in that language (for instance "Bonjour monde!")
+instead of in English.
 
-You can make this happen using jsgettext_. This uses the gettext_
+You can make this happen using ``obviel.i18n``. This uses the gettext_
 approach, which is very often used for i18n for a variety of projects
-and programming languages. Include ``jsgettext`` like this::
+and programming languages. ``obviel.i18n`` is built on top of
+jsgettext_, so include ``jsgettext`` like this::
 
     <script type="text/javascript" src="/path/to/Gettext.js"></script>
 
@@ -46,59 +49,56 @@ and programming languages. Include ``jsgettext`` like this::
 
 .. _jsgettext: http://jsgettext.berlios.de/
 
-We now need to make a translation available for our ``Hello world!``
-message. This is what that looks like::
+We now need to make a translation source available for our ``Hello
+world!`` message. This is what that looks like::
 
-  var json_locale_data = { 
-    'myproject': {
-      "Hello world!": [null, "Bonjour monde!"]
-    }
-  };
+  var fr_FR = obviel.i18n.translation_source(
+    {'Hello world!': 'Bonjour monde!'});
+  obviel.i18n.register_translation('fr_FR', fr_FR);
 
-The exact structure of ``json_locale_data`` object is not something to
-worry about, as later in this document we'll introduce a tool to generate
-this automatically for you. We just wanted to provide for the purposes
-of a demo.
+Here we create a translation source from a simple JavaScript object
+using ``translation_source``, and then register this source using
+``register_translation``. Later we'll see how to register translations
+from a JSON source.
 
-We are now ready to create a ``Gettext`` object for your project that
-knows about the translations available::
+Next we will create a function ``_`` that can be used to mark up text
+to make it translatable::
 
-  var gt = new Gettext({
-    domain: 'myproject',
-    locale_data: json_locale_data
-  });
+  var _ = obviel.i18n.domain();
 
-We will also create a little convenience function ``_`` that can be used
-to mark up text to make it translatable::
+We do this for a domain, in this case we are using the ``default`` domain
+so we don't need to specify one. Alternatively you can explicitly specify
+the ``default`` domain like this::
 
-  var _ = function(msgid) { return gt.gettext(msgid); };
+  var _ = obviel.i18n.domain();
 
-This is a bit of code to put together, but you'd typically do all this
-only once per project and use it everywhere.
+The idea is that we use ``obviel.i18n.domain()`` once on top of each
+of the modules we want to i18n. Later we'll go into more detail about
+the use of different domains.
 
-So now let's return to our JavaScript code to i18n::
+Now let's return to our JavaScript code to i18n::
 
   alert("Hello world!");
 
-we adjust it to use our ``_`` function::
+We adjust it to use our ``_`` function::
 
   alert(_("Hello world!"));
 
 When you run your application now, you'll see "Bonjour monde!".
 
-`Here <_static/demo/i18n-js-demo.html>`_ is all this put together as a
-working demo.
+`Here <_static/demo/i18n-js-demo.html>`_ is a demo that has put all
+this together in a slightly more involved way.
 
 Extracting translatable content
 -------------------------------
 
-We know how to mark up our JavaScript code so it can be translated
-now. We now need a tool that can extract all pieces of marked up text
-so that we can give it all to a translator.
+We now know how to mark up our JavaScript code so it can be
+translated. We need a tool that can extract all pieces of marked up
+text automatically so that we can give it all to a translator.
 
 We recommend the use of the Babel_ i18n tool with code that uses
 Obviel. While Babel primarily written to support i18n of Python
-applications, it also supports JavaScript applications. 
+applications, it also supports JavaScript applications.
 
 .. _Babel: http://babel.edgewall.org/
 
@@ -127,7 +127,7 @@ applications, it also supports JavaScript applications.
 If you're on Linux, ``Babel`` may be available in your Linux
 distribution. You can also install it manually using one of the Python
 tools used for this (``pip``, ``easy_install``, or
-``buildout``). After you do this a ``pybabel`` commandline tool will
+``buildout``). After installation, a ``pybabel`` commandline tool will
 be available.
 
 To make Babel work with ``.js`` files we first need to configure
@@ -136,16 +136,15 @@ it. Create a ``.cfg`` file with the following content::
   [javascript: **.js]
   extract_messages = _
 
-Now you can use it on your project's directory that contains all the
-``.js`` files::
+Now you can use it on your project directory::
 
   $ pybabel extract -F myconfig.cfg project_directory > myproject.pot
 
-You will now have a ``.pot`` (PO template) file that will be the
-source of all your actual translation files for your application, the
-``.po`` files. For example, if you had applied this to the demo
-described above, you would get a ``.pot`` file like this (skipping
-some metadata boilerplate)::
+You will now have a ``myproject.pot`` (PO template) file that will be
+the template for all the actual translation files for your
+application, the ``.po`` files. For example, if you had applied this
+to the demo described above, you would get a ``.pot`` file like this
+(skipping some metadata boilerplate)::
 
   #: src/demo/i18n-js-demo.js:15
   msgid "Hello world!"
@@ -157,9 +156,10 @@ translate was found; this is sometimes useful context for translators.
 Creating ``.po`` files
 ----------------------
 
-For each language our project has translations for, we now need to
-create a ``.po`` file from our ``.pot`` file. You can do this with the
-GNU gettext tool suite, using the ``msginit`` tool (`details about msginit`_)::
+For each language that you want to support in your project, you now
+need to create a ``.po`` file from the project's ``.pot`` file. You
+can do this with the GNU gettext tool suite, using the ``msginit``
+tool (`details about msginit`_)::
 
  $ msginit -l fr_FR -i myproject.pot -o myproject-fr_FR.po
 
@@ -211,32 +211,37 @@ new translatable texts become available to your translators::
 
 .. _details: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/msgmerge-Invocation.html
  
-Creating ``.js`` files from the ``.po`` files
----------------------------------------------
+Creating ``.json``` files from the ``.po`` files
+------------------------------------------------
 
-We now have a ``.po`` file with the right translations. While
-jsgettext offers a way to load up such ``.po`` files directly, it is
-recommended you use an optimized JavaScript file for this instead. We
-can do this using the pojson_ tool (installable using one of the
-Python methods such as ``pip``, ``easy_install`` or ``buildout``).
+We now have a ``.po`` file with the right translations. To make it
+work with Obviel i18n, we need to convert it to a JSON file that can
+be used as a translation source. You can do this using the pojson_
+tool (installable using one of the Python methods such as ``pip``,
+``easy_install`` or ``buildout``).
 
 .. _pojson: http://pypi.python.org/pypi/pojson
 
-Using pojson you can convert the ``.po`` file to an optimized ``.js`` file::
+Using pojson you can convert the ``.po`` file to a simple ``.json``
+file::
 
-  bin/pojson convert -j myproject myproject-fr_FR.po > myproject-fr_FR.js
+  $ bin/pojson convert myproject-fr_FR.po > myproject-fr_FR.json
 
-You now have a file with the following contents (skipping some
-metadata again, and pretty printed)::
+Loading up the translation JSON
+-------------------------------
 
-  var json_locale_data = { 
-    'myproject': {
-      "Hello world!": [null, "Bonjour monde!"]
-    }
-  };
+Put that ``.json`` file somewhere where it can be found. Normally that
+would be in the same directory as the ``.js`` files.
 
-This is the structure we created by hand before, so once that's passed
-into the ``Gettext`` constructor, we're done.
+This ``.json`` file can now be loaded as a translation source from a
+URL::
+
+  var fr_FR = obviel.i18n.translation_source_from_json_url(
+     'myproject-fr_FR.json');
+
+And we can register it::
+
+  obviel.i18n.register_translation('fr_FR', fr_FR);
 
 Translating ``.obvt`` files
 ---------------------------
@@ -245,10 +250,10 @@ We've now demonstrated the procedure for a ``.js`` file, but what
 about Obviel Template ``.obvt`` files? We provide a plugin to Babel
 called ``babel-obviel`` that knows how to extract translatable text
 from ``.obvt`` files. You install it using the standard Python
-installation tools (make sure it is installed in the same Python as
-Babel is, so that Babel can pick up on it).
+installation tools. Make sure it is installed in the same Python as
+Babel is, so that Babel can pick up on it.
 
-Now you could have a template like this, marked up for translation::
+Imagine you have this template, marked up for translation::
 
   <p data-trans="">Hello world!</p>
 
@@ -262,10 +267,24 @@ We need to teach ``pybabel extract`` about ``.obvt`` files in the
 
 When you now run ``pybabel extract`` on your project, it will extract
 translatable texts not only from ``.js`` files but from ``.obvt``
-files as well. You can translate these in the same way.
+files as well.
 
 Read :doc:`Obviel Template i18n <template_i18n>` for much more detail
 on how to mark up your ``.obvt`` files for i18n.
+
+Translating Obviel templates in ``.html`` files
+-----------------------------------------------
+
+It is possible to embed an Obviel template in a ``script`` tag in a
+HTML file. You can tell ``pybabel`` to extract from these too, by
+modifying the ``.cfg`` file to read like this::
+
+  [javascript: **.js]
+  extract_messages = _
+
+  [obvt: **.obvt]
+
+  [obvt_html: **.html]
 
 Variables
 ---------
@@ -279,8 +298,8 @@ or like this for variables within elements::
 
   <p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>
 
-``pybabel extract`` will extract both of these to this text in the
-``.po`` file::
+If you used ``pybabel extract``, this is what these texts would look
+like in the ``.po`` file::
 
   Hello {who}!
 
@@ -296,11 +315,13 @@ another place as well::
 
 Obviel Template's i18n system will use these variables automatically.
 To use such variables in a ``.js`` file, you can use a special
-:func:`variables` formatting function that Obviel Template makes
+:func:`variables` formatting function that Obviel i18n makes
 available::
 
-  variables(_("Hello {who}!"), { who: "Bob" });
+  obviel.i18n.variables(_("Hello {who}!"), { who: "Bob" });
 
+Note that for ``variables`` to work you do need to include
+``obviel-template.js`` on the page as well.
 
   
 

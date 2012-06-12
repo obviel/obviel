@@ -1064,7 +1064,7 @@ Consider the following view with a template that uses a formatter::
 
 When you render this view, ``some_formatter`` will be looked up in the
 global formatter registry. You can use Obviel Templates's
-:func:`register_formatter` to fill it when the application starts. 
+:func:`obviel.template.register_formatter` to fill it when the application starts. 
 
 You can however also define this formatter on the view itself::
 

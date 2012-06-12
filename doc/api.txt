@@ -7,7 +7,7 @@ Obviel API
 Obviel core
 ===========
 
-.. function:: iface(name[, *bases])
+.. function:: obviel.iface(name[, *bases])
 
   Declare an iface.
 
@@ -22,7 +22,7 @@ Obviel core
   A registered iface always automatically extends a special iface
   ``base``.
 
-.. function:: provides(obj, base)
+.. function:: obviel.provides(obj, base)
  
   Check whether an object provides an iface.
 
@@ -31,14 +31,14 @@ Obviel core
   :returns: ``true`` if obj provides iface ``base`` (or an
     iface that extends ``base``.
 
-.. function:: extendsIface(name, base)
+.. function:: obviel.extendsIface(name, base)
 
   Register a new base iface for an iface.
 
   :param string name: Identifies the iface to extend.
   :param string base: Identifies the base iface that this iface extends.
 
-.. function:: ifaces(obj)
+.. function:: obviel.ifaces(obj)
 
   Obtain all ifaces that this object provides, going recursively
   through base interfaces, breadth first.
@@ -49,13 +49,13 @@ Obviel core
   :param obj: Any JavaScript object
   :returns: a list of ifaces that the obj provides.
 
-.. class:: View(settings)
+.. class:: obviel.View(settings)
  
   :param settings: an object of which the properties will become
      properties of the view itself.
 
   You can create a View by instantiating one and then registering it
-  with :func:`view`, but that function also allows creation of a new
+  with :func:`obviel.view`, but that function also allows creation of a new
   view directly from a settings object.
 
   If you want to create your own view types that provide more features
@@ -63,7 +63,7 @@ Obviel core
   the ``View`` class.  One example of this is :class:`Widget` from the
   Obviel forms library.
 
-.. function:: view(view)
+.. function:: obviel.view(view)
 
   Register a view with Obviel. This allows Obviel to look up the view
   for the ``iface`` with which the view was registered.
@@ -73,7 +73,7 @@ Obviel core
     will be converted to a :class:`View` object with the object's
     properties.
 
-.. function:: transformer(transformer)
+.. function:: obviel.transformer(transformer)
 
   :param transformer: a function with the ``function(obj, url, name)``
     signature, or ``function(obj, url)``, or ``function(obj)``.
@@ -108,7 +108,7 @@ Obviel core
 
   Render a view for an object on a jQuery element. This instantiates a
   view by cloning it from the registered view and then calls its
-  :func:`View.render` method.
+  :func:`obviel.View.render` method.
     
   :param obj: The JavaScript object to render. Alternatively this
      can be a string, which will then be interpreted as a URL. The
@@ -147,10 +147,10 @@ View options
 ++++++++++++
 
 Views have a number of options you can pass into them in the
-``settings`` parameter when registering a view using :func:`view`. Views
-also define some convenience methods.
+``settings`` parameter when registering a view using
+:func:`obviel.view`. Views also define some convenience methods.
 
-.. class:: view
+.. class:: obviel.view
 
   .. attribute:: iface
 
@@ -209,7 +209,7 @@ also define some convenience methods.
  
     A string with a snippet of HTML that should be inserted into the
     DOM upon rendering. This will be done before any
-    :func:`view.render` function is called.
+    :func:`obviel.view.render` function is called.
 
     This property is optional, and by default there will be no HTML
     snippet insertion.
@@ -296,6 +296,12 @@ also define some convenience methods.
     receives a parameter ``ev`` that has a ``view`` property, but the
     view can in this case also be accessed as ``this``.
 
+  .. attribute:: domain
+   
+    The translation domain to use for any associated Obviel Template.
+    If no ``domain`` is specified, the current translation domain
+    specified by :func:`obviel.i18n.domain` is used.
+
   .. function:: rerender()
 
     A convenience method that is useful to refer to using declarative
@@ -308,7 +314,7 @@ Obviel Template
 
 Everything is in the ``obviel.template`` namespace.
   
-.. class:: CompilationError
+.. class:: obviel.template.CompilationError
 
   Exception. Something went wrong during compilation of a template.
 
@@ -321,7 +327,7 @@ Everything is in the ``obviel.template`` namespace.
 
     Message describing what went wrong during compilation.
 
-.. class:: RenderError
+.. class:: obviel.template.RenderError
 
   Exception. Something went wrong during compilation of a template.
 
@@ -334,7 +340,7 @@ Everything is in the ``obviel.template`` namespace.
 
     Message describing what went wrong during rendering.
 
-.. function:: register_formatter(name, func)
+.. function:: obviel.template.register_formatter(name, func)
 
   Register a global formatter. Is done when the UI starts up (per
   page), before any templates are compiled. Note that with Obviel
@@ -345,7 +351,7 @@ Everything is in the ``obviel.template`` namespace.
   :param function func: the formatting function. It gets the text (string)
     to format as its argument and should return the formatted text.
 
-.. function:: get_formatter(name)
+.. function:: obviel.template.get_formatter(name)
 
   Return a global formatter. If no formatter can be found,
   ``undefined`` is returned.
@@ -353,12 +359,12 @@ Everything is in the ``obviel.template`` namespace.
   :param string name: the name of the formatter to look up.
   :returns: the formatter function or ``undefined``.
 
-.. function:: clear_formatters()
+.. function:: obviel.template.clear_formatters()
 
    Clear all previously registered formatters. Typically used during
    unit test teardown.
 
-.. function:: register_func(name, func)
+.. function:: obviel.template.register_func(name, func)
 
   Register a global element adjustment function. Is done when the UI
   starts up (per page), before any templates are compiled. Note that
@@ -375,7 +381,7 @@ Everything is in the ``obviel.template`` namespace.
     variables in the current scope by calling it with a variable
     name as a string (``variable(variable_name)``).
 
-.. function:: get_func(name)
+.. function:: obviel.template.get_func(name)
 
   Return a global element adjustment function. If no func can be found,
   ``undefined`` is returned.
@@ -383,12 +389,12 @@ Everything is in the ``obviel.template`` namespace.
   :param string name: the name of the func to look up.
   :returns: the func or ``undefined``.
 
-.. function:: clear_funcs()
+.. function:: obviel.template.clear_funcs()
 
    Clear all previously registered funcs. Typically used during
    unit test teardown.
 
-.. class:: Template
+.. class:: obviel.template.Template
 
   A template. To instantiate and compile, create a new ``Template``
   object with a ``text`` argument. The ``text`` argument should be a
@@ -430,7 +436,7 @@ Everything is in the ``obviel.template`` namespace.
         ``{variable|formatter}``. If no ``get_formatter`` is supplied,
         the template engine will use globally registered formatters
         (using ``obviel.template.register_formatter``). See also
-        :func:`register_formatter`.
+        :func:`obviel.template.register_formatter`.
 
       ``get_func``
         A function that gets a single name argument and returns the
@@ -442,9 +448,9 @@ Everything is in the ``obviel.template`` namespace.
         ``get_func`` is supplied, the template engine will use
         globally registred funcs (using
         ``obviel.template.register_func``). See also
-        :func:`register_func`.
+        :func:`obviel.template.register_func`.
 
-.. function:: variables(translation, variables)
+.. function:: obviel.template.variables(translation, variables)
 
   A simple way to interpolate variables into a text, in particular for
   the purposes of i18n.
@@ -460,7 +466,7 @@ Everything is in the ``obviel.template`` namespace.
     variable name.
   :returns: The text with variables interpolated.
 
-.. function:: tokenize(text)
+.. function:: obviel.template.tokenize(text)
   
   Tokenize text using Obviel Template rules. Name tokens are marked by
   ``{`` and ``}``, the rest are text tokens.
@@ -481,7 +487,7 @@ be defined on the client. It should have the iface ``viewform``.
 Form options
 ++++++++++++
 
-.. class:: viewform
+.. class:: obviel.forms.viewform
 
   .. attribute:: widgets 
 
@@ -530,7 +536,7 @@ Form options
 Widgets
 +++++++
 
-.. class:: Widget
+.. class:: obviel.forms.Widget
 
   .. attribute:: name
   
@@ -558,7 +564,7 @@ Widgets
     The default value that should be shown in the widget if no
     specific value is available in the ``data`` object.
 
-.. class:: InputWidget
+.. class:: obviel.forms.InputWidget
 
   iface: ``input_field``
 
@@ -595,7 +601,7 @@ Widgets
         required: true
       }
 
-.. class:: TextLineWidget
+.. class:: obviel.forms.TextLineWidget
 
   iface: ``textline_field``
 
@@ -622,7 +628,7 @@ Widgets
     This allows you to write regular expression based custom
     validators for user input.
 
-.. class:: TextWidget
+.. class:: obviel.forms.TextWidget
 
   iface: ``text_field``
 
@@ -639,7 +645,7 @@ Widgets
    
     The height of the textarea in em.
 
-.. class:: IntegerWidget
+.. class:: obviel.forms.IntegerWidget
 
   iface: ``integer_field``
 
@@ -659,7 +665,7 @@ Widgets
    Only allow input to a fixed number of digits given by
    ``length``. If not set, any amount of digits will be allowed.
 
-.. class:: FloatWidget
+.. class:: obviel.forms.FloatWidget
 
   iface: ``float_field``
 
@@ -679,7 +685,7 @@ Widgets
     If ``true``, negative numbers are allowed as input. Defaults to ``false``,
     not allowing negative numbers.
 
-.. class:: DecimalWidget
+.. class:: obviel.forms.DecimalWidget
 
   iface: ``decimal_field``
 
@@ -719,7 +725,7 @@ Widgets
     Maximum amount of digits that are allowed to be present after the
     separator. If omitted, there is no maximum.
 
-.. class:: BooleanWidget
+.. class:: obviel.forms.BooleanWidget
 
   iface: ``boolean_field``
 
@@ -730,7 +736,7 @@ Widgets
 
   Derives from :class:`Widget`.
 
-.. class:: ChoiceWidget
+.. class:: obviel.forms.ChoiceWidget
 
   iface: ``choice_field``
 
@@ -758,7 +764,7 @@ Widgets
     The ``value`` will be the value submitted, and the ``label`` will
     be how this value is represented in the user interface.
 
-.. class:: DisplayWidget
+.. class:: obviel.forms.DisplayWidget
  
   iface: ``display_field``
 
@@ -770,7 +776,7 @@ Widgets
 
   Derives from :class:`Widget`.
   
-.. class:: HiddenWidget
+.. class:: obviel.forms.HiddenWidget
 
   iface: ``hiden_field``
 
@@ -779,7 +785,7 @@ Widgets
 
   Derives from :class:`DisplayWidget`
 
-.. class:: DatePickerWidget
+.. class:: obviel.forms.DatePickerWidget
  
   iface:: ``datepicker_field``
 
@@ -825,7 +831,7 @@ Widgets
 
     By default it is set to ``false``.
 
-.. class:: AutocompleteWidget
+.. class:: obviel.forms.AutocompleteWidget
  
   iface:: ``autocomplete_field``
 
@@ -934,7 +940,7 @@ Traject
 
 Everything is in the ``traject`` namespace.
 
-.. class:: ParseError
+.. class:: traject.ParseError
 
   A parse error when parsing a path.
 
@@ -942,7 +948,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: ResolutionError
+.. class:: traject.ResolutionError
 
   Error resolving a path to an object: object cannot be found.
 
@@ -950,7 +956,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: LocationError
+.. class:: traject.LocationError
 
   Error constructing a location (or path) for an object.
 
@@ -958,7 +964,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: RegistrationError
+.. class:: traject.RegistrationError
 
   Error during registration.
 
@@ -966,7 +972,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: Patterns
+.. class:: traject.Patterns
 
   .. function:: register_converter(converter_name, converter_func)
 
@@ -1139,7 +1145,7 @@ Obviel i18n
 
 Everything is in the ``obviel.i18n`` namespace.
   
-.. class:: I18nError
+.. class:: obviel.i18n.I18nError
 
   Exception. Something went wrong during translation; in particular a locale
   or domain cannot be found.
@@ -1148,7 +1154,7 @@ Everything is in the ``obviel.i18n`` namespace.
 
     Message describing what went wrong.
 
-.. function:: translation_source(data)
+.. function:: obviel.i18n.translation_source(data)
 
   Create a source of translations from mapping.
 
@@ -1157,7 +1163,7 @@ Everything is in the ``obviel.i18n`` namespace.
     jsgettext array structure as values.
   :returns: The translation source.
 
-.. function:: translation_source_from_json_url(url)
+.. function:: obviel.i18n.translation_source_from_json_url(url)
 
   Create a source of translations from a URL.
 
@@ -1165,7 +1171,7 @@ Everything is in the ``obviel.i18n`` namespace.
     translation.
   :returns: The translation source.
 
-.. function:: empty_translation_source()
+.. function:: obviel.i18n.empty_translation_source()
 
   Create an empty source of translations. This means no translation
   will take place. This can be useful to register the translations for
@@ -1173,7 +1179,7 @@ Everything is in the ``obviel.i18n`` namespace.
 
   :returns: The translation source.
 
-.. function:: register_translation(locale, translation_source[, domain])
+.. function:: obviel.i18n.register_translation(locale, translation_source[, domain])
 
   Register a translation source for a locale and a domain.
   
@@ -1182,26 +1188,26 @@ Everything is in the ``obviel.i18n`` namespace.
   :param domain: The i18n domain for the translations. If domain is not 
     specified, the ``default`` domain is used.
 
-.. function:: clear_translations()
+.. function:: obviel.i18n.clear_translations()
 
   Clear the translations. Useful during test teardown.
 
-.. function:: set_locale(locale)
+.. function:: obviel.i18n.set_locale(locale)
 
   Changes the locale that the application is working in to a new one.
 
   :param string locale: A locale identifier, such as ``en_US``.
   
-.. function:: clear_locale()
+.. function:: obviel.i18n.clear_locale()
 
   Clears the locale that the application is working in to an empty one.
   Useful during test teardown.
 
-.. function:: get_locale()
+.. function:: obviel.i18n.get_locale()
 
   Returns the current locale.
 
-.. function:: get_translation(msgid, domain)
+.. function:: obviel.i18n.get_translation(msgid, domain)
 
   Gives back the translation for a msgid in a particular domain, given
   the current locale.
@@ -1210,7 +1216,7 @@ Everything is in the ``obviel.i18n`` namespace.
   :param string domain: The translation domain.
   :returns: The translation for msgid in the domain.
 
-.. function:: get_translation_func(domain)
+.. function:: obviel.i18n.get_translation_func(domain)
  
   Gives back a function that takes the msgid and returns the
   translation in the domain.
@@ -1219,7 +1225,7 @@ Everything is in the ``obviel.i18n`` namespace.
   :returns: A function that can be given a msgid to return the translation
     in the specified domain.
 
-.. function:: domain(domain)
+.. function:: obviel.i18n.domain(domain)
 
   Set up a domain for a module. Intended to be called at the top of
   your module, like this::
@@ -1235,10 +1241,14 @@ Everything is in the ``obviel.i18n`` namespace.
   :returns: A function that can be given a msgid to return the translation
     in the specified domain.
 
-.. function:: get_template_domain()
+.. function:: obviel.i18n.get_template_domain()
 
   Gives back the default domain in use by Obviel templates.
 
+.. function:: obviel.i18n.variables(translation, variables)
+
+  An alias for :func:`obviel.template.variables`. Only available if
+  Obviel Template is available when Obviel i18n is being loaded.
 
 
 
