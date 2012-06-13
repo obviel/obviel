@@ -247,11 +247,6 @@ test('set unknown domain', function() {
     }, i18n.I18nError);
 });
 
-// XXX test for unknown domain in set_template_domain
-// XXX test for unknown domain make_underscore
-
-// XXX test for prepare
-
 // XXX test for template domain in templating engine
 
 // XXX what if current_gt isn't around yet? we do want to be able to prepare the domain

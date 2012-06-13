@@ -151,7 +151,7 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        if (domains[domain] === undefined) {
+        if (domain !== 'default' && domains[domain] === undefined) {
             throw new module.I18nError("Unknown domain: " + domain);
         }
         return function(msgid) {
@@ -160,11 +160,10 @@ obviel.i18n = {};
     };
     
     module.translate = function(domain) {
-        
         if (domain === undefined) {
            domain = 'default';
         }
-        if (domains[domain] === undefined) {
+        if (domain !== 'default' && domains[domain] === undefined) {
             throw new module.I18nError("Unknown domain: " + domain);
         }
         template_domain = domain;
