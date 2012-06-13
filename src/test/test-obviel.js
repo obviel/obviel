@@ -168,6 +168,8 @@ module('Obviel Views', {
         $('#viewdiv').unbind();
         obviel.clear_registry();
         obviel.compilers.clear_cache();
+        obviel.i18n.clear_translations();
+        obviel.i18n.clear_locale();
     }
 });
 
@@ -1631,4 +1633,79 @@ test('fallback to global event handler for detached element', function() {
     el.render({iface: 'person', name: 'foo'});
 
     equal(el.text(), 'foo');
+});
+
+test('obviel i18n default domain used by template, no translations', function() {
+    obviel.view({
+        iface: 'person',
+        obvt: '<p id="result" data-trans="">This is {name}.</p>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'person', name: 'foo'});
+
+    equal($('#result').text(), 'This is foo.');
+          
+});
+
+test('obviel i18n default domain used by template, translation', function() {
+    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+                                                'Dit is {name}.'});
+
+    obviel.i18n.register_translation('nl_NL', nl_NL);
+
+    obviel.i18n.set_locale('nl_NL');
+    
+    obviel.view({
+        iface: 'person',
+        obvt: '<p id="result" data-trans="">This is {name}.</p>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'person', name: 'foo'});
+
+    equal($('#result').text(), 'Dit is foo.');
+          
+});
+
+test("obviel i18n non-default domain, no locale set", function() {
+    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+                                                'Dit is {name}.'});
+    
+    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+        
+    obviel.i18n.translate('other');
+    
+    obviel.view({
+        iface: 'person',
+        obvt: '<p id="result" data-trans="">This is {name}.</p>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'person', name: 'foo'});
+
+    equal($('#result').text(), 'This is foo.');
+    
+});
+
+
+test("obviel i18n non-default domain, locale set", function() {
+    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+                                                'Dit is {name}.'});
+    
+    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+        
+    obviel.i18n.translate('other');
+
+    obviel.i18n.set_locale('nl_NL');
+    
+    obviel.view({
+        iface: 'person',
+        obvt: '<p id="result" data-trans="">This is {name}.</p>'
+    });
+
+    var el = $('#viewdiv');
+    el.render({iface: 'person', name: 'foo'});
+
+    equal($('#result').text(), 'Dit is foo.');
 });

@@ -246,7 +246,3 @@ test('set unknown domain', function() {
         i18n.translate('unknown');
     }, i18n.I18nError);
 });
-
-// XXX test for template domain in templating engine
-
-// XXX what if current_gt isn't around yet? we do want to be able to prepare the domain

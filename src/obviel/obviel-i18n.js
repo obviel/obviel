@@ -94,6 +94,7 @@ obviel.i18n = {};
         // XXX goes into the insides of jsgettext...
         Gettext._locale_data = undefined;
         current_locale = null;
+        template_domain = 'default';
     };
     
     module.set_locale = function(locale) {
