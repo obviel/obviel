@@ -1240,7 +1240,30 @@ Everything is in the ``obviel.i18n`` namespace.
 
   :param string domain: The translation domain.
   :returns: A function that can be given a msgid to return the translation
-    in the specified domain.
+    in the specified domain and current locale.
+
+.. function:: obviel.i18n.pluralize(domain)
+
+  Set up plural translations for a module. Intended to be called at the
+  top of your module, like this::
+
+    var ngettext = obviel.i18n.translate('foo');
+
+  The ``ngettext`` function can be called with three parameters:
+
+  * singular text ("1 elephant")
+
+  * plural text ("three elephants")
+
+  * count
+ 
+  Based on the value of count either the singular text or plural text
+  will be used, and translated to the current locale and the specified
+  domain (``foo``, in this case).
+
+  :param string domain: The translation domain.
+  :returns: A function that can be given a singular msgid, a plural msgid
+    and a count and will return the right text for the locale, domain and count.
 
 .. function:: obviel.i18n.get_template_domain()
 
