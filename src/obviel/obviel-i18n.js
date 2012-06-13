@@ -138,9 +138,6 @@ obviel.i18n = {};
     };
     
     module.get_translation = function(msgid, domain) {
-        if (domain === undefined) {
-            domain = 'default';
-        }
         return current_gt.dgettext(domain, msgid);
     };
 
@@ -170,8 +167,30 @@ obviel.i18n = {};
         template_domain = domain;
         return module.get_translation_func(domain);
     };
+    
+    module.get_pluralize_func = function(domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
+        if (domain !== 'default' && domains[domain] === undefined) {
+            throw new module.I18nError("Unknown domain: " + domain);
+        }
+        return function(msgid, msgid_plural, count) {
+            return current_gt.dngettext(domain, msgid, msgid_plural, count);
+        };
+    };
+    
 
-
+    module.pluralize = function(domain) {
+        if (domain === undefined) {
+            domain = 'default';
+        }
+        if (domain !== 'default' && domains[domain] === undefined) {
+            throw new module.I18nError("Unknown domain: " + domain);
+        }
+        return module.get_pluralize_func(domain);
+    };
+ 
     // alias
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;

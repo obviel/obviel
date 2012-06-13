@@ -57,6 +57,16 @@ var setup_translations_multi_domains = function() {
     i18n.register_translation('nl_NL', nl_NL, 'other');
 };
 
+var setup_plural_translations = function() {
+    var en_US = i18n.empty_translation_source();
+    var nl_NL = i18n.translation_source({'1 elephant.':
+                                         ['{count} elephants.',
+                                          '1 olifant.',
+                                          '{count} olifanten.']});
+    i18n.register_translation('en_US', en_US, 'i18ntest');
+    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
+};
+
 test('no locale set', function() {
     setup_translations();
 
@@ -245,4 +255,29 @@ test('set unknown domain', function() {
     raises(function() {
         i18n.translate('unknown');
     }, i18n.I18nError);
+});
+
+test('pluralize without translation', function() {
+    setup_plural_translations();
+
+    var ngettext = i18n.pluralize('i18ntest');
+
+    equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 1),
+                         {count: 1}), '1 elephant.');
+    equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
+                         {count: 2}), '2 elephants.');
+});
+
+
+test('pluralize with translation', function() {
+    setup_plural_translations();
+
+    var ngettext = i18n.pluralize('i18ntest');
+
+    i18n.set_locale('nl_NL');
+    
+    equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 1),
+                         {count: 1}), '1 olifant.');
+    equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
+                         {count: 2}), '2 olifanten.');
 });
