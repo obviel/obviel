@@ -60,7 +60,7 @@ var setup_translations_multi_domains = function() {
 test('no locale set', function() {
     setup_translations();
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Hello world!');
 });
@@ -70,7 +70,7 @@ test('non-translating en_US locale', function() {
 
     i18n.set_locale('en_US');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Hello world!');
 });
@@ -80,7 +80,7 @@ test('fr_FR locale', function() {
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Bonjour monde!');
 });
@@ -88,7 +88,7 @@ test('fr_FR locale', function() {
 test('switch locale from not set to fr_FR', function() {
     setup_translations();
     
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Hello world!');
 
@@ -102,7 +102,7 @@ test('switch locale from fr_FR to not set', function() {
     
     i18n.set_locale('fr_FR');
     
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
@@ -116,7 +116,7 @@ test('switch locale from non-translating en_US to translating fr_FR', function()
 
     i18n.set_locale('en_US');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Hello world!');
 
@@ -131,7 +131,7 @@ test('switch locale from translating fr_FR to non-translating en_EN', function()
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
@@ -145,7 +145,7 @@ test('switch locale from translating fr_FR to translating nl_NL', function() {
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
@@ -159,13 +159,13 @@ test('switch domain, non-translating en_US locale', function() {
 
     i18n.set_locale('en_US');
     
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Hello world!');
 
     equal(_('Bye world!'), 'Bye world!');
 
-    var _ = i18n.domain('other');
+    var _ = i18n.translate('other');
     
     equal(_('Hello world!'), 'Hello world!');
 
@@ -177,13 +177,13 @@ test('switch domain, translating fr_Fr locale', function() {
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain('i18ntest');
+    var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Bonjour monde!');
 
     equal(_('Bye world!'), 'Bye world!');
 
-    var _ = i18n.domain('other');
+    var _ = i18n.translate('other');
     
     equal(_('Hello world!'), 'Hello world!');
 
@@ -195,7 +195,7 @@ test("default domain", function() {
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain('default');
+    var _ = i18n.translate('default');
     
     equal(_("Hello world!"), 'Bonjour monde!');
 });
@@ -205,7 +205,7 @@ test("default domain no parameters", function() {
 
     i18n.set_locale('fr_FR');
 
-    var _ = i18n.domain();
+    var _ = i18n.translate();
     
     equal(_("Hello world!"), 'Bonjour monde!');
 });
@@ -239,6 +239,13 @@ test('use unknown locale', function() {
     }, i18n.I18nError);
 });
 
+test('set unknown domain', function() {
+    setup_translations();
+
+    raises(function() {
+        i18n.translate('unknown');
+    }, i18n.I18nError);
+});
 
 // XXX test for unknown domain in set_template_domain
 // XXX test for unknown domain make_underscore
