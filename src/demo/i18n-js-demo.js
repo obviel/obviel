@@ -3,7 +3,7 @@
         {'Hello world!': 'Bonjour monde!'});
     obviel.i18n.register_translation('fr_FR', fr_FR);
 
-    var _ = obviel.i18n.domain();
+    var _ = obviel.i18n.translate();
     
     $(document).ready(function() {    
         // will not be translated as no locale has yet been set

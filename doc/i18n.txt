@@ -64,15 +64,15 @@ from a JSON source.
 Next we will create a function ``_`` that can be used to mark up text
 to make it translatable::
 
-  var _ = obviel.i18n.domain();
+  var _ = obviel.i18n.translate();
 
 We do this for a domain, in this case we are using the ``default`` domain
 so we don't need to specify one. Alternatively you can explicitly specify
 the ``default`` domain like this::
 
-  var _ = obviel.i18n.domain();
+  var _ = obviel.i18n.translate();
 
-The idea is that we use ``obviel.i18n.domain()`` once on top of each
+The idea is that we use ``obviel.i18n.translate()`` once on top of each
 of the modules we want to i18n. Later we'll go into more detail about
 the use of different domains.
 

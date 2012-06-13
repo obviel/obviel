@@ -159,7 +159,7 @@ obviel.i18n = {};
         };
     };
     
-    module.domain = function(domain) {
+    module.translate = function(domain) {
         
         if (domain === undefined) {
            domain = 'default';

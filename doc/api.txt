@@ -300,7 +300,7 @@ Views have a number of options you can pass into them in the
    
     The translation domain to use for any associated Obviel Template.
     If no ``domain`` is specified, the current translation domain
-    specified by :func:`obviel.i18n.domain` is used.
+    specified by :func:`obviel.i18n.translate` is used.
 
   .. function:: rerender()
 
@@ -1225,17 +1225,18 @@ Everything is in the ``obviel.i18n`` namespace.
   :returns: A function that can be given a msgid to return the translation
     in the specified domain.
 
-.. function:: obviel.i18n.domain(domain)
+.. function:: obviel.i18n.translate(domain)
 
-  Set up a domain for a module. Intended to be called at the top of
-  your module, like this::
+  Set up translations for a module. Intended to be called at the top
+  of your module, like this::
 
-     var _ = obviel.i18n.domain('foo');
+     var _ = obviel.i18n.translate('foo');
 
-  This changes the template domain to ``foo``, and also returns a function
-  that when called with a message id, will return the translation in the domain
-  ``foo``. The convention is to assign this to ``_`` so that extraction tools
-  can extract occurrences from .js source code.
+  This changes the template domain to ``foo``, and also returns a
+  function that when called with a message id, will return the
+  translation in the domain ``foo``. The convention is to assign this
+  to ``_`` so that extraction tools can extract occurrences from .js
+  source code.
 
   :param string domain: The translation domain.
   :returns: A function that can be given a msgid to return the translation
