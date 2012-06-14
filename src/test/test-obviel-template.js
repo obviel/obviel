@@ -854,6 +854,23 @@ test('data-trans with multiple variables and different formatter', function() {
     }, obtemp.CompilationError);
 });
 
+
+test('data-trans on attr with multiple variables and different formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    obtemp.register_formatter('lower', function(value) {
+        return value.toLowerCase();
+    });
+
+
+    raises(function() {
+        render('<p data-trans="title" title="Hello {who|upper}! ({who|lower}?)"></p>',
+               {who: "Fred"});
+    }, obtemp.CompilationError);
+});
+
+
 test('data-trans with multiple variables and same formatter', function() {
     obtemp.register_formatter('upper', function(value) {
         return value.toUpperCase();
@@ -864,6 +881,31 @@ test('data-trans with multiple variables and same formatter', function() {
                {who: "Fred"}),
         '<p>FRED, hallo! (FRED?)</p>');
 });
+
+
+test('data-trans on attr with multiple variables and same formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    
+    html_equal(
+        render('<p data-trans="title" title="Hello {who|upper}! ({who|upper}?)"></p>',
+               {who: "Fred"}),
+        '<p title="FRED, hallo! (FRED?)"></p>');
+});
+
+test('data-trans on empty attribute', function() {
+    raises(function() {
+        render('<p data-trans="title" title=""></p>');
+    }, obtemp.CompilationError);     
+});
+
+test('data-trans on attribute with just variable', function() {
+    raises(function() {
+        render('<p data-trans="title" title="{foo}"></p>', {foo: 'Foo'});
+    }, obtemp.CompilationError);     
+});
+
 
 test('data-trans with implicit tvar with formatter', function() {
     obtemp.register_formatter('upper', function(value) {

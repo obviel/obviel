@@ -719,6 +719,91 @@ obviel.template = {};
         }
     };
 
+    module.AttributeTrans = function(el, text, message_id) {
+        this.message_id = null;
+        this.variables = {};
+        this.compile(el, text);
+        if (message_id !== null) {
+            this.message_id = message_id;
+        }
+    };
+
+    module.AttributeTrans.prototype.compile = function(el, text) {
+        var result = [];
+        // can use cached_tokenize to speed up rendering slightly later
+        var tokens = cached_tokenize(text);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                var name_formatter = split_name_formatter(el, token.value);
+                var variable = this.variables[name_formatter.name];
+                if (variable !== undefined &&
+                    variable.full_name !== token.value) {
+                    throw new module.CompilationError(
+                        el, ("same variables in translation " +
+                             "must all use same formatter"));
+                }
+                this.variables[name_formatter.name] = new module.Variable(
+                    el, token.value);
+                result.push('{' + name_formatter.name + '}');
+            } else {
+                result.push(token.value);
+            }
+        }
+        var message_id = result.join('');
+        this.validate_message_id(el, message_id);
+        this.message_id = message_id;
+    };
+    
+    module.AttributeTrans.prototype.validate_message_id = function(
+        el, message_id) {
+        if (message_id === '') {
+            throw new module.CompilationError(
+                el, "data-trans used on attribute with no text to translate");
+        }
+        var name_tokens = check_message_id(message_id);
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
+        }
+        // if we find no or only a single name token, we consider this
+        // an error. more than one name tokens are considered translatable,
+        // at least in their order
+        if (name_tokens <= 1) {
+            throw new module.CompilationError(
+                el, "data-trans used on attribute with no text to translate");
+        }
+    };
+
+    module.AttributeTrans.prototype.get_variable = function(el, scope,
+                                                            context, name) {
+        var variable = this.variables[name];
+        if (variable === undefined) {
+            throw new module.RenderError(
+                el, "unknown variable in translation: " + name);   
+        }
+        return variable.render(el, scope, context);
+    };
+    
+    module.AttributeTrans.prototype.render = function(el, scope, context,
+                                                      translation) {
+        var result = [];
+
+        var tokens = cached_tokenize(translation);
+        
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.TEXT_TOKEN) {
+                result.push(token.value);
+            } else if (token.type === module.NAME_TOKEN) {
+                result.push(this.get_variable(el, scope, context,
+                                              token.value));
+            }
+        }
+        return result.join('');
+    };
+    
+    
     module.ContentTrans = function(el, message_id, directive_name) {
         this.message_id = null;
         this.tvars = {};
@@ -836,7 +921,7 @@ obviel.template = {};
             throw new module.CompilationError(
                 el, "data-trans used on element with no text to translate");
         }
-        var name_tokens = this.check_message_id(message_id);
+        var name_tokens = check_message_id(message_id);
         // we have found non-empty text tokens we can translate them
         if (name_tokens === null) {
             return;
@@ -850,8 +935,9 @@ obviel.template = {};
         }
     };
     
-    module.ContentTrans.prototype.check_message_id = function(message_id) {
-        var tokens = module.tokenize(message_id);
+    var check_message_id = function(message_id) {
+        // cache the tokens so we get things faster during rendering time
+        var tokens = cached_tokenize(message_id);
         var name_tokens = 0;
         for (var i in tokens) {
             var token = tokens[i];
@@ -977,8 +1063,6 @@ obviel.template = {};
     
     module.ContentTrans.prototype.render = function(el, scope, context,
                                                     translation) {
-        var result = [];
-
         var tokens = cached_tokenize(translation);
 
         var frag = document.createDocumentFragment();
@@ -1127,28 +1211,13 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
-            var dynamic_text = new module.DynamicText(el, attr.value);
-            var attr_info = this.trans_info.attributes[attr.name];
-            if (dynamic_text.is_dynamic() || attr_info !== undefined) {
-                if (attr.name === 'id') {
-                    throw new module.CompilationError(
-                        el, ("not allowed to use variables (or translation) " +
-                             "in id attribute. use data-id instead"));
-                }
-                if (attr_info !== undefined) {
-                    var message_id = attr_info.message_id;
-                    if (message_id === null) {
-                        message_id = attr.value;
-                    }
-                    attr_text = new module.AttributeText(
-                        dynamic_text, message_id);
-                } else {
-                    attr_text = new module.AttributeText(
-                        dynamic_text, null);
-                }
-                this.attr_texts[attr.name] = attr_text;
-                this._dynamic = true;
+            attr_text = new module.AttributeText(el, attr.name, attr.value,
+                                                 this.trans_info);
+            if (!attr_text.is_dynamic()) {
+                continue;
             }
+            this.attr_texts[attr.name] = attr_text;
+            this._dynamic = true;
         }
     };
     
@@ -1413,9 +1482,40 @@ obviel.template = {};
         el.appendChild(node);
     };
     
-    module.AttributeText = function(dynamic, message_id) {
-        this.dynamic = dynamic;
-        this.message_id = message_id;
+    module.AttributeText = function(el, name, value, trans_info) {
+        this.name = name;
+        this.value = value;
+        this.trans_info = trans_info;
+        this.dynamic_text = null;
+        this.attr_trans = null;
+        this._dynamic = false;
+        this.compile(el, name, value, trans_info);
+    };
+
+    module.AttributeText.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };
+ 
+    module.AttributeText.prototype.compile = function(el) {
+        var dynamic_text = new module.DynamicText(el, this.value);
+        var attr_info = this.trans_info.attributes[this.name];
+        // if there's nothing dynamic nor anything to translate,
+        // we don't have a dynamic attribute at all
+        if (!dynamic_text.is_dynamic() && attr_info === undefined) {
+            return;
+        }
+        if (this.name === 'id') {
+            throw new module.CompilationError(
+                el, ("not allowed to use variables (or translation) " +
+                     "in id attribute. use data-id instead"));
+        }
+        this.dynamic_text = dynamic_text;
+       
+        if (attr_info !== undefined) {
+            this.attr_trans = new module.AttributeTrans(el, this.value,
+                                                        attr_info.message_id);
+        }
+        this._dynamic = true;
     };
 
     module.AttributeText.prototype.render = function(el, scope, context) {
@@ -1424,35 +1524,16 @@ obviel.template = {};
         // fast path without translations
         if (get_translation === undefined ||
             get_translation === null ||
-            this.message_id === null) {
-            return this.dynamic.render(el, scope, context);
+            this.attr_trans === null) {
+            return this.dynamic_text.render(el, scope, context);
         }
-        var translation = get_translation(this.message_id);
-        if (translation === this.message_id) {
+        var translation = get_translation(this.attr_trans.message_id);
+        if (translation === this.attr_trans.message_id) {
             // if translation is original message id, we can use fast path
-            return this.dynamic.render(el, scope, context);
+            return this.dynamic_text.render(el, scope, context);
         }
         // we need to translate and reorganize sub elements
-        return this.render_trans(el, scope, translation);
-    };
-
-    module.AttributeText.prototype.render_trans = function(
-        el, scope, translation) {
-        var result = [];
-        
-        var tokens = cached_tokenize(translation);
-
-        // prepare what to put in place, including possibly
-        // shifting tvar nodes
-        for (var i in tokens) {
-            var token = tokens[i];
-            if (token.type === module.TEXT_TOKEN) {
-                result.push(token.value);
-            } else if (token.type === module.NAME_TOKEN) {
-                result.push(scope.resolve(token.value));
-            }
-        }
-        return result.join('');
+        return this.attr_trans.render(el, scope, context, translation);
     };
 
     var split_name_formatters = function(el, text) {
@@ -1492,7 +1573,7 @@ obviel.template = {};
         
         this.get_value = module.resolve_func(r.name);
     };
-    
+        
     module.Variable.prototype.render = function(el, scope, context) {
         var result = this.get_value(scope);
         if (result === undefined) {
