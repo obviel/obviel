@@ -786,7 +786,15 @@ obviel.template = {};
     };
     
     module.AttributeTrans.prototype.render = function(el, scope, context,
-                                                      translation) {
+                                                      render_notrans) {
+        var get_translation = context.get_translation;
+
+        var translation = context.get_translation(this.message_id);
+        if (translation === this.message_id) {
+            // if translation is original message id, we can use fast path
+            return render_notrans(el, scope, context);
+        }
+        
         var result = [];
 
         var tokens = cached_tokenize(translation);
@@ -803,7 +811,39 @@ obviel.template = {};
         return result.join('');
     };
     
+
+    // module.PluralAttributeTrans = function() {
+        
+    // };
+
+    // module.PluralAttributeTrans.prototype.render = function(
+    //     el, scope, context) {
+    //     var count = this.get_count();
+    //     if (count === null) {
+    //         throw new module.RenderError(
+    //             el, ("count variable in plural section " +
+    //                  "for attribute was not an integer"));
+    //     }
+    //     if (count === 1) {
+    //         return this.singular_trans.render(el, scope, context);
+    //     } else {
+    //         return this.plural_trans.render(el, scope, context);
+    //     }
+    // };
     
+    // module.Plural = function(el) {
+    //     this.singular_trans = null;
+    //     this.plural_trans = null;
+    //     this.count_variable = null;
+    // };
+
+    // module.Plural.prototype.render = function(el, scope, context) {
+    //     context.get_plural(this.singalar_trans.message_id,
+    //                        this.plural_trans.message_id,
+    //                        scope.resolve(this.count_variable));
+        
+    // };
+
     module.ContentTrans = function(el, message_id, directive_name) {
         this.message_id = null;
         this.tvars = {};
@@ -1062,7 +1102,20 @@ obviel.template = {};
     };
     
     module.ContentTrans.prototype.render = function(el, scope, context,
-                                                    translation) {
+                                                    render_notrans) {
+        var message_id = this.message_id;
+        var translation = message_id;
+        var get_translation = context.get_translation;
+        if (get_translation !== null && get_translation !== undefined) {
+            translation = get_translation(message_id);
+        }
+
+        if (translation === message_id) {
+            render_notrans(el, scope, context);
+            this.render_tvars(el, scope, context);
+            return;
+        }
+        
         var tokens = cached_tokenize(translation);
 
         var frag = document.createDocumentFragment();
@@ -1093,19 +1146,7 @@ obviel.template = {};
             info.dynamic.render(children[info.index], scope, context);
         }
     };
-    
-    // module.Plural = function(el) {
-    //     this.singular_trans = null;
-    //     this.plural_trans = null;
-    //     this.count_variable = null;
-    // };
 
-    // module.Plural.prototype.render = function(el, scope, context) {
-    //     context.get_plural(this.singalar_trans.message_id,
-    //                        this.plural_trans.message_id,
-    //                        scope.resolve(this.count_variable));
-        
-    // };
     
     
     module.DynamicElement = function(el, allow_tvar) {
@@ -1330,6 +1371,8 @@ obviel.template = {};
     };
     
     module.DynamicElement.prototype.render = function(el, scope, context) {
+        var self = this;
+        
         for (var key in this.attr_texts) {
             var value = this.attr_texts[key];
             var text = value.render(el, scope, context);
@@ -1343,23 +1386,11 @@ obviel.template = {};
             return;
         }
 
-        var message_id = this.content_trans.message_id;
-        var translation = message_id;
-        var get_translation = context.get_translation;
-        if (get_translation !== null &&
-            get_translation !== undefined) {
-            translation = get_translation(message_id);
-        }
-        
-        if (translation === message_id) {
-            // if translation is original message id, we can use fast path
-            this.render_notrans(el, scope, context);
-            // but we do need to render tvars
-            this.content_trans.render_tvars(el, scope, context);
-            this.finalize_render(el, scope, context);
-            return;
-        }
-        this.content_trans.render(el, scope, context, translation);
+        this.content_trans.render(
+            el, scope, context,
+            function(el, scope, context) {
+                self.render_notrans(el, scope, context);
+            });
         this.finalize_render(el, scope, context);
     };
 
@@ -1519,21 +1550,18 @@ obviel.template = {};
     };
 
     module.DynamicAttribute.prototype.render = function(el, scope, context) {
-        var get_translation = context.get_translation;
-        
+        var self = this;
         // fast path without translations
-        if (get_translation === undefined ||
-            get_translation === null ||
+        if (context.get_translation === undefined ||
+            context.get_translation === null ||
             this.attr_trans === null) {
             return this.dynamic_text.render(el, scope, context);
         }
-        var translation = get_translation(this.attr_trans.message_id);
-        if (translation === this.attr_trans.message_id) {
-            // if translation is original message id, we can use fast path
-            return this.dynamic_text.render(el, scope, context);
-        }
-        // we need to translate and reorganize sub elements
-        return this.attr_trans.render(el, scope, context, translation);
+        return this.attr_trans.render(
+            el, scope, context,
+            function(el, scope, context) {
+                return self.dynamic_text.render(el, scope, context);
+            });
     };
 
     var split_name_formatters = function(el, text) {
