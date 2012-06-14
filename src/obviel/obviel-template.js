@@ -719,19 +719,20 @@ obviel.template = {};
         }
     };
 
-    module.AttributeTrans = function(el, text, message_id) {
+    module.AttributeTrans = function(el, name, value, message_id) {
         this.message_id = null;
         this.variables = {};
-        this.compile(el, text);
+        this.name = name;
+        this.compile(el, value);
         if (message_id !== null) {
             this.message_id = message_id;
         }
     };
 
-    module.AttributeTrans.prototype.compile = function(el, text) {
+    module.AttributeTrans.prototype.compile = function(el, value) {
         var result = [];
         // can use cached_tokenize to speed up rendering slightly later
-        var tokens = cached_tokenize(text);
+        var tokens = cached_tokenize(value);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
@@ -784,17 +785,9 @@ obviel.template = {};
         }
         return variable.render(el, scope, context);
     };
-    
-    module.AttributeTrans.prototype.render = function(el, scope, context,
-                                                      render_notrans) {
-        var get_translation = context.get_translation;
 
-        var translation = context.get_translation(this.message_id);
-        if (translation === this.message_id) {
-            // if translation is original message id, we can use fast path
-            return render_notrans(el, scope, context);
-        }
-        
+    module.AttributeTrans.prototype.render_translation = function(
+        el, scope, context, translation) {
         var result = [];
 
         var tokens = cached_tokenize(translation);
@@ -808,28 +801,24 @@ obviel.template = {};
                                               token.value));
             }
         }
-        return result.join('');
+        return result.join('');        
     };
     
+    module.AttributeTrans.prototype.render = function(el, scope, context,
+                                                      render_notrans) {
+        var get_translation = context.get_translation;
 
-    // module.PluralAttributeTrans = function() {
-        
-    // };
+        var translation = context.get_translation(this.message_id);
+        if (translation === this.message_id) {
+            // if translation is original message id, we can use fast path
+            render_notrans(el, scope, context);
+        }
 
-    // module.PluralAttributeTrans.prototype.render = function(
-    //     el, scope, context) {
-    //     var count = this.get_count();
-    //     if (count === null) {
-    //         throw new module.RenderError(
-    //             el, ("count variable in plural section " +
-    //                  "for attribute was not an integer"));
-    //     }
-    //     if (count === 1) {
-    //         return this.singular_trans.render(el, scope, context);
-    //     } else {
-    //         return this.plural_trans.render(el, scope, context);
-    //     }
-    // };
+        el.setAttribute(
+            this.name,
+            this.render_translation(el, scope, context, translation));
+    };
+    
     
     // module.Plural = function(el) {
     //     this.singular_trans = null;
@@ -850,6 +839,7 @@ obviel.template = {};
         this.variables = {};
         this.directive_name = directive_name;
         this.compile(el);
+        this.plural = false;
         if (message_id !== null) {
             this.message_id = message_id;
         }
@@ -927,6 +917,10 @@ obviel.template = {};
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
+                if (token.value === '|') {
+                    this.plural = true;
+                    break;
+                }
                 var name_formatter = split_name_formatter(node, token.value);
                 var variable = this.variables[name_formatter.name];
                 if (variable !== undefined &&
@@ -1100,22 +1094,9 @@ obviel.template = {};
         }
         return this.get_variable_node(el, scope, context, name);
     };
-    
-    module.ContentTrans.prototype.render = function(el, scope, context,
-                                                    render_notrans) {
-        var message_id = this.message_id;
-        var translation = message_id;
-        var get_translation = context.get_translation;
-        if (get_translation !== null && get_translation !== undefined) {
-            translation = get_translation(message_id);
-        }
 
-        if (translation === message_id) {
-            render_notrans(el, scope, context);
-            this.render_tvars(el, scope, context);
-            return;
-        }
-        
+    module.ContentTrans.prototype.render_translation = function(
+        el, scope, context, translation) {
         var tokens = cached_tokenize(translation);
 
         var frag = document.createDocumentFragment();
@@ -1137,7 +1118,24 @@ obviel.template = {};
         // move new contents in place
         el.appendChild(frag);
     };
+    
+    module.ContentTrans.prototype.render = function(el, scope, context,
+                                                    render_notrans) {
+        var message_id = this.message_id;
+        var translation = message_id;
+        var get_translation = context.get_translation;
+        if (get_translation !== null && get_translation !== undefined) {
+            translation = get_translation(message_id);
+        }
 
+        if (translation === message_id) {
+            render_notrans(el, scope, context);
+            this.render_tvars(el, scope, context);
+            return;
+        }
+        
+        this.render_translation(el, scope, context, translation);
+    };
 
     module.ContentTrans.prototype.render_tvars = function(el, scope, context) {
         var children = el.childNodes;
@@ -1148,6 +1146,52 @@ obviel.template = {};
     };
 
     
+    module.PluralTrans = function(el) {
+        
+    };
+
+    module.PluralTrans.prototype.render = function(
+        el, scope, context, render_notrans) {
+        var count = this.get_count();
+        if (count === null) {
+            throw new module.RenderError(
+                el, ("count variable in plural section " +
+                     "was not an integer"));
+        }
+        var translation = context.get_plural_translation(
+            this.singular_trans.message_id,
+            this.plural_trans.message_id,
+            count);
+        if (translation === this.singular_trans.message_id) {
+            this.singular_trans.render_translation(el, scope, context,
+                                                   translation);
+        } else {
+            this.plural_trans.render_translation(el, scope, context,
+                                                 translation);
+        }
+    };
+
+    // module.PluralContentTrans.prototype.render = function(
+    //     el, scope, context, render_notrans) {
+    //     var count = this.get_count();
+    //     if (count === null) {
+    //         throw new module.RenderError(
+    //             el, ("count variable in plural section " +
+    //                  "for element content was not an integer"));
+    //     }
+    //     var translation = context.get_plural_translation(
+    //         this.singular_trans.message_id,
+    //         this.plural_trans.message_id,
+    //         count);
+    //     if (translation === this.singular_trans.message_id) {
+    //         this.singular_trans.render_translation(el, scope, context,
+    //                                                translation);
+    //     } else {
+    //         this.plural_trans.render_translation(el, scope, context,
+    //                                              translation);
+    //     }
+    // };
+
     
     module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
@@ -1374,10 +1418,9 @@ obviel.template = {};
         var self = this;
         
         for (var key in this.attr_texts) {
-            var value = this.attr_texts[key];
-            var text = value.render(el, scope, context);
-            el.setAttribute(key, text);
+            this.attr_texts[key].render(el, scope, context);
         };
+        
         // fast path without translations; elements do not need to be
         // reorganized
         if (this.content_trans === null) {
@@ -1543,25 +1586,34 @@ obviel.template = {};
         this.dynamic_text = dynamic_text;
        
         if (attr_info !== undefined) {
-            this.attr_trans = new module.AttributeTrans(el, this.value,
-                                                        attr_info.message_id);
+            this.attr_trans = new module.AttributeTrans(
+                el, this.name, this.value, attr_info.message_id);
         }
         this._dynamic = true;
     };
-
+    
+    
     module.DynamicAttribute.prototype.render = function(el, scope, context) {
         var self = this;
         // fast path without translations
         if (context.get_translation === undefined ||
             context.get_translation === null ||
             this.attr_trans === null) {
-            return this.dynamic_text.render(el, scope, context);
+            this.render_notrans(el, scope, context);
+            return;
         }
-        return this.attr_trans.render(
+        this.attr_trans.render(
             el, scope, context,
             function(el, scope, context) {
-                return self.dynamic_text.render(el, scope, context);
+                self.render_notrans(el, scope, context);
             });
+    };
+    
+    module.DynamicAttribute.prototype.render_notrans = function(
+        el, scope, context) {
+        el.setAttribute(this.name,
+                        this.dynamic_text.render(el, scope, context));
+        
     };
 
     var split_name_formatters = function(el, text) {
