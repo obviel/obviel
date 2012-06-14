@@ -372,7 +372,7 @@ obviel.template = {};
             finder: this.get_el_finder(el),
             dynamic_element: dynamic_element
         });
-        return dynamic_element.message_id !== null;
+        return dynamic_element.content_trans !== null;
     };
     
     module.Section.prototype.register_on_el = function(el, f) {
@@ -647,88 +647,225 @@ obviel.template = {};
             value.sub_section.render(sub_section_el, scope, context);
         }
     };
-    
-    module.DynamicElement = function(el, allow_tvar) {
-        this.attr_texts = {};
-        this.content_texts = [];
-        this.handlers = [];
-        this.message_id = null;
-        this.func_name = null;
-        this.tvars = {};
-        this.trans_variables = {};
-        this.has_data_attr = false;
-        this._dynamic = false;
-        this.compile(el, allow_tvar);
+
+    module.TransInfo = function(el) {
+        this.content = null;
+        this.attributes = {};
+        this.any_translations = false;
+        this.compile(el);
     };
 
-    module.DynamicElement.prototype.is_dynamic = function() {
-        return this._dynamic;
-    };   
-
-    var TransInfo = function(content_id, message_id) {
-        this.content_id = content_id;
-        this.message_id = message_id;
-    };
-
-    var parse_trans_info_part = function(el, text) {
+    module.TransInfo.prototype.compile_part = function(el, text) {
         var parts = text.split(':');
+        // there is nothing to translate
         if (parts.length === 1) {
-            return new TransInfo(parts[0], null);
-        } else if (parts.length > 2) {
+            return {id: parts[0], message_id: null};
+        }
+        // too many :
+        if (parts.length > 2) {
             throw new module.CompilationError(
                 el, "illegal content in data-trans");
         }
-        
+        // we are referring to the text if we have no actual
+        // content identifier
         if (parts[0] === '') {
-            return new TransInfo('.', parts[1]);
+            return {id: '.', message_id: parts[1]};
         }
+        // we really do want to have the attribute we are trying to translate
         if (parts[0] !== '.' && !el.hasAttribute(parts[0])) {
             throw new module.CompilationError(
                 el, "data-trans refers to a non-existent attribute");
         }
-        return new TransInfo(parts[0], parts[1]);
+        return {id: parts[0], message_id: parts[1]};
     };
-    
-    var parse_trans_info = function(el, trans) {
-        if (trans === null) {
-            return {
-                text: null,
-                attributes: {},
-                any_translations: false
-            };
+
+    module.TransInfo.prototype.compile = function(el) {
+        var data_trans = null;
+        if (el.hasAttribute('data-trans')) {
+            data_trans = el.getAttribute('data-trans');
+            el.removeAttribute('data-trans');
         }
+            
+        if (data_trans === null) {
+            return;
+        }
+        
+        data_trans = trim(data_trans);
+        
         // empty string will mean translating text content only
-        if (trim(trans) === '') {
-            return {
-                text: new TransInfo('.', null),
-                attributes: {},
-                any_translations: true
-            };
+        if (data_trans === '') {
+            this.content = {id: '.', message_id: null};
+            this.attributes = {};
+            this.any_translations = true;
+            return;
         }
         
         // split with space character
-        var parts = trans.split(' ');
-        var result = {
-            text: null,
-            attributes: {},
-            any_translations: false
-        };
+        var parts = data_trans.split(' ');
         
         for (var i in parts) {
             var part = trim(parts[i]);
             if (part === '') {
                 continue;
             }
-            var trans_info = parse_trans_info_part(el, part);
-            if (trans_info.content_id === '.') {
-                result.text = trans_info;
-                result.any_translations = true;
+            var trans_info = this.compile_part(el, part);
+            if (trans_info.id === '.') {
+                this.content = trans_info;
+                this.any_translations = true;
             } else {
-                result.attributes[trans_info.content_id] = trans_info;
-                result.any_translations = true;
+                this.attributes[trans_info.id] = trans_info;
+                this.any_translations = true;
             }
         }
-        return result;
+    };
+
+    module.ContentTrans = function(el, message_id, directive_name) {
+        this.message_id = null;
+        this.tvars = {};
+        this.variables = {};
+        this.directive_name = directive_name;
+        this.compile(el);
+        if (message_id !== null) {
+            this.message_id = message_id;
+        }
+    };
+    
+    module.ContentTrans.prototype.compile = function(el) {
+        var parts = [];
+        var tvar_info = null;
+        var children = el.childNodes;
+        var j = 0;
+        for (var i = 0; i < children.length; i++) {
+            var node = children[i];
+            if (node.nodeType === 3) {
+                // TEXT_NODE
+                var text = this.compile_text(node);
+                parts.push(text);
+            } else if (node.nodeType === 1) {
+                // ELEMENT NODE
+                this.check_data_trans_restrictions(node);
+                tvar_info = this.compile_tvar(node);                
+                parts.push("{" + tvar_info.tvar + "}");
+                this.tvars[tvar_info.tvar] = {
+                    index: i,
+                    dynamic: new module.DynamicElement(node, true),
+                    view: tvar_info.view
+                };
+            }
+            // COMMENT_NODE
+            // no need to do anything, index for tvars will be correct
+            // CDATA_SECTION_NODE
+            // browser differences are rather severe, we just
+            // don't support this in output as it's of a limited utility
+            // see also:
+            // http://reference.sitepoint.com/javascript/CDATASection
+            // PROCESSING_INSTRUCTION_NODE
+            // we also don't support processing instructions in any
+            // consistent way; again they have limited utility
+        }
+
+        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+        // occur under elements
+        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+        // be merged with text nodes
+        var message_id = parts.join('');
+
+        this.validate_message_id(el, message_id);
+
+        this.message_id = message_id;            
+    };
+    
+    module.ContentTrans.prototype.check_data_trans_restrictions = function(
+        el) {
+        if (el.hasAttribute('data-if')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-if may not be used");
+        }
+        if (el.hasAttribute('data-with')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-with may not be used");
+        }
+        if (el.hasAttribute('data-each')) {
+            throw new module.CompilationError(
+                el,
+                "inside data-trans element data-each may not be used");
+        }
+    };
+    
+    module.ContentTrans.prototype.compile_text = function(node) {
+        // need to extract all variables for tvar uniqueness checking
+        var result = [];
+        var tokens = module.tokenize(node.nodeValue);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                var name_formatter = split_name_formatter(node, token.value);
+                var variable = this.variables[name_formatter.name];
+                if (variable !== undefined &&
+                    variable.full_name !== token.value) {
+                    throw new module.CompilationError(
+                        node, ("same variables in translation " +
+                               "must all use same formatter"));
+                }
+                this.variables[name_formatter.name] = new module.Variable(
+                    node.parentNode, token.value);
+                if (this.tvars[name_formatter.name] !== undefined) {
+                    throw new module.CompilationError(
+                        node, "data-tvar must be unique within " +
+                            this.directive_name + ":" +
+                            token.value);
+                }
+                result.push('{' + name_formatter.name + '}');
+            } else {
+                result.push(token.value);
+            }
+        }
+        return result.join('');
+    };
+    
+    module.ContentTrans.prototype.validate_message_id = function(
+        el, message_id) {
+        // data-tvar doesn't need any of these checks
+        if (this.directive_name === 'data-tvar') {
+            return;
+        }
+        if (message_id === '') {
+            throw new module.CompilationError(
+                el, "data-trans used on element with no text to translate");
+        }
+        var name_tokens = this.check_message_id(message_id);
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
+        }
+        // if we find no or only a single name token, we consider this
+        // an error. more than one name tokens are considered translatable,
+        // at least in their order
+        if (name_tokens <= 1) {
+            throw new module.CompilationError(
+                el, "data-trans used on element with no text to translate");
+        }
+    };
+    
+    module.ContentTrans.prototype.check_message_id = function(message_id) {
+        var tokens = module.tokenize(message_id);
+        var name_tokens = 0;
+        for (var i in tokens) {
+            var token = tokens[i];
+            // if we run into any non-whitespace text token at all,
+            // we assume we have something to translate
+            if (token.type === module.TEXT_TOKEN) {
+                if (trim(token.value) !== '') {
+                    return null;
+                }
+            } else if (token.type === module.NAME_TOKEN) {
+                name_tokens++;
+            }
+        }
+        return name_tokens;
     };
 
     var parse_tvar = function(el, tvar) {
@@ -751,14 +888,162 @@ obviel.template = {};
         };
     };
     
-    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
-        var data_trans = null;
-        if (el.hasAttribute('data-trans')) {
-            data_trans = el.getAttribute('data-trans');
+    module.ContentTrans.prototype.implicit_tvar = function(node, view) {
+        if (view !== null) {
+            // data-view exists on element, use name as tvar name
+            return view.obj_name;
         }
-        var trans_info = parse_trans_info(el, data_trans);
+        // only if we have a single text child node that is a variable
+        // by itself do we have an implicit tvar
+        if (node.childNodes.length !== 1) {
+            return null;   
+        }
+        if (node.childNodes[0].nodeType !== 3) {
+            return null;
+        }
+        var tokens = module.tokenize(node.childNodes[0].nodeValue);
 
-        this.compile_attr_texts(el, trans_info.attributes);
+        if (tokens.length !== 1 || tokens[0].type !== module.NAME_TOKEN) {
+            return null;
+        }
+        var name_formatter = split_name_formatter(node, tokens[0].value);
+        return name_formatter.name;
+    };
+
+    module.ContentTrans.prototype.compile_tvar = function(el) {
+        var tvar = null;
+        if (el.hasAttribute('data-tvar')) {
+            tvar = el.getAttribute('data-tvar');
+        }
+        if (tvar !== null) {
+            var tvar_info = parse_tvar(el, tvar);
+            tvar = tvar_info.tvar;
+        }
+        var view = null;
+        if (el.hasAttribute('data-view')) {
+            view = new module.ViewElement(el);
+        }
+        if (tvar === null) {
+            tvar = this.implicit_tvar(el, view);
+            if (tvar === null) {
+                throw new module.CompilationError(
+                    el, this.directive_name + " element has sub-elements " +
+                        "that are not marked with data-tvar");
+            }
+        }
+        
+        if (this.tvars[tvar] !== undefined ||
+            this.variables[tvar] !== undefined) {
+            throw new module.CompilationError(
+                el, "data-tvar must be unique within " +
+                    this.directive_name + ": " + tvar);
+        }
+        return {tvar: tvar, view: view};
+    };
+
+    module.ContentTrans.prototype.get_tvar_node = function(
+        el, scope, context, name) {
+        var tvar_info = this.tvars[name];
+        if (tvar_info === undefined) {
+            return null;
+        }
+        var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
+        tvar_info.dynamic.render(tvar_node, scope, context);
+        if (tvar_info.view !== null) {
+            tvar_info.view.render(tvar_node, scope, context);
+        }
+        return tvar_node;
+    };
+
+    module.ContentTrans.prototype.get_variable_node = function(
+        el, scope, context, name) {
+        var variable = this.variables[name];
+        if (variable === undefined) {
+            throw new module.RenderError(
+                el, "unknown variable in translation: " + name);   
+        }
+        return document.createTextNode(variable.render(el, scope, context));
+    };
+
+    module.ContentTrans.prototype.get_node = function(
+        el, scope, context, name) {
+        var tvar_node = this.get_tvar_node(el, scope, context,
+                                           name);
+        if (tvar_node !== null) {
+            return tvar_node;
+        }
+        return this.get_variable_node(el, scope, context, name);
+    };
+    
+    module.ContentTrans.prototype.render = function(el, scope, context,
+                                                    translation) {
+        var result = [];
+
+        var tokens = cached_tokenize(translation);
+
+        var frag = document.createDocumentFragment();
+        
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.TEXT_TOKEN) {
+                frag.appendChild(document.createTextNode(token.value));
+            } else if (token.type === module.NAME_TOKEN) {
+                frag.appendChild(this.get_node(el, scope, context,
+                                               token.value));
+            }
+        }
+
+        // remove any previous contents
+        while (el.hasChildNodes()) {
+            el.removeChild(el.firstChild);
+        }
+        // move new contents in place
+        el.appendChild(frag);
+    };
+
+
+    module.ContentTrans.prototype.render_tvars = function(el, scope, context) {
+        var children = el.childNodes;
+        for (key in this.tvars) {
+            var info = this.tvars[key];
+            info.dynamic.render(children[info.index], scope, context);
+        }
+    };
+    
+    // module.Plural = function(el) {
+    //     this.singular_trans = null;
+    //     this.plural_trans = null;
+    //     this.count_variable = null;
+    // };
+
+    // module.Plural.prototype.render = function(el, scope, context) {
+    //     context.get_plural(this.singalar_trans.message_id,
+    //                        this.plural_trans.message_id,
+    //                        scope.resolve(this.count_variable));
+        
+    // };
+    
+    
+    module.DynamicElement = function(el, allow_tvar) {
+        this.attr_texts = {};
+        this.content_texts = [];
+        this.handlers = [];
+        this.content_trans = null;
+        this.func_name = null;
+        this.has_data_attr = false;
+        this._dynamic = false;
+        this.trans_info = null;
+        this.compile(el, allow_tvar);
+    };
+
+    module.DynamicElement.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };   
+    
+    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
+        this.trans_info = new module.TransInfo(el);
+        
+        this.compile_attr_texts(el);
         this.compile_content_texts(el);
         this.compile_data_handler(el);
         this.compile_func(el);
@@ -766,55 +1051,53 @@ obviel.template = {};
         this.compile_data_el(el);
         this.compile_data_attr(el);
         this.compile_data_unwrap(el);
-        
-        if (trans_info.text !== null) {
-            this._dynamic = true;
-            this.compile_trans(el);
-            this.validate_trans_message_id(el, this.message_id);
-            // override with manually specified message id if necessary
-            if (trans_info.text.message_id !== null) {
-                this.message_id = trans_info.text.message_id;
-            }
+        this.compile_data_trans_content(el);
+        this.compile_data_tvar_content(el, allow_tvar);
+    };
+
+    module.DynamicElement.prototype.compile_data_trans_content = function(el) {
+        if (this.trans_info.content === null) {
+            return;
         }
-        if (trans_info.text !== null && el.hasAttribute('data-view')) {
+        // XXX what about data-attr, data-unwrap, data-el, data-func?
+        if (el.hasAttribute('data-view')) {
             throw new module.CompilationError(
                 el,
                 "data-view not allowed when content is marked with data-trans");
         }
-        if (trans_info.any_translations) {
-            el.removeAttribute('data-trans');
-        }
-        var data_tvar = null;
-        if (el.hasAttribute('data-tvar')) {
-            data_tvar = el.getAttribute('data-tvar');
-        }
-        if (data_tvar !== null) {
-            if (!allow_tvar) {
-                throw new module.CompilationError(
-                    el, ("data-tvar is not allowed outside data-trans or " +
-                         "other data-tvar"));
-            }
-            if (trans_info.text) {
-                throw new module.CompilationError(
-                    el, ("data-trans for non-attribute content and " +
-                         "data-tvar cannot be both on same element"));
-            }
-            var tvar_info = parse_tvar(el, data_tvar);
-            this._dynamic = true;
-            this.compile_trans(el);
-            this.validate_tvar_message_id(el, this.message_id);
-            if (tvar_info.message_id !== null) {
-                this.message_id = tvar_info.message_id;
-            }
-            // we can accept empty tvar message ids; we simply don't
-            // translate the contents in that case
-            if (this.message_id === '') {
-                this.message_id = null;
-            }
-            el.removeAttribute('data-tvar');
-        }
+        
+        this._dynamic = true;
+        this.content_trans = new module.ContentTrans(
+            el, this.trans_info.content.message_id, 'data-trans');
     };
 
+    module.DynamicElement.prototype.compile_data_tvar_content = function(
+        el, allow_tvar) {
+        var data_tvar = get_directive(el, 'data-tvar');
+        if (data_tvar === null) {
+            return;
+        }
+        if (!allow_tvar) {
+            throw new module.CompilationError(
+                el, ("data-tvar is not allowed outside data-trans or " +
+                     "other data-tvar"));
+        }
+        if (this.trans_info.content !== null) {
+            throw new module.CompilationError(
+                el, ("data-trans for non-attribute content and " +
+                     "data-tvar cannot be both on same element"));
+        }
+        this._dynamic = true;
+        var tvar_info = parse_tvar(el, data_tvar);
+        this.content_trans = new module.ContentTrans(
+            el, tvar_info.message_id, 'data-tvar');
+        // data-tvar accepts empty message ids and doesn't try
+        // translating in this case
+        if (this.content_trans.message_id === '') {
+            this.content_trans = null;
+        }
+    };
+    
     // IE does URL expansion in href attributes, causing us to
     // introduce this ugly hack to work around it. jQuery uses
     // getAttribute(name, 2) in such cases, but that doesn't work
@@ -834,8 +1117,7 @@ obviel.template = {};
     //     return value;
     // };
     
-    module.DynamicElement.prototype.compile_attr_texts = function(
-        el, transinfos) {
+    module.DynamicElement.prototype.compile_attr_texts = function(el) {
         var attr_text;
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
@@ -846,15 +1128,15 @@ obviel.template = {};
                 continue;
             }
             var dynamic_text = new module.DynamicText(el, attr.value);
-            var transinfo = transinfos[attr.name];
-            if (dynamic_text.is_dynamic() || transinfo !== undefined) {
+            var attr_info = this.trans_info.attributes[attr.name];
+            if (dynamic_text.is_dynamic() || attr_info !== undefined) {
                 if (attr.name === 'id') {
                     throw new module.CompilationError(
                         el, ("not allowed to use variables (or translation) " +
                              "in id attribute. use data-id instead"));
                 }
-                if (transinfo !== undefined) {
-                    var message_id = transinfo.message_id;
+                if (attr_info !== undefined) {
+                    var message_id = attr_info.message_id;
                     if (message_id === null) {
                         message_id = attr.value;
                     }
@@ -889,29 +1171,7 @@ obviel.template = {};
             }
         }        
     };
-
-    var implicit_tvar = function(node, view) {
-        if (view !== null) {
-            // data-view exists on element, use name as tvar name
-            return view.obj_name;
-        }
-        // only if we have a single text child node that is a variable
-        // by itself do we have an implicit tvar
-        if (node.childNodes.length !== 1) {
-            return null;   
-        }
-        if (node.childNodes[0].nodeType !== 3) {
-            return null;
-        }
-        var tokens = module.tokenize(node.childNodes[0].nodeValue);
-
-        if (tokens.length !== 1 || tokens[0].type !== module.NAME_TOKEN) {
-            return null;
-        }
-        var name_formatter = split_name_formatter(node, tokens[0].value);
-        return name_formatter.name;
-    };
-
+    
     module.DynamicElement.prototype.compile_data_handler = function(el) {
         var data_handler = get_directive(el, 'data-handler');
         if (data_handler === null) {
@@ -1000,193 +1260,7 @@ obviel.template = {};
         this._dynamic = true;
     };
     
-    module.DynamicElement.prototype.compile_trans_text = function(
-        node) {
-        // need to extract all variables for tvar uniqueness checking
-        var result = [];
-        var tokens = module.tokenize(node.nodeValue);
-        for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i];
-            if (token.type === module.NAME_TOKEN) {
-                var name_formatter = split_name_formatter(node, token.value);
-                var variable = this.trans_variables[name_formatter.name];
-                if (variable !== undefined &&
-                    variable.full_name !== token.value) {
-                    throw new module.CompilationError(
-                        node, ("same variables in translation " +
-                               "must all use same formatter"));
-                }
-                this.trans_variables[name_formatter.name] = new module.Variable(
-                    node.parentNode, token.value);
-                if (this.tvars[name_formatter.name] !== undefined) {
-                    throw new module.CompilationError(
-                        node, "data-tvar must be unique within data-trans: " +
-                            token.value);
-                }
-                result.push('{' + name_formatter.name + '}');
-            } else {
-                result.push(token.value);
-            }
-        }
-        return result.join('');
-    };
-    
-    module.DynamicElement.prototype.check_data_trans_restrictions = function(
-        el) {
-        if (el.hasAttribute('data-if')) {
-            throw new module.CompilationError(
-                el,
-                "inside data-trans element data-if may not be used");
-        }
-        if (el.hasAttribute('data-with')) {
-            throw new module.CompilationError(
-                el,
-                "inside data-trans element data-with may not be used");
-        }
-        if (el.hasAttribute('data-each')) {
-            throw new module.CompilationError(
-                el,
-                "inside data-trans element data-each may not be used");
-        }
-    };
-
-    module.DynamicElement.prototype.compile_tvar = function(el) {
-        var tvar = null;
-        if (el.hasAttribute('data-tvar')) {
-            tvar = el.getAttribute('data-tvar');
-        }
-        if (tvar !== null) {
-            var tvar_info = parse_tvar(el, tvar);
-            tvar = tvar_info.tvar;
-        }
-        var view = null;
-        if (el.hasAttribute('data-view')) {
-            view = new module.ViewElement(el);
-        }
-        if (tvar === null) {
-            tvar = implicit_tvar(el, view);
-            if (tvar === null) {
-                throw new module.CompilationError(
-                    el, "data-trans element has sub-elements " +
-                        "that are not marked with data-tvar");
-            }
-        }
-        
-        if (this.tvars[tvar] !== undefined ||
-            this.trans_variables[tvar] !== undefined) {
-            throw new module.CompilationError(
-                el, "data-tvar must be unique within data-trans: " +
-                    tvar);
-        }
-        return {tvar: tvar, view: view};
-    };
-    
-    module.DynamicElement.prototype.compile_trans = function(el) {
-        var parts = [];
-        var children = el.childNodes;
-        var tvar_info = null;
-        var j = 0;
-        for (var i = 0; i < children.length; i++) {
-            var node = children[i];
-            if (node.nodeType === 3) {
-                // TEXT_NODE
-                var text = this.compile_trans_text(node);
-                parts.push(text);
-            } else if (node.nodeType === 1) {
-                // ELEMENT NODE
-                this.check_data_trans_restrictions(node);
-                tvar_info = this.compile_tvar(node);                
-                parts.push("{" + tvar_info.tvar + "}");
-                this.tvars[tvar_info.tvar] = {
-                    index: i,
-                    dynamic: new module.DynamicElement(node, true),
-                    view: tvar_info.view
-                };
-            } else if (node.nodeType === 8) {
-                // COMMENT_NODE
-                // no need to do anything, index for tvars will be correct
-            } else if (node.nodeType === 4) {
-                // CDATA_SECTION_NODE
-                // browser differences are rather severe, we just
-                // don't support this in output as it's of a limited utility
-                // see also:
-                // http://reference.sitepoint.com/javascript/CDATASection
-            } else if (node.nodeType === 7) {
-                // PROCESSING_INSTRUCDTION_NODE
-                // we also don't support processing instructions in any
-                // consistent way; again they have limited utility
-            }
-        }
-
-        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
-        // occur under elements
-        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
-        // be merged with text nodes
-        var message_id = parts.join('');
-        this.message_id = message_id;
-    };
-
-
-    module.DynamicElement.prototype.check_message_id = function(message_id) {
-        var tokens = module.tokenize(message_id);
-        var name_tokens = 0;
-        for (var i in tokens) {
-            var token = tokens[i];
-            // if we run into any non-whitespace text token at all,
-            // we assume we have something to translate
-            if (token.type === module.TEXT_TOKEN) {
-                if (trim(token.value) !== '') {
-                    return null;
-                }
-            } else if (token.type === module.NAME_TOKEN) {
-                name_tokens++;
-            }
-        }
-        return name_tokens;
-    };
-    
-    module.DynamicElement.prototype.validate_tvar_message_id = function(
-        el, message_id) {
-        // if (message_id === '') {
-        //     throw new module.CompilationError(
-        //         el, "data-tvar used on element with no text to translate");
-        // }
-        // var name_tokens = this.check_message_id(message_id);
-        // // we have found non-empty text tokens we can translate them
-        // if (name_tokens === null) {
-        //     return;
-        // }
-        // // if we have no text tokens and no name tokens at all
-        // // we consider this an error
-        // if (name_tokens === 0) {
-        //     throw new module.CompilationError(
-        //         el, "data-tvar used on element with no text to translate");
-        // }
-    };    
-
-    module.DynamicElement.prototype.validate_trans_message_id = function(
-        el, message_id) {
-        if (message_id === '') {
-            throw new module.CompilationError(
-                el, "data-trans used on element with no text to translate");
-            
-        }
-        var name_tokens = this.check_message_id(message_id);
-        // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
-            return;
-        }
-        // if we find no or only a single name token, we consider this
-        // an error. more than one name tokens are considered translatable,
-        // at least in their order
-        if (name_tokens <= 1) {
-            throw new module.CompilationError(
-                el, "data-trans used on element with no text to translate");
-        }
-    };    
-    
-    module.DynamicElement.prototype.render = function(el, scope, context) {        
+    module.DynamicElement.prototype.render = function(el, scope, context) {
         for (var key in this.attr_texts) {
             var value = this.attr_texts[key];
             var text = value.render(el, scope, context);
@@ -1194,33 +1268,29 @@ obviel.template = {};
         };
         // fast path without translations; elements do not need to be
         // reorganized
-        if (this.message_id === null) {
+        if (this.content_trans === null) {
             this.render_notrans(el, scope, context);
             this.finalize_render(el, scope, context);
             return;
         }
-        
-        var translation = this.message_id;
+
+        var message_id = this.content_trans.message_id;
+        var translation = message_id;
         var get_translation = context.get_translation;
         if (get_translation !== null &&
             get_translation !== undefined) {
-            translation = get_translation(this.message_id);
+            translation = get_translation(message_id);
         }
         
-        if (translation === this.message_id) {
+        if (translation === message_id) {
             // if translation is original message id, we can use fast path
             this.render_notrans(el, scope, context);
-            // but we do need to render any tvars
-            var children = el.childNodes;
-            for (key in this.tvars) {
-                var info = this.tvars[key];
-                info.dynamic.render(children[info.index], scope, context);
-            }
+            // but we do need to render tvars
+            this.content_trans.render_tvars(el, scope, context);
             this.finalize_render(el, scope, context);
             return;
         }
-        // we need to translate and reorganize sub elements
-        this.render_trans(el, scope, context, translation);
+        this.content_trans.render(el, scope, context, translation);
         this.finalize_render(el, scope, context);
     };
 
@@ -1233,63 +1303,6 @@ obviel.template = {};
         }
     };
     
-    module.DynamicElement.prototype.get_tvar_node = function(
-        el, scope, context, name) {
-        var tvar_info = this.tvars[name];
-        if (tvar_info === undefined) {
-            return null;
-        }
-        var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
-        tvar_info.dynamic.render(tvar_node, scope, context);
-        if (tvar_info.view !== null) {
-            tvar_info.view.render(tvar_node, scope, context);
-        }
-        return tvar_node;
-    };
-
-    module.DynamicElement.prototype.get_variable_node = function(
-        el, scope, context, name) {
-        var variable = this.trans_variables[name];
-        if (variable === undefined) {
-            throw new module.RenderError(
-                el, "unknown variable in translation: " + name);   
-        }
-        return document.createTextNode(variable.render(el, scope, context));
-    };
-    
-    module.DynamicElement.prototype.render_trans = function(
-        el, scope, context, translation) {
-        var result = [];
-
-        var tokens = cached_tokenize(translation);
-
-        var frag = document.createDocumentFragment();
-        
-        for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i];
-            if (token.type === module.TEXT_TOKEN) {
-                frag.appendChild(document.createTextNode(token.value));
-            } else if (token.type === module.NAME_TOKEN) {
-                var tvar_node = this.get_tvar_node(el, scope, context,
-                                                   token.value);
-                if (tvar_node !== null) {
-                    frag.appendChild(tvar_node);
-                } else {
-                    frag.appendChild(this.get_variable_node(
-                        el, scope, context, token.value));
-                }
-            }
-        }
-
-        // remove any previous elements
-        while (el.hasChildNodes()) {
-            el.removeChild(el.firstChild);
-        }
-
-        // now move the elements in place
-        el.appendChild(frag);
-    };
-
     module.DynamicElement.prototype.render_data_attr = function(el) {
         if (!this.has_data_attr) {
             return;
@@ -1307,7 +1320,8 @@ obviel.template = {};
         parent.attr(name, value);
     };
 
-    module.DynamicElement.prototype.render_data_handler = function(el, context) {
+    module.DynamicElement.prototype.render_data_handler = function(
+        el, context) {
         if (this.handlers.length === 0) {
             return;
         }
@@ -1318,7 +1332,8 @@ obviel.template = {};
                 throw new module.RenderError(
                     el, "cannot render data-handler for event '" +
                         handler.event_name + "' and handler '" +
-                        handler.handler_name + "' because no get_handler function " +
+                        handler.handler_name +
+                        "' because no get_handler function " +
                         "was supplied");
             }
             var f = context.get_handler(handler.handler_name);

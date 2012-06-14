@@ -1884,6 +1884,61 @@ test('variables', function() {
     equal(obtemp.variables('Hello {who}!', {who: "world"}),
           'Hello world!');
 });
+
+// test("pluralize in text without translation", function() {
+//     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+//                       { 'count': 1}),
+//                '<div>1 elephant</div>');
+//     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+//                       { 'count': 2}),
+//                '<div>2 elephants</div>');
+// });
+
+// test("pluralize in text with translation", function() {
+//     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+//                       { 'count': 1}),
+//                '<div>1 koe</div>');
+//     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+//                       { 'count': 2}),
+//                '<div>2 koeien</div>');
+// });
+
+// test("pluralize in attr without translation", function() {
+//     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
+//                       { 'count': 1}),
+//                '<div title="1 elephant"></div>');
+//     html_equal(render('<div data-trans="title" data-plural="title:count" data-plural="count" title="1 elephant||{count} elephants"></div>',
+//                       { 'count': 2}),
+//                '<div title="2 elephants"></div>');
+// });
+
+// test("pluralize in attr with translation", function() {
+//     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
+//                       { 'count': 1}),
+//                '<div title="1 koe"></div>');
+//     html_equal(render('<div data-trans="title" data-plural="title:count" data-plural="count" title="1 cow||{count} cows"></div>',
+//                       { 'count': 2}),
+//                '<div title="2 koeien"></div>');
+// });
+
+// test("pluralize in text with tvar without translation", function() {
+//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+//                       { 'count': 1}),
+//                '<div><em>1</em> elephant</div>');
+//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+//                       { 'count': 2}),
+//                '<div><em>2</em> elephants</div>');
+// });
+
+// test("pluralize in text with tvar with translation", function() {
+//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+//                       { 'count': 1}),
+//                '<div><em>1</em> koe</div>');
+//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+//                       { 'count': 2}),
+//                '<div><em>2</em> koeien</div>');
+// });
+
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);
