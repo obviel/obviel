@@ -1211,8 +1211,8 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
-            attr_text = new module.AttributeText(el, attr.name, attr.value,
-                                                 this.trans_info);
+            attr_text = new module.DynamicAttribute(el, attr.name, attr.value,
+                                                    this.trans_info);
             if (!attr_text.is_dynamic()) {
                 continue;
             }
@@ -1482,7 +1482,7 @@ obviel.template = {};
         el.appendChild(node);
     };
     
-    module.AttributeText = function(el, name, value, trans_info) {
+    module.DynamicAttribute = function(el, name, value, trans_info) {
         this.name = name;
         this.value = value;
         this.trans_info = trans_info;
@@ -1492,11 +1492,11 @@ obviel.template = {};
         this.compile(el, name, value, trans_info);
     };
 
-    module.AttributeText.prototype.is_dynamic = function() {
+    module.DynamicAttribute.prototype.is_dynamic = function() {
         return this._dynamic;
     };
  
-    module.AttributeText.prototype.compile = function(el) {
+    module.DynamicAttribute.prototype.compile = function(el) {
         var dynamic_text = new module.DynamicText(el, this.value);
         var attr_info = this.trans_info.attributes[this.name];
         // if there's nothing dynamic nor anything to translate,
@@ -1518,7 +1518,7 @@ obviel.template = {};
         this._dynamic = true;
     };
 
-    module.AttributeText.prototype.render = function(el, scope, context) {
+    module.DynamicAttribute.prototype.render = function(el, scope, context) {
         var get_translation = context.get_translation;
         
         // fast path without translations
