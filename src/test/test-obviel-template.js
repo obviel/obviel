@@ -829,6 +829,15 @@ test('data-trans with variable and formatter', function() {
           '<p>FRED, hallo!</p>');
 });
 
+test('data-trans with attribute and formatter', function() {
+    obtemp.register_formatter('upper', function(value) {
+        return value.toUpperCase();
+    });
+    html_equal(render('<p data-trans="title" title="Hello {who|upper}!"></p>',
+                      {who: "Fred"}),
+          '<p title="FRED, hallo!"></p>');
+
+});
 
 test('data-trans with multiple variables and different formatter', function() {
     obtemp.register_formatter('upper', function(value) {

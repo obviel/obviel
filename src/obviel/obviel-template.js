@@ -1425,12 +1425,12 @@ obviel.template = {};
         if (get_translation === undefined ||
             get_translation === null ||
             this.message_id === null) {
-            return this.dynamic.render(el, scope);
+            return this.dynamic.render(el, scope, context);
         }
         var translation = get_translation(this.message_id);
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
-            return this.dynamic.render(el, scope);
+            return this.dynamic.render(el, scope, context);
         }
         // we need to translate and reorganize sub elements
         return this.render_trans(el, scope, translation);
