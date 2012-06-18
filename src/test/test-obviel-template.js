@@ -48,6 +48,10 @@ Translations.prototype.gettext = function(msgid) {
     return result;
 };
 
+var plural_translations = {
+    '1 elephant': {one: '1 elephant', more: '{count} elephants'}
+};
+
 var render = function(text, obj) {
     var template = new obtemp.Template(text);
     var el = $("<div></div>"); // if you want to see it, use $('#viewdiv')
@@ -55,7 +59,18 @@ var render = function(text, obj) {
     var get_translation = function(msgid) {
         return translations.gettext(msgid);
     };
-    template.render(el, obj, {get_translation: get_translation});
+    var get_plural_translation = function(singular_msgid, plural_msgid,
+                                          count) {
+        if (count === 1) {
+            return {plural: false,
+                    translation: plural_translations[singular_msgid].one};
+        }
+        return {plural: true,
+                translation: plural_translations[singular_msgid].more};
+    };
+    
+    template.render(el, obj, {get_translation: get_translation,
+                              get_plural_translation: get_plural_translation});
     
     return el.html();
 };

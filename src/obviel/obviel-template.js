@@ -819,27 +819,13 @@ obviel.template = {};
             this.render_translation(el, scope, context, translation));
     };
     
-    
-    // module.Plural = function(el) {
-    //     this.singular_trans = null;
-    //     this.plural_trans = null;
-    //     this.count_variable = null;
-    // };
-
-    // module.Plural.prototype.render = function(el, scope, context) {
-    //     context.get_plural(this.singalar_trans.message_id,
-    //                        this.plural_trans.message_id,
-    //                        scope.resolve(this.count_variable));
-        
-    // };
-
     module.ContentTrans = function(el, frag, message_id, directive_name) {
         this.message_id = null;
         this.tvars = {};
         this.variables = {};
         this.directive_name = directive_name;
 
-        this.compile(el);
+        this.compile(frag);
         
         if (message_id !== null) {
             this.message_id = message_id;
@@ -1204,66 +1190,54 @@ obviel.template = {};
     var make_content_trans = function(el, message_id, plural_message_id, directive_name) {
         var r = get_singular_or_plural_nodes(el);
         if (r.plural_frag.childNodes.length !== 0) {
-            return PluralContentTrans(
+            // XXX still hardcoded 'count'
+            return new module.PluralContentTrans(
                 new module.ContentTrans(
-                    el, r.singular_frag, message_id, directive_name),
+                    el, r.singular_frag, null, directive_name),
                 new module.ContentTrans(
-                    el, r.plural_frag, plural_message_id, directive_name));
+                    el, r.plural_frag, null, directive_name),
+                'count');
         }
         return new module.ContentTrans(
             el, el, message_id, directive_name);
     };
+
+    module.PluralContentTrans = function(singular_content_trans,
+                                         plural_content_trans,
+                                         count_variable) {
+        this.singular_content_trans = singular_content_trans;
+        this.plural_content_trans = plural_content_trans;
+        this.count_variable = count_variable;
+    };
     
-    // module.PluralContentTrans.prototype.get_count = function(el, scope) {
-    //     var result = scope.resolve(this.count_name);
-    //     if (typeof result !== 'integer') {
-    //         throw new module.RenderError(
-    //             el, "count variable in plural is not an integer: " + result);
-    //     }
-    //     return result;
-    // };
-
-    // module.PluralTrans.prototype.render_plural = function(
-    //     el, scope, context, render_notrans) {
-    //     var count = this.get_count();
-    //     if (count === null) {
-    //         throw new module.RenderError(
-    //             el, ("count variable in plural section " +
-    //                  "was not an integer"));
-    //     }
-    //     var translation = context.get_plural_translation(
-    //         this.message_id,
-    //         this.plural_message_id,
-    //         count);
-    //     if (translation === this.message_id) {
-    //         this.render_translation(el, scope, context,
-    //                                 translation);
-    //     } else {
-    //         this.render_plural_translation(el, scope, context,
-    //                                        translation);
-    //     }
-    // };
-
-    // module.PluralContentTrans.prototype.render = function(
-    //     el, scope, context, render_notrans) {
-    //     var count = this.get_count(el, scope);
-    //     if (count === null) {
-    //         throw new module.RenderError(
-    //             el, ("count variable in plural section " +
-    //                  "for element content was not an integer"));
-    //     }
-    //     var translation = context.get_plural_translation(
-    //         this.singular_trans.message_id,
-    //         this.plural_trans.message_id,
-    //         count);
-    //     if (translation === this.singular_trans.message_id) {
-    //         this.singular_trans.render_translation(el, scope, context,
-    //                                                translation);
-    //     } else {
-    //         this.plural_trans.render_translation(el, scope, context,
-    //                                              translation);
-    //     }
-    // };
+    module.PluralContentTrans.prototype.get_count = function(el, scope) {
+        var result = scope.resolve(this.count_variable);
+        if (typeof result !== 'number') {
+            throw new module.RenderError(
+                el, "count variable in plural is not a number: " + result);
+        }
+        return result;
+    };
+    
+    module.PluralContentTrans.prototype.render = function(
+        el, scope, context, render_notrans) {
+        var count = this.get_count(el, scope);
+        var translation_info = context.get_plural_translation(
+            this.singular_content_trans.message_id,
+            this.plural_content_trans.message_id,
+            count);
+        var translation = translation_info.translation;
+        // XXX there is an possible issue here for languages that have
+        // more than one pluralization.. is the plural template always
+        // enough for this? I think so, but we need a test for it
+        if (translation_info.plural) {
+            this.plural_content_trans.render_translation(
+                el, scope, context, translation);
+        } else {
+            this.singular_content_trans.render_translation(
+                el, scope, context, translation);
+        }
+    };
 
     
     module.DynamicElement = function(el, allow_tvar) {
@@ -1309,8 +1283,10 @@ obviel.template = {};
         }
         
         this._dynamic = true;
-        this.content_trans = new module.ContentTrans(
-            el, el, this.trans_info.content.message_id, 'data-trans');
+        this.content_trans = make_content_trans(
+            el, this.trans_info.content.message_id, null, 'data-trans');
+            //                                     new module.ContentTrans(
+            // el, el, this.trans_info.content.message_id, 'data-trans');
     };
 
     module.DynamicElement.prototype.compile_data_tvar_content = function(
@@ -1331,8 +1307,10 @@ obviel.template = {};
         }
         this._dynamic = true;
         var tvar_info = parse_tvar(el, data_tvar);
-        this.content_trans = new module.ContentTrans(
-            el, el, tvar_info.message_id, 'data-tvar');
+        this.content_trans = make_content_trans(el, tvar_info.message_id,
+                                                null, 'data-tvar');
+        // this.content_trans = new module.ContentTrans(
+        //     el, el, tvar_info.message_id, 'data-tvar');
         // data-tvar accepts empty message ids and doesn't try
         // translating in this case
         if (this.content_trans.message_id === '') {
