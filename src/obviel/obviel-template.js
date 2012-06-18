@@ -863,10 +863,12 @@ obviel.template = {};
                 var tvar_node = node.cloneNode(true);
                 tvar_info = this.compile_tvar(tvar_node);                
                 parts.push("{" + tvar_info.tvar + "}");
+                // XXX dynamic_notrans is a bit ugly
                 this.tvars[tvar_info.tvar] = {
                     node: tvar_node,
                     index: i,
                     dynamic: new module.DynamicElement(tvar_node, true),
+                    dynamic_notrans: new module.DynamicElement(node, true),
                     view: tvar_info.view
                 };
             }
@@ -1143,7 +1145,7 @@ obviel.template = {};
         for (key in this.tvars) {
             var info = this.tvars[key];
             // this can use index, as we're not in a plural
-            info.dynamic.render(children[info.index], scope, context);
+            info.dynamic_notrans.render(children[info.index], scope, context);
         }
     };
 
