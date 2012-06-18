@@ -1170,11 +1170,21 @@ obviel.template = {};
                 after_plural: after_plural};
     };
 
-    var get_count_variable = function(variable_names) {
+    var get_all_variable_names = function(singular, plural) {
+        var names = $.extend({}, singular.tvars, singular.variables);
+        if (plural !== null) {
+            $.extend(names, plural.tvars, plural.variables);
+        }
+        return names;
+    };
+    
+    var get_implicit_count_variable = function(el, singular, plural) {
+        var names = get_all_variable_names(singular, plural);
+        
         var result = null;
-        for (variable_name in variable_names) {
+        for (name in names) {
             if (result === null) {
-                result = variable_name;
+                result = name;
             } else {
                 // if we already have seen a variable, then getting
                 // a second variable means we have multiple variables
@@ -1183,9 +1193,13 @@ obviel.template = {};
                 break;
             }
         }
+        if (result === null) {
+            throw new module.CompilationError(
+                el, "could not determine implicit count variable for plural");
+        }
         return result;
     };
-    
+
     var get_singular_or_plural = function(
         el, message_id, plural_message_id, directive_name) {
         var singular = new module.ContentTrans(message_id, directive_name);
@@ -1219,21 +1233,41 @@ obviel.template = {};
                 c++;
             }
         }
-        
-        var names = $.extend({}, singular.tvars, singular.variables);
+
         singular.finalize_compile(el);
                                    
         if (current === plural) {
-            $.extend(names, plural.tvars, plural.variables);
             plural.finalize_compile(el);
         } else {
             plural = null;
         }
-    
+        var data_plural = get_directive(el, "data-plural");
+
+        if (data_plural !== null && plural === null) {
+            throw new module.CompilationError(
+                el, "data-plural but no || used to indicate plural text");
+        }
+
+        if (plural === null) {
+            return {
+                singular: singular,
+                plural: plural,
+                count_variable: null
+            };
+        }
+        
+        var count_variable;
+       
+        if (data_plural !== null) {
+            count_variable = data_plural;
+        } else {
+            count_variable = get_implicit_count_variable(el, singular, plural);
+        }
+        
         return {
             singular: singular,
             plural: plural,
-            count_variable: get_count_variable(names)
+            count_variable: count_variable
         };
     };
 

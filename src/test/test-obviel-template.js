@@ -1980,9 +1980,42 @@ test("pluralize in text without translation explicit data-plural", function() {
 });
 
 
-// pluralize in text without translation multiple possible implicit count variables
-// pluralize in text without translation use data-plural to indicate count variable
-// pluralize in text without translation use data-plural to indicate non-existent count variable
+test("pluralize in text with multiple possible implicit count variables", function() {
+    raises(function() {
+        render('<div data-trans="">{count} {size} elephant||{count} {size} elephants</div>',
+               {'count': 1, 'size': 'big'});
+    }, obtemp.CompilationError);
+});
+
+test("pluralize in text without translation use data-plural to indicate count variable", function() {
+    html_equal(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
+                      {'count': 1, 'size': 'big'}),
+               '<div>1 big elephant</div>');
+    
+    html_equal(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
+                      {'count': 2, 'size': 'big'}),
+               '<div>2 big elephants</div>');
+});
+
+test('pluralize in text without translation use data-plural to indicate non-existent count variable', function() {
+    raises(function() {
+        render('<div data-trans="" data-plural="notthere">{count} elephant||{count} elephants</div>',
+               {'count': 1});
+    }, obtemp.RenderError);
+});
+
+test("pluralize with explicit data-trans but no ||", function() {
+    raises(function() {
+        render('<div data-trans=" data-plural="count">{count} elephants<div>');
+    }, obtemp.CompilatonError);
+});
+
+test('data-plural without data-trans is not allowed', function() {
+    raises(function() {
+        render('<div data-plural="count">{count} elephant||{count} elephants</div>',
+               {'count': 1});
+    }, obtemp.CompilationError);
+});
 
 test("pluralize in text with translation", function() {
     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
