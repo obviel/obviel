@@ -49,9 +49,26 @@ Translations.prototype.gettext = function(msgid) {
 };
 
 var plural_translations = {
-    // XXX translation for elephant to itself is here, shouldn't be there
-    '1 elephant': {one: '1 elephant', more: '{count} elephants'},
-    '1 cow': {one: '1 koe', more: '{count} koeien'}
+    '1 cow': {one: '1 koe', more: '{count} koeien'},
+    '{count} cow': {one: '{count} koe', more: '{count} koeien'}
+};
+
+var get_plural_translation = function(singular_msgid, plural_msgid,
+                                      count) {
+    var translation = plural_translations[singular_msgid];
+    if (translation === undefined) {
+        if (count === 1) {
+            return {plural: false, translation: singular_msgid};
+        } else {
+            return {plural: true, translation: plural_msgid};
+        }
+    }
+
+    if (count === 1) {
+        return {plural: false, translation: translation.one};
+    } else {
+        return {plural: true, translation: translation.more};
+    }
 };
 
 var render = function(text, obj) {
@@ -60,15 +77,6 @@ var render = function(text, obj) {
     var translations = new Translations();
     var get_translation = function(msgid) {
         return translations.gettext(msgid);
-    };
-    var get_plural_translation = function(singular_msgid, plural_msgid,
-                                          count) {
-        if (count === 1) {
-            return {plural: false,
-                    translation: plural_translations[singular_msgid].one};
-        }
-        return {plural: true,
-                translation: plural_translations[singular_msgid].more};
     };
     
     template.render(el, obj, {get_translation: get_translation,
