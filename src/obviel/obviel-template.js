@@ -819,68 +819,67 @@ obviel.template = {};
             this.render_translation(el, scope, context, translation));
     };
     
-    module.ContentTrans = function(el, message_id, directive_name) {
+    module.ContentTrans = function(message_id, directive_name) {
+        this.parts = [];
         this.message_id = null;
         this.tvars = {};
         this.variables = {};
         this.directive_name = directive_name;
+        this.explicit_message_id = message_id;
+    };
 
-        this.compile(el);
-        
-        if (message_id !== null) {
-            this.message_id = message_id;
+    module.ContentTrans.prototype.compile_node = function(node, index) {
+        if (node.nodeType === 3) {
+            // TEXT_NODE
+            var text = this.compile_text(node);
+            this.parts.push(text);
+        } else if (node.nodeType === 1) {
+            // ELEMENT NODE
+            this.check_data_trans_restrictions(node);
+            var tvar_node = node.cloneNode(true);
+            var tvar_info = this.compile_tvar(tvar_node);                
+            this.parts.push("{" + tvar_info.tvar + "}");
+            // XXX dynamic_notrans is a bit ugly
+            this.tvars[tvar_info.tvar] = {
+                node: tvar_node,
+                index: index,
+                dynamic: new module.DynamicElement(tvar_node, true),
+                dynamic_notrans: new module.DynamicElement(node, true),
+                view: tvar_info.view
+            };
+        }
+        // COMMENT_NODE
+        // no need to do anything, index for tvars will be correct
+        // CDATA_SECTION_NODE
+        // browser differences are rather severe, we just
+        // don't support this in output as it's of a limited utility
+        // see also:
+        // http://reference.sitepoint.com/javascript/CDATASection
+        // PROCESSING_INSTRUCTION_NODE
+        // we also don't support processing instructions in any
+        // consistent way; again they have limited utility
+    };
+
+    module.ContentTrans.prototype.finalize_compile = function(el) {
+        var message_id = this.parts.join('');
+        this.validate_message_id(el, message_id);
+        this.message_id = message_id;
+        if (this.explicit_message_id !== null) {
+            this.message_id = this.explicit_message_id;
         }
     };
     
-    module.ContentTrans.prototype.compile = function(el) {
-        var parts = [];
-        var tvar_info = null;
-        var children = el.childNodes;
-        var j = 0;
-        for (var i = 0; i < children.length; i++) {
-            var node = children[i];
-            if (node.nodeType === 3) {
-                // TEXT_NODE
-                var text = this.compile_text(node);
-                parts.push(text);
-            } else if (node.nodeType === 1) {
-                // ELEMENT NODE
-                this.check_data_trans_restrictions(node);
-                var tvar_node = node.cloneNode(true);
-                tvar_info = this.compile_tvar(tvar_node);                
-                parts.push("{" + tvar_info.tvar + "}");
-                // XXX dynamic_notrans is a bit ugly
-                this.tvars[tvar_info.tvar] = {
-                    node: tvar_node,
-                    index: i,
-                    dynamic: new module.DynamicElement(tvar_node, true),
-                    dynamic_notrans: new module.DynamicElement(node, true),
-                    view: tvar_info.view
-                };
-            }
-            // COMMENT_NODE
-            // no need to do anything, index for tvars will be correct
-            // CDATA_SECTION_NODE
-            // browser differences are rather severe, we just
-            // don't support this in output as it's of a limited utility
-            // see also:
-            // http://reference.sitepoint.com/javascript/CDATASection
-            // PROCESSING_INSTRUCTION_NODE
-            // we also don't support processing instructions in any
-            // consistent way; again they have limited utility
-        }
-
-        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
-        // occur under elements
-        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
-        // be merged with text nodes
-        var message_id = parts.join('');
-
-        this.validate_message_id(el, message_id);
-
-        this.message_id = message_id;            
-    };
+    // module.ContentTrans.prototype.compile = function(el) {
+    //     var children = el.childNodes;
+    //     for (var i = 0; i < children.length; i++) {
+    //         this.compile_node(children[i], i);
+    //     }
+    //     // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+    //     // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+    //     // occur under elements
+    //     // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+    //     // be merged with text nodes
+    // };
     
     module.ContentTrans.prototype.check_data_trans_restrictions = function(
         el) {
@@ -1139,14 +1138,12 @@ obviel.template = {};
     var parse_text_for_plural = function(text) {
         var before_plural = [];
         var after_plural = [];
-        var variable_names = {};
         
         var current = before_plural;
         var tokens = module.tokenize(text);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                variable_names[token.value] = null;
                 current.push('{' + token.value + '}');
             } else {
                 var value = token.value;
@@ -1170,8 +1167,7 @@ obviel.template = {};
         }
         
         return {before_plural: before_plural,
-                after_plural: after_plural,
-                variable_names: variable_names};
+                after_plural: after_plural};
     };
 
     var get_count_variable = function(variable_names) {
@@ -1190,49 +1186,70 @@ obviel.template = {};
         return result;
     };
     
-    var get_singular_or_plural_nodes = function(el) {
-        var singular_frag = document.createDocumentFragment();
-        var plural_frag = document.createDocumentFragment();
-        var variable_names = {};
-        var frag = singular_frag;
+    var get_singular_or_plural = function(
+        el, message_id, plural_message_id, directive_name) {
+        var singular = new module.ContentTrans(message_id, directive_name);
+        var plural = new module.ContentTrans(plural_message_id, directive_name);
+
+        var current = singular;
+        // XXX index only relevant for notrans case,
+        // never for plural, so we are creating it for no reason in
+        // many cases and it's not really relevant?
+        var c = 0;
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
             if (node.nodeType === 3) {
                 // TEXT_NODE
                 var info = parse_text_for_plural(node.nodeValue);
-                $.extend(variable_names, info.variable_names);
                 if (info.after_plural === null) {
-                    frag.appendChild(node.cloneNode(true));
+                    current.compile_node(node, c);
+                    c++;
                 } else {
-                    frag.appendChild(document.createTextNode(info.before_plural));
-                    frag = plural_frag;
-                    frag.appendChild(document.createTextNode(info.after_plural));
+                    current.compile_node(document.createTextNode(
+                        info.before_plural), c);
+                    c++;
+                    current = plural;
+                    current.compile_node(document.createTextNode(
+                        info.after_plural), c);
+                    c++;
                 }
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
-                frag.appendChild(node.cloneNode(true));
+                current.compile_node(node, c);
+                c++;
             }
         }
-        return {singular_frag: singular_frag,
-                plural_frag: plural_frag,
-                count_variable: get_count_variable(variable_names)};
+        
+        var names = $.extend({}, singular.tvars, singular.variables);
+        singular.finalize_compile(el);
+                                   
+        if (current === plural) {
+            $.extend(names, plural.tvars, plural.variables);
+            plural.finalize_compile(el);
+        } else {
+            plural = null;
+        }
+    
+        return {
+            singular: singular,
+            plural: plural,
+            count_variable: get_count_variable(names)
+        };
     };
 
     var make_content_trans = function(el, message_id,
                                       plural_message_id, directive_name) {
-        var r = get_singular_or_plural_nodes(el);
-        if (r.plural_frag.childNodes.length !== 0) {
+        var r = get_singular_or_plural(
+            el, message_id, plural_message_id, directive_name);
+        if (r.plural !== null) {
             // XXX should move to earlier spot where this is parsed
             el.removeAttribute('data-plural');
             return new module.PluralContentTrans(
-                new module.ContentTrans(
-                    r.singular_frag, null, directive_name),
-                new module.ContentTrans(
-                    r.plural_frag, null, directive_name),
+                r.singular,
+                r.plural,
                 r.count_variable);
         }
-        return new module.ContentTrans(
-            el, message_id, directive_name);
+        return r.singular;
     };
 
     module.PluralContentTrans = function(singular_content_trans,
@@ -1318,8 +1335,6 @@ obviel.template = {};
         this._dynamic = true;
         this.content_trans = make_content_trans(
             el, this.trans_info.content.message_id, null, 'data-trans');
-            //                                     new module.ContentTrans(
-            // el, el, this.trans_info.content.message_id, 'data-trans');
     };
 
     module.DynamicElement.prototype.compile_data_tvar_content = function(
@@ -1342,8 +1357,6 @@ obviel.template = {};
         var tvar_info = parse_tvar(el, data_tvar);
         this.content_trans = make_content_trans(el, tvar_info.message_id,
                                                 null, 'data-tvar');
-        // this.content_trans = new module.ContentTrans(
-        //     el, el, tvar_info.message_id, 'data-tvar');
         // data-tvar accepts empty message ids and doesn't try
         // translating in this case
         if (this.content_trans.message_id === '') {
