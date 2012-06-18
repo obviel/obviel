@@ -1190,6 +1190,8 @@ obviel.template = {};
     var make_content_trans = function(el, message_id, plural_message_id, directive_name) {
         var r = get_singular_or_plural_nodes(el);
         if (r.plural_frag.childNodes.length !== 0) {
+            // XXX should move to earlier spot
+            el.removeAttribute('data-plural');
             // XXX still hardcoded 'count'
             return new module.PluralContentTrans(
                 new module.ContentTrans(
