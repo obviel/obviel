@@ -1936,14 +1936,14 @@ test('variables', function() {
           'Hello world!');
 });
 
-// test("pluralize in text without translation", function() {
-//     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
-//                       { 'count': 1}),
-//                '<div>1 elephant</div>');
-//     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
-//                       { 'count': 2}),
-//                '<div>2 elephants</div>');
-// });
+test("pluralize in text without translation", function() {
+    html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+                      { 'count': 1}),
+               '<div>1 elephant</div>');
+    html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+                      { 'count': 2}),
+               '<div>2 elephants</div>');
+});
 
 // test("pluralize in text with translation", function() {
 //     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',

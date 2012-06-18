@@ -833,13 +833,14 @@ obviel.template = {};
         
     // };
 
-    module.ContentTrans = function(el, message_id, directive_name) {
+    module.ContentTrans = function(el, frag, message_id, directive_name) {
         this.message_id = null;
         this.tvars = {};
         this.variables = {};
         this.directive_name = directive_name;
+
         this.compile(el);
-        this.plural = false;
+        
         if (message_id !== null) {
             this.message_id = message_id;
         }
@@ -861,7 +862,9 @@ obviel.template = {};
                 this.check_data_trans_restrictions(node);
                 tvar_info = this.compile_tvar(node);                
                 parts.push("{" + tvar_info.tvar + "}");
+                var tvar_node = node.cloneNode(true);
                 this.tvars[tvar_info.tvar] = {
+                    node: tvar_node,
                     index: i,
                     dynamic: new module.DynamicElement(node, true),
                     view: tvar_info.view
@@ -917,10 +920,6 @@ obviel.template = {};
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                if (token.value === '|') {
-                    this.plural = true;
-                    break;
-                }
                 var name_formatter = split_name_formatter(node, token.value);
                 var variable = this.variables[name_formatter.name];
                 if (variable !== undefined &&
@@ -1067,7 +1066,10 @@ obviel.template = {};
         if (tvar_info === undefined) {
             return null;
         }
-        var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
+        var tvar_node = tvar_info.node.cloneNode(true);
+        if (tvar_node.hasAttribute('data-tvar')) {
+            tvar_node.removeAttribute('data-tvar');
+        }
         tvar_info.dynamic.render(tvar_node, scope, context);
         if (tvar_info.view !== null) {
             tvar_info.view.render(tvar_node, scope, context);
@@ -1145,35 +1147,103 @@ obviel.template = {};
         }
     };
 
+    var parse_text_for_plural = function(text) {
+        var before_plural = [];
+        var after_plural = [];
+
+        var current = before_plural;
+        var tokens = module.tokenize(text);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                current.push('{' + token.value + '}');
+            } else {
+                var value = token.value;
+                // XXX shouldn't allow || twice
+                var index = value.indexOf('||');
+                if (index !== -1) {
+                    current.push(value.slice(0, index));
+                    current = after_plural;
+                    value = value.slice(index + 2);
+                }
+                current.push(value);
+            }
+        }
+        return {before_plural: before_plural.join(''),
+                after_plural: after_plural.join('')};
+    };
     
-    module.PluralTrans = function(el) {
-        
+    var get_singular_or_plural_nodes = function(el) {
+        var singular_frag = document.createDocumentFragment();
+        var plural_frag = document.createDocumentFragment();
+        var frag = singular_frag;
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType === 3) {
+                // TEXT_NODE
+                var info = parse_text_for_plural(node.nodeValue);
+                if (info.after_plural === '') {
+                    frag.appendChild(node.cloneNode(true));
+                } else {
+                    frag.appendChild(document.createTextNode(info.before_plural));
+                    frag = plural_frag;
+                    frag.appendChild(document.createTextNode(info.after_plural));
+                }
+            } else if (node.nodeType === 1) {
+                // ELEMENT NODE
+                frag.appendChild(node.cloneNode(true));
+            }
+        }
+        return {singular_frag: singular_frag,
+                plural_frag: plural_frag};
     };
 
-    module.PluralTrans.prototype.render = function(
-        el, scope, context, render_notrans) {
-        var count = this.get_count();
-        if (count === null) {
-            throw new module.RenderError(
-                el, ("count variable in plural section " +
-                     "was not an integer"));
+    var make_content_trans = function(el, message_id, plural_message_id, directive_name) {
+        var r = get_singular_or_plural_nodes(el);
+        if (r.plural_frag.childNodes.length !== 0) {
+            return PluralContentTrans(
+                new module.ContentTrans(
+                    el, r.singular_frag, message_id, directive_name),
+                new module.ContentTrans(
+                    el, r.plural_frag, plural_message_id, directive_name));
         }
-        var translation = context.get_plural_translation(
-            this.singular_trans.message_id,
-            this.plural_trans.message_id,
-            count);
-        if (translation === this.singular_trans.message_id) {
-            this.singular_trans.render_translation(el, scope, context,
-                                                   translation);
-        } else {
-            this.plural_trans.render_translation(el, scope, context,
-                                                 translation);
-        }
+        return new module.ContentTrans(
+            el, el, message_id, directive_name);
     };
+    
+    // module.PluralContentTrans.prototype.get_count = function(el, scope) {
+    //     var result = scope.resolve(this.count_name);
+    //     if (typeof result !== 'integer') {
+    //         throw new module.RenderError(
+    //             el, "count variable in plural is not an integer: " + result);
+    //     }
+    //     return result;
+    // };
+
+    // module.PluralTrans.prototype.render_plural = function(
+    //     el, scope, context, render_notrans) {
+    //     var count = this.get_count();
+    //     if (count === null) {
+    //         throw new module.RenderError(
+    //             el, ("count variable in plural section " +
+    //                  "was not an integer"));
+    //     }
+    //     var translation = context.get_plural_translation(
+    //         this.message_id,
+    //         this.plural_message_id,
+    //         count);
+    //     if (translation === this.message_id) {
+    //         this.render_translation(el, scope, context,
+    //                                 translation);
+    //     } else {
+    //         this.render_plural_translation(el, scope, context,
+    //                                        translation);
+    //     }
+    // };
 
     // module.PluralContentTrans.prototype.render = function(
     //     el, scope, context, render_notrans) {
-    //     var count = this.get_count();
+    //     var count = this.get_count(el, scope);
     //     if (count === null) {
     //         throw new module.RenderError(
     //             el, ("count variable in plural section " +
@@ -1237,7 +1307,7 @@ obviel.template = {};
         
         this._dynamic = true;
         this.content_trans = new module.ContentTrans(
-            el, this.trans_info.content.message_id, 'data-trans');
+            el, el, this.trans_info.content.message_id, 'data-trans');
     };
 
     module.DynamicElement.prototype.compile_data_tvar_content = function(
@@ -1259,7 +1329,7 @@ obviel.template = {};
         this._dynamic = true;
         var tvar_info = parse_tvar(el, data_tvar);
         this.content_trans = new module.ContentTrans(
-            el, tvar_info.message_id, 'data-tvar');
+            el, el, tvar_info.message_id, 'data-tvar');
         // data-tvar accepts empty message ids and doesn't try
         // translating in this case
         if (this.content_trans.message_id === '') {
