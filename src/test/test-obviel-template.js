@@ -49,7 +49,9 @@ Translations.prototype.gettext = function(msgid) {
 };
 
 var plural_translations = {
-    '1 elephant': {one: '1 elephant', more: '{count} elephants'}
+    // XXX translation for elephant to itself is here, shouldn't be there
+    '1 elephant': {one: '1 elephant', more: '{count} elephants'},
+    '1 cow': {one: '1 koe', more: '{count} koeien'}
 };
 
 var render = function(text, obj) {
@@ -1951,7 +1953,16 @@ test('variables', function() {
           'Hello world!');
 });
 
-test("pluralize in text without translation", function() {
+test("pluralize in text without translation implicit data-plural", function() {
+    html_equal(render('<div data-trans="">1 elephant||{count} elephants</div>',
+                      { 'count': 1}),
+               '<div>1 elephant</div>');
+    html_equal(render('<div data-trans="">1 elephant||{count} elephants</div>',
+                      { 'count': 2}),
+               '<div>2 elephants</div>');
+});
+
+test("pluralize in text without translation explicit data-plural", function() {
     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
                       { 'count': 1}),
                '<div>1 elephant</div>');
@@ -1960,14 +1971,19 @@ test("pluralize in text without translation", function() {
                '<div>2 elephants</div>');
 });
 
-// test("pluralize in text with translation", function() {
-//     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
-//                       { 'count': 1}),
-//                '<div>1 koe</div>');
-//     html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
-//                       { 'count': 2}),
-//                '<div>2 koeien</div>');
-// });
+
+// pluralize in text without translation multiple possible implicit count variables
+// pluralize in text without translation use data-plural to indicate count variable
+// pluralize in text without translation use data-plural to indicate non-existent count variable
+
+test("pluralize in text with translation", function() {
+    html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+                      { 'count': 1}),
+               '<div>1 koe</div>');
+    html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+                      { 'count': 2}),
+               '<div>2 koeien</div>');
+});
 
 // test("pluralize in attr without translation", function() {
 //     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
@@ -1987,23 +2003,23 @@ test("pluralize in text without translation", function() {
 //                '<div title="2 koeien"></div>');
 // });
 
-// test("pluralize in text with tvar without translation", function() {
-//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
-//                       { 'count': 1}),
-//                '<div><em>1</em> elephant</div>');
-//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
-//                       { 'count': 2}),
-//                '<div><em>2</em> elephants</div>');
-// });
+test("pluralize in text with tvar without translation", function() {
+    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+                      { 'count': 1}),
+               '<div><em>1</em> elephant</div>');
+    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+                      { 'count': 2}),
+               '<div><em>2</em> elephants</div>');
+});
 
-// test("pluralize in text with tvar with translation", function() {
-//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
-//                       { 'count': 1}),
-//                '<div><em>1</em> koe</div>');
-//     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
-//                       { 'count': 2}),
-//                '<div><em>2</em> koeien</div>');
-// });
+test("pluralize in text with tvar with translation", function() {
+    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+                      { 'count': 1}),
+               '<div><em>1</em> koe</div>');
+    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+                      { 'count': 2}),
+               '<div><em>2</em> koeien</div>');
+});
 
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,

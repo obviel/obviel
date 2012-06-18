@@ -1160,8 +1160,17 @@ obviel.template = {};
                 current.push(value);
             }
         }
-        return {before_plural: before_plural.join(''),
-                after_plural: after_plural.join(''),
+
+        before_plural = before_plural.join('');
+        
+        if (current === after_plural) {
+            after_plural = after_plural.join('');
+        } else {
+            after_plural = null;
+        }
+        
+        return {before_plural: before_plural,
+                after_plural: after_plural,
                 variable_names: variable_names};
     };
 
@@ -1192,7 +1201,7 @@ obviel.template = {};
                 // TEXT_NODE
                 var info = parse_text_for_plural(node.nodeValue);
                 $.extend(variable_names, info.variable_names);
-                if (info.after_plural === '') {
+                if (info.after_plural === null) {
                     frag.appendChild(node.cloneNode(true));
                 } else {
                     frag.appendChild(document.createTextNode(info.before_plural));
