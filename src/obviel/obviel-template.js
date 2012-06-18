@@ -860,13 +860,13 @@ obviel.template = {};
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
                 this.check_data_trans_restrictions(node);
-                tvar_info = this.compile_tvar(node);                
-                parts.push("{" + tvar_info.tvar + "}");
                 var tvar_node = node.cloneNode(true);
+                tvar_info = this.compile_tvar(tvar_node);                
+                parts.push("{" + tvar_info.tvar + "}");
                 this.tvars[tvar_info.tvar] = {
                     node: tvar_node,
                     index: i,
-                    dynamic: new module.DynamicElement(node, true),
+                    dynamic: new module.DynamicElement(tvar_node, true),
                     view: tvar_info.view
                 };
             }
@@ -1066,10 +1066,9 @@ obviel.template = {};
         if (tvar_info === undefined) {
             return null;
         }
+      
         var tvar_node = tvar_info.node.cloneNode(true);
-        if (tvar_node.hasAttribute('data-tvar')) {
-            tvar_node.removeAttribute('data-tvar');
-        }
+
         tvar_info.dynamic.render(tvar_node, scope, context);
         if (tvar_info.view !== null) {
             tvar_info.view.render(tvar_node, scope, context);
@@ -1143,6 +1142,7 @@ obviel.template = {};
         var children = el.childNodes;
         for (key in this.tvars) {
             var info = this.tvars[key];
+            // this can use index, as we're not in a plural
             info.dynamic.render(children[info.index], scope, context);
         }
     };
