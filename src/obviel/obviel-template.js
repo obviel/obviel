@@ -819,13 +819,13 @@ obviel.template = {};
             this.render_translation(el, scope, context, translation));
     };
     
-    module.ContentTrans = function(el, frag, message_id, directive_name) {
+    module.ContentTrans = function(el, message_id, directive_name) {
         this.message_id = null;
         this.tvars = {};
         this.variables = {};
         this.directive_name = directive_name;
 
-        this.compile(frag);
+        this.compile(el);
         
         if (message_id !== null) {
             this.message_id = message_id;
@@ -1193,13 +1193,13 @@ obviel.template = {};
             // XXX still hardcoded 'count'
             return new module.PluralContentTrans(
                 new module.ContentTrans(
-                    el, r.singular_frag, null, directive_name),
+                    r.singular_frag, null, directive_name),
                 new module.ContentTrans(
-                    el, r.plural_frag, null, directive_name),
+                    r.plural_frag, null, directive_name),
                 'count');
         }
         return new module.ContentTrans(
-            el, el, message_id, directive_name);
+            el, message_id, directive_name);
     };
 
     module.PluralContentTrans = function(singular_content_trans,
