@@ -1133,14 +1133,15 @@ obviel.template = {};
 
         if (translation === message_id) {
             render_notrans(el, scope, context);
-            this.render_tvars(el, scope, context);
+            this.render_notrans_tvars(el, scope, context);
             return;
         }
         
         this.render_translation(el, scope, context, translation);
     };
 
-    module.ContentTrans.prototype.render_tvars = function(el, scope, context) {
+    module.ContentTrans.prototype.render_notrans_tvars = function(
+        el, scope, context) {
         var children = el.childNodes;
         for (key in this.tvars) {
             var info = this.tvars[key];
