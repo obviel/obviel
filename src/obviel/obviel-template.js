@@ -527,13 +527,6 @@ obviel.template = {};
             value.sub_section.render(sub_section_el, scope, context);
         }
     };
-
-    module.TransInfo = function(el) {
-        this.content = null;
-        this.attributes = {};
-        this.any_translations = false;
-        this.compile(el);
-    };
     
     module.DynamicElement = function(el, allow_tvar) {
         this.attr_texts = {};
@@ -622,7 +615,8 @@ obviel.template = {};
         }
         trans_info.message_id = tvar_info.message_id;
         trans_info.plural_message_id = tvar_info.plural_message_id;
-        this.content_trans = this.make_content_trans(el, trans_info, 'data-tvar');
+        this.content_trans = this.make_content_trans(
+            el, trans_info, 'data-tvar');
         // data-tvar accepts empty message ids and doesn't try
         // translating in this case
         if (this.content_trans.message_id === '') {
@@ -1060,8 +1054,15 @@ obviel.template = {};
             }
         }
     };
+    
+    module.TransInfo = function(el) {
+        this.content = null;
+        this.attributes = {};
+        this.any_translations = false;
+        this.compile(el);
+    };
 
-        module.TransInfo.prototype.compile = function(el) {
+    module.TransInfo.prototype.compile = function(el) {
         this.compile_data_trans(el);
         this.compile_data_plural(el);
     };
