@@ -919,9 +919,9 @@ obviel.template = {};
     };
     
     module.DynamicAttribute.prototype.make_attribute_trans = function(
-        el, name, value, trans_info) {
+        el, name, value) {
         var r = get_singular_or_plural_attribute_trans(
-            el, name, value, trans_info);
+            el, name, value, this.trans_info);
         if (r.plural === null) {
             return r.singular;
         }
@@ -947,7 +947,7 @@ obviel.template = {};
        
         if (this.trans_info !== null) {
             this.attr_trans = this.make_attribute_trans(
-                el, this.name, this.value, this.trans_info);
+                el, this.name, this.value);
         }
         this._dynamic = true;
     };
