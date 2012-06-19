@@ -858,27 +858,15 @@ obviel.template = {};
         this.attr_trans = null;
         this.dynamic_text = null;
         this._dynamic = false;
-        this.compile(el, name, value, trans_info);
+        this.compile_notrans(el);
+        this.compile_trans(el);
     };
 
     module.DynamicAttribute.prototype.is_dynamic = function() {
         return this._dynamic;
     };
     
-    module.DynamicAttribute.prototype.make_attribute_trans = function(
-        el, name, value) {
-        var r = get_singular_or_plural_attribute_trans(
-            el, name, value, this.trans_info);
-        if (r.plural === null) {
-            return r.singular;
-        }
-        return new module.PluralTrans(
-            r.singular,
-            r.plural,
-            r.count_variable);
-    };
-    
-    module.DynamicAttribute.prototype.compile = function(el) {
+    module.DynamicAttribute.prototype.compile_notrans = function(el) {
         var dynamic_text = new module.DynamicText(el, this.value);
         // if there's nothing dynamic nor anything to translate,
         // we don't have a dynamic attribute at all
@@ -891,14 +879,55 @@ obviel.template = {};
                      "in id attribute. use data-id instead"));
         }
         this.dynamic_text = dynamic_text;
-       
-        if (this.trans_info !== null) {
-            this.attr_trans = this.make_attribute_trans(
-                el, this.name, this.value);
-        }
+        
         this._dynamic = true;
     };
     
+    module.DynamicAttribute.prototype.compile_trans = function(el) {
+        if (this.trans_info === null) {
+            return;
+        }
+        
+        var parts = this.value.split('||');
+        if (parts.length == 1) {
+            if (this.trans_info.count_variable !== null) {
+                throw new module.CompilationError(
+                    el, "data-plural used for attribute content but no || used " +
+                        "to indicate plural text: " + name);
+            }
+            this.attr_trans = new module.AttributeTrans(
+                el, this.name, this.value, this.trans_info.message_id);
+            this._dynamic = true;
+            return;
+        };
+        
+        var singular = new module.AttributeTrans(
+            el, this.name, parts[0],
+            this.trans_info.message_id);
+        var plural = new module.AttributeTrans(
+            el, this.name, parts[1],
+            this.trans_info.plural_message_id);
+        
+        var count_variable;
+
+        if (this.trans_info.count_variable !== null) {
+            count_variable = this.trans_info.count_variable;
+        } else {
+            count_variable = get_implicit_count_variable(
+                el, singular, plural);
+        }
+
+        this._dynamic = true;
+        this.attr_trans = new module.PluralTrans(
+            singular, plural, count_variable);
+    };
+
+    module.DynamicAttribute.prototype.make_attribute_trans = function(
+        el, name, value) {
+        return get_singular_or_plural_attribute_trans(
+            el, name, value, this.trans_info);
+    };
+
     
     module.DynamicAttribute.prototype.render = function(el, scope, context) {
         var self = this;
@@ -1295,45 +1324,6 @@ obviel.template = {};
 
         this.render_translation(el, scope, context, translation);
         
-    };
-
-    var get_singular_or_plural_attribute_trans = function(
-        el, name, value, trans_info) {
-
-        var parts = value.split('||');
-        if (parts.length == 1) {
-            if (trans_info.count_variable !== null) {
-                throw new module.CompilationError(
-                    el, "data-plural used for attribute content but no || used " +
-                        "to indicate plural text: " + name);
-            }
-            return {
-                singular: new module.AttributeTrans(
-                    el, name, value, trans_info.message_id),
-                plural: null,
-                count_variable: null
-            };
-        }
-        
-        var singular = new module.AttributeTrans(el, name, parts[0],
-                                                 trans_info.message_id);
-        var plural = new module.AttributeTrans(el, name, parts[1],
-                                               trans_info.plural_message_id);
-        
-        var count_variable;
-
-        if (trans_info.count_variable !== null) {
-            count_variable = trans_info.count_variable;
-        } else {
-            count_variable = get_implicit_count_variable(
-                el, singular, plural);
-        }
-        
-        return {
-            singular: singular,
-            plural: plural,
-            count_variable: count_variable
-        };
     };
 
     module.ContentTrans = function(message_id, directive_name) {
