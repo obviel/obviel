@@ -807,7 +807,7 @@ test('data-func where func is missing', function() {
     }, obtemp.RenderError);
 });
 
-test("data-trans with plain text", function() {
+test("data-trans with plain text, translation found", function() {
     html_equal(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');
 });
@@ -815,6 +815,16 @@ test("data-trans with plain text", function() {
 test('data-trans with text, translation not there', function() {
     html_equal(render('<p data-trans="">This is not translated</p>', {}),
           '<p>This is not translated</p>');
+});
+
+test('data-trans with text and msgid, translation not there', function() {
+    html_equal(render('<p data-trans=":foo">This is not translated</p>', {}),
+          '<p>This is not translated</p>');
+});
+
+test('data-trans with text and msgid for attr, translation not there', function() {
+    html_equal(render('<p data-trans="title:foo" title="This is not translated"></p>', {}),
+          '<p title="This is not translated"></p>');
 });
 
 test("data-trans with text & entity reference", function() {
@@ -841,8 +851,6 @@ test("data-trans with text & comment and element", function() {
 //           '<p>Hallo wereld!</p>');
 // });
 
-// XXX data-trans with explicit message ids when translation cannot be
-// found
 
 test("data-trans with variable", function() {
     html_equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),

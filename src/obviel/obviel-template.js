@@ -1358,6 +1358,7 @@ obviel.template = {};
         if (translation === this.message_id) {
             // if translation is original message id, we can use fast path
             render_notrans(el, scope, context);
+            return;
         }
 
         this.render_translation(el, scope, context, translation);
