@@ -77,7 +77,6 @@ obviel.template = {};
     module.NAME_TOKEN = 0;
     module.TEXT_TOKEN = 1;
 
-
     module.Error = function(el, message) {
         this.el = el;
         this.message = message;
@@ -185,62 +184,6 @@ obviel.template = {};
             this.parentNode.insertBefore(frag, this.nextSibling);
             this.parentNode.removeChild(this);
         });
-    };
-
-    var morph_element = function(el, name) {
-        var new_el = document.createElement(name);
-        var i;
-        
-        // copy over all attributes from old element
-        for (i = 0; i < el.attributes.length; i++) {
-            var attr = el.attributes[i];
-            if (attr.specified !== true) {
-                continue;
-            }
-            if (attr.value === null) {
-                continue;
-            }
-            new_el.setAttribute(attr.name, attr.value);
-        }
-        
-        // copy over all sub-elements from old element
-        for (i = 0; i < el.childNodes.length; i++) {
-            var child = el.childNodes[i];
-            new_el.appendChild(child);
-        }
-
-        // copy all events
-        var events = $(el).data('events');
-        if (events !== undefined) {
-            $.each(events, function(key, value) {
-                $.each(value, function(sub, v) {
-                    $(new_el).bind(v.type, v.handler);
-                });
-            });
-        }
-
-        // put new element in its place
-        el.parentNode.replaceChild(new_el, el);
-
-
-        return new_el;
-    };
-    
-    var get_directive = function(el, name) {
-        var value = null;
-        if (!el.hasAttribute(name)) {
-            return null;
-        }
-        
-        value = el.getAttribute(name);
-        if (value === null || value === '') {
-            throw new module.CompilationError(
-                el, name + " may not be empty");
-        }
-        
-        el.removeAttribute(name);
-        
-        return value;
     };
     
     module.Section = function(el, root_section) {
@@ -371,18 +314,7 @@ obviel.template = {};
         });
         return dynamic_element.content_trans !== null;
     };
-                                                           
-    module.Section.prototype.render_registered = function(
-        el_funcs, el, scope, context) {
-        for (var i in el_funcs.funcs) {
-            el_funcs.funcs[i](el, scope, context);
-        }
-        for (var j in el_funcs.sub) {
-            this.render_registered(el_funcs.sub[j],
-                                   el.childNodes[j], scope, context);
-        }
-    };
-
+    
     module.Section.prototype.get_el_indexes = function(el) {
         var indexes = [];
         var parent_node = this.el;
@@ -560,8 +492,6 @@ obviel.template = {};
 
 
         el.appendChild(this.frag.cloneNode(true));
-
-        // this.render_registered(this.el_funcs, el, scope, context);
         
         this.render_dynamic_elements(el, scope, context);
 
@@ -1991,6 +1921,62 @@ obviel.template = {};
     
     module.Scope.prototype.pop = function() {
         this.stack.pop();
+    };
+
+    var morph_element = function(el, name) {
+        var new_el = document.createElement(name);
+        var i;
+        
+        // copy over all attributes from old element
+        for (i = 0; i < el.attributes.length; i++) {
+            var attr = el.attributes[i];
+            if (attr.specified !== true) {
+                continue;
+            }
+            if (attr.value === null) {
+                continue;
+            }
+            new_el.setAttribute(attr.name, attr.value);
+        }
+        
+        // copy over all sub-elements from old element
+        for (i = 0; i < el.childNodes.length; i++) {
+            var child = el.childNodes[i];
+            new_el.appendChild(child);
+        }
+
+        // copy all events
+        var events = $(el).data('events');
+        if (events !== undefined) {
+            $.each(events, function(key, value) {
+                $.each(value, function(sub, v) {
+                    $(new_el).bind(v.type, v.handler);
+                });
+            });
+        }
+
+        // put new element in its place
+        el.parentNode.replaceChild(new_el, el);
+
+
+        return new_el;
+    };
+    
+    var get_directive = function(el, name) {
+        var value = null;
+        if (!el.hasAttribute(name)) {
+            return null;
+        }
+        
+        value = el.getAttribute(name);
+        if (value === null || value === '') {
+            throw new module.CompilationError(
+                el, name + " may not be empty");
+        }
+        
+        el.removeAttribute(name);
+        
+        return value;
     };
 
     // note that this function is not used outside of the
