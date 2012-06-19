@@ -1987,6 +1987,14 @@ test("pluralize in text with multiple possible implicit count variables", functi
     }, obtemp.CompilationError);
 });
 
+test("data-tvar does not count as implicit count variable", function() {
+    raises(function() {
+        render('<div data-trans=""><em data-tvar="size">{size}</em> elephant||<em data-tvar="size">{size}</em> elephants</div>',
+               {'size': 3});
+    }, obtemp.CompilationError);
+
+});
+
 test("pluralize in text without translation use data-plural to indicate count variable", function() {
     html_equal(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
                       {'count': 1, 'size': 'big'}),

@@ -1171,9 +1171,9 @@ obviel.template = {};
     };
 
     var get_all_variable_names = function(singular, plural) {
-        var names = $.extend({}, singular.tvars, singular.variables);
+        var names = $.extend({}, singular.variables);
         if (plural !== null) {
-            $.extend(names, plural.tvars, plural.variables);
+            $.extend(names, plural.variables);
         }
         return names;
     };
@@ -1325,6 +1325,10 @@ obviel.template = {};
 
     
     module.DynamicElement = function(el, allow_tvar) {
+        if (el.hasAttribute('data-plural') && !el.hasAttribute('data-trans')) {
+            throw new module.CompilationError(
+                el, "data-plural must exist with data-trans");
+        }
         this.attr_texts = {};
         this.content_texts = [];
         this.handlers = [];
