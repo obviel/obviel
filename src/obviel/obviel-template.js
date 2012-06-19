@@ -493,9 +493,7 @@ obviel.template = {};
         el.appendChild(this.frag.cloneNode(true));
         
         this.render_dynamic_elements(el, scope, context);
-
         this.render_views(el, scope, context);
-        
         this.render_sub_sections(el, scope, context);
 
         if (this.data_with) {
