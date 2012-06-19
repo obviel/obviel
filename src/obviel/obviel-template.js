@@ -640,8 +640,12 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
+            var trans_info = this.trans_info.attributes[attr.name];
+            if (trans_info === undefined) {
+                trans_info = null;
+            }
             attr_text = new module.DynamicAttribute(el, attr.name, attr.value,
-                                                    this.trans_info);
+                                                    trans_info);
             if (!attr_text.is_dynamic()) {
                 continue;
             }
@@ -904,8 +908,8 @@ obviel.template = {};
         this.name = name;
         this.value = value;
         this.trans_info = trans_info;
-        this.dynamic_text = null;
         this.attr_trans = null;
+        this.dynamic_text = null;
         this._dynamic = false;
         this.compile(el, name, value, trans_info);
     };
@@ -929,10 +933,9 @@ obviel.template = {};
     
     module.DynamicAttribute.prototype.compile = function(el) {
         var dynamic_text = new module.DynamicText(el, this.value);
-        var attr_info = this.trans_info.attributes[this.name];
         // if there's nothing dynamic nor anything to translate,
         // we don't have a dynamic attribute at all
-        if (!dynamic_text.is_dynamic() && attr_info === undefined) {
+        if (!dynamic_text.is_dynamic() && this.trans_info === null) {
             return;
         }
         if (this.name === 'id') {
@@ -942,9 +945,9 @@ obviel.template = {};
         }
         this.dynamic_text = dynamic_text;
        
-        if (attr_info !== undefined) {
+        if (this.trans_info !== null) {
             this.attr_trans = this.make_attribute_trans(
-                el, this.name, this.value, attr_info);
+                el, this.name, this.value, this.trans_info);
         }
         this._dynamic = true;
     };
