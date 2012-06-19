@@ -1381,6 +1381,11 @@ obviel.template = {};
         // PROCESSING_INSTRUCTION_NODE
         // we also don't support processing instructions in any
         // consistent way; again they have limited utility
+        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+        // occur under elements
+        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+        // be merged with text nodes
     };
 
     module.ContentTrans.prototype.finalize_compile = function(el) {
@@ -1391,18 +1396,6 @@ obviel.template = {};
             this.message_id = this.explicit_message_id;
         }
     };
-    
-    // module.ContentTrans.prototype.compile = function(el) {
-    //     var children = el.childNodes;
-    //     for (var i = 0; i < children.length; i++) {
-    //         this.compile_node(children[i], i);
-    //     }
-    //     // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-    //     // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
-    //     // occur under elements
-    //     // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
-    //     // be merged with text nodes
-    // };
     
     module.ContentTrans.prototype.check_data_trans_restrictions = function(
         el) {
