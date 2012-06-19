@@ -2034,22 +2034,46 @@ test("pluralize in text with translation", function() {
                '<div>2 koeien</div>');
 });
 
-// test("pluralize in attr without translation", function() {
+test("pluralize in attr without translation", function() {
+    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
+                      { 'count': 1}),
+               '<div title="1 elephant"></div>');
+    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
+                      { 'count': 2}),
+               '<div title="2 elephants"></div>');
+});
+
+test("pluralize in attr with translation", function() {
+    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
+                      { 'count': 1}),
+               '<div title="1 koe"></div>');
+    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
+                      { 'count': 2}),
+               '<div title="2 koeien"></div>');
+});
+
+test("implicit pluralize in attr with translation", function() {
+    html_equal(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
+                      { 'count': 1}),
+               '<div title="1 koe"></div>');
+    html_equal(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
+                      { 'count': 2}),
+               '<div title="2 koeien"></div>');
+});
+
+// test pluralize with explicit message ids
+
+// test pluralize with language like polish
+
+// test pluralize with tvar
+
+// test("pluralize in attr and content translation", function() {
 //     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
 //                       { 'count': 1}),
 //                '<div title="1 elephant"></div>');
 //     html_equal(render('<div data-trans="title" data-plural="title:count" data-plural="count" title="1 elephant||{count} elephants"></div>',
 //                       { 'count': 2}),
 //                '<div title="2 elephants"></div>');
-// });
-
-// test("pluralize in attr with translation", function() {
-//     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
-//                       { 'count': 1}),
-//                '<div title="1 koe"></div>');
-//     html_equal(render('<div data-trans="title" data-plural="title:count" data-plural="count" title="1 cow||{count} cows"></div>',
-//                       { 'count': 2}),
-//                '<div title="2 koeien"></div>');
 // });
 
 test("pluralize in text with tvar without translation", function() {

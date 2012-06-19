@@ -801,7 +801,8 @@ obviel.template = {};
                                               token.value));
             }
         }
-        return result.join('');        
+        
+        el.setAttribute(this.name, result.join(''));
     };
     
     module.AttributeTrans.prototype.render = function(el, scope, context,
@@ -814,11 +815,63 @@ obviel.template = {};
             render_notrans(el, scope, context);
         }
 
-        el.setAttribute(
-            this.name,
-            this.render_translation(el, scope, context, translation));
+        this.render_translation(el, scope, context, translation);
+        
     };
-    
+
+    var get_singular_or_plural_attribute_trans = function(
+        el, name, value, message_id, plural_message_id) {
+
+        var parts = value.split('||');
+        if (parts.length == 1) {
+            return {
+                singular: new module.AttributeTrans(
+                    el, name, value, message_id),
+                plural: null,
+                count_variable: null
+            };
+        }
+        
+        
+        var singular = new module.AttributeTrans(el, name, parts[0],
+                                                 message_id);
+        var plural = new module.AttributeTrans(el, name, parts[1],
+                                               message_id);
+                                   
+        
+        // var data_plural = get_directive(el, "data-plural");
+
+        // if (data_plural !== null && plural === null) {
+        //     throw new module.CompilationError(
+        //         el, "data-plural but no || used to indicate plural text");
+        // }
+        
+        var count_variable = get_implicit_count_variable(
+            el, singular, plural);
+        
+        
+        return {
+            singular: singular,
+            plural: plural,
+            count_variable: count_variable
+        };
+    };
+
+    var make_attribute_trans = function(el, name, value,
+                                        message_id, plural_message_id) {
+        var r = get_singular_or_plural_attribute_trans(
+            el, name, value, message_id, plural_message_id);
+        if (r.plural === null) {
+            return r.singular;
+        }
+        // XXX should move to earlier spot where this is parsed
+        el.removeAttribute('data-plural');
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
+    };
+
     module.ContentTrans = function(message_id, directive_name) {
         this.parts = [];
         this.message_id = null;
@@ -1200,7 +1253,7 @@ obviel.template = {};
         return result;
     };
 
-    var get_singular_or_plural = function(
+    var get_singular_or_plural_content_trans = function(
         el, message_id, plural_message_id, directive_name) {
         var singular = new module.ContentTrans(message_id, directive_name);
         var plural = new module.ContentTrans(plural_message_id, directive_name);
@@ -1273,28 +1326,29 @@ obviel.template = {};
 
     var make_content_trans = function(el, message_id,
                                       plural_message_id, directive_name) {
-        var r = get_singular_or_plural(
+        var r = get_singular_or_plural_content_trans(
             el, message_id, plural_message_id, directive_name);
-        if (r.plural !== null) {
-            // XXX should move to earlier spot where this is parsed
-            el.removeAttribute('data-plural');
-            return new module.PluralContentTrans(
-                r.singular,
-                r.plural,
-                r.count_variable);
+        if (r.plural === null) {
+            return r.singular;
         }
-        return r.singular;
+        
+        // XXX should move to earlier spot where this is parsed
+        el.removeAttribute('data-plural');
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
     };
 
-    module.PluralContentTrans = function(singular_content_trans,
-                                         plural_content_trans,
-                                         count_variable) {
-        this.singular_content_trans = singular_content_trans;
-        this.plural_content_trans = plural_content_trans;
+    module.PluralTrans = function(singular,
+                                  plural,
+                                  count_variable) {
+        this.singular = singular;
+        this.plural = plural;
         this.count_variable = count_variable;
     };
     
-    module.PluralContentTrans.prototype.get_count = function(el, scope) {
+    module.PluralTrans.prototype.get_count = function(el, scope) {
         var result = scope.resolve(this.count_variable);
         if (typeof result !== 'number') {
             throw new module.RenderError(
@@ -1303,22 +1357,22 @@ obviel.template = {};
         return result;
     };
     
-    module.PluralContentTrans.prototype.render = function(
+    module.PluralTrans.prototype.render = function(
         el, scope, context, render_notrans) {
         var count = this.get_count(el, scope);
         var translation_info = context.get_plural_translation(
-            this.singular_content_trans.message_id,
-            this.plural_content_trans.message_id,
+            this.singular.message_id,
+            this.plural.message_id,
             count);
         var translation = translation_info.translation;
         // XXX there is an possible issue here for languages that have
         // more than one pluralization.. is the plural template always
         // enough for this? I think so, but we need a test for it
         if (translation_info.plural) {
-            this.plural_content_trans.render_translation(
+            this.plural.render_translation(
                 el, scope, context, translation);
         } else {
-            this.singular_content_trans.render_translation(
+            this.singular.render_translation(
                 el, scope, context, translation);
         }
     };
@@ -1721,8 +1775,8 @@ obviel.template = {};
         this.dynamic_text = dynamic_text;
        
         if (attr_info !== undefined) {
-            this.attr_trans = new module.AttributeTrans(
-                el, this.name, this.value, attr_info.message_id);
+            this.attr_trans = make_attribute_trans(
+                el, this.name, this.value, attr_info.message_id, null);
         }
         this._dynamic = true;
     };
