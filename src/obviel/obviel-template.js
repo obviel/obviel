@@ -695,18 +695,74 @@ obviel.template = {};
             return;
         }
         this._dynamic = true;
+
+        var trans_info = this.trans_info.content;
         
-        var r = get_singular_or_plural_content_trans(
-            el, this.trans_info.content);
-        
-        if (r.plural === null) {
-            this.content_trans = r.singular;
+        var singular = new module.ContentTrans(
+            trans_info.message_id, trans_info.directive);
+        var plural = new module.ContentTrans(
+            trans_info.plural_message_id, trans_info.directive);
+
+        var current = singular;
+        // XXX index only relevant for notrans case,
+        // never for plural, so we are creating it for no reason in
+        // many cases and it's not really relevant?
+        var c = 0;
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType === 3) {
+                // TEXT_NODE
+                var info = parse_text_for_plural(node.nodeValue);
+                if (info.after_plural === null) {
+                    current.compile_node(node, c);
+                    c++;
+                } else {
+                    current.compile_node(document.createTextNode(
+                        info.before_plural), c);
+                    c++;
+                    current = plural;
+                    current.compile_node(document.createTextNode(
+                        info.after_plural), c);
+                    c++;
+                }
+            } else if (node.nodeType === 1) {
+                // ELEMENT NODE
+                current.compile_node(node, c);
+                c++;
+            }
+        }
+
+        singular.finalize_compile(el);
+                                   
+        if (current === plural) {
+            plural.finalize_compile(el);
+        } else {
+            plural = null;
+        }
+
+        if (trans_info.count_variable !== null && plural === null) {
+            throw new module.CompilationError(
+                el, "data-plural used for element content but no || used " +
+                    "to indicate plural text");
+        }
+
+        if (plural === null) {
+            this.content_trans = singular;
             return;
-        }        
+        }
+        
+        var count_variable;
+        
+        if (trans_info.count_variable !== null) {
+            count_variable = trans_info.count_variable;
+        } else {
+            count_variable = get_implicit_count_variable(el, singular, plural);
+        }
+        
         this.content_trans = new module.PluralTrans(
-            r.singular,
-            r.plural,
-            r.count_variable);
+            singular,
+            plural,
+            count_variable);
     };
     
     module.DynamicElement.prototype.render = function(el, scope, context) {
@@ -1693,78 +1749,6 @@ obviel.template = {};
         return result;
     };
     
-    var get_singular_or_plural_content_trans = function(el, trans_info) {
-        var singular = new module.ContentTrans(
-            trans_info.message_id, trans_info.directive);
-        var plural = new module.ContentTrans(
-            trans_info.plural_message_id, trans_info.directive);
-
-        var current = singular;
-        // XXX index only relevant for notrans case,
-        // never for plural, so we are creating it for no reason in
-        // many cases and it's not really relevant?
-        var c = 0;
-        for (var i = 0; i < el.childNodes.length; i++) {
-            var node = el.childNodes[i];
-            if (node.nodeType === 3) {
-                // TEXT_NODE
-                var info = parse_text_for_plural(node.nodeValue);
-                if (info.after_plural === null) {
-                    current.compile_node(node, c);
-                    c++;
-                } else {
-                    current.compile_node(document.createTextNode(
-                        info.before_plural), c);
-                    c++;
-                    current = plural;
-                    current.compile_node(document.createTextNode(
-                        info.after_plural), c);
-                    c++;
-                }
-            } else if (node.nodeType === 1) {
-                // ELEMENT NODE
-                current.compile_node(node, c);
-                c++;
-            }
-        }
-
-        singular.finalize_compile(el);
-                                   
-        if (current === plural) {
-            plural.finalize_compile(el);
-        } else {
-            plural = null;
-        }
-
-        if (trans_info.count_variable !== null && plural === null) {
-            throw new module.CompilationError(
-                el, "data-plural used for element content but no || used " +
-                    "to indicate plural text");
-        }
-
-        if (plural === null) {
-            return {
-                singular: singular,
-                plural: plural,
-                count_variable: null
-            };
-        }
-        
-        var count_variable;
-        
-        if (trans_info.count_variable !== null) {
-            count_variable = trans_info.count_variable;
-        } else {
-            count_variable = get_implicit_count_variable(el, singular, plural);
-        }
-        
-        return {
-            singular: singular,
-            plural: plural,
-            count_variable: count_variable
-        };
-    };
-
     module.PluralTrans = function(singular,
                                   plural,
                                   count_variable) {
