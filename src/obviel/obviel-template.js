@@ -972,34 +972,6 @@ obviel.template = {};
                         this.dynamic_text.render(el, scope, context));
         
     };
-
-    var split_name_formatters = function(el, text) {
-        var parts = trim(text).split(' ');
-        var result = [];
-        for (var i = 0; i < parts.length; i++) {
-            var part = parts[i];
-            result.push(split_name_formatter(el, part));
-        }
-        return result;
-    };
-    
-    var split_name_formatter = function(el, name) {
-        var name_parts = name.split('|');
-        if (name_parts.length === 1) {
-            return {
-                name: name_parts[0],
-                formatter: null
-            };
-        }
-        if (name_parts.length !== 2) {
-            throw new module.CompilationError(
-                el, "variable may only have a single | in it");
-        }
-        return {
-            name: name_parts[0],
-            formatter: name_parts[1]
-        };   
-    };
     
     module.Variable = function(el, name) {
         var r = split_name_formatter(el, name);
@@ -1955,6 +1927,34 @@ obviel.template = {};
         el.removeAttribute(name);
         
         return value;
+    };
+
+    var split_name_formatters = function(el, text) {
+        var parts = trim(text).split(' ');
+        var result = [];
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            result.push(split_name_formatter(el, part));
+        }
+        return result;
+    };
+    
+    var split_name_formatter = function(el, name) {
+        var name_parts = name.split('|');
+        if (name_parts.length === 1) {
+            return {
+                name: name_parts[0],
+                formatter: null
+            };
+        }
+        if (name_parts.length !== 2) {
+            throw new module.CompilationError(
+                el, "variable may only have a single | in it");
+        }
+        return {
+            name: name_parts[0],
+            formatter: name_parts[1]
+        };   
     };
 
     // note that this function is not used outside of the
