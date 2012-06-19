@@ -2043,13 +2043,22 @@ test("pluralize in attr without translation", function() {
                '<div title="2 elephants"></div>');
 });
 
-test("pluralize in attr with translation", function() {
+test("pluralize in attr with translation, same explicit as implicit", function() {
     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
                       { 'count': 1}),
                '<div title="1 koe"></div>');
     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
                       { 'count': 2}),
                '<div title="2 koeien"></div>');
+});
+
+test("pluralize in attr with translation, different explicit as implicit", function() {
+    html_equal(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
+                      { 'count': 1, 'amount': 2}),
+               '<div title="1 koeien"></div>');
+    html_equal(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
+                      { 'count': 2, 'amount': 1}),
+               '<div title="1 koe"></div>');
 });
 
 test("implicit pluralize in attr with translation", function() {
@@ -2066,6 +2075,10 @@ test("implicit pluralize in attr with translation", function() {
 // test pluralize with language like polish
 
 // test pluralize with tvar
+
+// pluralization message id can be supplied with data-trans?
+
+// can a tvar have a message id?
 
 // test("pluralize in attr and content translation", function() {
 //     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
