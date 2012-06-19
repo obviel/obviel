@@ -1482,57 +1482,6 @@ obviel.template = {};
         check_message_id(el, message_id, 'element');
     };
     
-    var check_message_id = function(el, message_id, element_or_attribute) {
-        // cache the tokens so we get things faster during rendering time
-        var tokens = cached_tokenize(message_id);
-        var name_tokens = 0;
-        for (var i in tokens) {
-            var token = tokens[i];
-            // if we run into any non-whitespace text token at all,
-            // we assume we have something to translate
-            if (token.type === module.TEXT_TOKEN) {
-                if (trim(token.value) !== '') {
-                    name_tokens = null;
-                    break;
-                }
-            } else if (token.type === module.NAME_TOKEN) {
-                name_tokens++;
-            }
-        }
-        // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
-            return;
-        }
-        // if we find no or only a single name token, we consider this
-        // an error. more than one name tokens are considered translatable,
-        // at least in their order
-        if (name_tokens <= 1) {
-            throw new module.CompilationError(
-                el, "data-trans used on " + element_or_attribute +
-                    " with no text to translate");
-        }
-    };
-
-    var parse_tvar = function(el, tvar) {
-        var parts = tvar.split(':');
-        if (parts.length === 1) {
-            return {
-                tvar: parts[0],
-                message_id: null
-            };
-        } else if (parts.length === 0 ||
-                   parts.length > 2 ||
-                   parts[0] === '' ||
-                   parts[1] === '') {
-            throw new module.CompilationError(
-                el, "illegal content in data-tvar");
-        }
-        return {
-            tvar: parts[0],
-            message_id: parts[1]
-        };
-    };
-    
     module.ContentTrans.prototype.implicit_tvar = function(node, view) {
         if (view !== null) {
             // data-view exists on element, use name as tvar name
@@ -1672,36 +1621,6 @@ obviel.template = {};
             // this can use index, as we're not in a plural
             info.dynamic_notrans.render(children[info.index], scope, context);
         }
-    };
-    
-    var get_all_variable_names = function(singular, plural) {
-        var names = $.extend({}, singular.variables);
-        if (plural !== null) {
-            $.extend(names, plural.variables);
-        }
-        return names;
-    };
-    
-    var get_implicit_count_variable = function(el, singular, plural) {
-        var names = get_all_variable_names(singular, plural);
-        
-        var result = null;
-        for (name in names) {
-            if (result === null) {
-                result = name;
-            } else {
-                // if we already have seen a variable, then getting
-                // a second variable means we have multiple variables
-                // and therefore we can't find a single count variable
-                result = null;
-                break;
-            }
-        }
-        if (result === null) {
-            throw new module.CompilationError(
-                el, "could not determine implicit count variable for plural");
-        }
-        return result;
     };
     
     module.PluralTrans = function(singular,
@@ -1983,6 +1902,57 @@ obviel.template = {};
         };   
     };
 
+    var check_message_id = function(el, message_id, element_or_attribute) {
+        // cache the tokens so we get things faster during rendering time
+        var tokens = cached_tokenize(message_id);
+        var name_tokens = 0;
+        for (var i in tokens) {
+            var token = tokens[i];
+            // if we run into any non-whitespace text token at all,
+            // we assume we have something to translate
+            if (token.type === module.TEXT_TOKEN) {
+                if (trim(token.value) !== '') {
+                    name_tokens = null;
+                    break;
+                }
+            } else if (token.type === module.NAME_TOKEN) {
+                name_tokens++;
+            }
+        }
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
+        }
+        // if we find no or only a single name token, we consider this
+        // an error. more than one name tokens are considered translatable,
+        // at least in their order
+        if (name_tokens <= 1) {
+            throw new module.CompilationError(
+                el, "data-trans used on " + element_or_attribute +
+                    " with no text to translate");
+        }
+    };
+
+    var parse_tvar = function(el, tvar) {
+        var parts = tvar.split(':');
+        if (parts.length === 1) {
+            return {
+                tvar: parts[0],
+                message_id: null
+            };
+        } else if (parts.length === 0 ||
+                   parts.length > 2 ||
+                   parts[0] === '' ||
+                   parts[1] === '') {
+            throw new module.CompilationError(
+                el, "illegal content in data-tvar");
+        }
+        return {
+            tvar: parts[0],
+            message_id: parts[1]
+        };
+    };
+
     var parse_text_for_plural = function(text) {
         var before_plural = [];
         var after_plural = [];
@@ -2016,6 +1986,36 @@ obviel.template = {};
         
         return {before_plural: before_plural,
                 after_plural: after_plural};
+    };
+
+    var get_all_variable_names = function(singular, plural) {
+        var names = $.extend({}, singular.variables);
+        if (plural !== null) {
+            $.extend(names, plural.variables);
+        }
+        return names;
+    };
+    
+    var get_implicit_count_variable = function(el, singular, plural) {
+        var names = get_all_variable_names(singular, plural);
+        
+        var result = null;
+        for (name in names) {
+            if (result === null) {
+                result = name;
+            } else {
+                // if we already have seen a variable, then getting
+                // a second variable means we have multiple variables
+                // and therefore we can't find a single count variable
+                result = null;
+                break;
+            }
+        }
+        if (result === null) {
+            throw new module.CompilationError(
+                el, "could not determine implicit count variable for plural");
+        }
+        return result;
     };
 
     // this might be too restrictive; we can open it up more on the long
