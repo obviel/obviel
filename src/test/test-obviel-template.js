@@ -841,6 +841,9 @@ test("data-trans with text & comment and element", function() {
 //           '<p>Hallo wereld!</p>');
 // });
 
+// XXX data-trans with explicit message ids when translation cannot be
+// found
+
 test("data-trans with variable", function() {
     html_equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
           '<p>Fred, hallo!</p>');

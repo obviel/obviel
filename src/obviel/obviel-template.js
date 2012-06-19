@@ -365,47 +365,12 @@ obviel.template = {};
             return false;
         }
         
-        // this.register_on_el(el, function(el, scope, context) {
-        //     dynamic_element.render(el, scope, context); });
-        
         this.dynamic_elements.push({
             finder: this.get_el_finder(el),
             dynamic_element: dynamic_element
         });
         return dynamic_element.content_trans !== null;
     };
-    
-    module.Section.prototype.register_on_el = function(el, f) {
-        var indexes = this.get_el_indexes(el);
-        var d = this.el_funcs;
-        var sub_d = null;
-        for (var i = 0; i < indexes.length; i++) {
-            sub_d = d[indexes[i]];
-            if (sub_d === undefined) {
-                sub_d = {funcs: [], sub: {}};
-                d.sub[indexes[i]] = sub_d;
-            }
-            d = sub_d; 
-        }
-        d.funcs.push(f);
-    };
-
-    // module.Section.prototype.render_registered_func = function() {
-    //     var c = module.Codegen('funcs, el, scope, context');
-    //     this.codegen_registered(c, this.el_funcs);
-    //     return c.get_function();
-    // };
-    
-    // module.Section.prototype.codegen_registered = function(
-    //     c, el_funcs) {
-    //     for (var i in el_funcs.funcs) {
-    //         c.push('funcs["' + func_id + '"](el, scope, context);');
-    //     }
-    //     for (var j in el_funcs.sub) {
-    //         c.push('el = el.childNodes[' + j + '];');
-    //         this.codegen_registered(c, el_funcs.sub[j]); 
-    //     }
-    // };
                                                            
     module.Section.prototype.render_registered = function(
         el_funcs, el, scope, context) {
@@ -467,10 +432,6 @@ obviel.template = {};
             return;
         }
         
-        // this.register_on_el(el, function(el, scope, context) {
-        //     view_element.render(el, scope, context); });
-   
-        
         this.view_elements.push({
             finder: this.get_el_finder(el),
             view_element: view_element
@@ -497,9 +458,6 @@ obviel.template = {};
         // XXX still necessary?
         el.removeAttribute('data-view');
         el.removeAttribute('data-trans');
-
-        // this.register_on_el(el, function(el, scope, context) {
-        //     sub_section.render(el, scope, context);});
    
         this.sub_sections.push({
             finder: this.get_el_finder(el),
