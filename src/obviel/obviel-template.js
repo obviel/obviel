@@ -453,11 +453,6 @@ obviel.template = {};
 
         // replace original el with shallow clone
         old_el.parentNode.replaceChild(el, old_el);
-        
-        // remove any data-view and data-trans attributes that may be there
-        // XXX still necessary?
-        el.removeAttribute('data-view');
-        el.removeAttribute('data-trans');
    
         this.sub_sections.push({
             finder: this.get_el_finder(el),
