@@ -490,7 +490,6 @@ obviel.template = {};
             scope.push(data_with);
         }
 
-
         el.appendChild(this.frag.cloneNode(true));
         
         this.render_dynamic_elements(el, scope, context);
