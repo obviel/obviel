@@ -1673,42 +1673,7 @@ obviel.template = {};
             info.dynamic_notrans.render(children[info.index], scope, context);
         }
     };
-
-    var parse_text_for_plural = function(text) {
-        var before_plural = [];
-        var after_plural = [];
-        
-        var current = before_plural;
-        var tokens = module.tokenize(text);
-        for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i];
-            if (token.type === module.NAME_TOKEN) {
-                current.push('{' + token.value + '}');
-            } else {
-                var value = token.value;
-                // XXX shouldn't allow || twice
-                var index = value.indexOf('||');
-                if (index !== -1) {
-                    current.push(value.slice(0, index));
-                    current = after_plural;
-                    value = value.slice(index + 2);
-                }
-                current.push(value);
-            }
-        }
-
-        before_plural = before_plural.join('');
-        
-        if (current === after_plural) {
-            after_plural = after_plural.join('');
-        } else {
-            after_plural = null;
-        }
-        
-        return {before_plural: before_plural,
-                after_plural: after_plural};
-    };
-
+    
     var get_all_variable_names = function(singular, plural) {
         var names = $.extend({}, singular.variables);
         if (plural !== null) {
@@ -1817,91 +1782,7 @@ obviel.template = {};
     module.Scope.prototype.pop = function() {
         this.stack.pop();
     };
-
-    var morph_element = function(el, name) {
-        var new_el = document.createElement(name);
-        var i;
-        
-        // copy over all attributes from old element
-        for (i = 0; i < el.attributes.length; i++) {
-            var attr = el.attributes[i];
-            if (attr.specified !== true) {
-                continue;
-            }
-            if (attr.value === null) {
-                continue;
-            }
-            new_el.setAttribute(attr.name, attr.value);
-        }
-        
-        // copy over all sub-elements from old element
-        for (i = 0; i < el.childNodes.length; i++) {
-            var child = el.childNodes[i];
-            new_el.appendChild(child);
-        }
-
-        // copy all events
-        var events = $(el).data('events');
-        if (events !== undefined) {
-            $.each(events, function(key, value) {
-                $.each(value, function(sub, v) {
-                    $(new_el).bind(v.type, v.handler);
-                });
-            });
-        }
-
-        // put new element in its place
-        el.parentNode.replaceChild(new_el, el);
-
-
-        return new_el;
-    };
     
-    var get_directive = function(el, name) {
-        var value = null;
-        if (!el.hasAttribute(name)) {
-            return null;
-        }
-        
-        value = el.getAttribute(name);
-        if (value === null || value === '') {
-            throw new module.CompilationError(
-                el, name + " may not be empty");
-        }
-        
-        el.removeAttribute(name);
-        
-        return value;
-    };
-
-    var split_name_formatters = function(el, text) {
-        var parts = trim(text).split(' ');
-        var result = [];
-        for (var i = 0; i < parts.length; i++) {
-            var part = parts[i];
-            result.push(split_name_formatter(el, part));
-        }
-        return result;
-    };
-    
-    var split_name_formatter = function(el, name) {
-        var name_parts = name.split('|');
-        if (name_parts.length === 1) {
-            return {
-                name: name_parts[0],
-                formatter: null
-            };
-        }
-        if (name_parts.length !== 2) {
-            throw new module.CompilationError(
-                el, "variable may only have a single | in it");
-        }
-        return {
-            name: name_parts[0],
-            formatter: name_parts[1]
-        };   
-    };
-
     // note that this function is not used outside of the
     // translation system; instead function generated with the code
     // generator is used
@@ -2016,6 +1897,125 @@ obviel.template = {};
 
     module.set_default_view_name = function(name) {
         default_view_name = name;
+    };
+
+    var morph_element = function(el, name) {
+        var new_el = document.createElement(name);
+        var i;
+        
+        // copy over all attributes from old element
+        for (i = 0; i < el.attributes.length; i++) {
+            var attr = el.attributes[i];
+            if (attr.specified !== true) {
+                continue;
+            }
+            if (attr.value === null) {
+                continue;
+            }
+            new_el.setAttribute(attr.name, attr.value);
+        }
+        
+        // copy over all sub-elements from old element
+        for (i = 0; i < el.childNodes.length; i++) {
+            var child = el.childNodes[i];
+            new_el.appendChild(child);
+        }
+
+        // copy all events
+        var events = $(el).data('events');
+        if (events !== undefined) {
+            $.each(events, function(key, value) {
+                $.each(value, function(sub, v) {
+                    $(new_el).bind(v.type, v.handler);
+                });
+            });
+        }
+
+        // put new element in its place
+        el.parentNode.replaceChild(new_el, el);
+
+
+        return new_el;
+    };
+    
+    var get_directive = function(el, name) {
+        var value = null;
+        if (!el.hasAttribute(name)) {
+            return null;
+        }
+        
+        value = el.getAttribute(name);
+        if (value === null || value === '') {
+            throw new module.CompilationError(
+                el, name + " may not be empty");
+        }
+        
+        el.removeAttribute(name);
+        
+        return value;
+    };
+
+    var split_name_formatters = function(el, text) {
+        var parts = trim(text).split(' ');
+        var result = [];
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            result.push(split_name_formatter(el, part));
+        }
+        return result;
+    };
+    
+    var split_name_formatter = function(el, name) {
+        var name_parts = name.split('|');
+        if (name_parts.length === 1) {
+            return {
+                name: name_parts[0],
+                formatter: null
+            };
+        }
+        if (name_parts.length !== 2) {
+            throw new module.CompilationError(
+                el, "variable may only have a single | in it");
+        }
+        return {
+            name: name_parts[0],
+            formatter: name_parts[1]
+        };   
+    };
+
+    var parse_text_for_plural = function(text) {
+        var before_plural = [];
+        var after_plural = [];
+        
+        var current = before_plural;
+        var tokens = module.tokenize(text);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                current.push('{' + token.value + '}');
+            } else {
+                var value = token.value;
+                // XXX shouldn't allow || twice
+                var index = value.indexOf('||');
+                if (index !== -1) {
+                    current.push(value.slice(0, index));
+                    current = after_plural;
+                    value = value.slice(index + 2);
+                }
+                current.push(value);
+            }
+        }
+
+        before_plural = before_plural.join('');
+        
+        if (current === after_plural) {
+            after_plural = after_plural.join('');
+        } else {
+            after_plural = null;
+        }
+        
+        return {before_plural: before_plural,
+                after_plural: after_plural};
     };
 
     // this might be too restrictive; we can open it up more on the long
