@@ -921,13 +921,6 @@ obviel.template = {};
         this.attr_trans = new module.PluralTrans(
             singular, plural, count_variable);
     };
-
-    module.DynamicAttribute.prototype.make_attribute_trans = function(
-        el, name, value) {
-        return get_singular_or_plural_attribute_trans(
-            el, name, value, this.trans_info);
-    };
-
     
     module.DynamicAttribute.prototype.render = function(el, scope, context) {
         var self = this;
