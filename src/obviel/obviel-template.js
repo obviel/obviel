@@ -1939,7 +1939,8 @@ obviel.template = {};
         if (parts.length === 1) {
             return {
                 tvar: parts[0],
-                message_id: null
+                message_id: null,
+                plural_message_id: null
             };
         } else if (parts.length === 0 ||
                    parts.length > 2 ||
@@ -1950,7 +1951,8 @@ obviel.template = {};
         }
         return {
             tvar: parts[0],
-            message_id: parts[1]
+            message_id: parts[1],
+            plural_message_id: null
         };
     };
 

@@ -1981,6 +1981,15 @@ test("pluralize in text without translation implicit data-plural", function() {
                '<div>2 elephants</div>');
 });
 
+test("pluralize in tvar without translation implicit data-plural", function() {
+    html_equal(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
+                      { 'count': 1}),
+               '<div><div>1 elephant</div>!</div>');
+    html_equal(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
+                      { 'count': 2}),
+               '<div><div>2 elephants</div>!</div>');
+});
+
 test("pluralize in text without translation explicit data-plural", function() {
     html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
                       { 'count': 1}),
