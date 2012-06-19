@@ -607,9 +607,578 @@ obviel.template = {};
         this.any_translations = false;
         this.compile(el);
     };
-
     
-    module.TransInfo.prototype.compile = function(el) {
+    module.DynamicElement = function(el, allow_tvar) {
+        this.attr_texts = {};
+        this.content_texts = [];
+        this.handlers = [];
+        this.content_trans = null;
+        this.func_name = null;
+        this.has_data_attr = false;
+        this._dynamic = false;
+        this.trans_info = null;
+        this.compile(el, allow_tvar);
+    };
+
+    module.DynamicElement.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };   
+    
+    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
+        this.trans_info = new module.TransInfo(el);
+        
+        this.compile_attr_texts(el);
+        this.compile_content_texts(el);
+        this.compile_data_handler(el);
+        this.compile_func(el);
+        this.compile_data_id(el);
+        this.compile_data_el(el);
+        this.compile_data_attr(el);
+        this.compile_data_unwrap(el);
+        this.compile_data_trans_content(el);
+        this.compile_data_tvar_content(el, allow_tvar);
+    };
+    
+    module.DynamicElement.prototype.make_content_trans = function(
+        el, trans_info, directive_name) {
+        var r = get_singular_or_plural_content_trans(
+            el, trans_info, directive_name);
+        if (r.plural === null) {
+            return r.singular;
+        }        
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
+    };
+    
+    module.DynamicElement.prototype.compile_data_trans_content = function(el) {
+        if (this.trans_info.content === null) {
+            return;
+        }
+        // XXX what about data-attr, data-unwrap, data-el, data-func?
+        if (el.hasAttribute('data-view')) {
+            throw new module.CompilationError(
+                el,
+                "data-view not allowed when content is marked with data-trans");
+        }
+        
+        this._dynamic = true;
+        this.content_trans = this.make_content_trans(
+            el, this.trans_info.content, 'data-trans');
+    };
+
+    module.DynamicElement.prototype.compile_data_tvar_content = function(
+        el, allow_tvar) {
+        var data_tvar = get_directive(el, 'data-tvar');
+        if (data_tvar === null) {
+            return;
+        }
+        if (!allow_tvar) {
+            throw new module.CompilationError(
+                el, ("data-tvar is not allowed outside data-trans or " +
+                     "other data-tvar"));
+        }
+        if (this.trans_info.content !== null) {
+            throw new module.CompilationError(
+                el, ("data-trans for non-attribute content and " +
+                     "data-tvar cannot be both on same element"));
+        }
+        this._dynamic = true;
+        // XXX blend info from tvar_info (message ids) and trans_info
+        // (count variable). ugly, would prefer trans_info to contain
+        // the right stuff right away by parsing data-tvar too
+        var tvar_info = parse_tvar(el, data_tvar);
+        var trans_info = {id: '.', count_variable: null};
+        if (this.trans_info.content !== null) {
+            trans_info.count_variable = this.trans_info.content.count_variable;
+        }
+        trans_info.message_id = tvar_info.message_id;
+        trans_info.plural_message_id = tvar_info.plural_message_id;
+        this.content_trans = this.make_content_trans(el, trans_info, 'data-tvar');
+        // data-tvar accepts empty message ids and doesn't try
+        // translating in this case
+        if (this.content_trans.message_id === '') {
+            this.content_trans = null;
+        }
+    };
+    
+    // IE does URL expansion in href attributes, causing us to
+    // introduce this ugly hack to work around it. jQuery uses
+    // getAttribute(name, 2) in such cases, but that doesn't work
+    // for *all* href attributes.. but in IE 8 compatibility mode
+    // all this works as expected
+    // var base_url = function() {
+    //     var url = window.location.href;
+    //     return url.slice(0, window.location.href.lastIndexOf('/')) + '/';
+    // };
+    // var cached_base_url = base_url();
+    
+    // var cleanup_href_attr = function(value) {
+    //     if (starts_with(value, cached_base_url)) {
+    //         value = value.slice(cached_base_url.length);
+    //         value = decodeURIComponent(value);
+    //     }
+    //     return value;
+    // };
+    
+    module.DynamicElement.prototype.compile_attr_texts = function(el) {
+        var attr_text;
+        for (var i = 0; i < el.attributes.length; i++) {
+            var attr = el.attributes[i];
+            if (attr.specified !== true) {
+                continue;
+            }
+            if (attr.value === null) {
+                continue;
+            }
+            attr_text = new module.DynamicAttribute(el, attr.name, attr.value,
+                                                    this.trans_info);
+            if (!attr_text.is_dynamic()) {
+                continue;
+            }
+            this.attr_texts[attr.name] = attr_text;
+            this._dynamic = true;
+        }
+    };
+    
+    module.DynamicElement.prototype.compile_content_texts = function(el) {
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType !== 3) {
+                continue;
+            }
+            if (node.nodeValue === null) {
+                continue;
+            }
+            var dynamic_text = new module.DynamicText(el, node.nodeValue);
+            if (dynamic_text.is_dynamic()) {
+                this.content_texts.push({
+                    index: i,
+                    dynamic_text: dynamic_text
+                });
+                this._dynamic = true;
+            }
+        }        
+    };
+    
+    module.DynamicElement.prototype.compile_data_handler = function(el) {
+        var data_handler = get_directive(el, 'data-handler');
+        if (data_handler === null) {
+            return;
+        }
+        var name_formatters = split_name_formatters(el, data_handler);
+        if (name_formatters.length === 0) {
+            throw new module.CompilationError(
+                el, 'data-handler: must have content');
+        }
+        for (var i = 0; i < name_formatters.length; i++) {
+            var name_formatter = name_formatters[i];
+    
+            if (!name_formatter.formatter) {
+                throw new module.CompilationError(
+                    el, "data-handler: handler function name is not specified");
+            }
+            this.handlers.push({event_name: name_formatter.name,
+                                handler_name: name_formatter.formatter});
+        }
+        this._dynamic = true;
+    };
+
+    module.DynamicElement.prototype.compile_data_id = function(el) {
+        if (!el.hasAttribute('data-id')) {
+            return;
+        }
+        // non-destructively read data-id attribute, leave it in place
+        // so variables can be used in it            
+        var data_id = el.getAttribute('data-id');
+        if (!data_id) {
+            throw new module.CompilationError(
+                el, "data-id cannot be empty");
+        }
+        
+        $(el).addClass('obviel-template-data-id');
+    };
+    
+    module.DynamicElement.prototype.compile_data_el = function(el) {
+        if (!el.hasAttribute('data-el')) {
+            return;
+        }
+        // non-destructively read data-el attribute, leave it in place
+        // so variables can be used in it            
+        var data_el = el.getAttribute('data-el');
+        if (!data_el) {
+            throw new module.CompilationError(
+                el, "data-el cannot be empty");
+        }
+        $(el).addClass('obviel-template-data-el');
+    };
+
+    module.DynamicElement.prototype.compile_data_attr = function(el) {
+        if (!el.hasAttribute('data-attr')) {
+            return;
+        }
+        // non-destructively read data-attr attribute, leave it in place
+        // so variables can be used in it
+        var data_attr = el.getAttribute('data-attr');
+        if (!data_attr) {
+            throw new module.CompilationError(
+                el, "data-attr cannot be empty");
+        }
+        if (!el.hasAttribute('data-value')) {
+            throw new module.CompilationError(
+                el, "data-attr must be combined with data-value");
+        }
+        $(el).addClass('obviel-template-removal');
+        this.has_data_attr = true;
+        this._dynamic = true;
+    };
+
+    module.DynamicElement.prototype.compile_data_unwrap = function(el) {
+        if (!el.hasAttribute('data-unwrap')) {
+            return;
+        }
+        $(el).addClass('obviel-template-data-unwrap');
+    };
+    
+    module.DynamicElement.prototype.compile_func = function(el) {
+        var func_name = get_directive(el, 'data-func');
+        if (func_name === null) {
+            return;
+        }
+        this.func_name = func_name;
+        this._dynamic = true;
+    };
+    
+    module.DynamicElement.prototype.render = function(el, scope, context) {
+        var self = this;
+        
+        for (var key in this.attr_texts) {
+            this.attr_texts[key].render(el, scope, context);
+        };
+        
+        // fast path without translations; elements do not need to be
+        // reorganized
+        if (this.content_trans === null) {
+            this.render_notrans(el, scope, context);
+            this.finalize_render(el, scope, context);
+            return;
+        }
+
+        this.content_trans.render(
+            el, scope, context,
+            function(el, scope, context) {
+                self.render_notrans(el, scope, context);
+            });
+        this.finalize_render(el, scope, context);
+    };
+
+    module.DynamicElement.prototype.render_notrans = function(el, scope,
+                                                              context) {
+        for (var i = 0; i < this.content_texts.length; i++) {
+            var value = this.content_texts[i];
+            el.childNodes[value.index].nodeValue = value.dynamic_text.render(
+                el, scope, context);
+        }
+    };
+    
+    module.DynamicElement.prototype.render_data_attr = function(el) {
+        if (!this.has_data_attr) {
+            return;
+        }
+        var name = get_directive(el, 'data-attr');
+        var value = get_directive(el, 'data-value');
+
+        var parent = $(el.parentNode);
+        
+        // use jQuery to make attribute access more uniform (style in IE, etc)
+            
+        if (parent.attr(name)) {
+            value = parent.attr(name) + ' ' + value;
+        }
+        parent.attr(name, value);
+    };
+
+    module.DynamicElement.prototype.render_data_handler = function(
+        el, context) {
+        if (this.handlers.length === 0) {
+            return;
+        }
+            
+        for (var i = 0; i < this.handlers.length; i++) {
+            var handler = this.handlers[i];
+            if (context.get_handler === null || context.get_handler === undefined) {
+                throw new module.RenderError(
+                    el, "cannot render data-handler for event '" +
+                        handler.event_name + "' and handler '" +
+                        handler.handler_name +
+                        "' because no get_handler function " +
+                        "was supplied");
+            }
+            var f = context.get_handler(handler.handler_name);
+            if (f === undefined || f === null) {
+                throw new module.RenderError(
+                    el, "cannot render data-handler for event '" +
+                        handler.event_name + "' and handler '" +
+                        handler.handler_name + "' because handler function " +
+                        "could not be found");
+            }
+            $(el).bind(handler.event_name, f);
+        }
+    };
+    
+    module.DynamicElement.prototype.render_data_func = function(
+        el, scope, context) {
+        if (this.func_name === null) {
+            return;
+        }
+        var func = context.get_func(this.func_name);
+        if (!func) {
+            throw new module.RenderError(
+                el, 'cannot render data-func because cannot find func: ' +
+                    this.func_name);
+        }
+        func($(el),
+             function(name) { return scope.resolve(name); },
+             context);
+    };
+    
+    
+    module.DynamicElement.prototype.finalize_render = function(
+        el, scope, context) {
+        this.render_data_attr(el);
+        this.render_data_handler(el, context);
+        this.render_data_func(el, scope, context);
+    };
+    
+    module.DynamicText = function(el, text) {        
+        this.parts = [];
+        this.variables = [];
+      
+        var tokens = module.tokenize(text);
+        var dynamic = false;
+        
+        for (var i in tokens) {
+            var token = tokens[i];
+            if (token.type === module.TEXT_TOKEN) {
+                this.parts.push(token.value);
+            } else if (token.type === module.NAME_TOKEN) {
+                this.parts.push(null);
+                this.variables.push({
+                    index: i,
+                    value: new module.Variable(el, token.value)
+                });
+                dynamic = true;
+            }
+        }
+        this._dynamic = dynamic;
+    };
+
+    module.DynamicText.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };
+    
+    module.DynamicText.prototype.render = function(el, scope, context) {
+        var result = this.parts.slice(0);
+        for (var i in this.variables) {
+            var variable = this.variables[i];
+            result[variable.index] = variable.value.render(el, scope, context);
+        }
+        return result.join('');        
+    };
+
+    module.DynamicText.prototype.render_root = function(el, scope, context) {
+        var node = document.createTextNode(this.render(el, scope, context));
+        el.appendChild(node);
+    };
+    
+    module.DynamicAttribute = function(el, name, value, trans_info) {
+        this.name = name;
+        this.value = value;
+        this.trans_info = trans_info;
+        this.dynamic_text = null;
+        this.attr_trans = null;
+        this._dynamic = false;
+        this.compile(el, name, value, trans_info);
+    };
+
+    module.DynamicAttribute.prototype.is_dynamic = function() {
+        return this._dynamic;
+    };
+    
+    module.DynamicAttribute.prototype.make_attribute_trans = function(
+        el, name, value, trans_info) {
+        var r = get_singular_or_plural_attribute_trans(
+            el, name, value, trans_info);
+        if (r.plural === null) {
+            return r.singular;
+        }
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
+    };
+    
+    module.DynamicAttribute.prototype.compile = function(el) {
+        var dynamic_text = new module.DynamicText(el, this.value);
+        var attr_info = this.trans_info.attributes[this.name];
+        // if there's nothing dynamic nor anything to translate,
+        // we don't have a dynamic attribute at all
+        if (!dynamic_text.is_dynamic() && attr_info === undefined) {
+            return;
+        }
+        if (this.name === 'id') {
+            throw new module.CompilationError(
+                el, ("not allowed to use variables (or translation) " +
+                     "in id attribute. use data-id instead"));
+        }
+        this.dynamic_text = dynamic_text;
+       
+        if (attr_info !== undefined) {
+            this.attr_trans = this.make_attribute_trans(
+                el, this.name, this.value, attr_info);
+        }
+        this._dynamic = true;
+    };
+    
+    
+    module.DynamicAttribute.prototype.render = function(el, scope, context) {
+        var self = this;
+        // fast path without translations
+        if (context.get_translation === undefined ||
+            context.get_translation === null ||
+            this.attr_trans === null) {
+            this.render_notrans(el, scope, context);
+            return;
+        }
+        this.attr_trans.render(
+            el, scope, context,
+            function(el, scope, context) {
+                self.render_notrans(el, scope, context);
+            });
+    };
+    
+    module.DynamicAttribute.prototype.render_notrans = function(
+        el, scope, context) {
+        el.setAttribute(this.name,
+                        this.dynamic_text.render(el, scope, context));
+        
+    };
+
+    var split_name_formatters = function(el, text) {
+        var parts = trim(text).split(' ');
+        var result = [];
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            result.push(split_name_formatter(el, part));
+        }
+        return result;
+    };
+    
+    var split_name_formatter = function(el, name) {
+        var name_parts = name.split('|');
+        if (name_parts.length === 1) {
+            return {
+                name: name_parts[0],
+                formatter: null
+            };
+        }
+        if (name_parts.length !== 2) {
+            throw new module.CompilationError(
+                el, "variable may only have a single | in it");
+        }
+        return {
+            name: name_parts[0],
+            formatter: name_parts[1]
+        };   
+    };
+    
+    module.Variable = function(el, name) {
+        var r = split_name_formatter(el, name);
+        this.name = r.name;
+        this.formatter = r.formatter;
+        this.full_name = name;
+        validate_dotted_name(el, this.name);
+        
+        this.get_value = module.resolve_func(r.name);
+    };
+        
+    module.Variable.prototype.render = function(el, scope, context) {
+        var result = this.get_value(scope);
+        if (result === undefined) {
+            throw new module.RenderError(el, "variable '" + this.name + "' " +
+                                         "could not be found");
+        }
+
+        if (this.formatter !== null) {
+            var formatter = context.get_formatter(this.formatter);
+            if (!formatter) {
+                throw new module.RenderError(
+                    el, "cannot find formatter with name: " +
+                        this.formatter);
+            }
+            result = formatter(result);
+        }
+        
+        // if we want to render an object, pretty-print it
+        var type = $.type(result);
+        if (type === 'object' || type === 'array') {
+            return JSON.stringify(result, null, 4);
+        }
+        return result;
+    };
+
+    module.ViewElement = function(el) {
+        var data_view = get_directive(el, 'data-view'); 
+        if (data_view === null) {
+            this.dynamic = false;
+            return;
+        }
+        validate_dotted_name(el, data_view);
+        this.dynamic = true;
+        var r = split_name_formatter(el, data_view);
+        this.obj_name = r.name;
+        this.get_value = module.resolve_func(r.name);
+        this.view_name = r.formatter;
+        if (this.view_name === null) {
+            this.view_name = default_view_name;
+        }
+    };
+    
+    module.ViewElement.prototype.is_dynamic = function() {
+        return this.dynamic;
+    };
+
+    module.ViewElement.prototype.render = function(el, scope, context) {
+        var obj = this.get_value(scope);
+        if (obj === undefined) {
+            throw new module.RenderError(
+                el, "data-view object '" + this.property_name + "' " +
+                    "could not be found");
+        }
+        var type = $.type(obj);
+        if (type !== 'object') {
+            throw new module.RenderError(
+                el, 
+                "data-view must point to an object, not to " + type);
+        }
+        
+        // empty element
+        while (el.hasChildNodes()) {
+            el.removeChild(el.firstChild);
+        }
+        try {
+            $(el).render(obj, this.view_name);
+        } catch(e) {
+            if (e instanceof obviel.LookupError) {
+                throw new module.RenderError(el, e.toString());
+            } else {
+                throw e;
+            }
+        }
+    };
+
+        module.TransInfo.prototype.compile = function(el) {
         this.compile_data_trans(el);
         this.compile_data_plural(el);
     };
@@ -1379,577 +1948,6 @@ obviel.template = {};
         } else {
             this.singular.render_translation(
                 el, scope, context, translation);
-        }
-    };
-
-    
-    module.DynamicElement = function(el, allow_tvar) {
-        this.attr_texts = {};
-        this.content_texts = [];
-        this.handlers = [];
-        this.content_trans = null;
-        this.func_name = null;
-        this.has_data_attr = false;
-        this._dynamic = false;
-        this.trans_info = null;
-        this.compile(el, allow_tvar);
-    };
-
-    module.DynamicElement.prototype.is_dynamic = function() {
-        return this._dynamic;
-    };   
-    
-    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
-        this.trans_info = new module.TransInfo(el);
-        
-        this.compile_attr_texts(el);
-        this.compile_content_texts(el);
-        this.compile_data_handler(el);
-        this.compile_func(el);
-        this.compile_data_id(el);
-        this.compile_data_el(el);
-        this.compile_data_attr(el);
-        this.compile_data_unwrap(el);
-        this.compile_data_trans_content(el);
-        this.compile_data_tvar_content(el, allow_tvar);
-    };
-    
-    module.DynamicElement.prototype.make_content_trans = function(
-        el, trans_info, directive_name) {
-        var r = get_singular_or_plural_content_trans(
-            el, trans_info, directive_name);
-        if (r.plural === null) {
-            return r.singular;
-        }        
-        return new module.PluralTrans(
-            r.singular,
-            r.plural,
-            r.count_variable);
-    };
-    
-    module.DynamicElement.prototype.compile_data_trans_content = function(el) {
-        if (this.trans_info.content === null) {
-            return;
-        }
-        // XXX what about data-attr, data-unwrap, data-el, data-func?
-        if (el.hasAttribute('data-view')) {
-            throw new module.CompilationError(
-                el,
-                "data-view not allowed when content is marked with data-trans");
-        }
-        
-        this._dynamic = true;
-        this.content_trans = this.make_content_trans(
-            el, this.trans_info.content, 'data-trans');
-    };
-
-    module.DynamicElement.prototype.compile_data_tvar_content = function(
-        el, allow_tvar) {
-        var data_tvar = get_directive(el, 'data-tvar');
-        if (data_tvar === null) {
-            return;
-        }
-        if (!allow_tvar) {
-            throw new module.CompilationError(
-                el, ("data-tvar is not allowed outside data-trans or " +
-                     "other data-tvar"));
-        }
-        if (this.trans_info.content !== null) {
-            throw new module.CompilationError(
-                el, ("data-trans for non-attribute content and " +
-                     "data-tvar cannot be both on same element"));
-        }
-        this._dynamic = true;
-        // XXX blend info from tvar_info (message ids) and trans_info
-        // (count variable). ugly, would prefer trans_info to contain
-        // the right stuff right away by parsing data-tvar too
-        var tvar_info = parse_tvar(el, data_tvar);
-        var trans_info = {id: '.', count_variable: null};
-        if (this.trans_info.content !== null) {
-            trans_info.count_variable = this.trans_info.content.count_variable;
-        }
-        trans_info.message_id = tvar_info.message_id;
-        trans_info.plural_message_id = tvar_info.plural_message_id;
-        this.content_trans = this.make_content_trans(el, trans_info, 'data-tvar');
-        // data-tvar accepts empty message ids and doesn't try
-        // translating in this case
-        if (this.content_trans.message_id === '') {
-            this.content_trans = null;
-        }
-    };
-    
-    // IE does URL expansion in href attributes, causing us to
-    // introduce this ugly hack to work around it. jQuery uses
-    // getAttribute(name, 2) in such cases, but that doesn't work
-    // for *all* href attributes.. but in IE 8 compatibility mode
-    // all this works as expected
-    // var base_url = function() {
-    //     var url = window.location.href;
-    //     return url.slice(0, window.location.href.lastIndexOf('/')) + '/';
-    // };
-    // var cached_base_url = base_url();
-    
-    // var cleanup_href_attr = function(value) {
-    //     if (starts_with(value, cached_base_url)) {
-    //         value = value.slice(cached_base_url.length);
-    //         value = decodeURIComponent(value);
-    //     }
-    //     return value;
-    // };
-    
-    module.DynamicElement.prototype.compile_attr_texts = function(el) {
-        var attr_text;
-        for (var i = 0; i < el.attributes.length; i++) {
-            var attr = el.attributes[i];
-            if (attr.specified !== true) {
-                continue;
-            }
-            if (attr.value === null) {
-                continue;
-            }
-            attr_text = new module.DynamicAttribute(el, attr.name, attr.value,
-                                                    this.trans_info);
-            if (!attr_text.is_dynamic()) {
-                continue;
-            }
-            this.attr_texts[attr.name] = attr_text;
-            this._dynamic = true;
-        }
-    };
-    
-    module.DynamicElement.prototype.compile_content_texts = function(el) {
-        for (var i = 0; i < el.childNodes.length; i++) {
-            var node = el.childNodes[i];
-            if (node.nodeType !== 3) {
-                continue;
-            }
-            if (node.nodeValue === null) {
-                continue;
-            }
-            var dynamic_text = new module.DynamicText(el, node.nodeValue);
-            if (dynamic_text.is_dynamic()) {
-                this.content_texts.push({
-                    index: i,
-                    dynamic_text: dynamic_text
-                });
-                this._dynamic = true;
-            }
-        }        
-    };
-    
-    module.DynamicElement.prototype.compile_data_handler = function(el) {
-        var data_handler = get_directive(el, 'data-handler');
-        if (data_handler === null) {
-            return;
-        }
-        var name_formatters = split_name_formatters(el, data_handler);
-        if (name_formatters.length === 0) {
-            throw new module.CompilationError(
-                el, 'data-handler: must have content');
-        }
-        for (var i = 0; i < name_formatters.length; i++) {
-            var name_formatter = name_formatters[i];
-    
-            if (!name_formatter.formatter) {
-                throw new module.CompilationError(
-                    el, "data-handler: handler function name is not specified");
-            }
-            this.handlers.push({event_name: name_formatter.name,
-                                handler_name: name_formatter.formatter});
-        }
-        this._dynamic = true;
-    };
-
-    module.DynamicElement.prototype.compile_data_id = function(el) {
-        if (!el.hasAttribute('data-id')) {
-            return;
-        }
-        // non-destructively read data-id attribute, leave it in place
-        // so variables can be used in it            
-        var data_id = el.getAttribute('data-id');
-        if (!data_id) {
-            throw new module.CompilationError(
-                el, "data-id cannot be empty");
-        }
-        
-        $(el).addClass('obviel-template-data-id');
-    };
-    
-    module.DynamicElement.prototype.compile_data_el = function(el) {
-        if (!el.hasAttribute('data-el')) {
-            return;
-        }
-        // non-destructively read data-el attribute, leave it in place
-        // so variables can be used in it            
-        var data_el = el.getAttribute('data-el');
-        if (!data_el) {
-            throw new module.CompilationError(
-                el, "data-el cannot be empty");
-        }
-        $(el).addClass('obviel-template-data-el');
-    };
-
-    module.DynamicElement.prototype.compile_data_attr = function(el) {
-        if (!el.hasAttribute('data-attr')) {
-            return;
-        }
-        // non-destructively read data-attr attribute, leave it in place
-        // so variables can be used in it
-        var data_attr = el.getAttribute('data-attr');
-        if (!data_attr) {
-            throw new module.CompilationError(
-                el, "data-attr cannot be empty");
-        }
-        if (!el.hasAttribute('data-value')) {
-            throw new module.CompilationError(
-                el, "data-attr must be combined with data-value");
-        }
-        $(el).addClass('obviel-template-removal');
-        this.has_data_attr = true;
-        this._dynamic = true;
-    };
-
-    module.DynamicElement.prototype.compile_data_unwrap = function(el) {
-        if (!el.hasAttribute('data-unwrap')) {
-            return;
-        }
-        $(el).addClass('obviel-template-data-unwrap');
-    };
-    
-    module.DynamicElement.prototype.compile_func = function(el) {
-        var func_name = get_directive(el, 'data-func');
-        if (func_name === null) {
-            return;
-        }
-        this.func_name = func_name;
-        this._dynamic = true;
-    };
-    
-    module.DynamicElement.prototype.render = function(el, scope, context) {
-        var self = this;
-        
-        for (var key in this.attr_texts) {
-            this.attr_texts[key].render(el, scope, context);
-        };
-        
-        // fast path without translations; elements do not need to be
-        // reorganized
-        if (this.content_trans === null) {
-            this.render_notrans(el, scope, context);
-            this.finalize_render(el, scope, context);
-            return;
-        }
-
-        this.content_trans.render(
-            el, scope, context,
-            function(el, scope, context) {
-                self.render_notrans(el, scope, context);
-            });
-        this.finalize_render(el, scope, context);
-    };
-
-    module.DynamicElement.prototype.render_notrans = function(el, scope,
-                                                              context) {
-        for (var i = 0; i < this.content_texts.length; i++) {
-            var value = this.content_texts[i];
-            el.childNodes[value.index].nodeValue = value.dynamic_text.render(
-                el, scope, context);
-        }
-    };
-    
-    module.DynamicElement.prototype.render_data_attr = function(el) {
-        if (!this.has_data_attr) {
-            return;
-        }
-        var name = get_directive(el, 'data-attr');
-        var value = get_directive(el, 'data-value');
-
-        var parent = $(el.parentNode);
-        
-        // use jQuery to make attribute access more uniform (style in IE, etc)
-            
-        if (parent.attr(name)) {
-            value = parent.attr(name) + ' ' + value;
-        }
-        parent.attr(name, value);
-    };
-
-    module.DynamicElement.prototype.render_data_handler = function(
-        el, context) {
-        if (this.handlers.length === 0) {
-            return;
-        }
-            
-        for (var i = 0; i < this.handlers.length; i++) {
-            var handler = this.handlers[i];
-            if (context.get_handler === null || context.get_handler === undefined) {
-                throw new module.RenderError(
-                    el, "cannot render data-handler for event '" +
-                        handler.event_name + "' and handler '" +
-                        handler.handler_name +
-                        "' because no get_handler function " +
-                        "was supplied");
-            }
-            var f = context.get_handler(handler.handler_name);
-            if (f === undefined || f === null) {
-                throw new module.RenderError(
-                    el, "cannot render data-handler for event '" +
-                        handler.event_name + "' and handler '" +
-                        handler.handler_name + "' because handler function " +
-                        "could not be found");
-            }
-            $(el).bind(handler.event_name, f);
-        }
-    };
-    
-    module.DynamicElement.prototype.render_data_func = function(
-        el, scope, context) {
-        if (this.func_name === null) {
-            return;
-        }
-        var func = context.get_func(this.func_name);
-        if (!func) {
-            throw new module.RenderError(
-                el, 'cannot render data-func because cannot find func: ' +
-                    this.func_name);
-        }
-        func($(el),
-             function(name) { return scope.resolve(name); },
-             context);
-    };
-    
-    
-    module.DynamicElement.prototype.finalize_render = function(
-        el, scope, context) {
-        this.render_data_attr(el);
-        this.render_data_handler(el, context);
-        this.render_data_func(el, scope, context);
-    };
-    
-    module.DynamicText = function(el, text) {        
-        this.parts = [];
-        this.variables = [];
-      
-        var tokens = module.tokenize(text);
-        var dynamic = false;
-        
-        for (var i in tokens) {
-            var token = tokens[i];
-            if (token.type === module.TEXT_TOKEN) {
-                this.parts.push(token.value);
-            } else if (token.type === module.NAME_TOKEN) {
-                this.parts.push(null);
-                this.variables.push({
-                    index: i,
-                    value: new module.Variable(el, token.value)
-                });
-                dynamic = true;
-            }
-        }
-        this._dynamic = dynamic;
-    };
-
-    module.DynamicText.prototype.is_dynamic = function() {
-        return this._dynamic;
-    };
-    
-    module.DynamicText.prototype.render = function(el, scope, context) {
-        var result = this.parts.slice(0);
-        for (var i in this.variables) {
-            var variable = this.variables[i];
-            result[variable.index] = variable.value.render(el, scope, context);
-        }
-        return result.join('');        
-    };
-
-    module.DynamicText.prototype.render_root = function(el, scope, context) {
-        var node = document.createTextNode(this.render(el, scope, context));
-        el.appendChild(node);
-    };
-    
-    module.DynamicAttribute = function(el, name, value, trans_info) {
-        this.name = name;
-        this.value = value;
-        this.trans_info = trans_info;
-        this.dynamic_text = null;
-        this.attr_trans = null;
-        this._dynamic = false;
-        this.compile(el, name, value, trans_info);
-    };
-
-    module.DynamicAttribute.prototype.is_dynamic = function() {
-        return this._dynamic;
-    };
-    
-    module.DynamicAttribute.prototype.make_attribute_trans = function(
-        el, name, value, trans_info) {
-        var r = get_singular_or_plural_attribute_trans(
-            el, name, value, trans_info);
-        if (r.plural === null) {
-            return r.singular;
-        }
-        return new module.PluralTrans(
-            r.singular,
-            r.plural,
-            r.count_variable);
-    };
-    
-    module.DynamicAttribute.prototype.compile = function(el) {
-        var dynamic_text = new module.DynamicText(el, this.value);
-        var attr_info = this.trans_info.attributes[this.name];
-        // if there's nothing dynamic nor anything to translate,
-        // we don't have a dynamic attribute at all
-        if (!dynamic_text.is_dynamic() && attr_info === undefined) {
-            return;
-        }
-        if (this.name === 'id') {
-            throw new module.CompilationError(
-                el, ("not allowed to use variables (or translation) " +
-                     "in id attribute. use data-id instead"));
-        }
-        this.dynamic_text = dynamic_text;
-       
-        if (attr_info !== undefined) {
-            this.attr_trans = this.make_attribute_trans(
-                el, this.name, this.value, attr_info);
-        }
-        this._dynamic = true;
-    };
-    
-    
-    module.DynamicAttribute.prototype.render = function(el, scope, context) {
-        var self = this;
-        // fast path without translations
-        if (context.get_translation === undefined ||
-            context.get_translation === null ||
-            this.attr_trans === null) {
-            this.render_notrans(el, scope, context);
-            return;
-        }
-        this.attr_trans.render(
-            el, scope, context,
-            function(el, scope, context) {
-                self.render_notrans(el, scope, context);
-            });
-    };
-    
-    module.DynamicAttribute.prototype.render_notrans = function(
-        el, scope, context) {
-        el.setAttribute(this.name,
-                        this.dynamic_text.render(el, scope, context));
-        
-    };
-
-    var split_name_formatters = function(el, text) {
-        var parts = trim(text).split(' ');
-        var result = [];
-        for (var i = 0; i < parts.length; i++) {
-            var part = parts[i];
-            result.push(split_name_formatter(el, part));
-        }
-        return result;
-    };
-    
-    var split_name_formatter = function(el, name) {
-        var name_parts = name.split('|');
-        if (name_parts.length === 1) {
-            return {
-                name: name_parts[0],
-                formatter: null
-            };
-        }
-        if (name_parts.length !== 2) {
-            throw new module.CompilationError(
-                el, "variable may only have a single | in it");
-        }
-        return {
-            name: name_parts[0],
-            formatter: name_parts[1]
-        };   
-    };
-    
-    module.Variable = function(el, name) {
-        var r = split_name_formatter(el, name);
-        this.name = r.name;
-        this.formatter = r.formatter;
-        this.full_name = name;
-        validate_dotted_name(el, this.name);
-        
-        this.get_value = module.resolve_func(r.name);
-    };
-        
-    module.Variable.prototype.render = function(el, scope, context) {
-        var result = this.get_value(scope);
-        if (result === undefined) {
-            throw new module.RenderError(el, "variable '" + this.name + "' " +
-                                         "could not be found");
-        }
-
-        if (this.formatter !== null) {
-            var formatter = context.get_formatter(this.formatter);
-            if (!formatter) {
-                throw new module.RenderError(
-                    el, "cannot find formatter with name: " +
-                        this.formatter);
-            }
-            result = formatter(result);
-        }
-        
-        // if we want to render an object, pretty-print it
-        var type = $.type(result);
-        if (type === 'object' || type === 'array') {
-            return JSON.stringify(result, null, 4);
-        }
-        return result;
-    };
-
-    module.ViewElement = function(el) {
-        var data_view = get_directive(el, 'data-view'); 
-        if (data_view === null) {
-            this.dynamic = false;
-            return;
-        }
-        validate_dotted_name(el, data_view);
-        this.dynamic = true;
-        var r = split_name_formatter(el, data_view);
-        this.obj_name = r.name;
-        this.get_value = module.resolve_func(r.name);
-        this.view_name = r.formatter;
-        if (this.view_name === null) {
-            this.view_name = default_view_name;
-        }
-    };
-    
-    module.ViewElement.prototype.is_dynamic = function() {
-        return this.dynamic;
-    };
-
-    module.ViewElement.prototype.render = function(el, scope, context) {
-        var obj = this.get_value(scope);
-        if (obj === undefined) {
-            throw new module.RenderError(
-                el, "data-view object '" + this.property_name + "' " +
-                    "could not be found");
-        }
-        var type = $.type(obj);
-        if (type !== 'object') {
-            throw new module.RenderError(
-                el, 
-                "data-view must point to an object, not to " + type);
-        }
-        
-        // empty element
-        while (el.hasChildNodes()) {
-            el.removeChild(el.firstChild);
-        }
-        try {
-            $(el).render(obj, this.view_name);
-        } catch(e) {
-            if (e instanceof obviel.LookupError) {
-                throw new module.RenderError(el, e.toString());
-            } else {
-                throw e;
-            }
         }
     };
     
