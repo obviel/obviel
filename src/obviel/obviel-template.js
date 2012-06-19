@@ -1318,18 +1318,7 @@ obviel.template = {};
             throw new module.CompilationError(
                 el, "data-trans used on attribute with no text to translate");
         }
-        var name_tokens = check_message_id(message_id);
-        // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
-            return;
-        }
-        // if we find no or only a single name token, we consider this
-        // an error. more than one name tokens are considered translatable,
-        // at least in their order
-        if (name_tokens <= 1) {
-            throw new module.CompilationError(
-                el, "data-trans used on attribute with no text to translate");
-        }
+        check_message_id(el, message_id, 'attribute');
     };
 
     module.AttributeTrans.prototype.get_variable = function(el, scope,
@@ -1372,7 +1361,6 @@ obviel.template = {};
         }
 
         this.render_translation(el, scope, context, translation);
-        
     };
 
     module.ContentTrans = function(message_id, directive_name) {
@@ -1432,6 +1420,7 @@ obviel.template = {};
     
     module.ContentTrans.prototype.check_data_trans_restrictions = function(
         el) {
+        // XXX more restrictions?
         if (el.hasAttribute('data-if')) {
             throw new module.CompilationError(
                 el,
@@ -1490,21 +1479,10 @@ obviel.template = {};
             throw new module.CompilationError(
                 el, "data-trans used on element with no text to translate");
         }
-        var name_tokens = check_message_id(message_id);
-        // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
-            return;
-        }
-        // if we find no or only a single name token, we consider this
-        // an error. more than one name tokens are considered translatable,
-        // at least in their order
-        if (name_tokens <= 1) {
-            throw new module.CompilationError(
-                el, "data-trans used on element with no text to translate");
-        }
+        check_message_id(el, message_id, 'element');
     };
     
-    var check_message_id = function(message_id) {
+    var check_message_id = function(el, message_id, element_or_attribute) {
         // cache the tokens so we get things faster during rendering time
         var tokens = cached_tokenize(message_id);
         var name_tokens = 0;
@@ -1514,13 +1492,25 @@ obviel.template = {};
             // we assume we have something to translate
             if (token.type === module.TEXT_TOKEN) {
                 if (trim(token.value) !== '') {
-                    return null;
+                    name_tokens = null;
+                    break;
                 }
             } else if (token.type === module.NAME_TOKEN) {
                 name_tokens++;
             }
         }
-        return name_tokens;
+        // we have found non-empty text tokens we can translate them
+        if (name_tokens === null) {
+            return;
+        }
+        // if we find no or only a single name token, we consider this
+        // an error. more than one name tokens are considered translatable,
+        // at least in their order
+        if (name_tokens <= 1) {
+            throw new module.CompilationError(
+                el, "data-trans used on " + element_or_attribute +
+                    " with no text to translate");
+        }
     };
 
     var parse_tvar = function(el, tvar) {
