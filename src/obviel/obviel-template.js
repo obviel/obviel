@@ -655,37 +655,19 @@ obviel.template = {};
         this.compile(el);
     };
 
-    module.TransInfo.prototype.compile_part = function(el, text) {
-        var parts = text.split(':');
-        // there is nothing to translate
-        if (parts.length === 1) {
-            return {id: parts[0], message_id: null};
-        }
-        // too many :
-        if (parts.length > 2) {
-            throw new module.CompilationError(
-                el, "illegal content in data-trans");
-        }
-        // we are referring to the text if we have no actual
-        // content identifier
-        if (parts[0] === '') {
-            return {id: '.', message_id: parts[1]};
-        }
-        // we really do want to have the attribute we are trying to translate
-        if (parts[0] !== '.' && !el.hasAttribute(parts[0])) {
-            throw new module.CompilationError(
-                el, "data-trans refers to a non-existent attribute");
-        }
-        return {id: parts[0], message_id: parts[1]};
-    };
-
+    
     module.TransInfo.prototype.compile = function(el) {
+        this.compile_data_trans(el);
+        this.compile_data_plural(el);
+    };
+    
+    module.TransInfo.prototype.compile_data_trans = function(el) {
         var data_trans = null;
         if (el.hasAttribute('data-trans')) {
             data_trans = el.getAttribute('data-trans');
             el.removeAttribute('data-trans');
         }
-            
+
         if (data_trans === null) {
             return;
         }
@@ -694,7 +676,8 @@ obviel.template = {};
         
         // empty string will mean translating text content only
         if (data_trans === '') {
-            this.content = {id: '.', message_id: null};
+            this.content = {id: '.', count_variable: null,
+                            message_id: null, plural_message_id: null};
             this.attributes = {};
             this.any_translations = true;
             return;
@@ -708,7 +691,7 @@ obviel.template = {};
             if (part === '') {
                 continue;
             }
-            var trans_info = this.compile_part(el, part);
+            var trans_info = this.compile_data_trans_part(el, part);
             if (trans_info.id === '.') {
                 this.content = trans_info;
                 this.any_translations = true;
@@ -717,6 +700,102 @@ obviel.template = {};
                 this.any_translations = true;
             }
         }
+    };
+
+    
+    module.TransInfo.prototype.compile_data_trans_part = function(el, text) {
+        var parts = text.split(':');
+        // there is nothing to translate
+        if (parts.length === 1) {
+            return {id: parts[0], count_variable: null,
+                    message_id: null, plural_message_id: null};
+        }
+        // too many :
+        if (parts.length > 2) {
+            throw new module.CompilationError(
+                el, "illegal content in data-trans");
+        }
+        // we are referring to the text if we have no actual
+        // content identifier
+        if (parts[0] === '') {
+            return {id: '.', count_variable: null,
+                    message_id: parts[1], plural_message_id: null};
+        }
+        // we really do want to have the attribute we are trying to translate
+        if (parts[0] !== '.' && !el.hasAttribute(parts[0])) {
+            throw new module.CompilationError(
+                el, "data-trans refers to a non-existent attribute");
+        }
+        return {id: parts[0], count_variable: null,
+                message_id: parts[1], plural_message_id: null};
+    };
+
+    
+    module.TransInfo.prototype.compile_data_plural = function(el) {
+        var data_plural = null;
+        if (el.hasAttribute('data-plural')) {
+            data_plural = el.getAttribute('data-plural');
+            el.removeAttribute('data-plural');
+        }
+
+        if (data_plural === null) {
+            return;
+        }
+        
+        data_plural = trim(data_plural);
+        
+        // empty string is not allowed for data-plural
+        if (data_plural === '') {
+            throw new module.CompilationError(
+                el, 'data-plural cannot be empty');
+        }
+        
+        // split with space character
+        var parts = data_plural.split(' ');
+        
+        for (var i in parts) {
+            var part = trim(parts[i]);
+            if (part === '') {
+                continue;
+            }
+            var plural_info = this.compile_data_plural_part(el, part);
+            if (plural_info.id === '.') {
+                if (this.content === null) {
+                    throw new module.CompilationError(
+                        el, "data-plural indicates element content not " +
+                            "marked with data-trans");
+                }
+                this.content.count_variable = plural_info.count_variable;
+                
+            } else {
+                var attr_info = this.attributes[plural_info.id];
+                if (attr_info === undefined) {
+                    throw new module.CompilationError(
+                        el, "data-plural indicates attribute not " +
+                            "marked with data-trans: " + plural_info.id);
+                }
+                attr_info.count_variable = plural_info.count_variable;
+            }
+        }
+    };
+    
+    module.TransInfo.prototype.compile_data_plural_part = function(el, text) {
+        var parts = text.split(':');
+        // only a count variable for content
+        if (parts.length === 1) {
+            return {id: '.', count_variable: parts[0]};
+        }
+        // too many :
+        if (parts.length > 2) {
+            throw new module.CompilationError(
+                el, "illegal content in data-plural");
+        }
+        // we are referring to the text if we have no actual
+        // content identifier
+        if (parts[0] === '') {
+            return {id: '.', count_variable: parts[1]};
+        }
+        return {id: parts[0], count_variable: parts[1]};
     };
 
     module.AttributeTrans = function(el, name, value, message_id) {
@@ -801,7 +880,8 @@ obviel.template = {};
                                               token.value));
             }
         }
-        return result.join('');        
+        
+        el.setAttribute(this.name, result.join(''));
     };
     
     module.AttributeTrans.prototype.render = function(el, scope, context,
@@ -814,82 +894,110 @@ obviel.template = {};
             render_notrans(el, scope, context);
         }
 
-        el.setAttribute(
-            this.name,
-            this.render_translation(el, scope, context, translation));
-    };
-    
-    
-    // module.Plural = function(el) {
-    //     this.singular_trans = null;
-    //     this.plural_trans = null;
-    //     this.count_variable = null;
-    // };
-
-    // module.Plural.prototype.render = function(el, scope, context) {
-    //     context.get_plural(this.singalar_trans.message_id,
-    //                        this.plural_trans.message_id,
-    //                        scope.resolve(this.count_variable));
+        this.render_translation(el, scope, context, translation);
         
-    // };
+    };
 
-    module.ContentTrans = function(el, message_id, directive_name) {
+    var get_singular_or_plural_attribute_trans = function(
+        el, name, value, trans_info) {
+
+        var parts = value.split('||');
+        if (parts.length == 1) {
+            if (trans_info.count_variable !== null) {
+                throw new module.CompilationError(
+                    el, "data-plural used for attribute content but no || used " +
+                        "to indicate plural text: " + name);
+            }
+            return {
+                singular: new module.AttributeTrans(
+                    el, name, value, trans_info.message_id),
+                plural: null,
+                count_variable: null
+            };
+        }
+        
+        var singular = new module.AttributeTrans(el, name, parts[0],
+                                                 trans_info.message_id);
+        var plural = new module.AttributeTrans(el, name, parts[1],
+                                               trans_info.plural_message_id);
+        
+        var count_variable;
+
+        if (trans_info.count_variable !== null) {
+            count_variable = trans_info.count_variable;
+        } else {
+            count_variable = get_implicit_count_variable(
+                el, singular, plural);
+        }
+        
+        return {
+            singular: singular,
+            plural: plural,
+            count_variable: count_variable
+        };
+    };
+
+    module.ContentTrans = function(message_id, directive_name) {
+        this.parts = [];
         this.message_id = null;
         this.tvars = {};
         this.variables = {};
         this.directive_name = directive_name;
-        this.compile(el);
-        this.plural = false;
-        if (message_id !== null) {
-            this.message_id = message_id;
+        this.explicit_message_id = message_id;
+    };
+
+    module.ContentTrans.prototype.compile_node = function(node, index) {
+        if (node.nodeType === 3) {
+            // TEXT_NODE
+            var text = this.compile_text(node);
+            this.parts.push(text);
+        } else if (node.nodeType === 1) {
+            // ELEMENT NODE
+            this.check_data_trans_restrictions(node);
+            var tvar_node = node.cloneNode(true);
+            var tvar_info = this.compile_tvar(tvar_node);                
+            this.parts.push("{" + tvar_info.tvar + "}");
+            // XXX dynamic_notrans is a bit ugly
+            this.tvars[tvar_info.tvar] = {
+                node: tvar_node,
+                index: index,
+                dynamic: new module.DynamicElement(tvar_node, true),
+                dynamic_notrans: new module.DynamicElement(node, true),
+                view: tvar_info.view
+            };
+        }
+        // COMMENT_NODE
+        // no need to do anything, index for tvars will be correct
+        // CDATA_SECTION_NODE
+        // browser differences are rather severe, we just
+        // don't support this in output as it's of a limited utility
+        // see also:
+        // http://reference.sitepoint.com/javascript/CDATASection
+        // PROCESSING_INSTRUCTION_NODE
+        // we also don't support processing instructions in any
+        // consistent way; again they have limited utility
+    };
+
+    module.ContentTrans.prototype.finalize_compile = function(el) {
+        var message_id = this.parts.join('');
+        this.validate_message_id(el, message_id);
+        this.message_id = message_id;
+        if (this.explicit_message_id !== null) {
+            this.message_id = this.explicit_message_id;
         }
     };
     
-    module.ContentTrans.prototype.compile = function(el) {
-        var parts = [];
-        var tvar_info = null;
-        var children = el.childNodes;
-        var j = 0;
-        for (var i = 0; i < children.length; i++) {
-            var node = children[i];
-            if (node.nodeType === 3) {
-                // TEXT_NODE
-                var text = this.compile_text(node);
-                parts.push(text);
-            } else if (node.nodeType === 1) {
-                // ELEMENT NODE
-                this.check_data_trans_restrictions(node);
-                tvar_info = this.compile_tvar(node);                
-                parts.push("{" + tvar_info.tvar + "}");
-                this.tvars[tvar_info.tvar] = {
-                    index: i,
-                    dynamic: new module.DynamicElement(node, true),
-                    view: tvar_info.view
-                };
-            }
-            // COMMENT_NODE
-            // no need to do anything, index for tvars will be correct
-            // CDATA_SECTION_NODE
-            // browser differences are rather severe, we just
-            // don't support this in output as it's of a limited utility
-            // see also:
-            // http://reference.sitepoint.com/javascript/CDATASection
-            // PROCESSING_INSTRUCTION_NODE
-            // we also don't support processing instructions in any
-            // consistent way; again they have limited utility
-        }
-
-        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
-        // occur under elements
-        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
-        // be merged with text nodes
-        var message_id = parts.join('');
-
-        this.validate_message_id(el, message_id);
-
-        this.message_id = message_id;            
-    };
+    // module.ContentTrans.prototype.compile = function(el) {
+    //     var children = el.childNodes;
+    //     for (var i = 0; i < children.length; i++) {
+    //         this.compile_node(children[i], i);
+    //     }
+    //     // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
+    //     // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+    //     // occur under elements
+    //     // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+    //     // be merged with text nodes
+    // };
     
     module.ContentTrans.prototype.check_data_trans_restrictions = function(
         el) {
@@ -917,10 +1025,6 @@ obviel.template = {};
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                if (token.value === '|') {
-                    this.plural = true;
-                    break;
-                }
                 var name_formatter = split_name_formatter(node, token.value);
                 var variable = this.variables[name_formatter.name];
                 if (variable !== undefined &&
@@ -1067,7 +1171,9 @@ obviel.template = {};
         if (tvar_info === undefined) {
             return null;
         }
-        var tvar_node = el.childNodes[tvar_info.index].cloneNode(true);
+      
+        var tvar_node = tvar_info.node.cloneNode(true);
+
         tvar_info.dynamic.render(tvar_node, scope, context);
         if (tvar_info.view !== null) {
             tvar_info.view.render(tvar_node, scope, context);
@@ -1130,67 +1236,198 @@ obviel.template = {};
 
         if (translation === message_id) {
             render_notrans(el, scope, context);
-            this.render_tvars(el, scope, context);
+            this.render_notrans_tvars(el, scope, context);
             return;
         }
         
         this.render_translation(el, scope, context, translation);
     };
 
-    module.ContentTrans.prototype.render_tvars = function(el, scope, context) {
+    module.ContentTrans.prototype.render_notrans_tvars = function(
+        el, scope, context) {
         var children = el.childNodes;
         for (key in this.tvars) {
             var info = this.tvars[key];
-            info.dynamic.render(children[info.index], scope, context);
+            // this can use index, as we're not in a plural
+            info.dynamic_notrans.render(children[info.index], scope, context);
         }
     };
 
-    
-    module.PluralTrans = function(el) {
+    var parse_text_for_plural = function(text) {
+        var before_plural = [];
+        var after_plural = [];
         
+        var current = before_plural;
+        var tokens = module.tokenize(text);
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.type === module.NAME_TOKEN) {
+                current.push('{' + token.value + '}');
+            } else {
+                var value = token.value;
+                // XXX shouldn't allow || twice
+                var index = value.indexOf('||');
+                if (index !== -1) {
+                    current.push(value.slice(0, index));
+                    current = after_plural;
+                    value = value.slice(index + 2);
+                }
+                current.push(value);
+            }
+        }
+
+        before_plural = before_plural.join('');
+        
+        if (current === after_plural) {
+            after_plural = after_plural.join('');
+        } else {
+            after_plural = null;
+        }
+        
+        return {before_plural: before_plural,
+                after_plural: after_plural};
     };
 
+    var get_all_variable_names = function(singular, plural) {
+        var names = $.extend({}, singular.variables);
+        if (plural !== null) {
+            $.extend(names, plural.variables);
+        }
+        return names;
+    };
+    
+    var get_implicit_count_variable = function(el, singular, plural) {
+        var names = get_all_variable_names(singular, plural);
+        
+        var result = null;
+        for (name in names) {
+            if (result === null) {
+                result = name;
+            } else {
+                // if we already have seen a variable, then getting
+                // a second variable means we have multiple variables
+                // and therefore we can't find a single count variable
+                result = null;
+                break;
+            }
+        }
+        if (result === null) {
+            throw new module.CompilationError(
+                el, "could not determine implicit count variable for plural");
+        }
+        return result;
+    };
+    
+    
+    var get_singular_or_plural_content_trans = function(
+        el, trans_info, directive_name) {
+        var singular = new module.ContentTrans(
+            trans_info.message_id, directive_name);
+        var plural = new module.ContentTrans(
+            trans_info.plural_message_id, directive_name);
+
+        var current = singular;
+        // XXX index only relevant for notrans case,
+        // never for plural, so we are creating it for no reason in
+        // many cases and it's not really relevant?
+        var c = 0;
+        for (var i = 0; i < el.childNodes.length; i++) {
+            var node = el.childNodes[i];
+            if (node.nodeType === 3) {
+                // TEXT_NODE
+                var info = parse_text_for_plural(node.nodeValue);
+                if (info.after_plural === null) {
+                    current.compile_node(node, c);
+                    c++;
+                } else {
+                    current.compile_node(document.createTextNode(
+                        info.before_plural), c);
+                    c++;
+                    current = plural;
+                    current.compile_node(document.createTextNode(
+                        info.after_plural), c);
+                    c++;
+                }
+            } else if (node.nodeType === 1) {
+                // ELEMENT NODE
+                current.compile_node(node, c);
+                c++;
+            }
+        }
+
+        singular.finalize_compile(el);
+                                   
+        if (current === plural) {
+            plural.finalize_compile(el);
+        } else {
+            plural = null;
+        }
+
+        if (trans_info.count_variable !== null && plural === null) {
+            throw new module.CompilationError(
+                el, "data-plural used for element content but no || used " +
+                    "to indicate plural text");
+        }
+
+        if (plural === null) {
+            return {
+                singular: singular,
+                plural: plural,
+                count_variable: null
+            };
+        }
+        
+        var count_variable;
+        
+        if (trans_info.count_variable !== null) {
+            count_variable = trans_info.count_variable;
+        } else {
+            count_variable = get_implicit_count_variable(el, singular, plural);
+        }
+        
+        return {
+            singular: singular,
+            plural: plural,
+            count_variable: count_variable
+        };
+    };
+
+    module.PluralTrans = function(singular,
+                                  plural,
+                                  count_variable) {
+        this.singular = singular;
+        this.plural = plural;
+        this.count_variable = count_variable;
+    };
+    
+    module.PluralTrans.prototype.get_count = function(el, scope) {
+        var result = scope.resolve(this.count_variable);
+        if (typeof result !== 'number') {
+            throw new module.RenderError(
+                el, "count variable in plural is not a number: " + result);
+        }
+        return result;
+    };
+    
     module.PluralTrans.prototype.render = function(
         el, scope, context, render_notrans) {
-        var count = this.get_count();
-        if (count === null) {
-            throw new module.RenderError(
-                el, ("count variable in plural section " +
-                     "was not an integer"));
-        }
-        var translation = context.get_plural_translation(
-            this.singular_trans.message_id,
-            this.plural_trans.message_id,
+        var count = this.get_count(el, scope);
+        var translation_info = context.get_plural_translation(
+            this.singular.message_id,
+            this.plural.message_id,
             count);
-        if (translation === this.singular_trans.message_id) {
-            this.singular_trans.render_translation(el, scope, context,
-                                                   translation);
+        var translation = translation_info.translation;
+        // XXX there is an possible issue here for languages that have
+        // more than one pluralization.. is the plural template always
+        // enough for this? I think so, but we need a test for it
+        if (translation_info.plural) {
+            this.plural.render_translation(
+                el, scope, context, translation);
         } else {
-            this.plural_trans.render_translation(el, scope, context,
-                                                 translation);
+            this.singular.render_translation(
+                el, scope, context, translation);
         }
     };
-
-    // module.PluralContentTrans.prototype.render = function(
-    //     el, scope, context, render_notrans) {
-    //     var count = this.get_count();
-    //     if (count === null) {
-    //         throw new module.RenderError(
-    //             el, ("count variable in plural section " +
-    //                  "for element content was not an integer"));
-    //     }
-    //     var translation = context.get_plural_translation(
-    //         this.singular_trans.message_id,
-    //         this.plural_trans.message_id,
-    //         count);
-    //     if (translation === this.singular_trans.message_id) {
-    //         this.singular_trans.render_translation(el, scope, context,
-    //                                                translation);
-    //     } else {
-    //         this.plural_trans.render_translation(el, scope, context,
-    //                                              translation);
-    //     }
-    // };
 
     
     module.DynamicElement = function(el, allow_tvar) {
@@ -1223,7 +1460,20 @@ obviel.template = {};
         this.compile_data_trans_content(el);
         this.compile_data_tvar_content(el, allow_tvar);
     };
-
+    
+    module.DynamicElement.prototype.make_content_trans = function(
+        el, trans_info, directive_name) {
+        var r = get_singular_or_plural_content_trans(
+            el, trans_info, directive_name);
+        if (r.plural === null) {
+            return r.singular;
+        }        
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
+    };
+    
     module.DynamicElement.prototype.compile_data_trans_content = function(el) {
         if (this.trans_info.content === null) {
             return;
@@ -1236,8 +1486,8 @@ obviel.template = {};
         }
         
         this._dynamic = true;
-        this.content_trans = new module.ContentTrans(
-            el, this.trans_info.content.message_id, 'data-trans');
+        this.content_trans = this.make_content_trans(
+            el, this.trans_info.content, 'data-trans');
     };
 
     module.DynamicElement.prototype.compile_data_tvar_content = function(
@@ -1257,9 +1507,17 @@ obviel.template = {};
                      "data-tvar cannot be both on same element"));
         }
         this._dynamic = true;
+        // XXX blend info from tvar_info (message ids) and trans_info
+        // (count variable). ugly, would prefer trans_info to contain
+        // the right stuff right away by parsing data-tvar too
         var tvar_info = parse_tvar(el, data_tvar);
-        this.content_trans = new module.ContentTrans(
-            el, tvar_info.message_id, 'data-tvar');
+        var trans_info = {id: '.', count_variable: null};
+        if (this.trans_info.content !== null) {
+            trans_info.count_variable = this.trans_info.content.count_variable;
+        }
+        trans_info.message_id = tvar_info.message_id;
+        trans_info.plural_message_id = tvar_info.plural_message_id;
+        this.content_trans = this.make_content_trans(el, trans_info, 'data-tvar');
         // data-tvar accepts empty message ids and doesn't try
         // translating in this case
         if (this.content_trans.message_id === '') {
@@ -1569,7 +1827,20 @@ obviel.template = {};
     module.DynamicAttribute.prototype.is_dynamic = function() {
         return this._dynamic;
     };
- 
+    
+    module.DynamicAttribute.prototype.make_attribute_trans = function(
+        el, name, value, trans_info) {
+        var r = get_singular_or_plural_attribute_trans(
+            el, name, value, trans_info);
+        if (r.plural === null) {
+            return r.singular;
+        }
+        return new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
+    };
+    
     module.DynamicAttribute.prototype.compile = function(el) {
         var dynamic_text = new module.DynamicText(el, this.value);
         var attr_info = this.trans_info.attributes[this.name];
@@ -1586,8 +1857,8 @@ obviel.template = {};
         this.dynamic_text = dynamic_text;
        
         if (attr_info !== undefined) {
-            this.attr_trans = new module.AttributeTrans(
-                el, this.name, this.value, attr_info.message_id);
+            this.attr_trans = this.make_attribute_trans(
+                el, this.name, this.value, attr_info);
         }
         this._dynamic = true;
     };

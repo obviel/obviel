@@ -211,8 +211,8 @@ new translatable texts become available to your translators::
 
 .. _details: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/html_node/msgmerge-Invocation.html
  
-Creating ``.json``` files from the ``.po`` files
-------------------------------------------------
+Creating ``.json`` files from the ``.po`` files
+-----------------------------------------------
 
 We now have a ``.po`` file with the right translations. To make it
 work with Obviel i18n, we need to convert it to a JSON file that can

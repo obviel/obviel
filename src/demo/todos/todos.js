@@ -4,6 +4,9 @@
         'todos-nl_NL.json');
     obviel.i18n.register_translation('en_US', en_US);
     obviel.i18n.register_translation('nl_NL', nl_NL);
+
+    // XXX use this
+    var KEYCODE = 13;
     
     var _ = obviel.i18n.translate();
 
