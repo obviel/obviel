@@ -545,7 +545,7 @@ obviel.template = {};
     };   
     
     module.DynamicElement.prototype.compile = function(el, allow_tvar) {
-        this.trans_info = new module.TransInfo(el);
+        this.trans_info = new module.TransInfo(el, allow_tvar);
         
         this.compile_attr_texts(el);
         this.compile_content_texts(el);
@@ -555,73 +555,7 @@ obviel.template = {};
         this.compile_data_el(el);
         this.compile_data_attr(el);
         this.compile_data_unwrap(el);
-        this.compile_data_trans_content(el);
-        this.compile_data_tvar_content(el, allow_tvar);
-    };
-    
-    module.DynamicElement.prototype.make_content_trans = function(
-        el, trans_info, directive_name) {
-        var r = get_singular_or_plural_content_trans(
-            el, trans_info, directive_name);
-        if (r.plural === null) {
-            return r.singular;
-        }        
-        return new module.PluralTrans(
-            r.singular,
-            r.plural,
-            r.count_variable);
-    };
-    
-    module.DynamicElement.prototype.compile_data_trans_content = function(el) {
-        if (this.trans_info.content === null) {
-            return;
-        }
-        // XXX what about data-attr, data-unwrap, data-el, data-func?
-        if (el.hasAttribute('data-view')) {
-            throw new module.CompilationError(
-                el,
-                "data-view not allowed when content is marked with data-trans");
-        }
-        
-        this._dynamic = true;
-        this.content_trans = this.make_content_trans(
-            el, this.trans_info.content, 'data-trans');
-    };
-
-    module.DynamicElement.prototype.compile_data_tvar_content = function(
-        el, allow_tvar) {
-        var data_tvar = get_directive(el, 'data-tvar');
-        if (data_tvar === null) {
-            return;
-        }
-        if (!allow_tvar) {
-            throw new module.CompilationError(
-                el, ("data-tvar is not allowed outside data-trans or " +
-                     "other data-tvar"));
-        }
-        if (this.trans_info.content !== null) {
-            throw new module.CompilationError(
-                el, ("data-trans for non-attribute content and " +
-                     "data-tvar cannot be both on same element"));
-        }
-        this._dynamic = true;
-        // XXX blend info from tvar_info (message ids) and trans_info
-        // (count variable). ugly, would prefer trans_info to contain
-        // the right stuff right away by parsing data-tvar too
-        var tvar_info = parse_tvar(el, data_tvar);
-        var trans_info = {id: '.', count_variable: null};
-        if (this.trans_info.content !== null) {
-            trans_info.count_variable = this.trans_info.content.count_variable;
-        }
-        trans_info.message_id = tvar_info.message_id;
-        trans_info.plural_message_id = tvar_info.plural_message_id;
-        this.content_trans = this.make_content_trans(
-            el, trans_info, 'data-tvar');
-        // data-tvar accepts empty message ids and doesn't try
-        // translating in this case
-        if (this.content_trans.message_id === '') {
-            this.content_trans = null;
-        }
+        this.compile_content_trans(el);
     };
     
     module.DynamicElement.prototype.compile_attr_texts = function(el) {
@@ -690,6 +624,15 @@ obviel.template = {};
         }
         this._dynamic = true;
     };
+    
+    module.DynamicElement.prototype.compile_func = function(el) {
+        var func_name = get_directive(el, 'data-func');
+        if (func_name === null) {
+            return;
+        }
+        this.func_name = func_name;
+        this._dynamic = true;
+    };
 
     module.DynamicElement.prototype.compile_data_id = function(el) {
         if (!el.hasAttribute('data-id')) {
@@ -746,14 +689,24 @@ obviel.template = {};
         }
         $(el).addClass('obviel-template-data-unwrap');
     };
-    
-    module.DynamicElement.prototype.compile_func = function(el) {
-        var func_name = get_directive(el, 'data-func');
-        if (func_name === null) {
+
+    module.DynamicElement.prototype.compile_content_trans = function(el) {
+        if (this.trans_info.content === null) {
             return;
         }
-        this.func_name = func_name;
         this._dynamic = true;
+        
+        var r = get_singular_or_plural_content_trans(
+            el, this.trans_info.content);
+        
+        if (r.plural === null) {
+            this.content_trans = r.singular;
+            return;
+        }        
+        this.content_trans = new module.PluralTrans(
+            r.singular,
+            r.plural,
+            r.count_variable);
     };
     
     module.DynamicElement.prototype.render = function(el, scope, context) {
@@ -1055,15 +1008,22 @@ obviel.template = {};
         }
     };
     
-    module.TransInfo = function(el) {
+    module.TransInfo = function(el, allow_tvar) {
         this.content = null;
         this.attributes = {};
         this.any_translations = false;
+        this.allow_tvar = allow_tvar;
         this.compile(el);
     };
 
     module.TransInfo.prototype.compile = function(el) {
         this.compile_data_trans(el);
+        if (this.content !== null && el.hasAttribute('data-view')) {
+            throw new module.CompilationError(
+                el,
+                "data-view not allowed when content is marked with data-trans");
+        }
+        this.compile_data_tvar(el);
         this.compile_data_plural(el);
     };
     
@@ -1083,6 +1043,7 @@ obviel.template = {};
         // empty string will mean translating text content only
         if (data_trans === '') {
             this.content = {id: '.', count_variable: null,
+                            directive: 'data_trans',
                             message_id: null, plural_message_id: null};
             this.attributes = {};
             this.any_translations = true;
@@ -1125,6 +1086,7 @@ obviel.template = {};
         // content identifier
         if (parts[0] === '') {
             return {id: '.', count_variable: null,
+                    directive: 'data-trans',
                     message_id: parts[1], plural_message_id: null};
         }
         // we really do want to have the attribute we are trying to translate
@@ -1136,6 +1098,37 @@ obviel.template = {};
                 message_id: parts[1], plural_message_id: null};
     };
 
+
+    module.TransInfo.prototype.compile_data_tvar = function(el) {
+        var data_tvar = null;
+        if (el.hasAttribute('data-tvar')) {
+            data_tvar = el.getAttribute('data-tvar');
+            el.removeAttribute('data-tvar');
+        }
+
+        if (data_tvar === null) {
+            return;
+        }
+        
+        // we are not in a data-trans, so we cannot allow data-tvar here
+        if (!this.allow_tvar) {
+            throw new module.CompilationError(
+                el, ("data-tvar is not allowed outside data-trans or " +
+                     "other data-tvar"));
+        }
+        // we already have content due to data-trans, this is an error
+        if (this.content !== null) {
+            throw new module.CompilationError(
+                el, ("data-trans for element content and " +
+                     "data-tvar cannot be both on same element"));
+        }
+        var tvar_info = parse_tvar(el, data_tvar);
+        this.content = {id: '.',
+                        directive: 'data-tvar',
+                        message_id: tvar_info.message_id,
+                        plural_message_id: tvar_info.plural_message_id,
+                        count_variable: null};
+    };
     
     module.TransInfo.prototype.compile_data_plural = function(el) {
         var data_plural = null;
@@ -1717,13 +1710,11 @@ obviel.template = {};
         return result;
     };
     
-    
-    var get_singular_or_plural_content_trans = function(
-        el, trans_info, directive_name) {
+    var get_singular_or_plural_content_trans = function(el, trans_info) {
         var singular = new module.ContentTrans(
-            trans_info.message_id, directive_name);
+            trans_info.message_id, trans_info.directive);
         var plural = new module.ContentTrans(
-            trans_info.plural_message_id, directive_name);
+            trans_info.plural_message_id, trans_info.directive);
 
         var current = singular;
         // XXX index only relevant for notrans case,
