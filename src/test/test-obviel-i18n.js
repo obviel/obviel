@@ -281,3 +281,36 @@ test('pluralize with translation', function() {
     equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
                          {count: 2}), '2 olifanten.');
 });
+
+test('complex pluralization rule', function() {
+    var en_US = i18n.empty_translation_source();
+    var pl_PL = i18n.translation_source({
+        '': {
+            'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
+        },
+        '1 file.':
+        ['{count} file.',
+         '1 plik.',
+         '{count} pliki.',
+         "{count} pliko'w."]});
+    i18n.register_translation('en_US', en_US, 'i18ntest');
+    i18n.register_translation('pl_PL', pl_PL, 'i18ntest');
+
+    var ngettext = i18n.pluralize('i18ntest');
+    
+    i18n.set_locale('pl_PL');
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 1), {count: 1}),
+          '1 plik.');
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 2), {count: 2}),
+          '2 pliki.');
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 3), {count: 3}),
+          '3 pliki.');
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 4), {count: 4}),
+          '4 pliki.');
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 5), {count: 5}),
+          "5 pliko'w.");
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 21), {count: 21}),
+          "21 pliko'w.");
+    equal(i18n.variables(ngettext('1 file.', '{count} files.', 22), {count: 22}),
+          "22 pliki.");
+});
