@@ -1,6 +1,8 @@
 Developing Obviel
 =================
 
+.. highlight:: console
+
 Here is some information on how we develop Obviel and how you could
 participate.
 
@@ -42,7 +44,7 @@ useful as some web browsers have test failures due to the peculiar way
 described below recommends against the use of ``file:`` URLs. A simple
 way to start a web server is to type this in the project directory::
 
-$ python -m SimpleHTTPServer
+  $ python -m SimpleHTTPServer
 
 where ``python`` is a Python 2.x interpreter. You can then navigate
 to:
@@ -145,7 +147,7 @@ documentation you already will have it)::
   $ python bootstrap.py -d
   $ bin/buildout
 
-You can now start the obvielts server using paster_:
+You can now start the obvielts server using paster_::
 
   $ bin/paster serve parts/etc/debug.ini
 
