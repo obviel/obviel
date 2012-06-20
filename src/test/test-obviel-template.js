@@ -2105,16 +2105,14 @@ test("implicit pluralize in attr with translation", function() {
 
 // pluralization message id can be supplied with data-trans?
 
-// can a tvar have a message id?
-
-// test("pluralize in attr and content translation", function() {
-//     html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
-//                       { 'count': 1}),
-//                '<div title="1 elephant"></div>');
-//     html_equal(render('<div data-trans="title" data-plural="title:count" data-plural="count" title="1 elephant||{count} elephants"></div>',
-//                       { 'count': 2}),
-//                '<div title="2 elephants"></div>');
-// });
+test("pluralize in attr and content translation", function() {
+    html_equal(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
+                      { 'count': 1, 'amount': 2, 'size': 'big'}),
+               '<div title="1 big elephant">2 big elephants</div>');
+    html_equal(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
+                      { 'count': 2, 'amount': 1, 'size': 'big'}),
+               '<div title="2 big elephants">1 big elephant</div>');
+});
 
 test("pluralize in text with tvar without translation", function() {
     html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
