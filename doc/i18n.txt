@@ -13,17 +13,25 @@ has 18 letters between the 'i' and the 'n').
 How do you go about this? 
 
 The idea is that you mark up all translatable texts in your project's
-code (``.js`` and ``.obvt`` files) in a special way. When your
-application runs, marked text is looked up in a translation source.
-If a translation is found for a marked up piece of text, it is used
-instead of the original text. By changing the locale you can change
-which translation sources are in use.
+code (``.js`` and ``.obvt`` files and ``.html`` files with embedded
+templates) in a special way. When your application runs, marked text
+is looked up in a translation source.  If a translation is found for a
+marked up piece of text, it is used instead of the original text. By
+changing the locale you can change which translation sources are in
+use.
 
 A special extraction tool can be used to extract the marked up pieces
 of text from ``.js``, ``.html`` and ``.obvt`` files, so that they can
 be given to human translators for translation.
 
-Now let's go into some more detail.
+Now let's go into some more detail. We'll discuss the JavaScript i18n
+strategy in detail here. We recommend however that you use Obviel
+Template for your i18n purposes, as it's often more maintainable to
+mark up templates instead of code. Read :doc:`Obviel Template i18n
+<template_i18n>` for much more detail on how to mark up your ``.obvt``
+files for i18n. Then come back here and look at how to work with
+Obviel Template in the context of extraction tools and
+``obviel.i18n``.
 
 JavaScript i18n
 ---------------
@@ -66,15 +74,8 @@ to make it translatable::
 
   var _ = obviel.i18n.translate();
 
-We do this for a domain, in this case we are using the ``default`` domain
-so we don't need to specify one. Alternatively you can explicitly specify
-the ``default`` domain like this::
-
-  var _ = obviel.i18n.translate();
-
-The idea is that we use ``obviel.i18n.translate()`` once on top of each
-of the modules we want to i18n. Later we'll go into more detail about
-the use of different domains.
+The idea is that we use ``obviel.i18n.translate()`` once on top of
+each of the modules we want to i18n.
 
 Now let's return to our JavaScript code to i18n::
 
@@ -84,10 +85,234 @@ We adjust it to use our ``_`` function::
 
   alert(_("Hello world!"));
 
-When you run your application now, you'll see "Bonjour monde!".
+When you run your application now, you'll still see ``Hello
+world!``. Without a specific locale set the texts embedded in the code
+itself will be used. But earlier we registered the locale ``fr_FR``,
+and we can alter the locale to that::
+
+  obviel.i18n.set_locale('fr_FR');
+
+Now when we run the program we'll see ``Bonjour monde!``.
 
 `Here <_static/demo/i18n-js-demo.html>`_ is a demo that has put all
 this together in a slightly more involved way.
+
+Variables in JavaScript
+-----------------------
+
+Obviel, both in JavaScript as well as templates, supports a way to interpolate
+variables into translations. This could for instance be the English source
+of the translation::
+
+  Hello {who}!
+
+The translator now needs to take care to include this variable in the
+translation as well::
+
+  Bonjour {who}!
+
+A translator could decide it makes more sense to move the variable to
+another place in the text::
+
+  {who}, bonjour!
+
+What is retrieved as the translation will still contain the variable 
+``{who}``. We need to make sure it gets filled in.
+
+To do so you can use a special :func:`variables` formatting function
+that Obviel i18n makes available::
+
+  obviel.i18n.variables(_("Hello {who}!"), { who: "Bob" });
+
+Note that for ``variables`` to work you do need to include
+``obviel-template.js`` on the page as well.
+
+Pluralization
+-------------
+
+Obviel i18n, thanks to jsgettext, also supports plural forms of a
+piece of text.
+
+First let's introduce a program that contains some plural forms::
+
+  alert(count + " cows");
+
+Given a value for ``count`` of ``2``, this will show ``2 cows``, and
+if you supply ``10`` you'll get ``10 cows``. So far so good. But what now
+when we only have ``1`` cow? We'd see ``1 cows``, which is incorrect. We
+want to see ``1 cow``. The plural form for 1 in English is different than
+that for any other number.
+
+Let's consider another language, Dutch, which has the same pluralization
+rule, but different pluralization. We'll set up a translation::
+
+  var nl_NL = obviel.i18n.translation_source(
+    {'1 cow': ['{count} cows', '1 koe', '{count} koeien']});
+  obviel.i18n.register_translation('nl_NL', nl_NL);
+
+Here we see that ``1 cow`` should be translated as ``1 koe``, and
+``{count} cows``, where count is any other number than 1, should be
+translated as ``{count} koeien``. The exact syntax of how we specify
+this directly in the translation source is not important, as later on
+we'll discuss tools to generate translation source JSON automatically.
+
+To enable pluralization for JavaScript code you write the following
+somewhere on top of the module::
+
+  var ngettext = obviel.i18n.pluralize();
+
+Naming this function ``ngettext`` is important, as it enables the
+extraction tools to extract plural information automatically.
+
+We will now modify our original program as follows::
+
+  alert(variables(ngettext('1 cow', '{count} cows', count), {count: count}));
+
+If we keep the locale to the original, we'll see, for count ``1``, ``1
+cow``, and for count 3 for instance we'd see ``3 cows``. This is
+because without a specific locale, the texts embedded in the source
+will be used.  ``ngettext`` will return its first argument if the
+count variable (the third argument) is 1, and otherwise will return
+the second argument. We then use ``variables`` to interpolate
+``count`` variable in the result.
+
+Now we'll change the locale to Dutch::
+
+  obviel.i18n.set_locale('nl_NL');
+
+You'll now see ``1 koe`` and ``3 koeien`` instead (for count ``1`` and
+``3``), as we expected.
+
+Different pluralization rules
+-----------------------------
+
+Some languages have simpler or more complicated pluralization
+rules. Some languages for instance have no separate singular and
+plural forms. Other languages instead have 3 or more plural forms and
+different rules about when they are used.
+
+Let's examine Polish for instance. In Polish there are 3 plural forms,
+the singular form, a second form used for numbers ending with the
+digits ``2``, ``3`` or ``4``, and a third form for numbers (besides
+``1``) that end with ``5`` to ``9`` or ``1``.
+
+Let's consider the following program::
+
+  alert(variables(ngettext('1 file', '{count} files', count)), {count: count});
+
+Let's consider count ``[1, 2, 4, 5, 21, 22, 25]`` and look at the output
+for English::
+
+  1 file
+  2 files
+  4 files
+  5 files
+  21 files
+  22 files
+  25 files
+
+With Polish, we want the output to be like this::
+
+  1 plik
+  2 pliki
+  4 pliki
+  5 pliko'w
+  21 pliko'w
+  22 pliki
+  25 pliko'w
+
+We can specify the Polish rule when registering the source in the
+``Plural-Forms`` metadata::
+
+    var pl_PL = i18n.translation_source({
+        '': {
+            'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
+        },
+        '1 file.':
+        ['{count} file.',
+         '1 plik.',
+         '{count} pliki.',
+         "{count} pliko'w."]});
+
+If we register this as the translation source for ``pl_PL`` and set
+the locale to that, we'll get the output as expected.
+
+That's a scary ``Plural-Forms`` entry! Luckily there is tool support
+for these. When you maintain the translations in ``.po`` files like we
+detail below, the ``msginit`` tool can automatically generate these
+for you based on the locale. There is of course the possibility that
+it doesn't know the plural forms for the locale you specify to
+``msginit``. It will generate::
+
+  "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+In that case you will have to put in an appropriate rule yourself. For
+more information about plural form rules, see `this page`_ with rules
+for plural forms for a whole range of languages, and `this launchpad
+page`_ which has textual descriptions of plural forms for many
+languages.
+
+.. _`this page`:  http://translate.sourceforge.net/wiki/l10n/pluralforms
+
+.. _`this launchpad page`: https://translations.launchpad.net/+languages
+
+Domains
+-------
+
+What if you have an application that has translatable content, and you
+want to use a library that has translatable content of its own? Obviel
+Forms is an example of such a library, as error messages displayed in
+the form need to be translatable.
+
+In such a case we want to maintain the application translations and
+the library translations separately from each other. The translations
+for the library after all would typically be maintained by the library
+maintainers, not by the application maintainers.
+
+You can take care of this by using a separate *translation domain* for
+each library and application. By default, ``obviel.i18n`` uses the
+``default`` domain, but let's change this now. Let's alter our basic
+"Hello world" application so that it uses a separate domain::
+
+  var fr_FR = obviel.i18n.translation_source(
+    {'Hello world!': 'Bonjour monde!'});
+  obviel.i18n.register_translation('fr_FR', fr_FR, 'hello_world_app');
+
+  var _ = obviel.i18n.translate('hello_world_app');
+
+  alert(_("Hello world!"));
+
+.. sidebar:: Scope
+ 
+  ``_`` and ``ngettext`` should not be global functions, as you want
+  to be able to define a separate domain per module. JavaScript
+  modules are normally wrapped in some kind of scope, and you should
+  define a non-global ``_`` and ``ngettext`` within that module-level 
+  scope, not globally.
+
+As you can see, we now pass an extra argument ``'hello_world_app'``
+when registering the translation as well as when we create the
+translation function ``_``. This string indicates the domain. You can
+specify a domain for registered translations. You can also specify
+that domain for your module, indicating that it will look for
+translations in that domain. When you use ``_``, the domain will
+be implicitly used for lookups. 
+
+If you define views they will pick up the domain implicitly as
+well. Any Obviel Template associated with that view will use that
+domain to look up translation. You can also explicitly pass a
+``domain`` property to the view when you define it.
+
+If you use ``obviel.i18n.pluralize`` in a module you'll have to
+specify the domain there as well::
+
+  var ngettext = obviel.i18n.pluralize('hello_world_app');
+
+Obviel Template pluralization will pick up the domain from the
+``obviel.i18n.translate`` declaration already, so if you only use
+Obviel Template pluralization in a module, and don't need to use
+``ngettext`` there is no need to make the ``obviel.i18n.pluralize``
+call.
 
 Extracting translatable content
 -------------------------------
@@ -97,7 +322,7 @@ translated. We need a tool that can extract all pieces of marked up
 text automatically so that we can give it all to a translator.
 
 We recommend the use of the Babel_ i18n tool with code that uses
-Obviel. While Babel primarily written to support i18n of Python
+Obviel. While Babel was written to support i18n of Python
 applications, it also supports JavaScript applications.
 
 .. _Babel: http://babel.edgewall.org/
@@ -143,15 +368,66 @@ Now you can use it on your project directory::
 You will now have a ``myproject.pot`` (PO template) file that will be
 the template for all the actual translation files for your
 application, the ``.po`` files. For example, if you had applied this
-to the demo described above, you would get a ``.pot`` file like this
-(skipping some metadata boilerplate)::
+to the simple demo described above, you would get a ``.pot`` file like
+this (skipping some metadata boilerplate)::
 
-  #: src/demo/i18n-js-demo.js:15
   msgid "Hello world!"
   msgstr ""
 
 In the comment line it points out where in the code the text to
 translate was found; this is sometimes useful context for translators.
+
+For the plural forms example with files you'd see this in your
+``.pot`` file::
+
+  msgid "1 file"
+  msgid_plural "{count} files"
+  msgstr[0] ""
+  msgstr[1] ""
+
+Extracting from ``.obvt`` files
+-------------------------------
+
+We've demonstrated the extraction procedure for a ``.js`` file, but
+what about Obviel Template ``.obvt`` files?
+
+We provide a plugin to Babel called ``babel-obviel`` that knows how to
+extract translatable text from ``.obvt`` files. You install it using
+the standard Python installation tools. Make sure it is installed in
+the same Python as Babel is, so that Babel can pick up on this plugin.
+
+Imagine you have this template, marked up for translation::
+
+  <p data-trans="">Hello world!</p>
+
+We need to teach ``pybabel extract`` about ``.obvt`` files in the
+``.cfg`` file we created before::
+
+  [javascript: **.js]
+  extract_messages = _
+
+  [obvt: **.obvt]
+
+When you now run ``pybabel extract`` on your project, it will extract
+translatable texts not only from ``.js`` files but from ``.obvt``
+files as well.
+
+Read :doc:`Obviel Template i18n <template_i18n>` for much more detail
+on how to mark up your ``.obvt`` files for i18n.
+
+Translating Obviel templates in ``.html`` files
+-----------------------------------------------
+
+It is possible to embed an Obviel template in a ``script`` tag in a
+HTML file. You can tell ``pybabel`` to extract from these too, by
+modifying the ``.cfg`` file to read like this::
+
+  [javascript: **.js]
+  extract_messages = _
+
+  [obvt: **.obvt]
+
+  [obvt_html: **.html]
 
 Creating ``.po`` files
 ----------------------
@@ -184,6 +460,11 @@ file looks like::
   msgstr ""
 
 This is in fact very similar to our ``.pot`` file!
+
+We've ignored metadata here, but in the metadata you'll see the
+``Plural-Forms`` section for that locale if ``msginit`` knows about
+it. See the `Different pluralization rules`_ section for more
+information on this.
 
 We can now edit the file to add the French translations::
 
@@ -243,89 +524,5 @@ And we can register it::
 
   obviel.i18n.register_translation('fr_FR', fr_FR);
 
-Translating ``.obvt`` files
----------------------------
-
-We've now demonstrated the procedure for a ``.js`` file, but what
-about Obviel Template ``.obvt`` files? We provide a plugin to Babel
-called ``babel-obviel`` that knows how to extract translatable text
-from ``.obvt`` files. You install it using the standard Python
-installation tools. Make sure it is installed in the same Python as
-Babel is, so that Babel can pick up on it.
-
-Imagine you have this template, marked up for translation::
-
-  <p data-trans="">Hello world!</p>
-
-We need to teach ``pybabel extract`` about ``.obvt`` files in the
-``.cfg`` file we created before::
-
-  [javascript: **.js]
-  extract_messages = _
-
-  [obvt: **.obvt]
-
-When you now run ``pybabel extract`` on your project, it will extract
-translatable texts not only from ``.js`` files but from ``.obvt``
-files as well.
-
-Read :doc:`Obviel Template i18n <template_i18n>` for much more detail
-on how to mark up your ``.obvt`` files for i18n.
-
-Translating Obviel templates in ``.html`` files
------------------------------------------------
-
-It is possible to embed an Obviel template in a ``script`` tag in a
-HTML file. You can tell ``pybabel`` to extract from these too, by
-modifying the ``.cfg`` file to read like this::
-
-  [javascript: **.js]
-  extract_messages = _
-
-  [obvt: **.obvt]
-
-  [obvt_html: **.html]
-
-Variables
----------
-
-Obviel Template supports the use of variables within ``data-trans``
-sections, like this::
-
-  <p data-trans="">Hello {who}!</p>
-
-or like this for variables within elements::
-
-  <p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>
-
-If you used ``pybabel extract``, this is what these texts would look
-like in the ``.po`` file::
-
-  Hello {who}!
-
-The translator now needs to take care to include this variable in the
-translation as well::
-
-  Bonjour {who}!
-
-A translator could decide it makes more sense to move the variable to
-another place as well::
-
-  {who}, bonjour!
-
-Obviel Template's i18n system will use these variables automatically.
-To use such variables in a ``.js`` file, you can use a special
-:func:`variables` formatting function that Obviel i18n makes
-available::
-
-  obviel.i18n.variables(_("Hello {who}!"), { who: "Bob" });
-
-Note that for ``variables`` to work you do need to include
-``obviel-template.js`` on the page as well.
-
-  
-
-
-
-
-
+You can now use ``obviel.i18n.set_locale`` to that locale in your
+code.
