@@ -13,8 +13,6 @@ Obviel builds on JSON. Could be plain JavaScript objects on the
 client. The objects could also be coming from a server. Without
 insanely nested callback functions everywhere!
 
-
-
 Versatile but unobtrustive
 --------------------------
 
