@@ -1999,6 +1999,14 @@ test("pluralize in text without translation explicit data-plural", function() {
                '<div>2 elephants</div>');
 });
 
+test("pluralize in tvar without translation explicit data-plural", function() {
+    html_equal(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
+                      { 'count': 1}),
+               '<div><div>1 elephant</div>!</div>');
+    html_equal(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
+                      { 'count': 2}),
+               '<div><div>2 elephants</div>!</div>');
+});
 
 test("pluralize in text with multiple possible implicit count variables", function() {
     raises(function() {
@@ -2091,10 +2099,9 @@ test("implicit pluralize in attr with translation", function() {
 });
 
 // test pluralize with explicit message ids
+// also test fallback when no translation is available
 
 // test pluralize with language like polish
-
-// test pluralize with tvar
 
 // pluralization message id can be supplied with data-trans?
 
