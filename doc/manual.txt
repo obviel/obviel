@@ -45,29 +45,37 @@ server. You also need jQuery_, and optionally (but recommended!)
 
 .. _jQuery: http://jquery.com/
 
-To include Obviel, you first need jQuery as a dependency::
+To include Obviel, you first need jQuery as a dependency:
+ 
+.. code-block:: html
 
-   <script type="text/javascript" src="/path/to/jquery-1.6.1.js"></script>
+  <script type="text/javascript" src="/path/to/jquery-1.7.2.js"></script>
 
 If you want to use Obviel Template (optional but strongly recommended),
-you need to include it::
+you need to include it:
 
-    <script type="text/javascript" src="/path/to/obviel-template.js"></script>
+.. code-block:: html
+
+  <script type="text/javascript" src="/path/to/obviel-template.js"></script>
 
 .. sidebar:: Obviel Template on IE
 
   Obviel Template is only supported on IE 8 and above. To use Obviel Template,
-  you need to tell it to use the JavaScript version of IE 8, otherwise
+  you need to tell it to use the JavaScript version of IE 8 or above, otherwise
   some features are not supported. You do this by including this on your
-  web page::
+  web page:
+  
+  .. code-block:: html
 
-    <meta http-equiv="X-UA-Compatible" content="IE=8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
   Please let us know whether this gives you any problems; if so we'll consider
   ways to make Obviel work without this snippet.
   
-Finally, you need to include Obviel core itself::
+Finally, you need to include Obviel core itself:
   
+.. code-block:: html
+
   <script type="text/javascript" src="/path/to/obviel.js"></script>
 
 Obviel is now available as ``obviel`` in your JavaScript code.
@@ -147,15 +155,21 @@ Obviel that at minimum says how to render a model on an element::
 You see how ``iface`` comes in again: this view knows how to render
 objects of iface ``example``.
 
-So imagine we have the following HTML in the browser DOM::
+So imagine we have the following HTML in the browser DOM:
+
+.. code-block:: html
 
   <div id="foo"></div>
 
 What happens when you invoke the following?
 
+.. code-block:: javascript
+
   $('#foo').render(model);
 
-The DOM will be changed so it reads this::
+The DOM will be changed so it reads this:
+
+.. code-block:: html
 
   <div id="foo">Hello World!</div>
 
@@ -396,7 +410,9 @@ properties of the model have precedence over any defined on the view.
   other features better.
 
   If you want Obviel's JSON template support, you can include JSON
-  template (but this is optional)::
+  template (but this is optional):
+
+  .. code-block:: html
 
     <script type="text/javascript" src="/path/to/json-template.js"></script>
  
@@ -422,7 +438,9 @@ both by the view and the model. Let's look at an example::
     iface: 'person',
     name: 'John'});
 
-This will result in::
+This will result in:
+
+.. code-block:: html
 
   <div>John</div>
 
@@ -443,9 +461,11 @@ Besides loading up html or obvt templates directly
 page itself, using ``<compiler_name>_script``.
 
 ``<compiler_name>_script`` loads up the template from a ``script`` tag
-on the web page. If you have a web page that includes the following::
+on the web page. If you have a web page that includes the following:
 
-  <script type="text/template" id="my_id">Hello <em>world</em!</script>
+.. code-block:: html
+
+  <script type="text/template" id="my_id">Hello <em>world</em>!</script>
 
 you can refer to this by id, as follows::
 
@@ -735,7 +755,7 @@ example::
 will fetch the JSON from ``http://example.com/somejson``, and then
 call ``render`` on that object::
 
-  $('#foo).render(retrieved_obj)
+  $('#foo').render(retrieved_obj)
 
 This behavior of Obviel allows you to create a hyperlinked structure
 of JavaScript objects. We can demonstrate that using the ``page`` view
@@ -973,14 +993,14 @@ Declarative Event Registration
   For the example given in this section, here's what it looks like with 
   declarative event handlers::
 
-    obviel.view({ 
+    obviel.view({
       iface: 'foo',
       events: {
           click: {
              '#some_id': function(ev) {
-               $('#click_result, ev.view.el).text('clicked!");
+               $('#click_result', ev.view.el).text('clicked!');
              }
-         }
+          }
       }
     });
 
@@ -999,7 +1019,7 @@ Declarative Event Registration
          }
       },
       handle_click: function(ev) {
-         this.el.text('clicked!");
+         this.el.text('clicked!');
       }
     });
 
@@ -1171,7 +1191,9 @@ application. It is a URL that will be dependent on how your
 application is installed.
 
 One way to do it is to exploit your web framework's server-side templating
-system, and set it in a ``<script>`` element somewhere in your web page::
+system, and set it in a ``<script>`` element somewhere in your web page:
+
+.. code-block:: html
 
   <script type="text/javascript">
      var app_url = "[the app url goes here using a template directive]";
@@ -1204,7 +1226,9 @@ must be known *before* any Obviel views are registered, whereas
 ``app_url`` only needs to be known when the DOM is ready. If you are
 going to set ``template_url`` it is therefore important to do this
 early, in a ``<script>`` tag that comes before the ``<script>`` tag
-that includes your code that registers views. For example::
+that includes your code that registers views. For example:
+
+.. code-block:: html
 
   <script type="text/javascript">
      var template_url = "http://example.com/templates/";
