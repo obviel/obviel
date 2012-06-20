@@ -7,6 +7,68 @@ if (typeof obviel === "undefined") {
     var obviel = {};
 }
 
+(function() {
+    // a fallback i18n module that doesn't do any translation.
+    // this way we can use obviel with the obviel i18n API without
+    // actually having to load obviel-i18n.js. of course it won't
+    // do any translations, but one can't have everything
+    
+    if (typeof obviel.i18n !== 'undefined') {
+        return;
+    }
+    obviel.i18n = {};
+    var module = obviel.i18n;
+    module.translation_source = function(data) {
+        return null;
+    };
+    module.translation_source_from_json_url = function(url) {
+        return null;
+    };
+    module.empty_translation_source = function() {
+        return null;
+    };
+    module.register_translation = function(locale, translation_source, domain) {
+    };
+    module.clear_translations = function() {
+    };
+    module.clear_locale = function() {
+    };
+    module.set_locale = function(locale) {
+    };
+    module.get_locale = function() {
+        return null;
+    };
+    module.get_translation = function() {
+        return null;
+    };
+    module.get_template_domain = function() {
+        return 'default';
+    };
+    module.get_translation_func = function(domain) {
+        return function(msgid) {
+            return msgid;
+        };
+    };
+    module.translate = function(domain) {
+        return module.get_translation_func(domain);
+    };
+    module.get_plural_translation_func = function(domain) {
+        return function(msgid, plural_msgid, count) {
+            if (count === 1) {
+                return msgid;
+            }
+            return plural_msgid;
+        };
+    };
+    module.pluralize = function(domain) {
+        return module.get_plural_translation_func(domain);
+    };
+    // alias
+    if (typeof obviel.template !== 'undefined') {
+        module.variables = obviel.template.variables;
+    };
+})();
+
 (function($, module) {    
     module._ifaces = {
         'base': []
@@ -176,11 +238,9 @@ if (typeof obviel === "undefined") {
             iface: 'object',
             subviews: {},
             events: {},
-            object_events: {}
+            object_events: {},
+            domain: obviel.i18n.get_template_domain()
         };
-        if (typeof obviel.i18n !== 'undefined') {
-            d.domain = obviel.i18n.get_template_domain();
-        }
         $.extend(d, settings);
         $.extend(this, d);
     };
@@ -747,15 +807,10 @@ if (typeof obviel === "undefined") {
                     func = obviel.template.get_func(name);
                 }
                 return func;
-            }
+            },
+            get_translation: obviel.i18n.get_translation_func(view.domain),
+            get_plural_translation: obviel.i18n.get_plural_translation_func(view.domain)
         };
-        if (typeof obviel.i18n !== 'undefined') {
-            context.get_translation = obviel.i18n.get_translation_func(
-                view.domain);
-            context.get_plural_translation = obviel.i18n.get_plural_translation_func(
-                view.domain);
-        };
-
         this.compiled.render(view.el, view.obj, context);
     };
 
@@ -864,5 +919,5 @@ if (typeof obviel === "undefined") {
             ev.preventDefault();
         }
     );
-    
+
 })(jQuery, obviel);
