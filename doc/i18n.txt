@@ -49,9 +49,17 @@ instead of in English.
 You can make this happen using ``obviel.i18n``. This uses the gettext_
 approach, which is very often used for i18n for a variety of projects
 and programming languages. ``obviel.i18n`` is built on top of
-jsgettext_, so include ``jsgettext`` like this::
+jsgettext_, so include ``jsgettext`` like this:
 
-    <script type="text/javascript" src="/path/to/Gettext.js"></script>
+.. code-block:: html
+
+  <script type="text/javascript" src="/path/to/Gettext.js"></script>
+
+and you need to include ``obviel-i18n`` itself:
+
+.. code-block:: html
+
+  <script type="text/javascript" src="/path/to/obviel-i18n.js"></script>
 
 .. _gettext: https://en.wikipedia.org/wiki/Gettext
 
@@ -212,7 +220,9 @@ Let's consider the following program::
   alert(variables(ngettext('1 file', '{count} files', count)), {count: count});
 
 Let's consider count ``[1, 2, 4, 5, 21, 22, 25]`` and look at the output
-for English::
+for English:
+
+.. code-block:: text
 
   1 file
   2 files
@@ -222,7 +232,9 @@ for English::
   22 files
   25 files
 
-With Polish, we want the output to be like this::
+With Polish, we want the output to be like this:
+
+.. code-block:: text
 
   1 plik
   2 pliki
@@ -253,7 +265,9 @@ for these. When you maintain the translations in ``.po`` files like we
 detail below, the ``msginit`` tool can automatically generate these
 for you based on the locale. There is of course the possibility that
 it doesn't know the plural forms for the locale you specify to
-``msginit``. It will generate::
+``msginit``. It will generate:
+
+.. code-block:: text
 
   "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
@@ -372,12 +386,16 @@ tools used for this (``pip``, ``easy_install``, or
 be available.
 
 To make Babel work with ``.js`` files we first need to configure
-it. Create a ``.cfg`` file with the following content::
+it. Create a ``.cfg`` file with the following content:
+
+.. code-block:: ini
 
   [javascript: **.js]
   extract_messages = _
 
-Now you can use it on your project directory::
+Now you can use it on your project directory:
+
+.. code-block:: console
 
   $ pybabel extract -F myconfig.cfg project_directory > myproject.pot
 
@@ -385,7 +403,9 @@ You will now have a ``myproject.pot`` (PO template) file that will be
 the template for all the actual translation files for your
 application, the ``.po`` files. For example, if you had applied this
 to the simple demo described above, you would get a ``.pot`` file like
-this (skipping some metadata boilerplate)::
+this (skipping some metadata boilerplate):
+
+.. code-block:: po
 
   msgid "Hello world!"
   msgstr ""
@@ -394,7 +414,9 @@ In the comment line it points out where in the code the text to
 translate was found; this is sometimes useful context for translators.
 
 For the plural forms example with files you'd see this in your
-``.pot`` file::
+``.pot`` file:
+
+.. code-block:: po
 
   msgid "1 file"
   msgid_plural "{count} files"
@@ -412,12 +434,16 @@ extract translatable text from ``.obvt`` files. You install it using
 the standard Python installation tools. Make sure it is installed in
 the same Python as Babel is, so that Babel can pick up on this plugin.
 
-Imagine you have this template, marked up for translation::
+Imagine you have this template, marked up for translation:
+
+.. code-block:: html
 
   <p data-trans="">Hello world!</p>
 
 We need to teach ``pybabel extract`` about ``.obvt`` files in the
-``.cfg`` file we created before::
+``.cfg`` file we created before:
+
+.. code-block:: ini
 
   [javascript: **.js]
   extract_messages = _
@@ -436,7 +462,9 @@ Translating Obviel templates in ``.html`` files
 
 It is possible to embed an Obviel template in a ``script`` tag in a
 HTML file. You can tell ``pybabel`` to extract from these too, by
-modifying the ``.cfg`` file to read like this::
+modifying the ``.cfg`` file to read like this:
+
+.. code-block:: ini
 
   [javascript: **.js]
   extract_messages = _
@@ -451,7 +479,9 @@ Creating ``.po`` files
 For each language that you want to support in your project, you now
 need to create a ``.po`` file from the project's ``.pot`` file. You
 can do this with the GNU gettext tool suite, using the ``msginit``
-tool (`details about msginit`_)::
+tool (`details about msginit`_):
+
+.. code-block:: console
 
  $ msginit -l fr_FR -i myproject.pot -o myproject-fr_FR.po
 
@@ -469,7 +499,9 @@ tool (`details about msginit`_)::
 
 This command says we want to create a specific ``.po`` file for the
 French language locale (``fr_FR``). This is what the generated ``.po``
-file looks like::
+file looks like:
+
+.. code-block:: po
 
   #: src/demo/i18n-js-demo.js:15
   msgid "Hello world!"
@@ -482,7 +514,9 @@ We've ignored metadata here, but in the metadata you'll see the
 it. See the `Different pluralization rules`_ section for more
 information on this.
 
-We can now edit the file to add the French translations::
+We can now edit the file to add the French translations:
+
+.. code-block:: po
 
   #: src/demo/i18n-js-demo.js:15
   msgid "Hello world!"
@@ -502,7 +536,9 @@ or change or remove existing ones. You can use the ``babel extract``
 tool as usual to extract a new ``.pot`` file containing all the
 current translation texts. You can then use the GNU gettext
 msgmerge tool (details_) to update your existing ``.po`` files so that the
-new translatable texts become available to your translators::
+new translatable texts become available to your translators:
+
+.. code-block:: console
    
   $ msgmerge -U myproject-fr_FR.po myproject.pot
 
@@ -520,7 +556,9 @@ tool (installable using one of the Python methods such as ``pip``,
 .. _pojson: http://pypi.python.org/pypi/pojson
 
 Using pojson you can convert the ``.po`` file to a simple ``.json``
-file::
+file:
+
+.. code-block:: console
 
   $ bin/pojson convert myproject-fr_FR.po > myproject-fr_FR.json
 
