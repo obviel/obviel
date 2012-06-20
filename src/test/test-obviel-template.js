@@ -1046,7 +1046,6 @@ test('data-trans may not contain data-if', function() {
     }, obtemp.CompilationError);
 });
 
-// XXX strictly speaking data-with would be okay in data-trans
 test('data-trans may not contain data-with', function() {
     raises(function() {
         render('<p data-trans="">Hello <strong data-tvar="who" data-with="something">{who}</strong>!',
@@ -1069,7 +1068,6 @@ test('data-tvar may not contain data-if', function() {
     }, obtemp.CompilationError);
 });
 
-// XXX strictly speaking data-with would be okay in data-trans
 test('data-tvar may not contain data-with', function() {
     raises(function() {
         render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-with="something">{who}</em></strong>!',
