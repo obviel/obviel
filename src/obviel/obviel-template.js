@@ -1644,21 +1644,14 @@ obviel.template = {};
     module.PluralTrans.prototype.render = function(
         el, scope, context, render_notrans) {
         var count = this.get_count(el, scope);
-        var translation_info = context.get_plural_translation(
+        var translation = context.get_plural_translation(
             this.singular.message_id,
             this.plural.message_id,
             count);
-        var translation = translation_info.translation;
-        // XXX there is an possible issue here for languages that have
-        // more than one pluralization.. is the plural template always
-        // enough for this? I think so, but we need a test for it
-        if (translation_info.plural) {
-            this.plural.render_translation(
-                el, scope, context, translation);
-        } else {
-            this.singular.render_translation(
-                el, scope, context, translation);
-        }
+        // we use the source language plural form as the basis for
+        // translation, meaning its tvars will end up in the translated
+        // content if referred to by variable in the translation
+        this.plural.render_translation(el, scope, context, translation);
     };
     
     module.IfExpression = function(el, text) {

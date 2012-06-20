@@ -752,6 +752,8 @@ if (typeof obviel === "undefined") {
         if (typeof obviel.i18n !== 'undefined') {
             context.get_translation = obviel.i18n.get_translation_func(
                 view.domain);
+            context.get_plural_translation = obviel.i18n.get_plural_translation_func(
+                view.domain);
         };
 
         this.compiled.render(view.el, view.obj, context);

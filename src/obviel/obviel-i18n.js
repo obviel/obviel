@@ -168,7 +168,7 @@ obviel.i18n = {};
         return module.get_translation_func(domain);
     };
     
-    module.get_pluralize_func = function(domain) {
+    module.get_plural_translation_func = function(domain) {
         if (domain === undefined) {
             domain = 'default';
         }
@@ -188,7 +188,7 @@ obviel.i18n = {};
         if (domain !== 'default' && domains[domain] === undefined) {
             throw new module.I18nError("Unknown domain: " + domain);
         }
-        return module.get_pluralize_func(domain);
+        return module.get_plural_translation_func(domain);
     };
  
     // alias

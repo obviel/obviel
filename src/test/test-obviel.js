@@ -1709,3 +1709,111 @@ test("obviel i18n non-default domain, locale set", function() {
 
     equal($('#result').text(), 'Dit is foo.');
 });
+
+test('obviel i18n with pluralization, Dutch translation', function() {
+    var nl_NL = obviel.i18n.translation_source({'1 cow': [
+        '{count} cows', '1 koe', '{count} koeien']});
+    
+    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+        
+    obviel.i18n.translate('other');
+    
+    obviel.i18n.set_locale('nl_NL');
+    
+    obviel.view({
+        iface: 'something',
+        obvt: '<p id="result" data-trans="">1 cow||{count} koeien</p>'
+    });
+
+    var el = $('#viewdiv');
+    
+    el.render({iface: 'something', count: 1});
+
+    equal($('#result').text(), '1 koe');
+
+    el.render({iface: 'something', count: 2});
+
+    equal($('#result').text(), '2 koeien');
+
+});
+
+test('obviel i18n with pluralization and tvar, Dutch translation', function() {
+    var nl_NL = obviel.i18n.translation_source({'{count} cow': [
+        '{count} cows', '{count} koe', '{count} koeien']});
+    
+    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+        
+    obviel.i18n.translate('other');
+    
+    obviel.i18n.set_locale('nl_NL');
+    
+    obviel.view({
+        iface: 'something',
+        obvt: '<p id="result" data-plural="count" data-trans=""><em data-tvar="count">1</em> cow||<em>{count}</em> koeien</p>'
+    });
+
+    var el = $('#viewdiv');
+    
+    el.render({iface: 'something', count: 1});
+
+    equal($('#result').html().toLowerCase(), '<em>1</em> koe');
+
+    el.render({iface: 'something', count: 2});
+
+    equal($('#result').html().toLowerCase(), '<em>2</em> koeien');
+
+});
+
+test('obviel i18n with pluralization, Polish translation', function() {
+    var pl_PL = obviel.i18n.translation_source({
+        '': {
+            'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
+        },
+        '1 file.':
+        ['{count} file.',
+         '1 plik.',
+         '{count} pliki.',
+         "{count} pliko'w."]});
+    
+    obviel.i18n.register_translation('pl_PL', pl_PL, 'other');
+        
+    obviel.i18n.translate('other');
+    
+    obviel.i18n.set_locale('pl_PL');
+    
+    obviel.view({
+        iface: 'something',
+        obvt: '<p id="result" data-trans="">1 file.||{count} files.</p>'
+    });
+
+    var el = $('#viewdiv');
+    
+    el.render({iface: 'something', count: 1});
+
+    equal($('#result').text(), '1 plik.');
+
+    el.render({iface: 'something', count: 2});
+
+    equal($('#result').text(), '2 pliki.');
+
+    el.render({iface: 'something', count: 3});
+    
+    equal($('#result').text(), '3 pliki.');
+
+    el.render({iface: 'something', count: 4});
+    
+    equal($('#result').text(), '4 pliki.');
+
+    el.render({iface: 'something', count: 5});
+    
+    equal($('#result').text(), "5 pliko'w.");
+
+    el.render({iface: 'something', count: 21});
+    
+    equal($('#result').text(), "21 pliko'w.");
+    
+    el.render({iface: 'something', count: 22});
+    
+    equal($('#result').text(), "22 pliki.");
+    
+});

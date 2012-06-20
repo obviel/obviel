@@ -58,16 +58,16 @@ var get_plural_translation = function(singular_msgid, plural_msgid,
     var translation = plural_translations[singular_msgid];
     if (translation === undefined) {
         if (count === 1) {
-            return {plural: false, translation: singular_msgid};
+            return singular_msgid;
         } else {
-            return {plural: true, translation: plural_msgid};
+            return plural_msgid;
         }
     }
 
     if (count === 1) {
-        return {plural: false, translation: translation.one};
+        return translation.one;
     } else {
-        return {plural: true, translation: translation.more};
+        return translation.more;
     }
 };
 
@@ -2101,9 +2101,8 @@ test("implicit pluralize in attr with translation", function() {
 // test pluralize with explicit message ids
 // also test fallback when no translation is available
 
-// test pluralize with language like polish
-
-// pluralization message id can be supplied with data-trans?
+// XXX is plural_message_id relevant? should there be a way to explicitly
+// define it or does it serve no purpose as it's never used for lookup?
 
 test("pluralize in attr and content translation", function() {
     html_equal(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
