@@ -6,19 +6,13 @@ Introduction
 
 Obviel Template supports an i18n strategy for templates which allows
 the template developer to mark up those bits of the template that are
-translatable. This is very similar to the way code (such as JavaScript
-code) is marked up for i18n as well (typically using the ``_("string
-to translate")`` construct.
+translatable. This way you can easily construct user interfaces can
+switch to different languages.
 
-We recommend the use of the Babel_ i18n tool with code that uses
-Obviel. While was primarily written to support Python applications, it
-can also support JavaScript applications. We've written a special
-`Obviel plugin for Babel`_ which teaches it about Obviel Templates, so
-that messages ids can be extracted from them.
-
-.. _Babel: http://babel.edgewall.org/
-
-.. _`Obviel plugin for Babel`: http://pypi.python.org/pypi/babel-obviel
+This document describes how to mark up translatable content in a
+template. To read about how to actually integrate such a template with
+a larger Obviel application and translations, read the :doc:`i18n
+manual <i18n>`.
 
 Basic i18n
 ----------
@@ -126,8 +120,7 @@ If we're just translating attribute content we're fine as well::
   <div title="A title" data-trans="title"><p data-if="foo">Blah</p></div>
 
 For the sake of simplicity of implementation, ``data-with`` is also
-not allowed within a ``data-trans``, though this is a restriction that
-could be lifted in the future.
+not allowed within a ``data-trans``.
 
 We introduce this rule because programmatic manipulation of
 translatable text results in very hard-to-reason about situations that
@@ -237,6 +230,60 @@ translatable too, so we can give it an explicit message id too::
 
   <p data-trans="">The <em data-tvar="color:elephant_color">pink</em> elephant.</p>
 
+Pluralization
+-------------
+
+Let's look at this example::
+
+  <p data-trans="">{count} cows</p>
+
+When we go about using this, we run into a problem. What if ``count`` is
+``1``? We'd see this::
+
+  <p>1 cows</p>
+
+But this is wrong. We want to get this::
+
+  <p>1 cow</p>
+
+English has two *plural forms*, one for the singular (1 cow) and one
+for everything else, plural (5 cows).
+
+We could change our template to use ``data-if`` to pick the right
+plural form, but that will lead to a problem when we want to i18n our
+template. Some languages have *no* plural forms, and others have more
+than two, and will use different rules for selecting which plural form
+to use based on ``count``.
+
+Instead we can mark up our template to indicate we want to use pluralization::
+
+  <p data-trans="" data-plural="count">{count} cow||{count} cows</p>
+
+We have introduce a ``data-plural`` directive that indicates that we
+want to use the ``count`` variable to pick the correct plural form. By
+default in English we have two plural forms, and we define them using
+the ``||`` separator in a template. The singular form goes before
+``||`` and the plural form goes after it. 
+
+When you run the template in the default locale, Obviel Template will
+pick ``{count} cow`` or ``{count} cows`` for you automatically based
+on ``count``. When you run the template in another locale however what
+translation string is picked can be determined from ``count`` in a
+different way.
+
+What if you want to translate an attribute? Let's look at another example::
+
+  <p data-trans="title" data-plural="title:count" title="{count} cow||{count} cows"></p>
+
+As you can see, you can use ``data-plural`` to indicate the
+pluralization variable for the ``title`` attribute. The rules for
+indicating an attribute or content work the same way as the rules for
+``data-trans``, but the value after ``:`` is held to be the name of
+the pluralization variable, not the message id.
+
+The :doc:`i18n manual <i18n>` goes into detail on how to use
+pluralizations.
+
 Shortcuts: implied ``data-tvar``
 --------------------------------
 
@@ -296,3 +343,58 @@ This will result in the following two message ids to translate::
 and::
 
   *{color}*
+
+Shortcuts: implied ``data-plural``
+----------------------------------
+
+.. sidebar:: tvar
+
+  You might think that this template::
+
+    <p data-trans="" data-plural="count"><em>{count}</em> cow||<em>{count}</em> cows</p>
+
+  may also be simplified to this **illegal** template::
+
+    <p data-trans=""><em>{count}</em> cow||<em>{count}</em> cows</p>
+
+  This is now allowed however, because the ``em`` elements have a
+  (implied) ``data-tvar``. Only directly embedded variables are
+  candidates for the implied ``data-plural`` rule. ``data-tvar`` does
+  not imply a pluralization variable as it is just a name to use
+  within message ids, and does not have to match any existing variable
+  at all. The pluralization system also does not look inside
+  ``data-tvar`` elements for pluralization variables.
+
+When you use ``||`` within a ``data-trans`` or ``data-tvar`` element
+or within an attribute, you automatically imply pluralization is in
+use. ``data-plural`` is only necessary to indicate the pluralization
+variable if it cannot be determined unambiguously automatically.
+
+So this example::
+
+  <p data-trans="" data-plural="count">{count} cow||{count} cows</p>
+
+Can instead be written like this::
+
+  <p data-trans="">{count} cow||{count} cows</p>
+
+because ``count`` can be unambiguously determined to be the pluralization
+variable, as it is the only one in use.
+
+If you had an example like this::
+
+  <p data-trans="" data-plural="count">{count} {color} cow||{count} {color} cows</p>
+
+you do need to specify ``data-plural`` as now there are two candidates
+for a pluralization variable, ``color`` and ``count``, and we want to
+use ``count``.
+
+The same rule applies to the attribute example. We can simplify this::
+
+  <p data-trans="title" data-plural="title:count" title="{count} cow||{count} cows"></p>
+
+To this::
+
+  <p data-trans="title" title="{count} cow||{count} cows"></p>
+
+because the pluralization variable can be unambiguously determined.

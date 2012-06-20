@@ -69,6 +69,17 @@ using ``translation_source``, and then register this source using
 ``register_translation``. Later we'll see how to register translations
 from a JSON source.
 
+.. sidebar:: ``obviel.i18n.translate`` and templates
+
+  What if you have a module that just define views with translatable
+  templates and doesn't need to use ``_`` in JavaScript at all? You
+  still should call ``obviel.i18n.translate`` once in your JavaScript
+  code to set up the domain. See the `Domains`_ section for more
+  details.
+
+Yu may have a module where you define views that use templates with
+  translatable content in them.
+
 Next we will create a function ``_`` that can be used to mark up text
 to make it translatable::
 
@@ -259,6 +270,19 @@ languages.
 Domains
 -------
 
+.. sidebar:: Use local scope
+ 
+  ``_`` and ``ngettext`` should not be global functions, as you want
+  to be able to define a separate domain per module. JavaScript
+  modules are normally wrapped in some kind of local scope such as::
+ 
+    (function() {
+      .. your module goes here ..
+    }());
+
+  To make sure your ``_`` and ``ngettext`` functions are local, you
+  should define them in that scope.
+
 What if you have an application that has translatable content, and you
 want to use a library that has translatable content of its own? Obviel
 Forms is an example of such a library, as error messages displayed in
@@ -281,14 +305,6 @@ each library and application. By default, ``obviel.i18n`` uses the
   var _ = obviel.i18n.translate('hello_world_app');
 
   alert(_("Hello world!"));
-
-.. sidebar:: Scope
- 
-  ``_`` and ``ngettext`` should not be global functions, as you want
-  to be able to define a separate domain per module. JavaScript
-  modules are normally wrapped in some kind of scope, and you should
-  define a non-global ``_`` and ``ngettext`` within that module-level 
-  scope, not globally.
 
 As you can see, we now pass an extra argument ``'hello_world_app'``
 when registering the translation as well as when we create the
