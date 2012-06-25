@@ -613,6 +613,24 @@ test('float convert different separator', function() {
     deepEqual(widget.convert('1.2'), {error: 'not a float'});
 });
 
+test('float convert alternate separator', function() {
+    var widget = new obviel.forms.FloatWidget().clone({
+        obj:  {
+            validate: {
+                separator: ',',
+                alternate_separators: ['.']
+            }
+        }
+    });
+    deepEqual(widget.convert('1,2'), {value: 1.2});
+    deepEqual(widget.convert('1'), {value: 1});
+    deepEqual(widget.convert('-1,2'), {value: -1.2});
+    deepEqual(widget.convert(''), {value: null});
+    deepEqual(widget.convert('foo'), {error: 'not a float'});    
+    deepEqual(widget.convert('1.2'), {value: 1.2});
+    deepEqual(widget.convert('1#2'), {error: 'not a float'}); 
+});
+
 test('float validate required', function() {
     var widget = new obviel.forms.FloatWidget().clone({
         obj: {

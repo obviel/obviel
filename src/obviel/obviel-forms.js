@@ -1262,6 +1262,12 @@ obviel.forms = {};
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
 
+        var alternate_seps = obj.validate.alternate_separators || [];
+        
+        for (var i = 0; i < alternate_seps.length; i++) {
+            value = value.replace(alternate_seps[i], sep);
+        };
+        
         if (!is_decimal(sep, value)) {
             return {error: _("not a float")};
         }
