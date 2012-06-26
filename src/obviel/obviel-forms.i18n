@@ -1,12 +1,12 @@
-[
-    {
-        "locale": "en_US",
-        "url": null,
-        "domain": "obviel-forms"
-    },
-    {
-        "locale": "nl_NL",
-        "url": "obviel-forms-nl.json",
-        "domain": "obviel-forms"
-    }
-]
+{
+    "obviel-forms": [
+        {
+            "locale": "en_US",
+            "url": null
+        },
+        {
+            "locale": "nl_NL",
+            "url": "obviel-forms-nl.json"
+        }
+    ]
+}
