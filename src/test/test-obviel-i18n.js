@@ -252,9 +252,9 @@ test('use unknown locale', function() {
 test('set unknown domain', function() {
     setup_translations();
 
-    raises(function() {
-        i18n.translate('unknown');
-    }, i18n.I18nError);
+    var translate = i18n.translate('unknown');
+    translate("foo");
+    expect(0);
 });
 
 test('pluralize without translation', function() {

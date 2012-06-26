@@ -153,9 +153,6 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        // if (domain !== 'default' && domains[domain] === undefined) {
-        //     throw new module.I18nError("Unknown domain: " + domain);
-        // }
         return function(msgid) {
             return module.get_translation(msgid, domain);
         };
@@ -165,9 +162,6 @@ obviel.i18n = {};
         if (domain === undefined) {
            domain = 'default';
         }
-        // if (domain !== 'default' && domains[domain] === undefined) {
-        //     throw new module.I18nError("Unknown domain: " + domain);
-        // }
         template_domain = domain;
         return module.get_translation_func(domain);
     };
@@ -176,9 +170,6 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        // if (domain !== 'default' && domains[domain] === undefined) {
-        //     throw new module.I18nError("Unknown domain: " + domain);
-        // }
         return function(msgid, msgid_plural, count) {
             return current_gt.dngettext(domain, msgid, msgid_plural, count);
         };
@@ -189,9 +180,6 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        // if (domain !== 'default' && domains[domain] === undefined) {
-        //     throw new module.I18nError("Unknown domain: " + domain);
-        // }
         return module.get_plural_translation_func(domain);
     };
 
@@ -225,7 +213,7 @@ obviel.i18n = {};
         });
     };
     
-    module.load_i18n_links = function() {
+    module.load = function() {
         var promises = [];
         $('head link[rel="i18n"]').each(function() {
             var url = $(this).attr('href');
