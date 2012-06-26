@@ -314,3 +314,13 @@ test('complex pluralization rule', function() {
     equal(i18n.variables(ngettext('1 file.', '{count} files.', 22), {count: 22}),
           "22 pliki.");
 });
+
+asyncTest("load i18n", function() {
+    i18n.load().done(function() {
+        i18n.set_locale('nl_NL').done(function() {
+            var _ = i18n.translate('i18ntest');
+            equal(_('greetings human!'), 'gegroet mens!');
+            start();
+        });
+    });
+});

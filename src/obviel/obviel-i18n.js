@@ -197,18 +197,21 @@ obviel.i18n = {};
             type: 'GET',
             url: url,
             dataType: 'json'
-        }).done(function(entries) {
+        }).done(function(domains) {
             var source_url, source;
-            for (var i in entries) {
-                var entry = entries[i];
-                if (entry.url === null || entry.url === undefined) {
-                    source = module.empty_translation_source();
-                } else {
-                    source_url = join_relative_url(url, entry.url);
-                    source = module.translation_source_from_json_url(
-                        source_url);
-                }
-                module.register_translation(entry.locale, source, entry.domain);
+            for (var domain in domains) {
+                var entries = domains[domain];
+                for (var i in entries) {
+                    var entry = entries[i];
+                    if (entry.url === null || entry.url === undefined) {
+                        source = module.empty_translation_source();
+                    } else {
+                        source_url = join_relative_url(url, entry.url);
+                        source = module.translation_source_from_json_url(
+                            source_url);
+                    }
+                    module.register_translation(entry.locale, source, domain);
+                }       
             }
         });
     };

@@ -1,0 +1,17 @@
+{
+    "": {
+        "Content-Transfer-Encoding": "8bit", 
+        "Content-Type": "text/plain; charset=UTF-8", 
+        "Language": "nl", 
+        "Language-Team": "Dutch", 
+        "Last-Translator": "Martijn Faassen <faassen@startifact.com>", 
+        "MIME-Version": "1.0", 
+        "PO-Revision-Date": "2011-05-04 18:44+0200", 
+        "POT-Creation-Date": "2011-05-04 18:42+0200", 
+        "Plural-Forms": "nplurals=2; plural=(n != 1);", 
+        "Project-Id-Version": "obviel_forms 0.1", 
+        "Report-Msgid-Bugs-To": ""
+    }, 
+    "{count} crow": ["{count} crows", "{count} kraai", "{count} kraaien"], 
+    "greetings human!": [null, "gegroet mens!"]
+}
