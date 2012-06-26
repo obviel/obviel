@@ -1,23 +1,15 @@
 
 $(document).ready(function() {
+    obviel.i18n.load_i18n_links().done(function() {
+        obviel.i18n.set_locale('nl_NL');
+    });
+    
     var data = {
         'da': 'foo',
         'dau': 'foo'
     };
 
     var el = $('#testform');
-
-
-    var orig_ajax = $.ajax;
-    $.ajax = function(settings) {
-        var key = settings.data.identifier || settings.data.term || '';
-        key = key.toLowerCase();
-        if ('foo'.indexOf(key) >= 0) {
-            settings.success([{value: 'foo', label: 'Foo'}]);
-        } else if ('bar'.indexOf(key) >= 0) {
-            settings.success([{value: 'bar', label: 'Bar'}]);
-        }
-    };
     
     el.render({
         ifaces: ['viewform'],
@@ -55,14 +47,6 @@ $(document).ready(function() {
                     ],
                     defaultvalue: 'foo'
                 },
-                {
-                    ifaces: ['autocomplete_field'],
-                    name: 'dau',
-                    title: 'Autocomplete URL',
-                    data: 'autocomplete_url',
-                    defaultvalue: 'foo'
-                },
-               
                 {
                     ifaces: ['datepicker_field'],
                     name: 'dp',

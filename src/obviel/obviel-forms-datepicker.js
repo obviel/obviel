@@ -4,7 +4,7 @@
 */
 
 (function($, obviel, module) {
-    var _ = module.translate;
+    var _ = obviel.i18n.translate('obviel-forms');
     
     obviel.iface('datepicker_field', 'textline_field');
     module.DatePickerWidget = function(settings) {

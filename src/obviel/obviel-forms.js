@@ -5,21 +5,9 @@
 
 obviel.forms = {};
 
-(function($, obviel, module) {
-    // if no json_locale_data can be found, fall back on the default
-    // translations
-    var locale_data = null;
-    if (typeof json_locale_data !== "undefined") {
-        locale_data = json_locale_data;
-    } else {
-        locale_data = undefined;
-    }
-    var gt = new Gettext({
-        domain: "obviel-forms",
-        locale_data: locale_data});
-    function _(msgid) { return gt.gettext(msgid); }
-
-    module.translate = _;
+(function($, obviel, module) {    
+    var _ = obviel.i18n.translate('obviel-forms');
+    var ngettext = obviel.i18n.pluralize('obviel-forms');
     
     var entitize = function(s) {
         /* convert the 4 chars that must not be in XML to 'entities'
@@ -131,10 +119,10 @@ obviel.forms = {};
         $(el).bind('form-change.obviel', function(ev) {
             var count = self.total_error_count();
             if (count > 0) {
-                var msg = Gettext.strargs(gt.ngettext(
-                    "1 field did not validate",
-                    "%1 fields did not validate",
-                    count), [count]);
+                var msg = obviel.i18n.variables(ngettext(
+                    "{count} field did not validate",
+                    "{count} fields did not validate",
+                    count), {count: count});
                 $('.obviel-formerror', el).text(msg);
             } else {
                 $('.obviel-formerror', el).text('');

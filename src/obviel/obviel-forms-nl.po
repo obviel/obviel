@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: obviel_forms 0.1\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-04 18:42+0200\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2012-06-20 20:37+0200\n"
 "PO-Revision-Date: 2011-05-04 18:44+0200\n"
 "Last-Translator: Martijn Faassen <faassen@startifact.com>\n"
 "Language-Team: Dutch\n"
@@ -18,69 +18,69 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/obviel/obviel-forms.jslex:135
-msgid "1 field did not validate"
-msgid_plural "%1 fields did not validate"
-msgstr[0] "1 veld kon niet gevalideerd worden"
-msgstr[1] "%1 velden konden niet gevalideerd worden"
+#: src/obviel/obviel-forms-autocomplete.js:152
+msgid "unknown value"
+msgstr "Ongeldige waarde"
 
-#: src/obviel/obviel-forms.jslex:1093
-msgid "this field is required"
-msgstr "Dit veld is verplicht"
-
-#: src/obviel/obviel-forms.jslex:1126
-msgid "value too short"
-msgstr "Invoer te weinig karakters"
-
-#: src/obviel/obviel-forms.jslex:1129
-msgid "value too long"
-msgstr "Invoer te veel karakters"
-
-#: src/obviel/obviel-forms.jslex:1193
-msgid "not a number"
-msgstr "Geen nummer"
-
-#: src/obviel/obviel-forms.jslex:1196
-msgid "not an integer number"
-msgstr "Geen geheel getal"
-
-#: src/obviel/obviel-forms.jslex:1220 src/obviel/obviel-forms.jslex:1305
-#: src/obviel/obviel-forms.jslex:1377
-msgid "negative numbers are not allowed"
-msgstr "Negatieve getallen zijn niet toegestaan"
-
-#: src/obviel/obviel-forms.jslex:1228
-msgid "value must be %1 digits long"
-msgstr "De waarde moet %1 cijfers bevatten"
-
-#: src/obviel/obviel-forms.jslex:1266 src/obviel/obviel-forms.jslex:1273
-msgid "not a float"
-msgstr "Veld moet numerieke waarde bevatten"
-
-#: src/obviel/obviel-forms.jslex:1335 src/obviel/obviel-forms.jslex:1345
-msgid "not a decimal"
-msgstr "Veld moet numerieke waarde bevatten"
-
-#: src/obviel/obviel-forms.jslex:1398
-msgid "decimal must contain at least %1 digits before the decimal mark"
-msgstr "Er zijn tenminste %1 cijfers nodig voor de komma"
-
-#: src/obviel/obviel-forms.jslex:1405
-msgid "decimal may not contain more than %1 digits before the decimal mark"
-msgstr "Er zijn niet meer dan %1 cijfers toegestaan voor de komma"
-
-#: src/obviel/obviel-forms.jslex:1413
-msgid "decimal must contain at least %1 digits after the decimal mark"
-msgstr "Er zijn tenminste %1 cijfers nodig na de komma"
-
-#: src/obviel/obviel-forms.jslex:1421
-msgid "decimal may not contain more than %1 digits after the decimal mark"
-msgstr "Er zijn niet meer dan %1 cijfers toegestaan na de komma"
-
-#: src/obviel/obviel-forms-datepicker.jslex:56
+#: src/obviel/obviel-forms-datepicker.js:56
 msgid "invalid date"
 msgstr "Ongeldige datum"
 
-#: src/obviel/obviel-forms-autocomplete.jslex:152
-msgid "unknown value"
-msgstr "Ongeldige waarde"
+#: src/obviel/obviel-forms.js:128
+msgid "{count} field did not validate"
+msgid_plural "{count} fields did not validate"
+msgstr[0] "{count} veld kon niet gevalideerd worden"
+msgstr[1] "{count} velden konden niet gevalideerd worden"
+
+#: src/obviel/obviel-forms.js:1105
+msgid "this field is required"
+msgstr "Dit veld is verplicht"
+
+#: src/obviel/obviel-forms.js:1138
+msgid "value too short"
+msgstr "Invoer te weinig karakters"
+
+#: src/obviel/obviel-forms.js:1141
+msgid "value too long"
+msgstr "Invoer te veel karakters"
+
+#: src/obviel/obviel-forms.js:1205
+msgid "not a number"
+msgstr "Geen nummer"
+
+#: src/obviel/obviel-forms.js:1208
+msgid "not an integer number"
+msgstr "Geen geheel getal"
+
+#: src/obviel/obviel-forms.js:1232 src/obviel/obviel-forms.js:1317
+#: src/obviel/obviel-forms.js:1389
+msgid "negative numbers are not allowed"
+msgstr "Negatieve getallen zijn niet toegestaan"
+
+#: src/obviel/obviel-forms.js:1240
+msgid "value must be %1 digits long"
+msgstr "De waarde moet %1 cijfers bevatten"
+
+#: src/obviel/obviel-forms.js:1278 src/obviel/obviel-forms.js:1285
+msgid "not a float"
+msgstr "Veld moet numerieke waarde bevatten"
+
+#: src/obviel/obviel-forms.js:1347 src/obviel/obviel-forms.js:1357
+msgid "not a decimal"
+msgstr "Veld moet numerieke waarde bevatten"
+
+#: src/obviel/obviel-forms.js:1410
+msgid "decimal must contain at least %1 digits before the decimal mark"
+msgstr "Er zijn tenminste %1 cijfers nodig voor de komma"
+
+#: src/obviel/obviel-forms.js:1417
+msgid "decimal may not contain more than %1 digits before the decimal mark"
+msgstr "Er zijn niet meer dan %1 cijfers toegestaan voor de komma"
+
+#: src/obviel/obviel-forms.js:1425
+msgid "decimal must contain at least %1 digits after the decimal mark"
+msgstr "Er zijn tenminste %1 cijfers nodig na de komma"
+
+#: src/obviel/obviel-forms.js:1433
+msgid "decimal may not contain more than %1 digits after the decimal mark"
+msgstr "Er zijn niet meer dan %1 cijfers toegestaan na de komma"

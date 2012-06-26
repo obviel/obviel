@@ -7,7 +7,7 @@
 
     obviel.iface('autocomplete_field', 'textline_field');
 
-    var _ = module.translate;
+    var _ = obviel.i18n.translate('obviel-forms');
     
     module.AutocompleteWidget = function(settings) {
         settings = settings || {};
