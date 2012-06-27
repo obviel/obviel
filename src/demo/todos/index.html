@@ -49,8 +49,8 @@
     </script>
 
     <script type="text/template" id="obvt-todo-stats">
-      <a data-if="done" id="clear-completed" data-handler="click|clear_completed" data-trans="">Clear {done} completed items</a>
-      <div class="todo-count" data-trans=""><b>{remaining}</b> items left</div>
+      <a data-if="done" id="clear-completed" data-handler="click|clear_completed" data-trans="">Clear {done} completed item||Clear {done} completed items</a>
+      <div class="todo-count" data-trans="" data-plural="remaining"><b>{remaining}</b> item left||<b>{remaining}</b> items left</div>
     </script>
 
     <script type="text/template" id="obvt-todo">
