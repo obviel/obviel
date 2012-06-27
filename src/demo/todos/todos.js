@@ -1,16 +1,8 @@
 (function($, obviel) {
-    var en_US = obviel.i18n.empty_translation_source();
-    var nl_NL = obviel.i18n.translation_source_from_json_url(
-        'todos-nl_NL.json');
-    obviel.i18n.register_translation('en_US', en_US);
-    obviel.i18n.register_translation('nl_NL', nl_NL);
-
-    // XXX use this
+    // enter key
     var KEYCODE = 13;
     
     var _ = obviel.i18n.translate();
-
-    obviel.i18n.set_locale('nl_NL');
     
     // the application model
     var todos = {
@@ -68,7 +60,7 @@
             }
         },
         create_on_enter: function(ev) {
-            if (ev.keyCode !== 13) {
+            if (ev.keyCode !== KEYCODE) {
                 return;
             }
             var value = $('#new-todo').val();
@@ -143,7 +135,7 @@
             $('input.edit', this.el).focus();
         },
         update_on_enter: function(ev) {
-            if (ev.keyCode === 13) {
+            if (ev.keyCode === KEYCODE) {
                 this.close();
             }
         },
@@ -161,8 +153,12 @@
     });
     
 
-    // when the document is ready, render the app model
+    // when the document is ready, load up languages & render the app model
     $(document).ready(function() {
-        $('#todoapp').render(todos);
+        obviel.i18n.load().done(function() {
+            obviel.i18n.set_locale('nl_NL').done(function() {
+                $('#todoapp').render(todos);
+            });
+        });
     });
 }(jQuery, obviel));
