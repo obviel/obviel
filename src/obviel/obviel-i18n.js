@@ -188,16 +188,21 @@ obviel.i18n = {};
     // shouldn't get those because we refer to a .i18n file with base_url
     var join_relative_url = function(base_url, rel_url) {
         var i  = base_url.lastIndexOf('/');
+        if (i === -1) {
+            // this url is relative itself without any slashes
+            return rel_url;
+        }
         base_url = base_url.slice(0, i);
         return base_url + '/' + rel_url; 
     };
 
     module.load_i18n = function(url) {
-        return $.ajax({
+        var defer = $.ajax({
             type: 'GET',
             url: url,
             dataType: 'json'
-        }).done(function(domains) {
+        });
+        defer.done(function(domains) {
             var source_url, source;
             for (var domain in domains) {
                 var entries = domains[domain];
@@ -214,6 +219,10 @@ obviel.i18n = {};
                 }       
             }
         });
+        defer.fail(function(jqXHR, textStatus) {
+            console.log("Request failed: " + textStatus);
+        });
+        return defer.promise();
     };
     
     module.load = function() {
