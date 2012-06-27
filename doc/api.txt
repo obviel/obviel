@@ -1194,10 +1194,13 @@ Everything is in the ``obviel.i18n`` namespace.
 
 .. function:: obviel.i18n.set_locale(locale)
 
-  Changes the locale that the application is working in to a new one.
+  Changes the locale that the application is working in to a new
+  one. This loads the locale information according to previously
+  specified information, for instance using :func:`obviel.i18n.load`.
 
   :param string locale: A locale identifier, such as ``en_US``.
-  
+  :returns: A promise that is done when the locale has been loaded.
+
 .. function:: obviel.i18n.clear_locale()
 
   Clears the locale that the application is working in to an empty one.
@@ -1274,5 +1277,38 @@ Everything is in the ``obviel.i18n`` namespace.
   An alias for :func:`obviel.template.variables`. Only available if
   Obviel Template is available when Obviel i18n is being loaded.
 
+.. function:: obviel.i18n.load()
+
+  Load i18n information as indicated by link elements in document. This
+  should be called when the document is ready.
+
+  The link tags should look like this::
+
+    <link href="something.i18n" ref="i18n" type="application/json" />
+
+  The ``.i18n`` file indicated is a JSON file that describes what
+  translations are available for which domains. You can link in
+  multiple ``.i18n`` files in one page. The ``.i18n`` file should look
+  like this::
+
+    {
+       "<domain>": [
+           { 
+             "locale": "<locale>",
+             "url": "<locale_url>"
+           }
+       ]
+    }
+
+  A domain may have information about more than one locale. The
+  ``.i18n`` file may have entries for more than one domain. The
+  ``url`` entry may be a relative URL, relative to the URL of the
+  ``.i18n`` file itself. ``url`` may also be ``null``, in which case
+  the locale will not have any translations available and thus will be
+  in the source language.
+
+  :returns: A promise that is done when the i18n information has been
+    loaded.  Recommended is you do the
+    :func:`obviel.i18n.set_locale()` in the done handler.
 
 
