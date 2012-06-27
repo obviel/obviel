@@ -36,7 +36,9 @@ var Translations = function() {
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
         'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!',
         'explicit': 'explicit translated',
-        'explicit_who': 'grote {who}'
+        'explicit_who': 'grote {who}',
+        // note that the string in the HTML has whitespace in it, but not here
+        'This has whitespace.': 'Dit heeft witruimte.'
     };
 };
 
@@ -815,6 +817,28 @@ test("data-trans with plain text, translation found", function() {
 test('data-trans with text, translation not there', function() {
     html_equal(render('<p data-trans="">This is not translated</p>', {}),
           '<p>This is not translated</p>');
+});
+
+test('data-trans with whitespace in element content, translation found', function() {
+    html_equal(render('<p data-trans="">  This has \n  whitespace.  </p>', {}),
+               '<p>Dit heeft witruimte.</p>');
+});
+
+test('data-tvar with whitespace, translation found', function() {
+    html_equal(render('<p data-trans=""><em data-tvar="something">  This has \n  whitespace.  </em> is there</p>', {}),
+               '<p><em>Dit heeft witruimte.</em> is there</p>');
+});
+
+test('attribute with whitespace, translation not found', function() {
+    // attributes do take whitespace literally, so translation won't be
+    // found as we look up "  This has \n  whitespace.  " up literally
+    html_equal(render('<p data-trans="title" title="  This has \n  whitespace.  "></p>', {}),
+               '<p title="  This has \n  whitespace.  "></p>');
+});
+
+test('data-trans with whitespace in element content, not translated', function() {
+    html_equal(render('<p data-trans="">  This also has \n  whitespace.  </p>', {}),
+               '<p>  This also has \n  whitespace.  </p>');
 });
 
 test('data-trans with text and msgid, translation not there', function() {
