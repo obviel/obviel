@@ -98,9 +98,12 @@ obviel.i18n = {};
     };
     
     module.set_locale = function(locale) {
+        var defer;
         // bail out early if we have to do nothing
         if (locale === current_locale) {
-            return;
+            defer = $.Deferred();
+            defer.resolve();
+            return defer.promise();
         }
         current_locale = locale;
         
@@ -122,8 +125,8 @@ obviel.i18n = {};
             promises.push(promise);
         }
         
-        var subviews_promise = $.when.apply(null, promises);
-        subviews_promise.done(function() {
+        var subviews_defer = $.when.apply(null, promises);
+        subviews_defer.done(function() {
             // XXX really convince Gettext to forget about previous data
             Gettext._locale_data = undefined;
             // just pick a random domain to pass into gettext; we don't
@@ -131,6 +134,7 @@ obviel.i18n = {};
             current_gt = new Gettext({domain: d,
                                       locale_data: locale_data});
         });
+        return subviews_defer.promise();
     };
 
     module.get_locale = function() {
@@ -149,9 +153,6 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        if (domain !== 'default' && domains[domain] === undefined) {
-            throw new module.I18nError("Unknown domain: " + domain);
-        }
         return function(msgid) {
             return module.get_translation(msgid, domain);
         };
@@ -161,9 +162,6 @@ obviel.i18n = {};
         if (domain === undefined) {
            domain = 'default';
         }
-        if (domain !== 'default' && domains[domain] === undefined) {
-            throw new module.I18nError("Unknown domain: " + domain);
-        }
         template_domain = domain;
         return module.get_translation_func(domain);
     };
@@ -171,9 +169,6 @@ obviel.i18n = {};
     module.get_plural_translation_func = function(domain) {
         if (domain === undefined) {
             domain = 'default';
-        }
-        if (domain !== 'default' && domains[domain] === undefined) {
-            throw new module.I18nError("Unknown domain: " + domain);
         }
         return function(msgid, msgid_plural, count) {
             return current_gt.dngettext(domain, msgid, msgid_plural, count);
@@ -185,12 +180,61 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        if (domain !== 'default' && domains[domain] === undefined) {
-            throw new module.I18nError("Unknown domain: " + domain);
-        }
         return module.get_plural_translation_func(domain);
     };
- 
+
+
+    // this won't work for urls ending in /, but luckily we
+    // shouldn't get those because we refer to a .i18n file with base_url
+    var join_relative_url = function(base_url, rel_url) {
+        var i  = base_url.lastIndexOf('/');
+        if (i === -1) {
+            // this url is relative itself without any slashes
+            return rel_url;
+        }
+        base_url = base_url.slice(0, i);
+        return base_url + '/' + rel_url; 
+    };
+
+    module.load_i18n = function(url) {
+        var defer = $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'json'
+        });
+        defer.done(function(domains) {
+            var source_url, source;
+            for (var domain in domains) {
+                var entries = domains[domain];
+                for (var i in entries) {
+                    var entry = entries[i];
+                    if (entry.url === null || entry.url === undefined) {
+                        source = module.empty_translation_source();
+                    } else {
+                        source_url = join_relative_url(url, entry.url);
+                        source = module.translation_source_from_json_url(
+                            source_url);
+                    }
+                    module.register_translation(entry.locale, source, domain);
+                }       
+            }
+        });
+        defer.fail(function(jqXHR, textStatus) {
+            console.log("Request failed: " + textStatus);
+        });
+        return defer.promise();
+    };
+    
+    module.load = function() {
+        var promises = [];
+        $('head link[rel="i18n"]').each(function() {
+            var url = $(this).attr('href');
+            promises.push(module.load_i18n(url));
+        });
+        var defer = $.when.apply(null, promises);
+        return defer.promise();
+    };
+    
     // alias
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
