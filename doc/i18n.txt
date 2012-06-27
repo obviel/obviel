@@ -74,8 +74,8 @@ world!`` message. This is what that looks like::
 
 Here we create a translation source from a simple JavaScript object
 using ``translation_source``, and then register this source using
-``register_translation``. Later we'll see how to register translations
-from a JSON source.
+``register_translation``. Later we'll see how to load translations
+from a URL source.
 
 .. sidebar:: ``obviel.i18n.translate`` and templates
 
@@ -562,21 +562,60 @@ file:
 
   $ bin/pojson convert myproject-fr_FR.po > myproject-fr_FR.json
 
-Loading up the translation JSON
--------------------------------
-
 Put that ``.json`` file somewhere where it can be found. Normally that
 would be in the same directory as the ``.js`` files.
 
-This ``.json`` file can now be loaded as a translation source from a
-URL::
+Loading up the translation JSON
+-------------------------------
 
-  var fr_FR = obviel.i18n.translation_source_from_json_url(
-     'myproject-fr_FR.json');
+Now we need to specify what translations are available. We do this in
+a JSON file which we give the ``.i18n`` extension by extension. This
+``.i18n`` file is normally put in the same directory as the ``.js``
+files as well, and therefore also in the same directory as the
+translation JSON files.
 
-And we can register it::
+Let's imagine we have an English translation that simply uses the
+source language, and a French translation that does have a ``JSON``
+file available. The ``.i18n`` file would look like this::
 
-  obviel.i18n.register_translation('fr_FR', fr_FR);
+  {
+     "default": [
+        {
+          "locale": "en_US",
+          "url": null
+        },
+        {
+          "locale": "fr_FR",
+          "url": "myproject-fr_Fr.json"
+     ]
+  }
 
-You can now use ``obviel.i18n.set_locale`` to that locale in your
-code.
+We've registered the information for the ``default`` domain in this
+example, but normally you'd register it for your application's domain
+or library's domain.
+
+Now we need to load this ``.i18n`` information. We do this using a ``<link>``
+tag in the web page that needs the translations::
+
+  <link href="path/to/some.i18n" ref="i18n" type="application/json" />
+
+You can include as many such ``link`` tags as you like, typically one
+per library you have installed that uses ``obviel.i18n``.
+
+Now you need to load the ``link`` tags. You do this when the document is
+ready, so like this::
+
+  $(document).ready(function() {
+     obviel.i18n.load().done(function() {
+        obviel.i18n.set_locale('fr_FR').done(function() {
+            ... start application ...
+        });
+     });
+  });
+
+Let's examine this structure. When the document is ready, we load the
+i18n information. When the i18n information is known, we set the
+locale. This in turn will then look up the i18n information for the
+supplied locale. Once the locale is set, we can start up the rest of
+the application, for instance by rendering the view for the
+application object.
