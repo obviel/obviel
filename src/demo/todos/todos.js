@@ -9,7 +9,6 @@
         iface: 'todos',
         items: []
     };
-
     // a clear function removing a todo from the application
     var clear = function(todo) {
         for (var i = 0; i < todos.items.length; i++) {
