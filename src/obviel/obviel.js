@@ -66,7 +66,7 @@ if (typeof obviel === "undefined") {
     // alias
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
-    };
+    }
 })();
 
 (function($, module) {    
@@ -666,7 +666,7 @@ if (typeof obviel === "undefined") {
     module.Compilers.prototype.get_compiled = function(view, obj) {
         var source_info = null;
         
-        for (identifier in this.compilers) {
+        for (var identifier in this.compilers) {
             var compiler = this.compilers[identifier];
             source_info = get_source(identifier, obj);
             if (source_info !== null) {

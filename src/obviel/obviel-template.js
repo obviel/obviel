@@ -68,9 +68,11 @@ obviel.template = {};
     var is_html_text, trim;
     var formatters, funcs;
     var default_view_name = null;
-    var resolve_in_obj = null;
-    var validate_dotted_name;
-    var cached_tokenize;
+    var resolve_in_obj, get_directive, validate_dotted_name;
+    var cached_tokenize, morph_element;
+    var split_name_formatter, split_name_formatters;
+    var parse_text_for_plural, parse_tvar, get_implicit_count_variable;
+    var check_message_id;
     
     var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
 
@@ -770,7 +772,7 @@ obviel.template = {};
         
         for (var key in this.attr_texts) {
             this.attr_texts[key].render(el, scope, context);
-        };
+        }
         
         // fast path without translations; elements do not need to be
         // reorganized
@@ -949,13 +951,13 @@ obviel.template = {};
             if (this.trans_info.count_variable !== null) {
                 throw new module.CompilationError(
                     el, "data-plural used for attribute content but no || used " +
-                        "to indicate plural text: " + name);
+                        "to indicate plural text: " + this.trans_info.count_variable);
             }
             this.attr_trans = new module.AttributeTrans(
                 el, this.name, this.value, this.trans_info.message_id);
             this._dynamic = true;
             return;
-        };
+        }
         
         var singular = new module.AttributeTrans(
             el, this.name, parts[0],
@@ -1617,7 +1619,7 @@ obviel.template = {};
     module.ContentTrans.prototype.render_notrans_tvars = function(
         el, scope, context) {
         var children = el.childNodes;
-        for (key in this.tvars) {
+        for (var key in this.tvars) {
             var info = this.tvars[key];
             // this can use index, as we're not in a plural
             info.dynamic_notrans.render(children[info.index], scope, context);
@@ -1812,7 +1814,7 @@ obviel.template = {};
         default_view_name = name;
     };
 
-    var morph_element = function(el, name) {
+    morph_element = function(el, name) {
         var new_el = document.createElement(name);
         var i;
         
@@ -1851,7 +1853,7 @@ obviel.template = {};
         return new_el;
     };
     
-    var get_directive = function(el, name) {
+    get_directive = function(el, name) {
         var value = null;
         if (!el.hasAttribute(name)) {
             return null;
@@ -1868,7 +1870,7 @@ obviel.template = {};
         return value;
     };
 
-    var split_name_formatters = function(el, text) {
+    split_name_formatters = function(el, text) {
         var parts = trim(text).split(' ');
         var result = [];
         for (var i = 0; i < parts.length; i++) {
@@ -1878,7 +1880,7 @@ obviel.template = {};
         return result;
     };
     
-    var split_name_formatter = function(el, name) {
+    split_name_formatter = function(el, name) {
         var name_parts = name.split('|');
         if (name_parts.length === 1) {
             return {
@@ -1896,7 +1898,7 @@ obviel.template = {};
         };   
     };
 
-    var check_message_id = function(el, message_id, element_or_attribute) {
+    check_message_id = function(el, message_id, element_or_attribute) {
         // cache the tokens so we get things faster during rendering time
         var tokens = cached_tokenize(message_id);
         var name_tokens = 0;
@@ -1927,7 +1929,7 @@ obviel.template = {};
         }
     };
 
-    var parse_tvar = function(el, tvar) {
+    parse_tvar = function(el, tvar) {
         var parts = tvar.split(':');
         if (parts.length === 1) {
             return {
@@ -1949,7 +1951,7 @@ obviel.template = {};
         };
     };
 
-    var parse_text_for_plural = function(text) {
+    parse_text_for_plural = function(text) {
         var before_plural = [];
         var after_plural = [];
         
@@ -1992,11 +1994,11 @@ obviel.template = {};
         return names;
     };
     
-    var get_implicit_count_variable = function(el, singular, plural) {
+    get_implicit_count_variable = function(el, singular, plural) {
         var names = get_all_variable_names(singular, plural);
         
         var result = null;
-        for (name in names) {
+        for (var name in names) {
             if (result === null) {
                 result = name;
             } else {
