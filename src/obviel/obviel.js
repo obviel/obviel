@@ -7,7 +7,7 @@ if (typeof obviel === "undefined") {
     var obviel = {};
 }
 
-(function() {
+(function($) {
     // a fallback i18n module that doesn't do any translation.
     // this way we can use obviel with the obviel i18n API without
     // actually having to load obviel-i18n.js. of course it won't
@@ -75,7 +75,7 @@ if (typeof obviel === "undefined") {
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
     }
-})();
+})(jQuery);
 
 (function($, module) {    
     module._ifaces = {
