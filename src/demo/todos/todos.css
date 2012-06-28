@@ -90,7 +90,7 @@ body {
 	cursor: pointer;
 	width: 20px;
 	height: 20px;
-	background: url(todo-destroy.png) no-repeat;
+	background: url(destroy.png) no-repeat;
 }
 
 #todo-list li:hover .destroy {

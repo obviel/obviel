@@ -34,6 +34,9 @@ if (typeof obviel === "undefined") {
     module.clear_locale = function() {
     };
     module.set_locale = function(locale) {
+        var defer = $.Deferred();
+        defer.resolve();
+        return defer.promise();
     };
     module.get_locale = function() {
         return null;
@@ -62,6 +65,11 @@ if (typeof obviel === "undefined") {
     };
     module.pluralize = function(domain) {
         return module.get_plural_translation_func(domain);
+    };
+    module.load = function() {
+        var defer = $.Deferred();
+        defer.resolve();
+        return defer.promise();
     };
     // alias
     if (typeof obviel.template !== 'undefined') {

@@ -35,7 +35,7 @@
         return {iface: 'stats', remaining: remaining, done: done,
                 amount: amount};
     };
-
+    
     // a view for the whole todos application
     obviel.view({
         iface: 'todos',
@@ -45,13 +45,13 @@
             update_stats: 'update_stats'
         },
         render: function() {
-            $('#new-todo', this.el).focus();
+            $('#new-todo').focus();
             this.update_stats();
         },
         update_stats: function() {
             var stats = get_stats(this.obj);
             if (stats.amount) {
-                $('#toggle-all', this.el).get(0).checked = !stats.remaining;
+                $('#toggle-all').get(0).checked = !stats.remaining;
                 $('footer', this.el).render(stats);
                 $('footer', this.el).show();
             } else {
@@ -70,7 +70,7 @@
             $(this.obj).trigger('update');
         },
         toggle_all: function() {
-            var done = $('#toggle-all', this.el).get(0).checked;
+            var done = $('#toggle-all').get(0).checked;
             $.each(this.obj.items, function(index, item) {
                 item.done = done;
             });
@@ -156,7 +156,7 @@
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
             obviel.i18n.set_locale('nl_NL').done(function() {
-                $('#todoapp').render(todos);
+                $('#app').render(todos);
             });
         });
     });

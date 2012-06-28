@@ -65,7 +65,7 @@ obviel.template = {};
 (function($, module) {
 
     // will define these later, is to please jshint
-    var is_html_text, trim;
+    var is_html_text, trim, normalize_space;
     var formatters, funcs;
     var default_view_name = null;
     var resolve_in_obj, get_directive, validate_dotted_name;
@@ -1414,6 +1414,7 @@ obviel.template = {};
 
     module.ContentTrans.prototype.finalize_compile = function(el) {
         var message_id = this.parts.join('');
+        message_id = normalize_space(trim(message_id));
         this.validate_message_id(el, message_id);
         this.message_id = message_id;
         if (this.explicit_message_id !== null) {
@@ -2047,6 +2048,10 @@ obviel.template = {};
         return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
 
+    normalize_space = function(s) {
+        return s.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
+    };
+    
     is_html_text = function(text) {
         return trim(text).charAt(0) === '<';
     };
