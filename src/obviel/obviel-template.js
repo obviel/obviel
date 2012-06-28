@@ -523,10 +523,18 @@ obviel.template = {};
 
     module.Section.prototype.render_sub_sections = function(el, scope,
                                                             context) {
+        var to_render = [];
+        // first we find all elements. we do this before rendering starts,
+        // as rendering can in some cases (data-each) insert new elements
+        // and that would break the finding
         for (var i in this.sub_sections) {
-            var value = this.sub_sections[i];
-            var sub_section_el = value.finder(el);
-            value.sub_section.render(sub_section_el, scope, context);
+            to_render.push({value: this.sub_sections[i],
+                            sub_section_el: this.sub_sections[i].finder(el)});
+        }
+        // now we can do the rendering
+        for (i in to_render) {
+            var r = to_render[i];
+            r.value.sub_section.render(r.sub_section_el, scope, context);
         }
     };
     
