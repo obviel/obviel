@@ -63,6 +63,9 @@ CHANGES
   modern alternative for the ``callback`` argument. To track whether a
   view is done rendering you can hook in with ``.done``.
 
+* When there is a RenderError in an obvt template log error on console
+  dealing in what view and template error occurred.
+
 1.0b (2012-05-31)
 =================
 
