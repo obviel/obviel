@@ -84,6 +84,18 @@ obviel.template = {};
         this.message = message;
     };
 
+    // XXX this doesn't generate the right paths yet
+    module.Error.prototype.path = function() {
+        var path = [];
+        var el = this.el;
+        while (el !== null && el.nodeType === 1) {
+            path.push(el.tagName.toLowerCase());
+            el = el.parentNode;
+        }
+        path.reverse();
+        return path.join('/');
+    };
+    
     module.Error.prototype.toString = function() {
         return this.message;
     };
