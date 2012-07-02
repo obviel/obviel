@@ -24,9 +24,8 @@ obviel.iface('mess', 'eggs', 'qux');
 
 // mockjax appears to have a default response time of non-0, slowing down
 // tests
-$.mockjaxSettings = {
-    reponseTime: 0
-};
+$.mockjaxSettings.responseTime = 0;
+$.mockjaxSettings.dataType = 'json';
 
 test('object implements object', function() {
     ok(obviel.provides({}, 'object'));
@@ -400,6 +399,7 @@ asyncTest('rerender url', function() {
 
     $.mockjax({
         url: 'test_url',
+        dataType: 'json',
         response: function() {
             called++;
             this.responseText = { ifaces: ['ifoo'], text: called.toString()};
