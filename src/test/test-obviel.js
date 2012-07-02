@@ -1858,3 +1858,52 @@ asyncTest('render returns a promise', function() {
     equal(called, true);
 });
 
+test("location of inline template error", function() {
+    obviel.view({
+        iface: 'foo',
+        obvt: '<p>{notfound}</p>'
+    });
+
+    raises(function() {
+        $('#viewdiv').render({iface: 'foo'});
+    }, function(e) {
+        return (e.toString() ===
+                "variable 'notfound' could not be found (iface: foo name: default; obvt inline)");
+    });
+});
+
+
+test("location of script template error", function() {
+    obviel.view({
+        iface: 'foo',
+        obvt_script: 'obvt_notfound_id'
+    });
+
+    raises(function() {
+        $('#viewdiv').render({iface: 'foo'});
+    }, function(e) {
+        return (e.toString() ===
+                "variable 'notfound' could not be found (iface: foo name: default; obvt from script with id obvt_notfound_id)");
+    });
+});
+
+// XXX problems testing this due to asynchronous nature of JS; exception
+// doesn't get thrown in time. need to write this around deferred.reject
+// asyncTest("location of script url error", function() {
+//     $.mockjax({
+//         url: 'obvt_url',
+//         responseText: '{notfound}'
+//     });
+
+//     obviel.view({
+//         iface: 'foo',
+//         obvt_url: 'obvt_url'
+//     });
+
+//     $("#viewdiv").render({iface: 'foo'}).fail(function() {
+//         equal(e.toString(),
+//               "variable 'notfound' could not be found (iface: foo name: default; obvt from url obvt_url)");
+//         start();
+//     });
+    
+// });

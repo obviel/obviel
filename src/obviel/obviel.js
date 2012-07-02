@@ -692,6 +692,10 @@ if (typeof obviel === "undefined") {
                 this.compiler_identifier + '_' +
                 this.source);
     };
+
+    module.InlineSourceLoader.prototype.location = function() {
+        return this.compiler_identifier + " inline";
+    };
     
     module.InlineSourceLoader.prototype.load = function() {
         var defer = $.Deferred();
@@ -710,7 +714,12 @@ if (typeof obviel === "undefined") {
                 this.compiler_identifier + '_' +
                 this.script_id);
     };
-    
+
+    module.ScriptSourceLoader.prototype.location = function() {
+        return (this.compiler_identifier + " from script with id " +
+                this.script_id);
+    };
+
     module.ScriptSourceLoader.prototype.load = function() {
         var defer = $.Deferred();
         var script_el = $('#' + this.script_id);
@@ -736,6 +745,11 @@ if (typeof obviel === "undefined") {
         return (this.type + '_' +
                 this.compiler_identifier + '_' +
                 this.url);
+    };
+
+    module.UrlSourceLoader.prototype.location = function() {
+        return (this.compiler_identifier + " " +
+                "from url " + this.url);
     };
 
     module.UrlSourceLoader.prototype.load = function() {
@@ -795,7 +809,7 @@ if (typeof obviel === "undefined") {
         var defer = $.Deferred();
         loader.load().done(function(source) {
             var compiler = self.compilers[loader.compiler_identifier];
-            var template = compiler.compile(source);            
+            var template = compiler.compile(loader.location(), source);
             defer.resolve(template);
         });
         return defer.promise();
@@ -815,7 +829,7 @@ if (typeof obviel === "undefined") {
         // special shortcut for inline html, no need to cache this
         if (loader.compiler_identifier === 'html' &&
             loader.type === 'inline') {
-            template = new module.HtmlTemplate(loader.source);
+            template = new module.HtmlTemplate(loader.location(), loader.source);
             template.render(view);
             defer.resolve();
             return defer.promise();
@@ -840,11 +854,12 @@ if (typeof obviel === "undefined") {
     module.HtmlCompiler = function() {
     };
     
-    module.HtmlCompiler.prototype.compile = function(source) {
-        return new module.HtmlTemplate(source);
+    module.HtmlCompiler.prototype.compile = function(location, source) {
+        return new module.HtmlTemplate(location, source);
     };
     
-    module.HtmlTemplate = function(source) {
+    module.HtmlTemplate = function(location, source) {
+        this.location = location;
         this.source = source;
     };
 
@@ -853,14 +868,14 @@ if (typeof obviel === "undefined") {
     };
     
     module.ObvielTemplateCompiler = function() {
-
     };
 
-    module.ObvielTemplateCompiler.prototype.compile = function(source) {
-        return new module.ObvielTemplate(source);
+    module.ObvielTemplateCompiler.prototype.compile = function(location, source) {
+        return new module.ObvielTemplate(location, source);
     };
     
-    module.ObvielTemplate = function(source) {
+    module.ObvielTemplate = function(location, source) {
+        this.location = location;
         this.compiled = new obviel.template.Template(source);
     };
     
@@ -886,18 +901,26 @@ if (typeof obviel === "undefined") {
             get_translation: obviel.i18n.get_translation_func(view.domain),
             get_plural_translation: obviel.i18n.get_plural_translation_func(view.domain)
         };
-        this.compiled.render(view.el, view.obj, context);
+        try {
+            this.compiled.render(view.el, view.obj, context);
+        } catch (e) {
+            var text = (e.toString() + " " +
+                        "(iface: " + view.iface + " name: " + view.name + "; " +
+                        this.location + ")");
+            console.log(text);
+            throw new obviel.template.RenderError(e.el, text);
+        };
     };
-
     
     module.JsontCompiler = function() {
     };
 
-    module.JsontCompiler.prototype.compile = function(source) {
-        return new module.JsontTemplate(source);
+    module.JsontCompiler.prototype.compile = function(location, source) {
+        return new module.JsontTemplate(location, source);
     };
 
-    module.JsontTemplate = function(source) {
+    module.JsontTemplate = function(location, source) {
+        this.location = location;
         this.compiled = new jsontemplate.Template(source);
     };
 
