@@ -10,7 +10,6 @@ module("Template", {
         obviel.template.clear_formatters();
         obviel.template.clear_funcs();
         obviel.clear_registry();
-        obviel.compilers.clear_cache();
         obviel.template.set_default_view_name('default');
     }
 });

@@ -51,6 +51,18 @@ CHANGES
 * use Pygments to highlight HTML and JavaScript snippets properly
   in the docs.
 
+* Rewritten compiler loading and caching infrastructure. Caching has been
+  generalized and improved. Also helps prepare for better template error
+  reporting.
+
+* You can optionally return a jQuery promise from a view's ``render``
+  method.  If you do, subview rendering and view rendering completion
+  waits until that promise is resolved.
+  
+* ``$(el).render(obj)`` now returns a jQuery promise. This is a more
+  modern alternative for the ``callback`` argument. To track whether a
+  view is done rendering you can hook in with ``.done``.
+
 1.0b (2012-05-31)
 =================
 

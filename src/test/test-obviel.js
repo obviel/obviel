@@ -22,6 +22,12 @@ obviel.iface('qux', 'baz');
 obviel.iface('eggs', 'spam');
 obviel.iface('mess', 'eggs', 'qux');
 
+// mockjax appears to have a default response time of non-0, slowing down
+// tests
+$.mockjaxSettings = {
+    reponseTime: 0
+};
+
 test('object implements object', function() {
     ok(obviel.provides({}, 'object'));
 });
@@ -167,9 +173,10 @@ module('Obviel Views', {
         $('#jsview-area').unview();
         $('#viewdiv').unbind();
         obviel.clear_registry();
-        obviel.compilers.clear_cache();
+        obviel.clear_template_cache();
         obviel.i18n.clear_translations();
         obviel.i18n.clear_locale();
+        $.mockjaxClear();
     }
 });
 
@@ -389,29 +396,25 @@ asyncTest('rerender url', function() {
         }
     });
     
-    var original_ajax = $.ajax;
-
     var called = 0;
-    
-    $.ajax = function(options) {
-        if (options.url == 'testifoo') {
+
+    $.mockjax({
+        url: 'test_url',
+        response: function() {
             called++;
-            options.success({ifaces: ['ifoo'], text: called.toString()});
+            this.responseText = { ifaces: ['ifoo'], text: called.toString()};
         }
-    };
+    });
     
     var el = $('#viewdiv');
-    el.render(
-        'testifoo', function() {
-            equal(this.el.text(), '1');
-            el.rerender(function() {
-                // this should call the URL again
-                equal(this.el.text(), '2');
-                start();
-            });
+    el.render('test_url').done(function(view) {
+        equal(view.el.text(), '1');
+        el.rerender(function() {
+            // this should call the URL again
+            equal(view.el.text(), '2');
+            start();
         });
-
-    $.ajax = original_ajax;
+    });
 });
 
 test('rerender context object', function() {
@@ -667,43 +670,44 @@ asyncTest('html_url context attr overrides html view one', function() {
 });
 
 test('json_script view', function() {
-     obviel.view({
-         iface: 'jt',
-         jsont_script: 'jsont_script_id'
-     });
-
-    // a bit of implementation detail to get the cache
-    var cache = obviel.compilers.compilers['jsont'].compiled_cache;
+    obviel.view({
+        iface: 'jt',
+        jsont_script: 'jsont_script_id'
+    });
     
-    equal(cache['script_jsont_script_id'], undefined);
+    var cache = obviel.cached_templates;
+    // some implementation detail knowledge about cache keys is here
+    var cache_key = 'script_jsont_jsont_script_id';
+    equal(cache.get(cache_key), null);
     
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['jt']},
         function(element, view, context) {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
-            ok(cache['script_jsont_script_id']);
+            ok(cache.get(cache_key));
             start();
         });
 });
 
 asyncTest('jsont view', function() {
-     obviel.view({
-         iface: 'jt',
-         jsont_url: 'fixtures/test1.jsont'
-     });
-
-    // a bit of implementation detail to get the cache
-    var cache = obviel.compilers.compilers['jsont'].url_cache;
+    obviel.view({
+        iface: 'jt',
+        jsont_url: 'fixtures/test1.jsont'
+    });
     
-    equal(cache['fixtures/test1.jsont'], undefined);
+    var cache = obviel.cached_templates;
+    // some implementation detail knowledge about cache keys is here
+    var cache_key = 'url_jsont_fixtures/test1.jsont';
+    equal(cache.get(cache_key), null);
+
           
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['jt']},
         function(element, view, context) {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
-            ok(cache['fixtures/test1.jsont']);
+            ok(cache.get(cache_key));
             start();
         });
 });
@@ -1267,17 +1271,14 @@ asyncTest('transform server contents', function() {
             this.el.text(this.obj.text + ': ' + this.obj.view_name);
         }
     });
-    
-    var original_ajax = $.ajax;
-    
-    $.ajax = function(options) {
-        if (options.url == 'testifoo') {
-            /* return an object without iface; we will add "ifoo" iface
-               using transformer */
-            options.success({text: 'Hello world'});
-        }
-    };
 
+    /* return an object without iface; we will add "ifoo" iface
+       using transformer */
+    $.mockjax({
+        url: 'test_url',
+        responseText: {text: 'Hello world'}
+    });
+    
     obviel.transformer(function(obj, url, name) {
         obj.iface = 'ifoo';
         obj.view_name = name;
@@ -1285,13 +1286,10 @@ asyncTest('transform server contents', function() {
     });
     
     var el = $('#viewdiv');
-    el.render(
-        'testifoo', function() {
-            equal(this.el.text(), 'Hello world: default');
-            start();
-        });
-
-    $.ajax = original_ajax;
+    el.render('test_url').done(function(view) {
+        equal(view.el.text(), 'Hello world: default');
+        start();
+    });
 });
 
 asyncTest('transform server contents only obj arg', function() {
@@ -1302,16 +1300,13 @@ asyncTest('transform server contents only obj arg', function() {
             this.el.text(this.obj.text);
         }
     });
-    
-    var original_ajax = $.ajax;
-    
-    $.ajax = function(options) {
-        if (options.url == 'testifoo') {
-            /* return an object without iface; we will add "ifoo" iface
-               using transformer */
-            options.success({text: 'Hello world'});
-        }
-    };
+
+    /* return an object without iface; we will add "ifoo" iface
+       using transformer */
+    $.mockjax({
+        url: 'test_url',
+        responseText: {text: 'Hello world'}
+    });
 
     obviel.transformer(function(obj) {
         obj.iface = 'ifoo';
@@ -1319,13 +1314,10 @@ asyncTest('transform server contents only obj arg', function() {
     });
     
     var el = $('#viewdiv');
-    el.render(
-        'testifoo', function() {
-            equal(this.el.text(), 'Hello world');
-            start();
-        });
-
-    $.ajax = original_ajax;
+    el.render('test_url').done(function(view) {
+        equal(view.el.text(), 'Hello world');
+        start();
+    });
 });
 
 asyncTest('disable transformer', function() {
@@ -1336,17 +1328,12 @@ asyncTest('disable transformer', function() {
             this.el.text(this.obj.text);
         }
     });
-    
-    var original_ajax = $.ajax;
-    
-    $.ajax = function(options) {
-        if (options.url == 'testifoo') {
-            /* return an object without iface; we will add "ifoo" iface
-               using transformer */
-            options.success({iface: 'ifoo', text: 'Hello world'});
-        }
-    };
 
+    $.mockjax({
+        url: 'test_url',
+        responseText: {iface: 'ifoo', text: 'Hello world'}
+    });
+    
     obviel.transformer(function(obj) {
         obj.text = obj.text + ' transformed';
         return obj;
@@ -1356,13 +1343,10 @@ asyncTest('disable transformer', function() {
     obviel.transformer(null);
     
     var el = $('#viewdiv');
-    el.render(
-        'testifoo', function() {
-            equal(this.el.text(), 'Hello world');
-            start();
-        });
-
-    $.ajax = original_ajax;
+    el.render('test_url').done(function(view) {
+        equal(view.el.text(), 'Hello world');
+        start();
+    });
 });
 
 asyncTest('transform server contents distinguish between uris', function() {
@@ -1379,18 +1363,20 @@ asyncTest('transform server contents distinguish between uris', function() {
         }
     });
     
+    $.mockjax({
+        url: 'test_foo_url',
+        responseText: {text: 'Hello world foo'}
+    });
+    $.mockjax({
+        url: 'test_bar_url',
+        responseText: {text: 'Hello world bar'}
+    });
     
-    var original_ajax = $.ajax;
-    
-    $.ajax = function(options) {
-        options.success({text: 'Hello world'});
-    };
-
     obviel.transformer(function(obj, url) {
-        if (url === 'testifoo') {
+        if (url === 'test_foo_url') {
             obj.iface = 'ifoo';
             return obj;
-        } else if (url === 'testibar') {
+        } else if (url === 'test_bar_url') {
             obj.iface = 'ibar';
             return obj;
         }
@@ -1398,20 +1384,15 @@ asyncTest('transform server contents distinguish between uris', function() {
     });
     
     var el = $('#viewdiv');
-    el.render(
-        'testifoo', function() {
-            equal(this.el.text(), 'ifoo: Hello world');
-            start();
-        });
+    el.render('test_foo_url').done(function(view) {
+        equal(view.el.text(), 'ifoo: Hello world foo');
+        start();
+    });
 
-    el.render(
-        'testibar', function() {
-            equal(this.el.text(), 'ibar: Hello world');
-            start();
-        });
-    
-
-    $.ajax = original_ajax;
+    el.render('test_bar_url').done(function(view) {
+        equal(view.el.text(), 'ibar: Hello world bar');
+        start();
+    });
 });
 
 test('transform content based on view using before', function() {
@@ -1817,3 +1798,38 @@ test('obviel i18n with pluralization, Polish translation', function() {
     equal($('#result').text(), "22 pliki.");
     
 });
+
+test('render only completes when render method promise completes', function() {
+    var defer = $.Deferred();
+    obviel.view({
+        iface: 'foo',
+        render: function() {
+            // don't resolve defer here, but later
+            return defer.promise();
+        }
+    });
+    var called = false;
+    $('#viewdiv').render({iface: 'foo'}, function() {
+        called = true;
+    });
+
+    equal(called, false);
+    // resolving the render defer should complete things
+    defer.resolve();
+    equal(called, true);
+});
+
+asyncTest('render returns a promise', function() {
+    obviel.view({
+        iface: 'foo'
+    });
+
+    var called = false;
+    $('#viewdiv').render({iface: 'foo'}).done(function(view) {
+        called = true;
+        start();
+    });
+
+    equal(called, true);
+});
+

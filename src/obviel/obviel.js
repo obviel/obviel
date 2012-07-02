@@ -301,35 +301,35 @@ if (typeof obviel === "undefined") {
         }
 
         self.before();
-        
-        var compiled_template_promise = module.compilers.get_compiled(
-            self, self.obj);
-        
-        compiled_template_promise.done(function(compiled_template) {
-            if (compiled_template !== null) {
-                compiled_template.render(self);
-            }
-            
+
+        module.compilers.render(self).done(function() {
             // BBB passing the arguments is really for backwards compatibility
             // only: all these are accessible on the view object itself too
-            self.render(self.el, self.obj, self.name,
-                        self.callback, self.errback);
-        
-            // XXX provide a way for render to return a promise too, and
-            // only let the subviews rendering start when the render promise is
-            // done
-            var subviews_promise = self.render_subviews();
-            
-            subviews_promise.done(function() {
-                self.bind_events();
-                self.bind_object_events();
+            var render_promise = self.render(self.el, self.obj, self.name,
+                                             self.callback, self.errback);
+            // pretend we have a resolved render promise if we don't
+            // get one from render
+            if (render_promise === undefined) {
+                render_promise = $.Deferred();
+                render_promise.resolve();
+            }
+
+            render_promise.done(function() {
+                var subviews_promise = self.render_subviews();
                 
-                self.finalize();
-                // the callback needs to be the last thing called
-                if (self.callback) {
-                    /// BBB arguments are for backwards compatibility only
-                    self.callback(self.el, self, self.obj);
-                }
+                subviews_promise.done(function() {
+                    self.bind_events();
+                    self.bind_object_events();
+                    
+                    self.finalize();
+                    // the callback needs to be the last thing called
+                    // BBB this is now better done with defer
+                    if (self.callback) {
+                        /// BBB arguments are for backwards compatibility only
+                        self.callback(self.el, self, self.obj);
+                    }
+                    self.defer.resolve(self);                    
+                });
             });
         });
     };
@@ -548,7 +548,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.Registry.prototype.clone_view = function(el, obj, name,
-                                                    callback, errback) {
+                                                    callback, errback, defer) {
         name = name || 'default';
         var view_prototype = this.lookup(obj, name);
         if (view_prototype === null) {
@@ -559,7 +559,8 @@ if (typeof obviel === "undefined") {
             obj: obj,
             callback: callback,
             errback: errback,
-            registry: this
+            registry: this,
+            defer: defer
         });
     };
 
@@ -588,41 +589,46 @@ if (typeof obviel === "undefined") {
             url = obj;
         }
         var promise;
+        var defer = $.Deferred();
         if (url !== null) {
-            promise = self.view_for_url(el, url, name, callback, errback);
+            promise = self.view_for_url(el, url, name, callback, errback,
+                                        defer);
         } else {
-            promise = self.view_for_obj(el, obj, name, callback, errback); 
+            promise = self.view_for_obj(el, obj, name, callback, errback,
+                                        defer); 
         }
         
         promise.done(function(view) {
             self.trigger_render(view);
         });
+        return defer.promise();
     };
     
     module.Registry.prototype.view_for_obj = function(el, obj, name,
-                                                      callback, errback) {
+                                                      callback, errback,
+                                                      view_defer) {
         var defer = $.Deferred();
-        var view = this.clone_view(el, obj, name, callback, errback);
+        var view = this.clone_view(el, obj, name, callback, errback,
+                                   view_defer);
         defer.resolve(view);
         return defer.promise();
     };
     
     module.Registry.prototype.view_for_url = function(el, url, name,
-                                                      callback, errback) {
+                                                      callback, errback,
+                                                      defer) {
         var self = this;
-        var defer = $.Deferred();
-        $.ajax({
+        return $.ajax({
             type: 'GET',
             url: url,
-            dataType: 'json',
-            success: function(obj) {
-                obj = self.transformer_hook(obj, url, name);
-                var view = self.clone_view(el, obj, name, callback, errback);
-                view.from_url = url;
-                defer.resolve(view);
-            }
+            dataType: 'json'
+        }).pipe(function(obj) {
+            obj = self.transformer_hook(obj, url, name);
+            var view = self.clone_view(el, obj, name, callback, errback,
+                                       defer);
+            view.from_url = url;
+            return view;
         });
-        return defer.promise();
     };
     
     module.Registry.prototype.register_transformer = function(transformer) {
@@ -637,7 +643,103 @@ if (typeof obviel === "undefined") {
     module.clear_registry = function() {
         module.registry = new module.Registry();
     };
+
+    module.render_template = function(view) {
+    };
     
+    module.CachedTemplates = function() {
+        this.cached = {};
+    };
+    
+    module.CachedTemplates.prototype.register = function(key, template) {
+        this.cached[key] = template;
+    };
+
+    module.CachedTemplates.prototype.clear = function() {
+        this.cached = {};
+    };
+    
+    module.CachedTemplates.prototype.get = function(key) {
+        var template = this.cached[key];
+        if (template === undefined) {
+            return null;
+        }
+        return template;
+    };
+    
+    module.cached_templates = new module.CachedTemplates();
+
+    module.clear_template_cache = function() {
+        module.cached_templates.clear();
+    };
+    
+    module.SourceLoaderError = function(text) {
+        this.text = text;
+    };
+
+    module.SourceLoaderError.toString = function() {
+        return "could not load source: " + this.text;
+    };
+    
+    module.InlineSourceLoader = function(compiler_identifier, source) {
+        this.compiler_identifier = compiler_identifier;
+        this.source = source;
+    };
+
+    module.InlineSourceLoader.prototype.key = function() {
+        // XXX use md5 for source?
+        return 'inline_' + this.compiler_identifier + '_' + this.source;
+    };
+    
+    module.InlineSourceLoader.prototype.load = function() {
+        var defer = $.Deferred();
+        defer.resolve(this.source);
+        return defer.promise();
+    };
+    
+    module.ScriptSourceLoader = function(compiler_identifier, script_id) {
+        this.compiler_identifier = compiler_identifier;
+        this.script_id = script_id;
+    };
+
+    module.ScriptSourceLoader.prototype.key = function() {
+        return 'script_' + this.compiler_identifier + '_' + this.script_id;
+    };
+    
+    module.ScriptSourceLoader.prototype.load = function() {
+        var defer = $.Deferred();
+        var script_el = $('#' + this.script_id);
+        if (script_el.length === 0) {
+            throw new module.SourceLoaderError(
+                "no script element found with id: " + this.script_id);
+        }
+        if (script_el.length > 1) {
+            throw new module.SourceLoaderError(
+                "too many script elements found with id: " + this.script_id);
+        }
+        defer.resolve(script_el.html());
+        return defer.promise();
+    };
+    
+    module.UrlSourceLoader = function(compiler_identifier, url) {
+        this.compiler_identifier = compiler_identifier;
+        this.url = url;
+    };
+    
+    module.UrlSourceLoader.prototype.key = function() {
+        return 'url_' + this.compiler_identifier + '_' + this.url;
+    };
+
+    module.UrlSourceLoader.prototype.load = function() {
+        return $.ajax({
+            type: 'GET',
+            url: this.url,
+            dataType: 'text'
+        }).fail(function(jqXHR, error_type, exc) {
+            throw new module.SourceLoaderError(
+                "could not load url: " + this.url);
+        });
+    };
     
     module.Compilers = function() {
         this.compilers = {};
@@ -646,127 +748,90 @@ if (typeof obviel === "undefined") {
     module.Compilers.prototype.register = function(identifier, compiler) {
         this.compilers[identifier] = compiler;
     };
-
-    module.Compilers.prototype.clear_cache = function() {
-        $.each(this.compilers, function(identifier, compiler) {
-            compiler.clear_cache();
-        });
-    };
-
-    var get_source = function(identifier, obj) {
+    
+    module.Compilers.prototype.get_loader_for_compiler = function(
+        identifier, obj) {
         var source = obj[identifier];
         if (source !== undefined) {
-            return {id: source, source: source};
+            return new module.InlineSourceLoader(identifier, source);
         }
         var source_script = obj[identifier + '_script'];
         if (source_script !== undefined) {
-            return {id: 'script_' + source_script,
-                    source: $('#' + source_script).html()};
+            return new module.ScriptSourceLoader(identifier, source_script);
         }
         var source_url = obj[identifier + '_url'];
         if (source_url !== undefined) {
-            return {id: source_url,
-                    url: source_url};
+            return new module.UrlSourceLoader(identifier, source_url);
         }
         return null;
     };
-    
-    module.Compilers.prototype.get_compiled = function(view, obj) {
-        var source_info = null;
-        
+
+    module.Compilers.prototype.get_loader = function(view) {
+        var compiler, loader;
         for (var identifier in this.compilers) {
-            var compiler = this.compilers[identifier];
-            source_info = get_source(identifier, obj);
-            if (source_info !== null) {
-                source_info.compiler = compiler;
-                break;
+            compiler = this.compilers[identifier];
+            loader = this.get_loader_for_compiler(identifier, view.obj);
+            if (loader !== null) {
+                return loader;
             }
-            source_info = get_source(identifier, view);
-            if (source_info !== null) {
-                source_info.compiler = compiler;
-                break;
+            loader = this.get_loader_for_compiler(identifier, view);
+            if (loader !== null) {
+                return loader;
             }
         }
-
-        var defer = $.Deferred();
-        
-        if (source_info === null) {
-            defer.resolve(null);
-            return defer.promise();
-        }
-
-        if (source_info.source !== undefined) {
-            var compiled = source_info.compiler.compile(
-                source_info.id, source_info.source);
-            defer.resolve(compiled);
-            return defer.promise();
-        }
-        
-        return source_info.compiler.compile_url(source_info.url);
+        return null;
     };
 
-    
-    module.Compiler = function() {
-        this.url_cache = {};
-        this.compiled_cache = {};
-    };
-
-    module.Compiler.prototype.get_compiled = function(source) {
-        
-    };
-
-    module.Compiler.prototype.clear_cache = function() {
-        this.url_cache = {};
-        this.compiled_cache = {};
-    };
-    
-    module.Compiler.prototype.compile = function(identifier, source) {
-        var self = this;
-        var cached_compiled = self.compiled_cache[identifier];
-        if (cached_compiled !== undefined) {
-            return cached_compiled;
-        }
-        var compiled = self.get_compiled(source);
-        self.compiled_cache[identifier] = compiled;
-        return compiled;
-    };
-
-    module.Compiler.prototype.compile_url = function(url) {
+    module.Compilers.prototype.compile = function(loader) {
         var self = this;
         var defer = $.Deferred();
-        var cached_compiled = self.url_cache[url];
-
-        if (cached_compiled !== undefined) {
-            defer.resolve(cached_compiled);
-            return defer.promise();
-        }
-        
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'text'
-        }).success(function(source) {
-            var compiled = self.get_compiled(source);
-            self.url_cache[url] = compiled;
-            defer.resolve(compiled);
+        loader.load().done(function(source) {
+            var compiler = self.compilers[loader.compiler_identifier];
+            var template = compiler.compile(source);            
+            defer.resolve(template);
         });
         return defer.promise();
     };
-    
+
+    module.Compilers.prototype.render = function(view) {
+        var defer = $.Deferred();
+        
+        // get template loader
+        var loader = this.get_loader(view);
+        // no template to load, so nothing to do
+        if (loader === null) {
+            defer.resolve();
+            return defer.promise();
+        }
+        var key = loader.key();
+        // see whether we have a cached template for loader, use it if so
+        var template = module.cached_templates.get(key);
+        if (template !== null) {
+            template.render(view);
+            defer.resolve();
+            return defer.promise();
+        }
+        // otherwise compile source indicated by loader, and render
+        this.compile(loader).done(function(template) {
+            module.cached_templates.register(key, template);
+            template.render(view);
+            defer.resolve();
+        });
+        return defer.promise();
+    };
+ 
     module.HtmlCompiler = function() {
     };
-
-    module.HtmlCompiler.prototype = new module.Compiler();
     
-    module.HtmlCompiler.prototype.get_compiled = function(source) {
-        return new module.HtmlCompiled(source);
+    module.HtmlCompiler.prototype.compile = function(source) {
+        return new module.HtmlTemplate(source);
     };
     
-    module.HtmlCompiled = function(source) {
+    module.HtmlTemplate = function(source) {
         this.source = source;
     };
 
-    module.HtmlCompiled.prototype.render = function(view) {
+    module.HtmlTemplate.prototype.render = function(view) {
         view.el.html(this.source);
     };
     
@@ -774,30 +839,15 @@ if (typeof obviel === "undefined") {
 
     };
 
-    module.ObvielTemplateCompiler.prototype = new module.Compiler();
-
-
-    module.ObvielTemplateCompiler.prototype.get_compiled = function(source) {
-        return new module.ObvielTemplateCompiled(source);
-    };
-
-    module.FailingCompiler = function(name) {
-        this.name = name;
-    };
-
-    module.FailingCompiler.prototype = new module.Compiler();
-
-    module.FailingCompiler.prototype.get_compiled = function(source) {
-        throw new module.CompilerError("compiler not installed for: " +
-                                       this.name);
+    module.ObvielTemplateCompiler.prototype.compile = function(source) {
+        return new module.ObvielTemplate(source);
     };
     
-    
-    module.ObvielTemplateCompiled = function(source) {
+    module.ObvielTemplate = function(source) {
         this.compiled = new obviel.template.Template(source);
     };
-
-    module.ObvielTemplateCompiled.prototype.render = function(view) {
+    
+    module.ObvielTemplate.prototype.render = function(view) {
         var context = {
             get_handler: function(name) {
                 return view.get_handler(name);
@@ -822,23 +872,31 @@ if (typeof obviel === "undefined") {
         this.compiled.render(view.el, view.obj, context);
     };
 
+    
     module.JsontCompiler = function() {
     };
-    
-    module.JsontCompiler.prototype = new module.Compiler();
 
-    module.JsontCompiler.prototype.get_compiled = function(source) {
-        return new module.JsontCompiled(source);
+    module.JsontCompiler.prototype.compile = function(source) {
+        return new module.JsontTemplate(source);
     };
 
-    module.JsontCompiled = function(source) {
+    module.JsontTemplate = function(source) {
         this.compiled = new jsontemplate.Template(source);
     };
 
-    module.JsontCompiled.prototype.render = function(view) {
+    module.JsontTemplate.prototype.render = function(view) {
         view.el.html(this.compiled.expand(view.obj));
     };
     
+    module.FailingCompiler = function(name) {
+        this.name = name;
+    };
+
+    module.FailingCompiler.prototype.compile = function(source) {
+        throw new module.CompilerError("compiler not installed for: " +
+                                       this.name);
+    };
+
     module.compilers = new module.Compilers();
     
     module.compilers.register('html', new module.HtmlCompiler());
@@ -867,12 +925,15 @@ if (typeof obviel === "undefined") {
         if ($.isFunction(name)) {
             errback = callback;
             callback = name;
+            name = undefined;
+        }
+        // if we have no name argument, we set it to default
+        if (name === undefined) {
             name = 'default';
         }
-
         var el = $(this);
 
-        module.registry.render(el, obj, name, callback, errback);
+        return module.registry.render(el, obj, name, callback, errback);
     };
 
     $.fn.rerender = function(callback, errback) {
