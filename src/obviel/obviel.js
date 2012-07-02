@@ -684,11 +684,13 @@ if (typeof obviel === "undefined") {
     module.InlineSourceLoader = function(compiler_identifier, source) {
         this.compiler_identifier = compiler_identifier;
         this.source = source;
+        this.type = 'inline';
     };
 
     module.InlineSourceLoader.prototype.key = function() {
-        // XXX use md5 for source?
-        return 'inline_' + this.compiler_identifier + '_' + this.source;
+        return (this.type + '_' +
+                this.compiler_identifier + '_' +
+                this.source);
     };
     
     module.InlineSourceLoader.prototype.load = function() {
@@ -700,10 +702,13 @@ if (typeof obviel === "undefined") {
     module.ScriptSourceLoader = function(compiler_identifier, script_id) {
         this.compiler_identifier = compiler_identifier;
         this.script_id = script_id;
+        this.type = 'script';
     };
 
     module.ScriptSourceLoader.prototype.key = function() {
-        return 'script_' + this.compiler_identifier + '_' + this.script_id;
+        return (this.type + '_' +
+                this.compiler_identifier + '_' +
+                this.script_id);
     };
     
     module.ScriptSourceLoader.prototype.load = function() {
@@ -724,10 +729,13 @@ if (typeof obviel === "undefined") {
     module.UrlSourceLoader = function(compiler_identifier, url) {
         this.compiler_identifier = compiler_identifier;
         this.url = url;
+        this.type = 'url';
     };
     
     module.UrlSourceLoader.prototype.key = function() {
-        return 'url_' + this.compiler_identifier + '_' + this.url;
+        return (this.type + '_' +
+                this.compiler_identifier + '_' +
+                this.url);
     };
 
     module.UrlSourceLoader.prototype.load = function() {
@@ -794,6 +802,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.Compilers.prototype.render = function(view) {
+        var template;
         var defer = $.Deferred();
         
         // get template loader
@@ -803,9 +812,17 @@ if (typeof obviel === "undefined") {
             defer.resolve();
             return defer.promise();
         }
+        // special shortcut for inline html, no need to cache this
+        if (loader.compiler_identifier === 'html' &&
+            loader.type === 'inline') {
+            template = new module.HtmlTemplate(loader.source);
+            template.render(view);
+            defer.resolve();
+            return defer.promise();
+        }
         var key = loader.key();
         // see whether we have a cached template for loader, use it if so
-        var template = module.cached_templates.get(key);
+        template = module.cached_templates.get(key);
         if (template !== null) {
             template.render(view);
             defer.resolve();

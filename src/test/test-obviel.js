@@ -690,6 +690,31 @@ test('json_script view', function() {
         });
 });
 
+test('html inline view is not cached', function() {
+    obviel.view({
+        iface: 'foo',
+        html: '<p class="foo"></p>',
+        render: function() {
+            $('.foo', this.el).text(this.obj.foo);
+        }
+    });
+    
+    var cache = obviel.cached_templates;
+    // some implementation detail knowledge about cache keys is here
+    var cache_key = 'inline_html_<p class="foo"></p>';
+    equal(cache.get(cache_key), null);
+    
+    $('#viewdiv').render(
+        {foo: 'the value', ifaces: ['foo']},
+        function(element, view, context) {
+            equal($.trim($('#viewdiv .foo').text()), 'the value');
+            // we can find it in the cache now
+            equal(cache.get(cache_key), null);
+            start();
+        });
+
+});
+
 asyncTest('jsont view', function() {
     obviel.view({
         iface: 'jt',
