@@ -1,9 +1,0 @@
-PyObviel credits
-================
-
-Creation and Implementation
----------------------------
-
-* Martijn Faassen
-
-* Izhar Firdaus
