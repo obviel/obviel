@@ -156,13 +156,16 @@ obviel.template = {};
             context.getFunc = module.getFunc;
         }
         
-        // clear the element first
-        el.empty();
-
-        var node = el.get(0);
+        
+        var frag = document.createDocumentFragment();
+        
         for (var i = 0; i < this.parts.length; i++) {
-            this.parts[i].renderRoot(node, scope, context);
+            this.parts[i].renderRoot(frag, scope, context);
         }
+        
+        // now insert frag into actual document
+        el.empty();
+        el.get(0).appendChild(frag);
         
         // wipe out any elements marked for removal by data-if; these
         // could not be removed previously so as not to break the
@@ -198,6 +201,7 @@ obviel.template = {};
             this.parentNode.insertBefore(frag, this.nextSibling);
             this.parentNode.removeChild(this);
         });
+
     };
     
     module.Section = function(el, rootSection) {
