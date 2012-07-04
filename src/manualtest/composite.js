@@ -8,21 +8,21 @@ $(document).ready(function() {
         form: {
             widgets: [
              {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     widgets: [
                         {
-                            ifaces: ['composite_field'],
+                            ifaces: ['compositeField'],
                             name: 'composite',
                             widgets: [
                                 {
-                                    ifaces: ['textline_field'],
+                                    ifaces: ['textlineField'],
                                     name: 'a',
                                     title: 'A'
              
                                 },
                                 {
-                                    ifaces: ['integer_field'],
+                                    ifaces: ['integerField'],
                                     name: 'b',
                                     title: 'B'
                                 }
@@ -30,7 +30,7 @@ $(document).ready(function() {
                             ]
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'c',
                             title: 'C'
                         }

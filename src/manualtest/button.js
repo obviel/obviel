@@ -8,17 +8,17 @@ $(document).ready(function() {
         form: {
             widgets: [
                 {
-                    ifaces: ['boolean_field'],
+                    ifaces: ['booleanField'],
                     name: 'a',
                     title: 'A'
                 },
                 {
-                    ifaces: ['integer_field'],
+                    ifaces: ['integerField'],
                     name: 'b',
                     title: 'B'
                 },
                 {
-                    ifaces: ['choice_field'],
+                    ifaces: ['choiceField'],
                     name: 'c',
                     title: 'C',
                     choices: [
@@ -27,12 +27,12 @@ $(document).ready(function() {
                         ]
                 },
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     title: 'Repeating',
                     
                     widgets: [{
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'aha',
                         title: 'Aha'
                     }]

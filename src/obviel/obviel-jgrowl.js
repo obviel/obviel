@@ -1,5 +1,5 @@
-/*global jQuery:true, template_url:true,
-  alert:true , browser:true, document:true, app_url:true,
+/*global jQuery:true, templateUrl:true,
+  alert:true , browser:true, document:true, appUrl:true,
   window:true
 */
 
@@ -13,14 +13,14 @@
         render: function() {
             var m = {
                 life: this.obj.life || 7000,
-                theme: get_message_theme(this.obj),
+                theme: getMessageTheme(this.obj),
                 sticky: this.obj.sticky || false
             };
             $.jGrowl(this.obj.message, m);
         }
     });
     
-    var get_message_theme = function(message) {
+    var getMessageTheme = function(message) {
         var theme = null;
         if (message.theme !== undefined) {
             theme = message.theme;

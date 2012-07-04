@@ -53,31 +53,31 @@ test("patterns resolve full path", function () {
     
     var obj = patterns.resolve(root, 'a/B/c/D');
 
-    equal(obj.traject_name, 'D');
+    equal(obj.trajectName, 'D');
     equal(obj.iface, 'obj');
     equal(obj.b, 'B');
     equal(obj.d, 'D');
     
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'c');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'c');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 });
 
 test("custom default lookup", function () {
     var patterns = new traject.Patterns();
-    patterns.set_default_lookup(function () {
-        return {iface: 'custom_default'};
+    patterns.setDefaultLookup(function () {
+        return {iface: 'customDefault'};
     });
     
     var lookup = function (variables) {
@@ -90,24 +90,24 @@ test("custom default lookup", function () {
     
     var obj = patterns.resolve(root, 'a/B/c/D');
 
-    equal(obj.traject_name, 'D');
+    equal(obj.trajectName, 'D');
     equal(obj.iface, 'obj');
     equal(obj.b, 'B');
     equal(obj.d, 'D');
     
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'c');
-    equal(obj.iface, 'custom_default');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'c');
+    equal(obj.iface, 'customDefault');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
-    equal(obj.iface, 'custom_default');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
+    equal(obj.iface, 'customDefault');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
-    equal(obj.iface, 'custom_default');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
+    equal(obj.iface, 'customDefault');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 
 });
@@ -126,26 +126,26 @@ test("patterns resolve stack full path", function () {
     var l = ['a', 'B', 'c', 'D'];
     l.reverse();
     
-    var obj = patterns.resolve_stack(root, l);
+    var obj = patterns.resolveStack(root, l);
 
-    equal(obj.traject_name, 'D');
+    equal(obj.trajectName, 'D');
     equal(obj.iface, 'obj');
     equal(obj.b, 'B');
     equal(obj.d, 'D');
     
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'c');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'c');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 });
 
@@ -163,31 +163,31 @@ test("patterns consume stack full path", function () {
     var l = ['a', 'B', 'c', 'D'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l);
+    var r = patterns.consumeStack(root, l);
 
     deepEqual(r.unconsumed, []);
     deepEqual(r.consumed, ['a', 'B', 'c', 'D']);
 
     var obj = r.obj;
     
-    equal(obj.traject_name, 'D');
+    equal(obj.trajectName, 'D');
     equal(obj.iface, 'obj');
     equal(obj.b, 'B');
     equal(obj.d, 'D');
     
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'c');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'c');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 });
 
@@ -204,18 +204,18 @@ test("patterns resolve partial path", function () {
     
     var obj = patterns.resolve(root, 'a/B/c');
 
-    equal(obj.traject_name, 'c');
+    equal(obj.trajectName, 'c');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 });
 
@@ -234,25 +234,25 @@ test("patterns consume stack partial", function () {
     var l = ['a', 'B', 'c'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l);
+    var r = patterns.consumeStack(root, l);
 
     deepEqual(r.unconsumed, []);
     deepEqual(r.consumed, ['a', 'B', 'c']);
 
     var obj = r.obj;
 
-    equal(obj.traject_name, 'c');
+    equal(obj.trajectName, 'c');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'B');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'B');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
-    equal(obj.traject_name, 'a');
+    obj = obj.trajectParent;
+    equal(obj.trajectName, 'a');
     equal(obj.iface, 'default');
 
-    obj = obj.traject_parent;
+    obj = obj.trajectParent;
     equal(obj.iface, 'root');
 });
 
@@ -287,7 +287,7 @@ test("patterns resolve stack impossible path", function () {
     l.reverse();
 
     raises(function () {
-        patterns.resolve_stack(root, l);
+        patterns.resolveStack(root, l);
     }, traject.ResolutionError);
     
 });
@@ -306,7 +306,7 @@ test("patterns consume stack impossible path", function () {
     var l = ['B', 'c', 'D'];
     l.reverse();
     
-    var r = patterns.consume_stack(root, l);
+    var r = patterns.consumeStack(root, l);
 
     equal(r.obj, root);
     deepEqual(r.unconsumed, ['D', 'c', 'B']);
@@ -328,7 +328,7 @@ test("resolve to lookup that returns null", function () {
     var root = {iface: 'root'};
     
     raises(function () {
-        patterns.resolve(root, 'models/not_an_int');
+        patterns.resolve(root, 'models/notAnInt');
     }, traject.ResolutionError);
 });
 
@@ -369,68 +369,68 @@ test("consume to lookup that returns null", function () {
     patterns.register('models/$id', lookup);
     var root = {iface: 'root'};
     
-    var r = patterns.consume(root, 'models/not_an_int');
+    var r = patterns.consume(root, 'models/notAnInt');
 
-    deepEqual(r.unconsumed, ['not_an_int']);
+    deepEqual(r.unconsumed, ['notAnInt']);
     deepEqual(r.consumed, ['models']);
-    equal(r.obj.traject_name, 'models');
-    equal(r.obj.traject_parent, root);
+    equal(r.obj.trajectName, 'models');
+    equal(r.obj.trajectParent, root);
     
 });
 
 test("multiple registrations resolve to child", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
 
     var root = {iface: 'root'};
 
     var obj = patterns.resolve(root, 'departments/1/employees/10');
 
     equal(obj.iface, 'employee');
-    equal(obj.department_id, '1');
-    equal(obj.employee_id, '10'); 
+    equal(obj.departmentId, '1');
+    equal(obj.employeeId, '10'); 
 });
 
 
 test("multiple registrations consume to child with extra", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
 
     var root = {iface: 'root'};
 
@@ -441,62 +441,62 @@ test("multiple registrations consume to child with extra", function () {
     
     var obj = r.obj;
     equal(obj.iface, 'employee');
-    equal(obj.department_id, '1');
-    equal(obj.employee_id, '10'); 
+    equal(obj.departmentId, '1');
+    equal(obj.employeeId, '10'); 
 });
 
 test("multiple registrations resolve to parent", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
 
     var root = {iface: 'root'};
 
     var obj = patterns.resolve(root, 'departments/1');
 
     equal(obj.iface, 'department');
-    equal(obj.department_id, '1'); 
+    equal(obj.departmentId, '1'); 
 });
 
 
 test("multiple registrations consume to parent with extra", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
 
     var root = {iface: 'root'};
 
@@ -507,31 +507,31 @@ test("multiple registrations consume to parent with extra", function () {
     
     var obj = r.obj;
     equal(obj.iface, 'department');
-    equal(obj.department_id, '1');
+    equal(obj.departmentId, '1');
 });
 
 
 test("multiple registrations resolve to nonexistent", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
 
     var root = {iface: 'root'};
 
@@ -545,39 +545,39 @@ test("multiple registrations resolve to nonexistent", function () {
 test("overlapping patterns", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
     
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
 
-    var special_department_lookup = function (variables) {
+    var specialDepartmentLookup = function (variables) {
         return {
-            iface: 'special_department'
+            iface: 'specialDepartment'
         };
     };
 
-    var special_employee_lookup = function (variables) {
+    var specialEmployeeLookup = function (variables) {
         return {
-            iface: 'special_employee',
-            employee_id: variables.employee_id
+            iface: 'specialEmployee',
+            employeeId: variables.employeeId
         };
     };
 
     patterns.register(
-        'departments/$department_id',
-        department_lookup);
+        'departments/$departmentId',
+        departmentLookup);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
-        employee_lookup);
+        'departments/$departmentId/employees/$employeeId',
+        employeeLookup);
     patterns.register('departments/special',
-        special_department_lookup);
+        specialDepartmentLookup);
     
     var root = {iface: 'root'};
 
@@ -589,7 +589,7 @@ test("overlapping patterns", function () {
     equal(obj.iface, 'department');
 
     obj = patterns.resolve(root, 'departments/special');
-    equal(obj.iface, 'special_department');
+    equal(obj.iface, 'specialDepartment');
 
     raises(function () {
         patterns.resolve(root, 'departments/special/employees/10');
@@ -597,83 +597,83 @@ test("overlapping patterns", function () {
 
     // now register sub path for special
 
-    patterns.register('departments/special/employees/$employee_id',
-                      special_employee_lookup);
+    patterns.register('departments/special/employees/$employeeId',
+                      specialEmployeeLookup);
 
     obj = patterns.resolve(root, 'departments/special/employees/10');
-    equal(obj.iface, 'special_employee');
-    equal(obj.employee_id, '10');
+    equal(obj.iface, 'specialEmployee');
+    equal(obj.employeeId, '10');
     
 });
 
 /* XXX bunch of tests to do with interface overrides; registering for
    a sub-interface of root definitely won't do anything yet at the moment
 
-   test_lookup_override
-   test_lookup_override_root_stays_the_same
-   test_lookup_extra_path
-   test_lookup_extra_path_absent_with_root
-   test_lookup_override_in_mid_path
-   test_lookup_original_in_mid_path
-   test_override_variable_names
-   test_conflict_in_override_variable_names
-   test_resolved_conflict_in_override_variable_names
-   test_register_pattern_on_interface
+   testLookupOverride
+   testLookupOverrideRootStaysTheSame
+   testLookupExtraPath
+   testLookupExtraPathAbsentWithRoot
+   testLookupOverrideInMidPath
+   testLookupOriginalInMidPath
+   testOverrideVariableNames
+   testConflictInOverrideVariableNames
+   testResolvedConflictInOverrideVariableNames
+   testRegisterPatternOnInterface
 */
 
 test("conflicting variable names", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
 
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
     
     patterns.register(
-        'departments/$department_id', department_lookup);
+        'departments/$departmentId', departmentLookup);
 
     raises(function () {
-        patterns.register('departments/$other_id', department_lookup);
+        patterns.register('departments/$otherId', departmentLookup);
     }, traject.RegistrationError);
 
     raises(function () {
-        patterns.register('departments/$other_id/employees/employee_id',
-                          employee_lookup);
+        patterns.register('departments/$otherId/employees/employeeId',
+                          employeeLookup);
     }, traject.RegistrationError);
 });
 
 test("conflicting converters", function () {
     var patterns = new traject.Patterns();
 
-    var department_lookup = function (variables) {
-        return {iface: 'department', department_id: variables.department_id};
+    var departmentLookup = function (variables) {
+        return {iface: 'department', departmentId: variables.departmentId};
     };
 
-    var employee_lookup = function (variables) {
+    var employeeLookup = function (variables) {
         return {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     };
 
-    patterns.register('departments/$department_id', department_lookup);
+    patterns.register('departments/$departmentId', departmentLookup);
     raises(function () {
-        patterns.register('departments/$department_id:int',
-                          department_lookup);
+        patterns.register('departments/$departmentId:int',
+                          departmentLookup);
     }, traject.RegistrationError);
 
     raises(function () {
         patterns.register(
-            'departments/$department_id:int/employees/$employee_id',
-            employee_lookup);
+            'departments/$departmentId:int/employees/$employeeId',
+            employeeLookup);
     }, traject.RegistrationError);
     
 });
@@ -694,7 +694,7 @@ test("match int", function () {
     strictEqual(obj.v, 1);
 
     raises(function () {
-        patterns.resolve(root, 'a/not_an_int');
+        patterns.resolve(root, 'a/notAnInt');
     }, traject.ResolutionError);
     
 });
@@ -710,12 +710,12 @@ test("consume mismatch int", function () {
 
     var root = {iface: 'root'};
 
-    var r = patterns.consume(root, 'a/not_an_int');
+    var r = patterns.consume(root, 'a/notAnInt');
 
-    deepEqual(r.unconsumed, ['not_an_int']);
+    deepEqual(r.unconsumed, ['notAnInt']);
     deepEqual(r.consumed, ['a']);
-    deepEqual(r.obj.traject_name, 'a');
-    equal(r.obj.traject_parent, root);
+    deepEqual(r.obj.trajectName, 'a');
+    equal(r.obj.trajectParent, root);
      
 });
 
@@ -734,7 +734,7 @@ test("unknown converter", function () {
 
 test("new converter", function () {
     var patterns = new traject.Patterns();
-    patterns.register_converter('float', function (v) {
+    patterns.registerConverter('float', function (v) {
         var result = parseFloat(v);
         if (isNaN(result)) {
             return null;
@@ -767,7 +767,7 @@ test("converter locate", function () {
         return {'v': obj.v };
     };
 
-    patterns.register_inverse('obj', 'a/$v:int', args);
+    patterns.registerInverse('obj', 'a/$v:int', args);
     
     var root = {iface: 'root'};
 
@@ -775,7 +775,7 @@ test("converter locate", function () {
 
     patterns.locate(root, obj);
 
-    strictEqual(obj.traject_name, '3');
+    strictEqual(obj.trajectName, '3');
 });
 
 
@@ -808,38 +808,38 @@ var identityDepartments = function (variables) {
 };
 
 var identityDepartment = function (variables) {
-    _calls.push('department ' + variables.department_id);
-    var department = _department[variables.department_id];
+    _calls.push('department ' + variables.departmentId);
+    var department = _department[variables.departmentId];
     if (department === undefined) {
-        department = _department[variables.department_id] = {
+        department = _department[variables.departmentId] = {
             iface: 'department',
-            department_id: variables.department_id
+            departmentId: variables.departmentId
         };
     }
     return department;
 };
 
 var identityEmployees = function (variables) {
-    _calls.push("employees " + variables.department_id);
+    _calls.push("employees " + variables.departmentId);
     if (_employees !== null) {
         return _employees;
     }
     _employees = {
         iface: 'employees',
-        department_id: variables.department_id
+        departmentId: variables.departmentId
     };
     return _employees;
 };
 
 var identityEmployee = function (variables) {
-    _calls.push('department ' + variables.department_id +
-                ' employee ' + variables.employee_id);
-    var employee = _employee[variables.employee_id];
+    _calls.push('department ' + variables.departmentId +
+                ' employee ' + variables.employeeId);
+    var employee = _employee[variables.employeeId];
     if (employee === undefined) {
-        employee = _employee[variables.employee_id] = {
+        employee = _employee[variables.employeeId] = {
             iface: 'employee',
-            department_id: variables.department_id,
-            employee_id: variables.employee_id
+            departmentId: variables.departmentId,
+            employeeId: variables.employeeId
         };
     }
     return employee;
@@ -851,79 +851,79 @@ var departmentsArguments = function (departments) {
 
 var departmentArguments = function (department) {
     return {
-        department_id: department.department_id
+        departmentId: department.departmentId
     };
 };
 
 var employeesArguments = function (employees) {
     return {
-        department_id: employees.department_id
+        departmentId: employees.departmentId
     };
 };
 
 var employeeArguments = function (employee) {
     return {
-        department_id: employee.department_id,
-        employee_id: employee.employee_id
+        departmentId: employee.departmentId,
+        employeeId: employee.employeeId
     };
 };
 
 
-var get_identity_patterns = function () {
+var getIdentityPatterns = function () {
     var patterns = new traject.Patterns();
     
 
     patterns.register(
         'departments', identityDepartments);
     patterns.register(
-        'departments/$department_id',
+        'departments/$departmentId',
         identityDepartment);
     patterns.register(
-        'departments/$department_id/employees', identityEmployees);
+        'departments/$departmentId/employees', identityEmployees);
     patterns.register(
-        'departments/$department_id/employees/$employee_id',
+        'departments/$departmentId/employees/$employeeId',
         identityEmployee);
     
-    patterns.register_inverse(
+    patterns.registerInverse(
         'departments',
         'departments',
         departmentsArguments);
-    patterns.register_inverse(
+    patterns.registerInverse(
         'department',
-        'departments/$department_id',
+        'departments/$departmentId',
         departmentArguments);
-    patterns.register_inverse(
+    patterns.registerInverse(
         'employees',
-        'departments/$department_id/employees',
+        'departments/$departmentId/employees',
         employeesArguments);
-    patterns.register_inverse(
+    patterns.registerInverse(
         'employee',
-        'departments/$department_id/employees/$employee_id',
+        'departments/$departmentId/employees/$employeeId',
         employeeArguments);
     return patterns;
 };
 
 
 test("inverse", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = { iface: 'root'};
     
-    var employee = {iface: 'employee', department_id: 1, employee_id: 2};
+    var employee = {iface: 'employee', departmentId: 1, employeeId: 2};
 
     patterns.locate(root, employee);
 
-    equal(employee.traject_name, '2');
-    var employees = employee.traject_parent;
-    equal(employees.traject_name, 'employees');
-    var department = employees.traject_parent;
-    equal(department.traject_name, '1');
-    var departments = department.traject_parent;
-    equal(departments.traject_name, 'departments');
-    equal(departments.traject_parent, root);
+    equal(employee.trajectName, '2');
+    var employees = employee.trajectParent;
+    equal(employees.trajectName, 'employees');
+    var department = employees.trajectParent;
+    equal(department.trajectName, '1');
+    var departments = department.trajectParent;
+    equal(departments.trajectName, 'departments');
+    equal(departments.trajectParent, root);
 });
 
 test("identity", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
     var employee1 = patterns.resolve(
@@ -937,11 +937,11 @@ test("identity", function () {
 });
 
 test("no recreation", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
     patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2',
                        'employees 1',
@@ -955,7 +955,7 @@ test("no recreation", function () {
 });
 
 test("cannot locate", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
     var foo = {iface: 'foo'};
@@ -967,17 +967,17 @@ test("cannot locate", function () {
 
 
 test("no recreation of departments", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
-    var department = identityDepartment({department_id: '1'});
+    var department = identityDepartment({departmentId: '1'});
     patterns.locate(root, department);
 
     _calls = [];
     // it won't recreate departments the second time as it'll
     // find a department object with a parent
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
     patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2',
                        'employees 1',
@@ -985,23 +985,23 @@ test("no recreation of departments", function () {
 });
 
 test("no recreation of department", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
-    var employees = identityEmployees({department_id: '1'});
+    var employees = identityEmployees({departmentId: '1'});
     patterns.locate(root, employees);
 
     _calls = [];
     // it won't recreate department the second time as it'll
     // find a employees object with a parent
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
     patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2', 'employees 1']);
 });
 
 test("no recreation of department after resolve", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
     var root = {iface: 'root'};
 
     patterns.resolve(root, 'departments/1/employees');
@@ -1009,49 +1009,49 @@ test("no recreation of department after resolve", function () {
     _calls = [];
     // it won't recreate department the second time as it'll
     // find a employees object with a parent
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
     patterns.locate(root, employee);
     deepEqual(_calls, ['department 1 employee 2', 'employees 1']);
 });
 
 test("inverse non string name", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
 
     var root = {iface: 'root'};
 
     // use integers here, not strings
-    var employee = identityEmployee({department_id: 1,
-                                     employee_id: 2});
+    var employee = identityEmployee({departmentId: 1,
+                                     employeeId: 2});
 
     patterns.locate(root, employee);
-    equal(employee.traject_name, '2');
+    equal(employee.trajectName, '2');
 });
 
 test("inverse twice", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
 
     var root = {iface: 'root'};
     
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
-    var other_employee = identityEmployee({department_id: '1',
-                                           employee_id: '3'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
+    var otherEmployee = identityEmployee({departmentId: '1',
+                                           employeeId: '3'});
     
     patterns.locate(root, employee);
-    patterns.locate(root, other_employee);
+    patterns.locate(root, otherEmployee);
     
-    equal(employee.traject_name, '2');
-    equal(other_employee.traject_name, '3');
+    equal(employee.trajectName, '2');
+    equal(otherEmployee.trajectName, '3');
 });
 
 test("generate path", function () {
-    var patterns = get_identity_patterns();
+    var patterns = getIdentityPatterns();
 
     var root = {iface: 'root'};
     
-    var employee = identityEmployee({department_id: '1',
-                                     employee_id: '2'});
+    var employee = identityEmployee({departmentId: '1',
+                                     employeeId: '2'});
 
     var path = patterns.path(root, employee);
     equal(path, 'departments/1/employees/2');
@@ -1064,14 +1064,14 @@ test("patterns method", function () {
         gamma: {iface: 'department', title: 'Gamma'}
     };
         
-    var get_department = function (variables) {
-        return departments[variables.department_name];
+    var getDepartment = function (variables) {
+        return departments[variables.departmentName];
     };
 
-    var get_department_variables = function (department) {
-        for (var department_name in departments) {
-            if (department === departments[department_name]) {
-                return {department_name: department_name};
+    var getDepartmentVariables = function (department) {
+        for (var departmentName in departments) {
+            if (department === departments[departmentName]) {
+                return {departmentName: departmentName};
             }
         }
         return null;
@@ -1081,9 +1081,9 @@ test("patterns method", function () {
     
     patterns.pattern(
         'department',
-        'departments/$department_name',
-        get_department,
-        get_department_variables);
+        'departments/$departmentName',
+        getDepartment,
+        getDepartmentVariables);
 
 
     var root = {iface: 'root'};
@@ -1104,10 +1104,10 @@ test("inverse not found", function () {
         gamma: {iface: 'department', title: 'Gamma'}
     };
         
-    var get_department_variables = function (department) {
-        for (var department_name in departments) {
-            if (department === departments[department_name]) {
-                return {department_name: department_name};
+    var getDepartmentVariables = function (department) {
+        for (var departmentName in departments) {
+            if (department === departments[departmentName]) {
+                return {departmentName: departmentName};
             }
         }
         return null;
@@ -1115,10 +1115,10 @@ test("inverse not found", function () {
     
     var patterns = new traject.Patterns();
     
-    patterns.register_inverse(
+    patterns.registerInverse(
         'department',
-        'departments/$department_name',
-        get_department_variables);
+        'departments/$departmentName',
+        getDepartmentVariables);
 
 
     var root = {iface: 'root'};

@@ -20,24 +20,24 @@ obviel.i18n = {};
     
     var domains = {};
     
-    module.translation_source = function(data) {
+    module.translationSource = function(data) {
         return function() {
             var defer = $.Deferred();
-            var massaged_data = {};
+            var massagedData = {};
             for (msgid in data) {
                 var value = data[msgid];
                 if ($.type(value) === 'string') {
-                    massaged_data[msgid] = [null, data[msgid]];
+                    massagedData[msgid] = [null, data[msgid]];
                 } else {
-                    massaged_data[msgid] = value;
+                    massagedData[msgid] = value;
                 }
             };
-            defer.resolve(massaged_data);
+            defer.resolve(massagedData);
             return defer.promise();
         };
     };
     
-    module.translation_source_from_json_url = function(url) {
+    module.translationSourceFromJsonUrl = function(url) {
         return function() {
             var defer = $.Deferred();
             $.ajax({
@@ -52,24 +52,24 @@ obviel.i18n = {};
         };
     };
     
-    var make_empty_translation = function() {
+    var makeEmptyTranslation = function() {
         return {'': {}};
     };
 
     // a translation source that doesn't translate
     // this is needed because just passing in {} as the translations
     // will trip of jsgettext in thinking the domain cannot be found
-    module.empty_translation_source = function() {
+    module.emptyTranslationSource = function() {
         return function() {
             var defer = $.Deferred();
             // make up a message id that will never occur in real life
-            defer.resolve(make_empty_translation());
+            defer.resolve(makeEmptyTranslation());
             return defer.promise();
         };
     };
 
     // XXX can this be called to override translations for a particular domain?
-    module.register_translation = function(locale, translation_source, domain) {
+    module.registerTranslation = function(locale, translationSource, domain) {
         if (domain === undefined) {
             domain = 'default';
         }
@@ -78,83 +78,83 @@ obviel.i18n = {};
             translations = {};
             domains[domain] = translations;
         }
-        translations[locale] = translation_source;
+        translations[locale] = translationSource;
     };
 
     
-    module.clear_translations = function() {
+    module.clearTranslations = function() {
         domains = {};
     };
 
-    var current_gt = new Gettext();
-    var current_locale = null;
-    var template_domain = 'default';
+    var currentGt = new Gettext();
+    var currentLocale = null;
+    var templateDomain = 'default';
     
-    module.clear_locale = function() {
+    module.clearLocale = function() {
         // XXX goes into the insides of jsgettext...
         Gettext._locale_data = undefined;
-        current_locale = null;
-        template_domain = 'default';
+        currentLocale = null;
+        templateDomain = 'default';
     };
     
-    module.set_locale = function(locale) {
+    module.setLocale = function(locale) {
         var defer;
         // bail out early if we have to do nothing
-        if (locale === current_locale) {
+        if (locale === currentLocale) {
             defer = $.Deferred();
             defer.resolve();
             return defer.promise();
         }
-        current_locale = locale;
+        currentLocale = locale;
         
-        var locale_data = {};
+        var localeData = {};
 
         var promise;
         var promises = [];
         for (d in domains) {
             var translations = domains[d];
-            var translation_source = translations[locale];
-            if (translation_source === undefined) {
+            var translationSource = translations[locale];
+            if (translationSource === undefined) {
                 throw new module.I18nError("Unknown locale: " + locale);
             }
             // XXX use deferred for async loading?
-            promise = translation_source();
-            promise.done(function(translation_data) {
-                locale_data[d] = translation_data;
+            promise = translationSource();
+            promise.done(function(translationData) {
+                localeData[d] = translationData;
             });
             promises.push(promise);
         }
         
-        var subviews_defer = $.when.apply(null, promises);
-        subviews_defer.done(function() {
+        var subviewsDefer = $.when.apply(null, promises);
+        subviewsDefer.done(function() {
             // XXX really convince Gettext to forget about previous data
             Gettext._locale_data = undefined;
             // just pick a random domain to pass into gettext; we don't
             /// use this feature anyway
-            current_gt = new Gettext({domain: d,
-                                      locale_data: locale_data});
+            currentGt = new Gettext({domain: d,
+                                      locale_data: localeData});
         });
-        return subviews_defer.promise();
+        return subviewsDefer.promise();
     };
 
-    module.get_locale = function() {
-        return current_locale;
+    module.getLocale = function() {
+        return currentLocale;
     };
     
-    module.get_translation = function(msgid, domain) {
-        return current_gt.dgettext(domain, msgid);
+    module.getTranslation = function(msgid, domain) {
+        return currentGt.dgettext(domain, msgid);
     };
 
-    module.get_template_domain = function() {
-        return template_domain;
+    module.getTemplateDomain = function() {
+        return templateDomain;
     };
 
-    module.get_translation_func = function(domain) {
+    module.getTranslationFunc = function(domain) {
         if (domain === undefined) {
             domain = 'default';
         }
         return function(msgid) {
-            return module.get_translation(msgid, domain);
+            return module.getTranslation(msgid, domain);
         };
     };
     
@@ -162,16 +162,16 @@ obviel.i18n = {};
         if (domain === undefined) {
            domain = 'default';
         }
-        template_domain = domain;
-        return module.get_translation_func(domain);
+        templateDomain = domain;
+        return module.getTranslationFunc(domain);
     };
     
-    module.get_plural_translation_func = function(domain) {
+    module.getPluralTranslationFunc = function(domain) {
         if (domain === undefined) {
             domain = 'default';
         }
-        return function(msgid, msgid_plural, count) {
-            return current_gt.dngettext(domain, msgid, msgid_plural, count);
+        return function(msgid, msgidPlural, count) {
+            return currentGt.dngettext(domain, msgid, msgidPlural, count);
         };
     };
     
@@ -180,42 +180,42 @@ obviel.i18n = {};
         if (domain === undefined) {
             domain = 'default';
         }
-        return module.get_plural_translation_func(domain);
+        return module.getPluralTranslationFunc(domain);
     };
 
 
     // this won't work for urls ending in /, but luckily we
-    // shouldn't get those because we refer to a .i18n file with base_url
-    var join_relative_url = function(base_url, rel_url) {
-        var i  = base_url.lastIndexOf('/');
+    // shouldn't get those because we refer to a .i18n file with baseUrl
+    var joinRelativeUrl = function(baseUrl, relUrl) {
+        var i  = baseUrl.lastIndexOf('/');
         if (i === -1) {
             // this url is relative itself without any slashes
-            return rel_url;
+            return relUrl;
         }
-        base_url = base_url.slice(0, i);
-        return base_url + '/' + rel_url;
+        baseUrl = baseUrl.slice(0, i);
+        return baseUrl + '/' + relUrl;
     };
 
-    module.load_i18n = function(url) {
+    module.loadI18n = function(url) {
         var defer = $.ajax({
             type: 'GET',
             url: url,
             dataType: 'json'
         });
         defer.done(function(domains) {
-            var source_url, source;
+            var sourceUrl, source;
             for (var domain in domains) {
                 var entries = domains[domain];
                 for (var i in entries) {
                     var entry = entries[i];
                     if (entry.url === null || entry.url === undefined) {
-                        source = module.empty_translation_source();
+                        source = module.emptyTranslationSource();
                     } else {
-                        source_url = join_relative_url(url, entry.url);
-                        source = module.translation_source_from_json_url(
-                            source_url);
+                        sourceUrl = joinRelativeUrl(url, entry.url);
+                        source = module.translationSourceFromJsonUrl(
+                            sourceUrl);
                     }
-                    module.register_translation(entry.locale, source, domain);
+                    module.registerTranslation(entry.locale, source, domain);
                 }
             }
         });
@@ -229,7 +229,7 @@ obviel.i18n = {};
         var promises = [];
         $('head link[rel="i18n"]').each(function() {
             var url = $(this).attr('href');
-            promises.push(module.load_i18n(url));
+            promises.push(module.loadI18n(url));
         });
         var defer = $.when.apply(null, promises);
         return defer.promise();

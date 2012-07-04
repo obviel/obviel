@@ -18,53 +18,53 @@ if (typeof obviel === "undefined") {
     }
     obviel.i18n = {};
     var module = obviel.i18n;
-    module.translation_source = function(data) {
+    module.translationSource = function(data) {
         return null;
     };
-    module.translation_source_from_json_url = function(url) {
+    module.translationSourceFromJsonUrl = function(url) {
         return null;
     };
-    module.empty_translation_source = function() {
+    module.emptyTranslationSource = function() {
         return null;
     };
-    module.register_translation = function(locale, translation_source, domain) {
+    module.registerTranslation = function(locale, translationSource, domain) {
     };
-    module.clear_translations = function() {
+    module.clearTranslations = function() {
     };
-    module.clear_locale = function() {
+    module.clearLocale = function() {
     };
-    module.set_locale = function(locale) {
+    module.setLocale = function(locale) {
         var defer = $.Deferred();
         defer.resolve();
         return defer.promise();
     };
-    module.get_locale = function() {
+    module.getLocale = function() {
         return null;
     };
-    module.get_translation = function() {
+    module.getTranslation = function() {
         return null;
     };
-    module.get_template_domain = function() {
+    module.getTemplateDomain = function() {
         return 'default';
     };
-    module.get_translation_func = function(domain) {
+    module.getTranslationFunc = function(domain) {
         return function(msgid) {
             return msgid;
         };
     };
     module.translate = function(domain) {
-        return module.get_translation_func(domain);
+        return module.getTranslationFunc(domain);
     };
-    module.get_plural_translation_func = function(domain) {
-        return function(msgid, plural_msgid, count) {
+    module.getPluralTranslationFunc = function(domain) {
+        return function(msgid, pluralMsgid, count) {
             if (count === 1) {
                 return msgid;
             }
-            return plural_msgid;
+            return pluralMsgid;
         };
     };
     module.pluralize = function(domain) {
-        return module.get_plural_translation_func(domain);
+        return module.getPluralTranslationFunc(domain);
     };
     module.load = function() {
         var defer = $.Deferred();
@@ -97,8 +97,7 @@ if (typeof obviel === "undefined") {
     
     module.LookupError.prototype.toString = function() {
         var ifaces = module.ifaces(this.obj);
-        var ifaces_s = ifaces.join(', ');
-        return ("view lookup error for ifaces [" + ifaces_s +
+        return ("view lookup error for ifaces [" + ifaces.join(', ') +
                 "] and name '" + this.name + "'");
     };
 
@@ -246,8 +245,8 @@ if (typeof obviel === "undefined") {
             iface: 'object',
             subviews: {},
             events: {},
-            object_events: {},
-            domain: obviel.i18n.get_template_domain()
+            objectEvents: {},
+            domain: obviel.i18n.getTemplateDomain()
         };
         $.extend(d, settings);
         $.extend(this, d);
@@ -273,13 +272,13 @@ if (typeof obviel === "undefined") {
                                             callback, errback) {
     };
 
-    module.View.prototype.do_cleanup = function() {
+    module.View.prototype.doCleanup = function() {
         var self = this;
-        self.el.data('obviel.rendered_view', null);
+        self.el.data('obviel.renderedView', null);
         self.el.unbind('render.obviel');
         
-        self.unbind_events();
-        self.unbind_object_events();
+        self.unbindEvents();
+        self.unbindObjectEvents();
         
         // BBB arguments for backwards compatibility
         self.cleanup(self.el, self.obj, self.name);
@@ -290,13 +289,13 @@ if (typeof obviel === "undefined") {
         // a noop, but can be overridden to manipulate obj
     };
     
-    module.View.prototype.do_render = function() {
+    module.View.prototype.doRender = function() {
         var self = this;
         // run cleanup for any previous view if this view isn't ephemeral
         if (!self.ephemeral) {
-            var previous_view = self.el.data('obviel.rendered_view');
-            if (previous_view) {
-                previous_view.do_cleanup();
+            var previousView = self.el.data('obviel.renderedView');
+            if (previousView) {
+                previousView.doCleanup();
             }
         }
 
@@ -305,21 +304,21 @@ if (typeof obviel === "undefined") {
         module.compilers.render(self).done(function() {
             // BBB passing the arguments is really for backwards compatibility
             // only: all these are accessible on the view object itself too
-            var render_promise = self.render(self.el, self.obj, self.name,
-                                             self.callback, self.errback);
+            var renderPromise = self.render(self.el, self.obj, self.name,
+                                            self.callback, self.errback);
             // pretend we have a resolved render promise if we don't
             // get one from render
-            if (render_promise === undefined) {
-                render_promise = $.Deferred();
-                render_promise.resolve();
+            if (renderPromise === undefined) {
+                renderPromise = $.Deferred();
+                renderPromise.resolve();
             }
 
-            render_promise.done(function() {
-                var subviews_promise = self.render_subviews();
+            renderPromise.done(function() {
+                var subviewsPromise = self.renderSubviews();
                 
-                subviews_promise.done(function() {
-                    self.bind_events();
-                    self.bind_object_events();
+                subviewsPromise.done(function() {
+                    self.bindEvents();
+                    self.bindObjectEvents();
                     
                     self.finalize();
                     // the callback needs to be the last thing called
@@ -334,7 +333,7 @@ if (typeof obviel === "undefined") {
         });
     };
 
-    module.View.prototype.get_handler = function(name) {
+    module.View.prototype.getHandler = function(name) {
         var self = this;
         var f = this[name];
         
@@ -349,7 +348,7 @@ if (typeof obviel === "undefined") {
         };
     };
 
-    module.View.prototype.get_method_by_name = function(name) {
+    module.View.prototype.getMethodByName = function(name) {
         var self = this;
         var f = this[name];
         if (f === undefined) {
@@ -361,89 +360,89 @@ if (typeof obviel === "undefined") {
         };
     };
     
-    module.View.prototype.wrap_handler = function(handler) {
+    module.View.prototype.wrapHandler = function(handler) {
         var self = this;
-        var wrapped_handler = null;
+        var wrappedHandler = null;
         
         if (typeof handler == 'string') {
-            wrapped_handler = function(ev) {
+            wrappedHandler = function(ev) {
                 ev.view = self;
                 ev.args = Array.prototype.slice.call(arguments, 1);
                 self[handler].call(self, ev);
             };
         } else {
-            wrapped_handler = function(ev) {
+            wrappedHandler = function(ev) {
                 ev.view = self;
                 ev.args = Array.prototype.slice.call(arguments, 1);
                 handler(ev);
             };
         }
 
-        return wrapped_handler;
+        return wrappedHandler;
     };
 
-    module.View.prototype.bind_events = function() {
+    module.View.prototype.bindEvents = function() {
         var self = this;
-        self.bound_handlers = [];
-        $.each(self.events, function(event_name, events) {
+        self.boundHandlers = [];
+        $.each(self.events, function(eventName, events) {
             $.each(events, function(selector, handler) {
                 var el = $(selector, self.el);
-                var wrapped_handler = self.wrap_handler(handler);
-                el.bind(event_name, wrapped_handler);
-                self.bound_handlers.push({
-                    name: event_name,
+                var wrappedHandler = self.wrapHandler(handler);
+                el.bind(eventName, wrappedHandler);
+                self.boundHandlers.push({
+                    name: eventName,
                     selector: selector,
-                    handler: wrapped_handler
+                    handler: wrappedHandler
                 });
             });
         });
     };
     
-    module.View.prototype.unbind_events = function() {
+    module.View.prototype.unbindEvents = function() {
         var self = this;
-        if (self.bound_handlers === undefined) {
+        if (self.boundHandlers === undefined) {
             return;
         }
-        $.each(self.bound_handlers, function(index, event_info) {
-            var el = $(event_info.selector, self.el);
-            el.unbind(event_info.name, event_info.handler);
+        $.each(self.boundHandlers, function(index, eventInfo) {
+            var el = $(eventInfo.selector, self.el);
+            el.unbind(eventInfo.name, eventInfo.handler);
         });
     };
     
-    module.View.prototype.bind_object_events = function() {
+    module.View.prototype.bindObjectEvents = function() {
         var self = this;
-        self.bound_object_handlers = [];
-        $.each(self.object_events, function(event_name, handler) {
-            var wrapped_handler = self.wrap_handler(handler);
+        self.boundObjectHandlers = [];
+        $.each(self.objectEvents, function(eventName, handler) {
+            var wrappedHandler = self.wrapHandler(handler);
 
-            $(self.obj).bind(event_name, wrapped_handler);
+            $(self.obj).bind(eventName, wrappedHandler);
 
-            self.bound_object_handlers.push({
-                name: event_name,
-                handler: wrapped_handler
+            self.boundObjectHandlers.push({
+                name: eventName,
+                handler: wrappedHandler
             });
         });
     };
     
-    module.View.prototype.unbind_object_events = function() {
+    module.View.prototype.unbindObjectEvents = function() {
         var self = this;
-        if (self.bound_object_handlers === undefined) {
+        if (self.boundObjectHandlers === undefined) {
             return;
         }
-        $.each(self.bound_object_handlers, function(index, event_info) {
-            $(self.obj).unbind(event_info.name, event_info.handler);
+        $.each(self.boundObjectHandlers, function(index, eventInfo) {
+            $(self.obj).unbind(eventInfo.name, eventInfo.handler);
         });
     };
 
     module.View.prototype.finalize = function() {
         var self = this;
-        self.store_view();
+        self.storeView();
         var ev = $.Event('render-done.obviel');
         ev.view = self;
         self.el.trigger(ev);
     };
     
-    module.View.prototype.render_subviews = function() {
+    module.View.prototype.renderSubviews = function() {
         var self = this;
         var promises = [];
         
@@ -458,7 +457,7 @@ if (typeof obviel === "undefined") {
             if ((obj === undefined) || !obj) {
                 return;
             }
-            var promise = self.render_subview(el, obj, name);
+            var promise = self.renderSubview(el, obj, name);
             promises.push(promise);
         });
 
@@ -466,7 +465,7 @@ if (typeof obviel === "undefined") {
         return $.when.apply(null, promises);
     };
 
-    module.View.prototype.render_subview = function(el, obj, name) {
+    module.View.prototype.renderSubview = function(el, obj, name) {
         var self = this;
         var defer = $.Deferred();
         self.registry.render(el, obj, name, function() {
@@ -479,13 +478,13 @@ if (typeof obviel === "undefined") {
         this.el.render(this.obj, this.name);
     };
     
-    module.View.prototype.store_view = function() {
+    module.View.prototype.storeView = function() {
         var self = this;
         if (self.ephemeral) {
             return;
         }
         // attach rendered view to element if not ephemeral
-        self.el.data('obviel.rendered_view', self);
+        self.el.data('obviel.renderedView', self);
         // event handler here to render it next time
         self.el.bind(
             'render.obviel',
@@ -494,16 +493,16 @@ if (typeof obviel === "undefined") {
                 // only render view if a previous view here worked
                 // for that iface
                 var el = $(this);
-                var previous_view = el.data('obviel.rendered_view');
-                if ((view.iface != previous_view.iface) ||
-                    (view.name != previous_view.name)) {
+                var previousView = el.data('obviel.renderedView');
+                if ((view.iface != previousView.iface) ||
+                    (view.name != previousView.name)) {
                     return;
                 }
                 // the el with which we get called gets replaced
                 // by this one, where the view is actually rendered
                 view.el = el;
-                ev.render_handled = true;
-                view.do_render();
+                ev.renderHandled = true;
+                view.doRender();
                 ev.stopPropagation();
                 ev.preventDefault();
                 el.unbind(ev);
@@ -512,14 +511,14 @@ if (typeof obviel === "undefined") {
     };
 
     /* a tranformer that doesn't do anything */
-    var null_transformer = function(obj, url, name) {
+    var nullTransformer = function(obj, url, name) {
         return obj;
     };
 
     module.Registry = function() {
         this.views = {};
         /* the default transformer doesn't do anything */
-        this.transformer_hook = null_transformer;
+        this.transformerHook = nullTransformer;
     };
 
     module.Registry.prototype.register = function(view) {
@@ -536,9 +535,9 @@ if (typeof obviel === "undefined") {
         var ifaces = module.ifaces(obj);
         
         for (var i=0; i < ifaces.length; i++) {
-            var matching_views = this.views[ifaces[i]];
-            if (matching_views) {
-                var view = matching_views[name];
+            var matchingViews = this.views[ifaces[i]];
+            if (matchingViews) {
+                var view = matchingViews[name];
                 if (view) {
                     return view;
                 }
@@ -547,14 +546,14 @@ if (typeof obviel === "undefined") {
         return null;
     };
 
-    module.Registry.prototype.clone_view = function(el, obj, name,
-                                                    callback, errback, defer) {
+    module.Registry.prototype.cloneView = function(el, obj, name,
+                                                   callback, errback, defer) {
         name = name || 'default';
-        var view_prototype = this.lookup(obj, name);
-        if (view_prototype === null) {
+        var viewPrototype = this.lookup(obj, name);
+        if (viewPrototype === null) {
             throw new module.LookupError(obj, name);
         }
-        return view_prototype.clone({
+        return viewPrototype.clone({
             el: el,
             obj: obj,
             callback: callback,
@@ -564,11 +563,11 @@ if (typeof obviel === "undefined") {
         });
     };
 
-    module.Registry.prototype.trigger_render = function(view) {
+    module.Registry.prototype.triggerRender = function(view) {
         var ev = $.Event('render.obviel');
         ev.view = view; // XXX can we add our own attributes to event objects?
         view.el.trigger(ev);
-        // render_handled is a hack to make sure that we handle render
+        // renderHandled is a hack to make sure that we handle render
         // events globally if we are dealing with an unattached element
         // in jQuery 1.6.4 events would fall back to $(document) level handlers
         // no matter what, but in jQuery 1.7 and later this would not
@@ -576,9 +575,9 @@ if (typeof obviel === "undefined") {
         // for unattached elements, only for attached ones
         // XXX I wish there were a way to register an event handler globally no
         // matter what. see: http://bugs.jquery.com/ticket/11891
-        if (!ev.render_handled) {
+        if (!ev.renderHandled) {
             $(document).trigger(ev);
-            ev.render_handled = false;
+            ev.renderHandled = false;
         }
     };
 
@@ -592,30 +591,30 @@ if (typeof obviel === "undefined") {
         var promise;
         var defer = $.Deferred();
         if (url !== null) {
-            promise = self.view_for_url(el, url, name, callback, errback,
+            promise = self.viewForUrl(el, url, name, callback, errback,
                                         defer);
         } else {
-            promise = self.view_for_obj(el, obj, name, callback, errback,
+            promise = self.viewForObj(el, obj, name, callback, errback,
                                         defer);
         }
         
         promise.done(function(view) {
-            self.trigger_render(view);
+            self.triggerRender(view);
         });
         return defer.promise();
     };
     
-    module.Registry.prototype.view_for_obj = function(el, obj, name,
+    module.Registry.prototype.viewForObj = function(el, obj, name,
                                                       callback, errback,
-                                                      view_defer) {
+                                                      viewDefer) {
         var defer = $.Deferred();
-        var view = this.clone_view(el, obj, name, callback, errback,
-                                   view_defer);
+        var view = this.cloneView(el, obj, name, callback, errback,
+                                   viewDefer);
         defer.resolve(view);
         return defer.promise();
     };
     
-    module.Registry.prototype.view_for_url = function(el, url, name,
+    module.Registry.prototype.viewForUrl = function(el, url, name,
                                                       callback, errback,
                                                       defer) {
         var self = this;
@@ -624,28 +623,28 @@ if (typeof obviel === "undefined") {
             url: url,
             dataType: 'json'
         }).pipe(function(obj) {
-            obj = self.transformer_hook(obj, url, name);
-            var view = self.clone_view(el, obj, name, callback, errback,
+            obj = self.transformerHook(obj, url, name);
+            var view = self.cloneView(el, obj, name, callback, errback,
                                        defer);
-            view.from_url = url;
+            view.fromUrl = url;
             return view;
         });
     };
     
-    module.Registry.prototype.register_transformer = function(transformer) {
+    module.Registry.prototype.registerTransformer = function(transformer) {
         if (transformer === null || transformer === undefined) {
-            transformer = null_transformer;
+            transformer = nullTransformer;
         }
-        this.transformer_hook = transformer;
+        this.transformerHook = transformer;
     };
     
     module.registry = new module.Registry();
 
-    module.clear_registry = function() {
+    module.clearRegistry = function() {
         module.registry = new module.Registry();
     };
 
-    module.render_template = function(view) {
+    module.renderTemplate = function(view) {
     };
     
     module.CachedTemplates = function() {
@@ -668,10 +667,10 @@ if (typeof obviel === "undefined") {
         return template;
     };
     
-    module.cached_templates = new module.CachedTemplates();
+    module.cachedTemplates = new module.CachedTemplates();
 
-    module.clear_template_cache = function() {
-        module.cached_templates.clear();
+    module.clearTemplateCache = function() {
+        module.cachedTemplates.clear();
     };
     
     module.SourceLoaderError = function(text) {
@@ -682,20 +681,20 @@ if (typeof obviel === "undefined") {
         return "could not load source: " + this.text;
     };
     
-    module.InlineSourceLoader = function(compiler_identifier, source) {
-        this.compiler_identifier = compiler_identifier;
+    module.InlineSourceLoader = function(compilerIdentifier, source) {
+        this.compilerIdentifier = compilerIdentifier;
         this.source = source;
         this.type = 'inline';
     };
 
     module.InlineSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compiler_identifier + '_' +
-                this.source);
+                this.compilerIdentifier + '_'
+                + this.source);
     };
 
     module.InlineSourceLoader.prototype.location = function() {
-        return this.compiler_identifier + " inline";
+        return this.compilerIdentifier + " inline";
     };
     
     module.InlineSourceLoader.prototype.load = function() {
@@ -704,52 +703,52 @@ if (typeof obviel === "undefined") {
         return defer.promise();
     };
     
-    module.ScriptSourceLoader = function(compiler_identifier, script_id) {
-        this.compiler_identifier = compiler_identifier;
-        this.script_id = script_id;
+    module.ScriptSourceLoader = function(compilerIdentifier, scriptId) {
+        this.compilerIdentifier = compilerIdentifier;
+        this.scriptId = scriptId;
         this.type = 'script';
     };
 
     module.ScriptSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compiler_identifier + '_' +
-                this.script_id);
+                this.compilerIdentifier + '_' +
+                this.scriptId);
     };
 
     module.ScriptSourceLoader.prototype.location = function() {
-        return (this.compiler_identifier + " from script with id " +
-                this.script_id);
+        return (this.compilerIdentifier + " from script with id " +
+                this.scriptId);
     };
 
     module.ScriptSourceLoader.prototype.load = function() {
         var defer = $.Deferred();
-        var script_el = $('#' + this.script_id);
-        if (script_el.length === 0) {
+        var scriptEl = $('#' + this.scriptId);
+        if (scriptEl.length === 0) {
             throw new module.SourceLoaderError(
-                "no script element found with id: " + this.script_id);
+                "no script element found with id: " + this.scriptId);
         }
-        if (script_el.length > 1) {
+        if (scriptEl.length > 1) {
             throw new module.SourceLoaderError(
-                "too many script elements found with id: " + this.script_id);
+                "too many script elements found with id: " + this.scriptId);
         }
-        defer.resolve(script_el.html());
+        defer.resolve(scriptEl.html());
         return defer.promise();
     };
     
-    module.UrlSourceLoader = function(compiler_identifier, url) {
-        this.compiler_identifier = compiler_identifier;
+    module.UrlSourceLoader = function(compilerIdentifier, url) {
+        this.compilerIdentifier = compilerIdentifier;
         this.url = url;
         this.type = 'url';
     };
     
     module.UrlSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compiler_identifier + '_' +
+                this.compilerIdentifier + '_' +
                 this.url);
     };
 
     module.UrlSourceLoader.prototype.location = function() {
-        return (this.compiler_identifier + " " +
+        return (this.compilerIdentifier + " " +
                 "from url " + this.url);
     };
 
@@ -758,7 +757,7 @@ if (typeof obviel === "undefined") {
             type: 'GET',
             url: this.url,
             dataType: 'text'
-        }).fail(function(jqXHR, error_type, exc) {
+        }).fail(function(jqXHR, errorType, exc) {
             throw new module.SourceLoaderError(
                 "could not load url: " + this.url);
         });
@@ -772,32 +771,32 @@ if (typeof obviel === "undefined") {
         this.compilers[identifier] = compiler;
     };
     
-    module.Compilers.prototype.get_loader_for_compiler = function(
+    module.Compilers.prototype.getLoaderForCompiler = function(
         identifier, obj) {
         var source = obj[identifier];
         if (source !== undefined) {
             return new module.InlineSourceLoader(identifier, source);
         }
-        var source_script = obj[identifier + '_script'];
-        if (source_script !== undefined) {
-            return new module.ScriptSourceLoader(identifier, source_script);
+        var sourceScript = obj[identifier + 'Script'];
+        if (sourceScript !== undefined) {
+            return new module.ScriptSourceLoader(identifier, sourceScript);
         }
-        var source_url = obj[identifier + '_url'];
-        if (source_url !== undefined) {
-            return new module.UrlSourceLoader(identifier, source_url);
+        var sourceUrl = obj[identifier + 'Url'];
+        if (sourceUrl !== undefined) {
+            return new module.UrlSourceLoader(identifier, sourceUrl);
         }
         return null;
     };
 
-    module.Compilers.prototype.get_loader = function(view) {
+    module.Compilers.prototype.getLoader = function(view) {
         var compiler, loader;
         for (var identifier in this.compilers) {
             compiler = this.compilers[identifier];
-            loader = this.get_loader_for_compiler(identifier, view.obj);
+            loader = this.getLoaderForCompiler(identifier, view.obj);
             if (loader !== null) {
                 return loader;
             }
-            loader = this.get_loader_for_compiler(identifier, view);
+            loader = this.getLoaderForCompiler(identifier, view);
             if (loader !== null) {
                 return loader;
             }
@@ -809,7 +808,7 @@ if (typeof obviel === "undefined") {
         var self = this;
         var defer = $.Deferred();
         loader.load().done(function(source) {
-            var compiler = self.compilers[loader.compiler_identifier];
+            var compiler = self.compilers[loader.compilerIdentifier];
             var template = compiler.compile(loader.location(), source);
             defer.resolve(template);
         });
@@ -821,14 +820,14 @@ if (typeof obviel === "undefined") {
         var defer = $.Deferred();
         
         // get template loader
-        var loader = this.get_loader(view);
+        var loader = this.getLoader(view);
         // no template to load, so nothing to do
         if (loader === null) {
             defer.resolve();
             return defer.promise();
         }
         // special shortcut for inline html, no need to cache this
-        if (loader.compiler_identifier === 'html' &&
+        if (loader.compilerIdentifier === 'html' &&
             loader.type === 'inline') {
             template = new module.HtmlTemplate(loader.location(),
                                                loader.source);
@@ -838,7 +837,7 @@ if (typeof obviel === "undefined") {
         }
         var key = loader.key();
         // see whether we have a cached template for loader, use it if so
-        template = module.cached_templates.get(key);
+        template = module.cachedTemplates.get(key);
         if (template !== null) {
             template.render(view);
             defer.resolve();
@@ -846,7 +845,7 @@ if (typeof obviel === "undefined") {
         }
         // otherwise compile source indicated by loader, and render
         this.compile(loader).done(function(template) {
-            module.cached_templates.register(key, template);
+            module.cachedTemplates.register(key, template);
             template.render(view);
             defer.resolve();
         });
@@ -884,25 +883,25 @@ if (typeof obviel === "undefined") {
     
     module.ObvielTemplate.prototype.render = function(view) {
         var context = {
-            get_handler: function(name) {
-                return view.get_handler(name);
+            getHandler: function(name) {
+                return view.getHandler(name);
             },
-            get_formatter: function(name) {
-                var formatter = view.get_method_by_name(name);
+            getFormatter: function(name) {
+                var formatter = view.getMethodByName(name);
                 if (!formatter) {
-                    formatter = obviel.template.get_formatter(name);
+                    formatter = obviel.template.getFormatter(name);
                 }
                 return formatter;
             },
-            get_func: function(name) {
-                var func = view.get_method_by_name(name);
+            getFunc: function(name) {
+                var func = view.getMethodByName(name);
                 if (!func) {
-                    func = obviel.template.get_func(name);
+                    func = obviel.template.getFunc(name);
                 }
                 return func;
             },
-            get_translation: obviel.i18n.get_translation_func(view.domain),
-            get_plural_translation: obviel.i18n.get_plural_translation_func(
+            getTranslation: obviel.i18n.getTranslationFunc(view.domain),
+            getPluralTranslation: obviel.i18n.getPluralTranslationFunc(
                 view.domain)
         };
         try {
@@ -961,7 +960,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.transformer = function(transformer) {
-        module.registry.register_transformer(transformer);
+        module.registry.registerTransformer(transformer);
     };
     
     $.fn.render = function(obj, name, callback, errback) {
@@ -982,32 +981,32 @@ if (typeof obviel === "undefined") {
 
     $.fn.rerender = function(callback, errback) {
         var el = $(this);
-        var previous_view = el.view();
-        if (!previous_view) {
+        var previousView = el.view();
+        if (!previousView) {
             return;
         }
 
         var obj = null;
-        if (previous_view.from_url) {
-            obj = previous_view.from_url;
+        if (previousView.fromUrl) {
+            obj = previousView.fromUrl;
         } else {
-            obj = previous_view.obj;
+            obj = previousView.obj;
         }
         
-        previous_view.registry.render(el, obj, previous_view.name,
+        previousView.registry.render(el, obj, previousView.name,
                                       callback, errback);
     };
     
     $.fn.view = function() {
         var el = $(this);
-        return el.data('obviel.rendered_view');
+        return el.data('obviel.renderedView');
     };
 
-    $.fn.parent_view = function() {
+    $.fn.parentView = function() {
         var el = $(this);
         var view = null;
         while (el.length > 0) {
-            view = el.data('obviel.rendered_view');
+            view = el.data('obviel.renderedView');
             if (view) {
                 return view;
             }
@@ -1019,15 +1018,15 @@ if (typeof obviel === "undefined") {
     $.fn.unview = function() {
         var view = $(this).view();
         if (view) {
-            view.do_cleanup();
+            view.doCleanup();
         }
     };
 
     $(document).on(
         'render.obviel',
         function(ev) {
-            ev.render_handled = true;
-            ev.view.do_render($(ev.target));
+            ev.renderHandled = true;
+            ev.view.doRender($(ev.target));
             ev.stopPropagation();
             ev.preventDefault();
         }

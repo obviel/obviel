@@ -12,16 +12,16 @@ $(document).ready(function() {
         form: {
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     title: 'Repeating',
                     
                     widgets: [{
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B'
                     },{
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'c',
                         title: 'C'
                     }]

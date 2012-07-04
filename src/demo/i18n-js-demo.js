@@ -1,7 +1,7 @@
 (function() {
-    var fr_FR = obviel.i18n.translation_source(
+    var fr_FR = obviel.i18n.translationSource(
         {'Hello world!': 'Bonjour monde!'});
-    obviel.i18n.register_translation('fr_FR', fr_FR);
+    obviel.i18n.registerTranslation('fr_FR', fr_FR);
 
     var _ = obviel.i18n.translate();
     
@@ -10,7 +10,7 @@
         $('#untranslated').text(_("Hello world!"));
         
         // now set the locale to French
-        obviel.i18n.set_locale('fr_FR');
+        obviel.i18n.setLocale('fr_FR');
         
         // this will be translated
         $('#translated').text(_("Hello world!"));

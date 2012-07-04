@@ -1,8 +1,14 @@
+$.mockjaxSettings.dataType = 'json';
 
 $(document).ready(function() {
     var data = {
     };
 
+    $.mockjax({
+        url: 'global_validation',
+        responseText: {a: 'An error'}
+    });
+    
     var el = $('#testform');
     
     el.render({
@@ -10,10 +16,10 @@ $(document).ready(function() {
         form: {
             widgets: [
                 {
-                    ifaces: ['textline_field'],
+                    ifaces: ['textlineField'],
                     name: 'a',
                     title: 'A',
-                    global_validator: true
+                    globalValidator: true
                 }
             ],
             controls: [
@@ -23,7 +29,7 @@ $(document).ready(function() {
                 }
             ]
         },
-        validation_url: 'global_validation.json',
+        validationUrl: 'global_validation',
         data: data
     });
     

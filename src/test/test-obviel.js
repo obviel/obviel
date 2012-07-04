@@ -2,7 +2,7 @@
   equal:false deepEqual:false expect:false raises:false
   asyncTest:false start:false */
 
-var html_lower = function(html) {
+var htmlLower = function(html) {
     // some nasty normalization for browser compatibility
     // Firefox & IE give different cases for html, and
     // also sometimes Firefox includes a \n where IE does not.
@@ -171,21 +171,21 @@ module('Obviel Views', {
     teardown: function() {
         $('#jsview-area').unview();
         $('#viewdiv').unbind();
-        obviel.clear_registry();
-        obviel.clear_template_cache();
-        obviel.i18n.clear_translations();
-        obviel.i18n.clear_locale();
+        obviel.clearRegistry();
+        obviel.clearTemplateCache();
+        obviel.i18n.clearTranslations();
+        obviel.i18n.clearLocale();
         $.mockjaxClear();
     }
 });
 
-var render_text = function() {
+var renderText = function() {
     this.el.text(this.obj.text);
 };
 
 test('view with default name', function() {
     obviel.view({
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({text: 'foo'});
     equal($('#viewdiv').text(), 'foo');
@@ -194,7 +194,7 @@ test('view with default name', function() {
 test('named view, no name provided results in error', function() {
     obviel.view({
         name: 'foo',
-        render: render_text
+        render: renderText
     });
 
     raises(function() {
@@ -205,7 +205,7 @@ test('named view, no name provided results in error', function() {
 test('named view with name provided', function() {
     obviel.view({
         name: 'foo',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({text: 'bar'}, 'foo');
     equal($('#viewdiv').text(), 'bar');
@@ -214,7 +214,7 @@ test('named view with name provided', function() {
 test('iface view, no iface provided', function() {
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     raises(function() {
         $('#viewdiv').render({text: 'bar'});
@@ -224,7 +224,7 @@ test('iface view, no iface provided', function() {
 test('iface view with iface provided', function() {
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({text: 'baz', ifaces: ['ifoo']});
     equal($('#viewdiv').text(), 'baz');
@@ -233,7 +233,7 @@ test('iface view with iface provided', function() {
 test('iface view with only single iface in model', function() {
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({text: 'baz', iface: 'ifoo'});
     equal($('#viewdiv').text(), 'baz');
@@ -242,7 +242,7 @@ test('iface view with only single iface in model', function() {
 test('iface view with iface and ifaces', function() {
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     raises(function() {
         $('#viewdiv').render({text: 'baz', iface: 'ifoo', ifaces: ['ibar']});
@@ -252,7 +252,7 @@ test('iface view with iface and ifaces', function() {
 test('iface view with only ifaces string', function() {
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({text: 'baz', ifaces: 'ifoo'});
     equal($('#viewdiv').text(), 'baz');
@@ -262,7 +262,7 @@ test('iface/named view, no name provided', function() {
     obviel.view({
         iface: 'ifoo',
         name: 'foo',
-        render: render_text
+        render: renderText
     });
     raises(function() {
         $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
@@ -273,7 +273,7 @@ test('iface/named view, no iface provided', function() {
     obviel.view({
         iface: 'ifoo',
         name: 'foo',
-        render: render_text
+        render: renderText
     });
     raises(function() {
         $('#viewdiv').render({text: 'qux'}, 'foo');
@@ -284,7 +284,7 @@ test('iface/named view, both iface and name provided', function() {
     obviel.view({
         iface: 'ifoo',
         name: 'foo',
-        render: render_text
+        render: renderText
     });
     
     $('#viewdiv').render(
@@ -296,7 +296,7 @@ test('iface/named view, both iface and name provided', function() {
 test('explicit view instance', function() {
     obviel.view(new obviel.View({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     }));
 
     $('#viewdiv').render({text: 'qux', ifaces: ['ifoo']});
@@ -315,15 +315,15 @@ test('init', function() {
 });
 
 test('cleanup', function() {
-    var cleanup_called = false;
+    var cleanupCalled = false;
     obviel.view({
         iface: 'cleanup',
-        render: render_text,
-        cleanup: function() { cleanup_called = true; }
+        render: renderText,
+        cleanup: function() { cleanupCalled = true; }
     });
     obviel.view({
         ifaces: 'another',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render(
         {text: 'bar', ifaces: ['cleanup']},
@@ -331,13 +331,13 @@ test('cleanup', function() {
             equal(this.el.text(), 'bar');
             $('#viewdiv').render({text: 'foo', ifaces: ['another']});
             equal(this.el.text(), 'foo');
-            ok(cleanup_called);
+            ok(cleanupCalled);
         });
 });
 
 asyncTest('render url, default name', function() {
     obviel.view({
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render(
         'fixtures/default.json', function() {
@@ -348,7 +348,7 @@ asyncTest('render url, default name', function() {
 
 asyncTest('render url with name', function() {
     obviel.view({
-        render: render_text,
+        render: renderText,
         name: 'foo'
     });
 
@@ -361,7 +361,7 @@ asyncTest('render url with name', function() {
 
 asyncTest('render url with iface', function() {
     obviel.view({
-        render: render_text,
+        render: renderText,
         iface: 'ifoo'
     });
 
@@ -374,7 +374,7 @@ asyncTest('render url with iface', function() {
 
 asyncTest('render url with name and iface', function() {
     obviel.view({
-        render: render_text,
+        render: renderText,
         iface: 'ifoo',
         name: 'foo'
     });
@@ -398,7 +398,7 @@ asyncTest('rerender url', function() {
     var called = 0;
 
     $.mockjax({
-        url: 'test_url',
+        url: 'testUrl',
         dataType: 'json',
         response: function() {
             called++;
@@ -407,7 +407,7 @@ asyncTest('rerender url', function() {
     });
     
     var el = $('#viewdiv');
-    el.render('test_url').done(function(view) {
+    el.render('testUrl').done(function(view) {
         equal(view.el.text(), '1');
         el.rerender(function() {
             // this should call the URL again
@@ -466,12 +466,12 @@ test('rerender without viewstack', function() {
 
 test('rerender ephemeral', function() {
     obviel.view({
-        render: render_text
+        render: renderText
     });
     obviel.view({
         name: 'ephemeral',
         ephemeral: true,
-        render: render_text
+        render: renderText
     });
     var el = $('#viewdiv');
     el.render({text: 'foo'});
@@ -490,14 +490,14 @@ asyncTest('render subviews', function() {
                          '<div id="sub3"></div>');
         },
         subviews: {
-            '#sub1': 'sub_url',
-            '#sub2': 'sub_html',
-            '#sub3': ['sub_named', 'foo']
+            '#sub1': 'subUrl',
+            '#sub2': 'subHtml',
+            '#sub3': ['subNamed', 'foo']
         }
     });
 
     obviel.view({
-        render: render_text
+        render: renderText
     });
 
     obviel.view({
@@ -510,9 +510,9 @@ asyncTest('render subviews', function() {
     
     el.render({
         ifaces: ['subviews'],
-        sub_url: 'fixtures/default.json', // url
-        sub_html: {text: 'bar'}, //  obj
-        sub_named: {} // is registered by name foo
+        subUrl: 'fixtures/default.json', // url
+        subHtml: {text: 'bar'}, //  obj
+        subNamed: {} // is registered by name foo
     }, function() {
         equal($('#sub1', el).text(), 'foo');
         equal($('#sub2', el).text(), 'bar');
@@ -527,13 +527,13 @@ test('render subview false argument', function() {
             this.el.html('<div id="sub1"></div>');
         },
         subviews: {
-            '#sub1': 'sub_content'
+            '#sub1': 'subContent'
         }
     });
     // should just not render the sub view
     var el = $('#viewdiv');
     el.render({
-        sub_content: false
+        subContent: false
     });
     equal($('#sub1', el).text(), '');
 });
@@ -544,7 +544,7 @@ test('render subview undefined argument', function() {
             this.el.html('<div id="sub1"></div>');
         },
         subviews: {
-            '#sub1': 'sub_content'
+            '#sub1': 'subContent'
         }
     });
     
@@ -555,68 +555,68 @@ test('render subview undefined argument', function() {
 });
 
 test('view with html', function() {
-    var render_called = 0;
+    var renderCalled = 0;
     obviel.view({
         iface: 'html',
         html: '<div>foo!</div>',
         render: function() {
-            render_called++;
+            renderCalled++;
         }
     });
 
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
-            equal(render_called, 1);
+            equal(htmlLower($('#viewdiv').html()), '<div>foo!</div>');
+            equal(renderCalled, 1);
         });
 });
 
-test('view with html_script', function() {
-    var render_called = 0;
+test('view with htmlScript', function() {
+    var renderCalled = 0;
     obviel.view({
         iface: 'html',
-        html_script: 'html_script_id',
+        htmlScript: 'html_script_id',
         render: function() {
-            render_called++;
+            renderCalled++;
         }
     });
 
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<div>foo!</div>');
-            equal(render_called, 1);
+            equal(htmlLower($('#viewdiv').html()), '<div>foo!</div>');
+            equal(renderCalled, 1);
         });
 });
 
 
-asyncTest('view with html_url', function() {
-    var render_called = 0;
+asyncTest('view with htmlUrl', function() {
+    var renderCalled = 0;
     obviel.view({
         iface: 'html',
-        html_url: 'fixtures/test1.html',
+        htmlUrl: 'fixtures/test1.html',
         render: function() {
-            render_called++;
+            renderCalled++;
         }
     });
 
     $('#viewdiv').render(
         {ifaces: ['html']},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<div>foo</div>');
-            equal(render_called, 1);
+            equal(htmlLower($('#viewdiv').html()), '<div>foo</div>');
+            equal(renderCalled, 1);
             start();
         });
 });
 
-asyncTest('html context attribute overrides html_url view one', function() {
-    var render_called = 0;
+asyncTest('html context attribute overrides htmlUrl view one', function() {
+    var renderCalled = 0;
     obviel.view({
         iface: 'html',
-        html_url: 'fixtures/test1.html',
+        htmlUrl: 'fixtures/test1.html',
         render: function() {
-            render_called++;
+            renderCalled++;
         }
     });
 
@@ -624,19 +624,19 @@ asyncTest('html context attribute overrides html_url view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<span>spam!</span>');
-            equal(render_called, 1);
+            equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+            equal(renderCalled, 1);
             start();
         });
 });
 
 asyncTest('html context attribute overrides html view one', function() {
-    var render_called = 0;
+    var renderCalled = 0;
     obviel.view({
         iface: 'html',
         html: '<span>overridden</span>',
         render: function() {
-            render_called++;
+            renderCalled++;
         }
     });
 
@@ -644,15 +644,15 @@ asyncTest('html context attribute overrides html view one', function() {
         {ifaces: ['html'],
          html: '<span>spam!</span>'},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<span>spam!</span>');
-            equal(render_called, 1);
+            equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+            equal(renderCalled, 1);
             start();
         });
 });
 
-asyncTest('html_url context attr overrides html view one', function() {
+asyncTest('htmlUrl context attr overrides html view one', function() {
     obviel.view({
-        iface: 'inline_html',
+        iface: 'inlineHtml',
         html: '<span></span>',
         render: function() {
             // this will not work as there is no span
@@ -660,32 +660,32 @@ asyncTest('html_url context attr overrides html view one', function() {
         }
     });
     $('#viewdiv').render(
-        {ifaces: ['inline_html'],
-         html_url: 'fixtures/test1.html',
+        {ifaces: ['inlineHtml'],
+         htmlUrl: 'fixtures/test1.html',
          text: 'spam'},
         function() {
-            equal(html_lower($('#viewdiv').html()), '<div>foo</div>');
+            equal(htmlLower($('#viewdiv').html()), '<div>foo</div>');
             start();
         });
 });
 
-test('json_script view', function() {
+test('jsonScript view', function() {
     obviel.view({
         iface: 'jt',
-        jsont_script: 'jsont_script_id'
+        jsontScript: 'jsont_script_id'
     });
     
-    var cache = obviel.cached_templates;
+    var cache = obviel.cachedTemplates;
     // some implementation detail knowledge about cache keys is here
-    var cache_key = 'script_jsont_jsont_script_id';
-    equal(cache.get(cache_key), null);
+    var cacheKey = 'script_jsont_jsont_script_id';
+    equal(cache.get(cacheKey), null);
     
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['jt']},
         function(element, view, context) {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
-            ok(cache.get(cache_key));
+            ok(cache.get(cacheKey));
             start();
         });
 });
@@ -699,17 +699,17 @@ test('html inline view is not cached', function() {
         }
     });
     
-    var cache = obviel.cached_templates;
+    var cache = obviel.cachedTemplates;
     // some implementation detail knowledge about cache keys is here
-    var cache_key = 'inline_html_<p class="foo"></p>';
-    equal(cache.get(cache_key), null);
+    var cacheKey = 'inline_html_<p class="foo"></p>';
+    equal(cache.get(cacheKey), null);
     
     $('#viewdiv').render(
         {foo: 'the value', ifaces: ['foo']},
         function(element, view, context) {
             equal($.trim($('#viewdiv .foo').text()), 'the value');
             // we can find it in the cache now
-            equal(cache.get(cache_key), null);
+            equal(cache.get(cacheKey), null);
             start();
         });
 
@@ -718,13 +718,13 @@ test('html inline view is not cached', function() {
 asyncTest('jsont view', function() {
     obviel.view({
         iface: 'jt',
-        jsont_url: 'fixtures/test1.jsont'
+        jsontUrl: 'fixtures/test1.jsont'
     });
     
-    var cache = obviel.cached_templates;
+    var cache = obviel.cachedTemplates;
     // some implementation detail knowledge about cache keys is here
-    var cache_key = 'url_jsont_fixtures/test1.jsont';
-    equal(cache.get(cache_key), null);
+    var cacheKey = 'url_jsont_fixtures/test1.jsont';
+    equal(cache.get(cacheKey), null);
 
           
     $('#viewdiv').render(
@@ -732,7 +732,7 @@ asyncTest('jsont view', function() {
         function(element, view, context) {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
-            ok(cache.get(cache_key));
+            ok(cache.get(cacheKey));
             start();
         });
 });
@@ -741,7 +741,7 @@ test('view override on iface', function() {
     var el = $('#viewdiv');
     obviel.view({
         iface: 'ifoo',
-        render: render_text
+        render: renderText
     });
     obviel.view({
         iface: 'ifoo',
@@ -789,7 +789,7 @@ test('render on ancestor', function() {
     // this does apply directly to viewdiv
     obviel.view({
         iface: 'ibar',
-        render: render_text
+        render: renderText
     });
     $('#viewdiv').render({
         ifaces: ['ibar'],
@@ -833,7 +833,7 @@ asyncTest('render-done.obviel event with subviews', function() {
         }
     });
     obviel.view({
-        render: render_text
+        render: renderText
     });
     // hook in event handler
     var el = $('#viewdiv');
@@ -956,7 +956,7 @@ asyncTest('object events', function() {
     obviel.view({
         iface: 'ifoo',
         html: '<div id="id1"></div>',
-        object_events: {
+        objectEvents: {
             'custom': function(ev) {
                 equal(ev.view.iface, 'ifoo');
                 ok(true, "event triggered");
@@ -981,7 +981,7 @@ asyncTest('object events handler string', function() {
             ok(true, "event triggered");
             start();
         },
-        object_events: {
+        objectEvents: {
             'custom': 'custom'
         }
     });
@@ -994,11 +994,11 @@ asyncTest('object events handler string', function() {
 test('object event triggers rerender', function() {
     obviel.view({
         iface: 'ifoo',
-        html: '<div id="the_id"></div>',
+        html: '<div id="theId"></div>',
         render: function() {
-            $('#the_id', this.el).text(this.obj.title);
+            $('#theId', this.el).text(this.obj.title);
         },
-        object_events: {
+        objectEvents: {
             'custom': 'rerender'
         }
     });
@@ -1006,12 +1006,12 @@ test('object event triggers rerender', function() {
     var obj = {ifaces: ['ifoo'], title: 'Hello'};
     el.render(obj);
 
-    equal($('#the_id').text(), 'Hello');
+    equal($('#theId').text(), 'Hello');
     
     obj.title = 'Bye';
     $(obj).trigger('custom');
 
-    equal($('#the_id').text(), 'Bye');    
+    equal($('#theId').text(), 'Bye');    
 });
 
 
@@ -1019,11 +1019,11 @@ test('object event triggers rerender with named view', function() {
     obviel.view({
         iface: 'ifoo',
         name: 'foo',
-        html: '<div id="the_id"></div>',
+        html: '<div id="theId"></div>',
         render: function() {
-            $('#the_id', this.el).text(this.obj.title);
+            $('#theId', this.el).text(this.obj.title);
         },
-        object_events: {
+        objectEvents: {
             'custom': 'rerender'
         }
     });
@@ -1031,12 +1031,12 @@ test('object event triggers rerender with named view', function() {
     var obj = {ifaces: ['ifoo'], title: 'Hello'};
     el.render(obj, 'foo');
 
-    equal($('#the_id').text(), 'Hello');
+    equal($('#theId').text(), 'Hello');
     
     obj.title = 'Bye';
     $(obj).trigger('custom');
 
-    equal($('#the_id').text(), 'Bye');    
+    equal($('#theId').text(), 'Bye');    
 });
 
 asyncTest('object events cleanup', function() {
@@ -1044,7 +1044,7 @@ asyncTest('object events cleanup', function() {
     obviel.view({
         iface: 'ifoo',
         html: '<div id="id1"></div>',
-        object_events: {
+        objectEvents: {
             'custom': function(ev) {
                 called++;
             }
@@ -1072,7 +1072,7 @@ asyncTest('object events cleanup handler string', function() {
         custom: function(ev) {
             called++;
         },
-        object_events: {
+        objectEvents: {
             'custom': 'custom'
         }
     });
@@ -1113,7 +1113,7 @@ asyncTest('object event nested views', function() {
         render: function() {
             this.el.text(this.obj.title);
         },
-        object_events: {
+        objectEvents: {
             'update': function(ev) {
                 called++;
                 start();
@@ -1179,12 +1179,12 @@ test('element bind', function() {
     
     // render the original object again, in a sub el
     el.append('<div id="sub">nothing</div>');
-    var sub_el = $('#sub', el);
-    sub_el.render({ifaces: ['ifoo']});
+    var subEl = $('#sub', el);
+    subEl.render({ifaces: ['ifoo']});
 
     // the sub el should be unchanged
-    equal(sub_el.text(), 'nothing');
-    equal(sub_el.children().length, 0);
+    equal(subEl.text(), 'nothing');
+    equal(subEl.children().length, 0);
     
     // the original el should have a second div added
     equal($('.added', el).length, 2);
@@ -1213,13 +1213,13 @@ test('element bind cleanup', function() {
 
     // render the original object again, on a sub object
     el.append('<div id="sub"></div>');
-    var sub_el = $('#sub', el);
-    sub_el.render({ifaces: ['ifoo']});
+    var subEl = $('#sub', el);
+    subEl.render({ifaces: ['ifoo']});
     
     // since we've cleaned up the original ifoo view for 'el' by
     // rendering the ibar view, we should render it on the subobject,
     // not the original el
-    equal($('.added', sub_el).length, 1);
+    equal($('.added', subEl).length, 1);
 
     // in total we've added two things
     equal($('.added', el).length, 2);
@@ -1246,45 +1246,45 @@ test('unview', function() {
     
     // render the original object again, in a sub el
     el.append('<div id="sub">nothing</div>');
-    var sub_el = $('#sub', el);
-    sub_el.render({ifaces: ['ifoo']});
+    var subEl = $('#sub', el);
+    subEl.render({ifaces: ['ifoo']});
 
     // the sub el should be unchanged
-    equal(sub_el.text(), 'nothing');
-    equal(sub_el.children().length, 0);
+    equal(subEl.text(), 'nothing');
+    equal(subEl.children().length, 0);
     
     // the original el should have a second div added
     equal($('.added', el).length, 2);
 
     // try it again, should see another div added
-    sub_el.render({ifaces: ['ifoo']});
+    subEl.render({ifaces: ['ifoo']});
     equal($('.added', el).length, 3);
 
     // still nothing on sub el
-    equal(sub_el.children().length, 0);
+    equal(subEl.children().length, 0);
     
     // now we unview the original view
     el.unview();
 
     // if we render on subview now, we should see a div added there
-    sub_el.render({ifaces: ['ifoo']});
-    equal($('.added', sub_el).length, 1);
+    subEl.render({ifaces: ['ifoo']});
+    equal($('.added', subEl).length, 1);
     // and 1 more in total
     equal($('.added', el).length, 4);
 });
 
-test('parent_view', function() {
+test('parentView', function() {
     var el = $('#viewdiv');
-    ok(el.parent_view() === null);
+    ok(el.parentView() === null);
     obviel.view({
         iface: 'ifoo'
     });
     el.render({'ifaces': ['ifoo']});
-    ok(el.parent_view() === el.view());
+    ok(el.parentView() === el.view());
 
-    var new_el = $('<div></div>');
-    el.append(new_el);
-    ok(new_el.parent_view() === el.view());
+    var newEl = $('<div></div>');
+    el.append(newEl);
+    ok(newEl.parentView() === el.view());
 });
 
 
@@ -1293,25 +1293,25 @@ asyncTest('transform server contents', function() {
     obviel.view({
         iface: 'ifoo',
         render: function() {
-            this.el.text(this.obj.text + ': ' + this.obj.view_name);
+            this.el.text(this.obj.text + ': ' + this.obj.viewName);
         }
     });
 
     /* return an object without iface; we will add "ifoo" iface
        using transformer */
     $.mockjax({
-        url: 'test_url',
+        url: 'testUrl',
         responseText: {text: 'Hello world'}
     });
     
     obviel.transformer(function(obj, url, name) {
         obj.iface = 'ifoo';
-        obj.view_name = name;
+        obj.viewName = name;
         return obj;
     });
     
     var el = $('#viewdiv');
-    el.render('test_url').done(function(view) {
+    el.render('testUrl').done(function(view) {
         equal(view.el.text(), 'Hello world: default');
         start();
     });
@@ -1329,7 +1329,7 @@ asyncTest('transform server contents only obj arg', function() {
     /* return an object without iface; we will add "ifoo" iface
        using transformer */
     $.mockjax({
-        url: 'test_url',
+        url: 'testUrl',
         responseText: {text: 'Hello world'}
     });
 
@@ -1339,7 +1339,7 @@ asyncTest('transform server contents only obj arg', function() {
     });
     
     var el = $('#viewdiv');
-    el.render('test_url').done(function(view) {
+    el.render('testUrl').done(function(view) {
         equal(view.el.text(), 'Hello world');
         start();
     });
@@ -1355,7 +1355,7 @@ asyncTest('disable transformer', function() {
     });
 
     $.mockjax({
-        url: 'test_url',
+        url: 'testUrl',
         responseText: {iface: 'ifoo', text: 'Hello world'}
     });
     
@@ -1368,7 +1368,7 @@ asyncTest('disable transformer', function() {
     obviel.transformer(null);
     
     var el = $('#viewdiv');
-    el.render('test_url').done(function(view) {
+    el.render('testUrl').done(function(view) {
         equal(view.el.text(), 'Hello world');
         start();
     });
@@ -1389,19 +1389,19 @@ asyncTest('transform server contents distinguish between uris', function() {
     });
     
     $.mockjax({
-        url: 'test_foo_url',
+        url: 'testFooUrl',
         responseText: {text: 'Hello world foo'}
     });
     $.mockjax({
-        url: 'test_bar_url',
+        url: 'testBarUrl',
         responseText: {text: 'Hello world bar'}
     });
     
     obviel.transformer(function(obj, url) {
-        if (url === 'test_foo_url') {
+        if (url === 'testFooUrl') {
             obj.iface = 'ifoo';
             return obj;
-        } else if (url === 'test_bar_url') {
+        } else if (url === 'testBarUrl') {
             obj.iface = 'ibar';
             return obj;
         }
@@ -1409,12 +1409,12 @@ asyncTest('transform server contents distinguish between uris', function() {
     });
     
     var el = $('#viewdiv');
-    el.render('test_foo_url').done(function(view) {
+    el.render('testFooUrl').done(function(view) {
         equal(view.el.text(), 'ifoo: Hello world foo');
         start();
     });
 
-    el.render('test_bar_url').done(function(view) {
+    el.render('testBarUrl').done(function(view) {
         equal(view.el.text(), 'ibar: Hello world bar');
         start();
     });
@@ -1453,10 +1453,10 @@ test('obviel template view', function() {
     equal(el.text(), 'Hello world!');
 });
 
-test('obviel template obvt_script', function() {
+test('obviel template obvtScript', function() {
     obviel.view({
         iface: 'test',
-        obvt_script: 'obvt_script_id'
+        obvtScript: 'obvt_script_id'
     });
 
     var el = $('#viewdiv');
@@ -1465,7 +1465,7 @@ test('obviel template obvt_script', function() {
         world: 'world'
     });
 
-    equal(html_lower(el.html()), 'hello <em>world</em>');
+    equal(htmlLower(el.html()), 'hello <em>world</em>');
 });
 
 test('obviel template with sub elements view', function() {
@@ -1490,8 +1490,8 @@ test('obviel template with event handler hooking up to view', function() {
     
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id" data-handler="click|handle_click">Click here!</div>',
-        handle_click: function(ev) {
+        obvt: '<div id="someId" data-handler="click|handleClick">Click here!</div>',
+        handleClick: function(ev) {
             clicked = true;
         }
     });
@@ -1499,7 +1499,7 @@ test('obviel template with event handler hooking up to view', function() {
     var el = $('#viewdiv');
     el.render({ iface: 'test'});
 
-    $('#some_id', el).trigger('click');
+    $('#someId', el).trigger('click');
 
     equal(clicked, true);
 });
@@ -1508,8 +1508,8 @@ test('obviel template, event handler can access view correctly', function() {
     
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id" data-handler="click|handle_click">Click here!</div>',
-        handle_click: function(ev) {
+        obvt: '<div id="someId" data-handler="click|handleClick">Click here!</div>',
+        handleClick: function(ev) {
             this.obj.clicked = true;
         }
     });
@@ -1519,7 +1519,7 @@ test('obviel template, event handler can access view correctly', function() {
     
     el.render(test);
 
-    $('#some_id', el).trigger('click');
+    $('#someId', el).trigger('click');
 
     equal(test.clicked, true);
 });
@@ -1527,73 +1527,73 @@ test('obviel template, event handler can access view correctly', function() {
 test('obviel template, formatter lookup on view', function() {
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id">{value|my_formatter}</div>',
-        my_formatter: function(value) {
+        obvt: '<div id="someId">{value|myFormatter}</div>',
+        myFormatter: function(value) {
             return value.toUpperCase();
         }
     });
 
     var el = $('#viewdiv');
     el.render({iface: 'test', value: 'the value'});
-    equal($('#some_id').text(), 'THE VALUE');
+    equal($('#someId').text(), 'THE VALUE');
 });
 
 test('obviel template, formatter lookup falls back to globally registered', function() {
     
-    obviel.template.register_formatter(
-        'my_formatter',
+    obviel.template.registerFormatter(
+        'myFormatter',
         function(value) {
             return value + ' BUT GLOBAL!';
         });
     
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id">{value|my_formatter}</div>'
+        obvt: '<div id="someId">{value|myFormatter}</div>'
     });
 
     var el = $('#viewdiv');
     el.render({iface: 'test', value: 'the value'});
-    equal($('#some_id').text(), 'the value BUT GLOBAL!');
+    equal($('#someId').text(), 'the value BUT GLOBAL!');
 });
 
 
 test('obviel template, data-func lookup on view', function() {
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id" data-func="my_func"></div>',
-        my_func: function(el) {
+        obvt: '<div id="someId" data-func="myFunc"></div>',
+        myFunc: function(el) {
             el.attr('class', 'FOO');
         }
     });
 
     var el = $('#viewdiv');
     el.render({iface: 'test'});
-    equal($('#some_id').attr('class'), 'FOO');
+    equal($('#someId').attr('class'), 'FOO');
 });
 
 test('obviel template, data-func lookup falls back to globally registered', function() {
     
-    obviel.template.register_func(
-        'my_func',
+    obviel.template.registerFunc(
+        'myFunc',
         function(el) {
             el.attr('class', 'FOO');
         });
     
     obviel.view({
         iface: 'test',
-        obvt: '<div id="some_id" data-func="my_func"></div>'
+        obvt: '<div id="someId" data-func="myFunc"></div>'
     });
 
     var el = $('#viewdiv');
     el.render({iface: 'test'});
-    equal($('#some_id').attr('class'), 'FOO');
+    equal($('#someId').attr('class'), 'FOO');
 });
 
 test('obviel template, data-func which refers to view', function() {
     obviel.view({
         iface: 'foo',
-        obvt: '<div id="alpha" data-func="some_func"></div>',
-        some_func: function(el, variable, context) {
+        obvt: '<div id="alpha" data-func="someFunc"></div>',
+        someFunc: function(el, variable, context) {
             if (this.obj.flag) {
                 el.addClass('foo');
             }
@@ -1655,12 +1655,12 @@ test('obviel i18n default domain used by template, no translations', function() 
 });
 
 test('obviel i18n default domain used by template, translation', function() {
-    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+    var nlNL = obviel.i18n.translationSource({'This is {name}.':
                                                 'Dit is {name}.'});
 
-    obviel.i18n.register_translation('nl_NL', nl_NL);
+    obviel.i18n.registerTranslation('nlNL', nlNL);
 
-    obviel.i18n.set_locale('nl_NL');
+    obviel.i18n.setLocale('nlNL');
     
     obviel.view({
         iface: 'person',
@@ -1675,10 +1675,10 @@ test('obviel i18n default domain used by template, translation', function() {
 });
 
 test("obviel i18n non-default domain, no locale set", function() {
-    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+    var nlNL = obviel.i18n.translationSource({'This is {name}.':
                                                 'Dit is {name}.'});
     
-    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
         
     obviel.i18n.translate('other');
     
@@ -1696,14 +1696,14 @@ test("obviel i18n non-default domain, no locale set", function() {
 
 
 test("obviel i18n non-default domain, locale set", function() {
-    var nl_NL = obviel.i18n.translation_source({'This is {name}.':
+    var nlNL = obviel.i18n.translationSource({'This is {name}.':
                                                 'Dit is {name}.'});
     
-    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
         
     obviel.i18n.translate('other');
 
-    obviel.i18n.set_locale('nl_NL');
+    obviel.i18n.setLocale('nlNL');
     
     obviel.view({
         iface: 'person',
@@ -1717,14 +1717,14 @@ test("obviel i18n non-default domain, locale set", function() {
 });
 
 test('obviel i18n with pluralization, Dutch translation', function() {
-    var nl_NL = obviel.i18n.translation_source({'1 cow': [
+    var nlNL = obviel.i18n.translationSource({'1 cow': [
         '{count} cows', '1 koe', '{count} koeien']});
     
-    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
         
     obviel.i18n.translate('other');
     
-    obviel.i18n.set_locale('nl_NL');
+    obviel.i18n.setLocale('nlNL');
     
     obviel.view({
         iface: 'something',
@@ -1744,14 +1744,14 @@ test('obviel i18n with pluralization, Dutch translation', function() {
 });
 
 test('obviel i18n with pluralization and tvar, Dutch translation', function() {
-    var nl_NL = obviel.i18n.translation_source({'{count} cow': [
+    var nlNL = obviel.i18n.translationSource({'{count} cow': [
         '{count} cows', '{count} koe', '{count} koeien']});
     
-    obviel.i18n.register_translation('nl_NL', nl_NL, 'other');
+    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
         
     obviel.i18n.translate('other');
     
-    obviel.i18n.set_locale('nl_NL');
+    obviel.i18n.setLocale('nlNL');
     
     obviel.view({
         iface: 'something',
@@ -1771,7 +1771,7 @@ test('obviel i18n with pluralization and tvar, Dutch translation', function() {
 });
 
 test('obviel i18n with pluralization, Polish translation', function() {
-    var pl_PL = obviel.i18n.translation_source({
+    var plPL = obviel.i18n.translationSource({
         '': {
             'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
         },
@@ -1781,11 +1781,11 @@ test('obviel i18n with pluralization, Polish translation', function() {
          '{count} pliki.',
          "{count} pliko'w."]});
     
-    obviel.i18n.register_translation('pl_PL', pl_PL, 'other');
+    obviel.i18n.registerTranslation('plPL', plPL, 'other');
         
     obviel.i18n.translate('other');
     
-    obviel.i18n.set_locale('pl_PL');
+    obviel.i18n.setLocale('plPL');
     
     obviel.view({
         iface: 'something',
@@ -1876,7 +1876,7 @@ test("location of inline template error", function() {
 test("location of script template error", function() {
     obviel.view({
         iface: 'foo',
-        obvt_script: 'obvt_notfound_id'
+        obvtScript: 'obvt_notfound_id'
     });
 
     raises(function() {
@@ -1891,18 +1891,18 @@ test("location of script template error", function() {
 // doesn't get thrown in time. need to write this around deferred.reject
 // asyncTest("location of script url error", function() {
 //     $.mockjax({
-//         url: 'obvt_url',
+//         url: 'obvtUrl',
 //         responseText: '{notfound}'
 //     });
 
 //     obviel.view({
 //         iface: 'foo',
-//         obvt_url: 'obvt_url'
+//         obvtUrl: 'obvtUrl'
 //     });
 
 //     $("#viewdiv").render({iface: 'foo'}).fail(function() {
 //         equal(e.toString(),
-//               "variable 'notfound' could not be found (iface: foo name: default; obvt from url obvt_url)");
+//               "variable 'notfound' could not be found (iface: foo name: default; obvt from url obvtUrl)");
 //         start();
 //     });
     

@@ -16,31 +16,31 @@ $(document).ready(function() {
         form: {
             widgets: [
                 {
-                    ifaces: ['boolean_field'],
+                    ifaces: ['booleanField'],
                     name: 'bool',
-                    title: 'boolean_field',
+                    title: 'booleanField',
                     validate: {
                         required: true
                     }
                 },
                 {
-                    ifaces: ['integer_field'],
+                    ifaces: ['integerField'],
                     name: 'integer',
-                    title: 'integer_field'
+                    title: 'integerField'
                 },
                 {
-                    ifaces: ['choice_field'],
+                    ifaces: ['choiceField'],
                     name: 'choice',
-                    title: 'choice_field',
+                    title: 'choiceField',
                     choices: [
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
                         ]
                 },
                 {
-                    ifaces: ['autocomplete_field'],
+                    ifaces: ['autocompleteField'],
                     name: 'auto',
-                    title: 'autocomplete_field',
+                    title: 'autocompleteField',
                     data: [
                         {value: 'foo', label: 'Foo'},
                         {value: 'bar', label: 'Bar'}
@@ -48,23 +48,23 @@ $(document).ready(function() {
                     defaultvalue: 'foo'
                 },        
                 {
-                    ifaces: ['datepicker_field'],
+                    ifaces: ['datepickerField'],
                     name: 'date',
-                    title: 'datepicker_field'
+                    title: 'datepickerField'
                 },
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
-                    title: 'repeating_field',
+                    title: 'repeatingField',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'textline',
-                            title: 'textline_field'
+                            title: 'textlineField'
                         },{
-                            ifaces: ['text_field'],
+                            ifaces: ['textField'],
                             name: 'text',
-                            title: 'text_field'
+                            title: 'textField'
                         }]
                 }
             ],
@@ -83,7 +83,7 @@ $(document).ready(function() {
     });
     
     /* this will output the data object into the output blockquote element */
-    var render_data = function() {
+    var renderData = function() {
         var replacer = function(key, value) {
             return value;
         };
@@ -92,7 +92,7 @@ $(document).ready(function() {
 
     /* show the underlying data object */
     $('.examine', el).click(function(ev) {
-        render_data();
+        renderData();
     });
 
     /* this will change the data object, the form will update
@@ -100,7 +100,7 @@ $(document).ready(function() {
     $('.change', el).click(function(ev) {
         $(data).setField('date', '2010-10-10');
         $(data).setField('integer', 3);
-        render_data();
+        renderData();
     });
     
 });

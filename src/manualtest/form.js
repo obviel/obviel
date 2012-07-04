@@ -12,7 +12,7 @@
             form: {
                 widgets: [
                     {
-                        ifaces: ['boolean_field'],
+                        ifaces: ['booleanField'],
                         name: 'a',
                         title: 'A',
                         validate: {
@@ -20,12 +20,12 @@
                         }
                     },
                     {
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B'
                     },
                     {
-                        ifaces: ['choice_field'],
+                        ifaces: ['choiceField'],
                         name: 'c',
                         title: 'C',
                         choices: [
@@ -34,7 +34,7 @@
                         ]
                     },
                     {
-                        ifaces: ['autocomplete_field'],
+                        ifaces: ['autocompleteField'],
                         name: 'da',
                         title: 'Autocomplete',
                         data: [
@@ -44,7 +44,7 @@
                         defaultvalue: 'foo'
                     },
                     {
-                        ifaces: ['datepicker_field'],
+                        ifaces: ['datepickerField'],
                         name: 'dp',
                         title: 'Datepicker'
                     }  
@@ -75,7 +75,7 @@
     
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
-            obviel.i18n.set_locale('nl_NL').done(function() { main(); });
+            obviel.i18n.setLocale('nl_NL').done(function() { main(); });
         });
     });
     

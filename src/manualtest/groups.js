@@ -8,15 +8,15 @@ $(document).ready(function() {
         form: {
             widgets: [
                 {
-                    ifaces: ['group_field'],
+                    ifaces: ['groupField'],
                     name: 'alpha',
                     title: 'Alpha',
                     widgets: [
-                        { ifaces: ['integer_field'],
+                        { ifaces: ['integerField'],
                           name: 'a',
                           title: 'A'
                         },
-                        { ifaces: ['integer_field'],
+                        { ifaces: ['integerField'],
                           name: 'b',
                           title: 'B'
                         }
@@ -25,13 +25,13 @@ $(document).ready(function() {
                 {
                     name: 'beta',
                     title: 'Beta',
-                    ifaces: ['group_field'],
+                    ifaces: ['groupField'],
                     widgets: [
-                        { ifaces: ['integer_field'],
+                        { ifaces: ['integerField'],
                           name: 'c',
                           title: 'C'
                         },
-                        { ifaces: ['integer_field'],
+                        { ifaces: ['integerField'],
                           name: 'd',
                           title: 'D'
                         }

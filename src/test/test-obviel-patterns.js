@@ -24,7 +24,7 @@ test('messages', function() {
         }
     });
 
-    var feedback_messages = [
+    var feedbackMessages = [
         { iface: 'message',
           message: 'one'},
         { iface: 'message',
@@ -33,16 +33,16 @@ test('messages', function() {
     
     var feedback = {
         iface: 'multi',
-        objects: feedback_messages 
+        objects: feedbackMessages 
     };
     
     $('#viewdiv').render(feedback);
-    deepEqual(messages, feedback_messages);
+    deepEqual(messages, feedbackMessages);
 });
 
 asyncTest('events', function() {
     
-    var feedback_events = [
+    var feedbackEvents = [
         { iface: 'event',
           name: 'a'},
         { iface: 'event',
@@ -51,26 +51,26 @@ asyncTest('events', function() {
 
     var feedback = {
         iface: 'multi',
-        objects: feedback_events
+        objects: feedbackEvents
     };
 
     
     var el = $('#viewdiv');
 
-    var triggered_events = [];
+    var triggeredEvents = [];
     
     el.bind('a', function() {
-        triggered_events.push('a');
+        triggeredEvents.push('a');
     });
     
     el.bind('b', function() {
-        triggered_events.push('b');
+        triggeredEvents.push('b');
         start();
     });
     
     el.render(feedback);
 
-    deepEqual(triggered_events, ['a', 'b']);
+    deepEqual(triggeredEvents, ['a', 'b']);
 });
 
 test('redirect', function() {

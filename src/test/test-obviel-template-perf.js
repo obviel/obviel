@@ -41,14 +41,14 @@ var obtemp = obviel.template;
 // '</ul>');
 
 
-var big_table_nested = new obtemp.Template(
+var bigTableNested = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table">' +
 '<td data-each="@.">{@.}</td>' +
 '</tr>' +
 '</table>');
 
-var big_table_flat = new obtemp.Template(
+var bigTableFlat = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table">' +
 '<td>{a}</td>' +
@@ -65,7 +65,7 @@ var big_table_flat = new obtemp.Template(
 '</table>'
 );
 
-var big_table_flat_view = new obtemp.Template(
+var bigTableFlatView = new obtemp.Template(
 '<table>\n' +
 '<tr data-each="table" data-view="@.">' +
 '</tr>' +
@@ -76,13 +76,13 @@ var data = {
     table: []    
 };
 
-var data_flat = {
+var dataFlat = {
     table: []
 };
 
 for (var i = 0; i < 1000; i++) {
     data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    data_flat.table.push({
+    dataFlat.table.push({
         iface: 'row',
         a: 1,
         b: 2,
@@ -98,12 +98,12 @@ for (var i = 0; i < 1000; i++) {
 };
 
 test('big table nested', function() {
-    big_table_nested.render($('<div></div>'), data);
+    bigTableNested.render($('<div></div>'), data);
     expect(0);
 });
 
 test('big table flat without view', function() {
-    big_table_flat.render($('<div></div>'), data_flat);
+    bigTableFlat.render($('<div></div>'), dataFlat);
     expect(0);
 });
 
@@ -114,12 +114,12 @@ test('big table flat with view', function() {
             this.el.append('<td>' + this.obj.a + '</td>');
         }
     });
-    big_table_flat_view.render($('<div></div>'), data_flat);
+    bigTableFlatView.render($('<div></div>'), dataFlat);
     expect(0);
     
 });
 
-var simple_data = {
+var simpleData = {
     first: {
         a: "Hello A",
         b: "Hello B",
@@ -147,7 +147,7 @@ var simple_data = {
     flag: true
 };
 
-var simple_template = new obtemp.Template(
+var simpleTemplate = new obtemp.Template(
 '<div class="all">' +
 '<div class="always" data-with="first">' +
 '<p>A: {a}</p>' +
@@ -179,7 +179,7 @@ var simple_template = new obtemp.Template(
 test('simple template repeated', function() {
     var el = $('<div></div>');
     for (var i = 0; i < 1000; i++) {
-        simple_template.render(el, simple_data);
+        simpleTemplate.render(el, simpleData);
     }
     expect(0);
 });

@@ -22,12 +22,12 @@
       <div id="todoapp">
         <header>
           <h1 data-trans="">Todos</h1>
-          <input data-handler="keypress|create_on_enter" id="new-todo" type="text" 
+          <input data-handler="keypress|createOnEnter" id="new-todo" type="text" 
                  data-trans="placeholder" placeholder="What needs to be done?" />
         </header>
         
         <section id="main" data-if="items">
-          <input data-handler="click|toggle_all" id="toggle-all" type="checkbox"/>
+          <input data-handler="click|toggleAll" id="toggle-all" type="checkbox"/>
           <label for="toggle-all" data-trans="">Mark all as complete</label>
           <ul id="todo-list">
             <li data-each="items" data-view="@."></li>
@@ -52,7 +52,7 @@
     </script>
 
     <script type="text/template" id="obvt-todo-stats">
-      <a data-if="done" id="clear-completed" data-handler="click|clear_completed" data-trans="">Clear {done} completed item||Clear {done} completed items</a>
+      <a data-if="done" id="clear-completed" data-handler="click|clearCompleted" data-trans="">Clear {done} completed item||Clear {done} completed items</a>
       <div class="todo-count" data-trans="" data-plural="remaining"><b>{remaining}</b> item left||<b>{remaining}</b> items left</div>
     </script>
 
@@ -67,7 +67,7 @@
     </script>
 
     <script type="text/template" id="obvt-todo-editing">
-      <input data-handler="keypress|update_on_enter blur|close" class="edit" type="text" value="{title}" /> 
+      <input data-handler="keypress|updateOnEnter blur|close" class="edit" type="text" value="{title}" /> 
     </script>
 
   </body>

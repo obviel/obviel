@@ -1,6 +1,6 @@
-/*global obviel: true, jQuery: true, template_url: true
-  alert: true , browser: true, document: true, app_url: true,
-  window: true, Gettext: true, json_locale_data: true
+/*global obviel: true, jQuery: true, templateUrl: true
+  alert: true , browser: true, document: true, appUrl: true,
+  window: true, Gettext: true, jsonLocaleData: true
 */
 
 obviel.forms = {};
@@ -23,9 +23,9 @@ obviel.forms = {};
     // or not. Apparently this varies through versions of jquery
     // rather messy but I don't know of a reliable to recognize
     // a jQuery expando...
-    var is_internal = function(attribute_name) {
-        return (attribute_name == '__events__' ||
-                attribute_name.slice(0, 6) == 'jQuery');
+    var isInternal = function(attributeName) {
+        return (attributeName == '__events__' ||
+                attributeName.slice(0, 6) == 'jQuery');
     };
     
     obviel.iface('viewform');
@@ -47,25 +47,25 @@ obviel.forms = {};
         obviel.View.call(this, d);
     };
 
-    var auto_name = 0;
+    var autoName = 0;
 
     module.Form.prototype = new obviel.View();
 
     module.Form.prototype.init = function() {
-        this.widget_views = [];
+        this.widgetViews = [];
     };
 
-    var count_errors = function(errors) {
+    var countErrors = function(errors) {
         var result = 0;
         $.each(errors, function(key, value) {
-            if (is_internal(key)) {
+            if (isInternal(key)) {
                 return true;
             }
             if ($.isPlainObject(value)) {
-                result += count_errors(value);
+                result += countErrors(value);
             } else if ($.isArray(value)) {
                 $.each(value, function(index, item) {
-                    result += count_errors(item);
+                    result += countErrors(item);
                 });
             } else if (value) {
                 result++;
@@ -75,16 +75,16 @@ obviel.forms = {};
         return result;
     };
 
-    module.Form.prototype.error_count = function() {
-        return count_errors(this.obj.errors);
+    module.Form.prototype.errorCount = function() {
+        return countErrors(this.obj.errors);
     };
 
-    module.Form.prototype.global_error_count = function() {
-        return count_errors(this.obj.global_errors);
+    module.Form.prototype.globalErrorCount = function() {
+        return countErrors(this.obj.globalErrors);
     };
 
-    module.Form.prototype.total_error_count = function() {
-        return this.error_count() + this.global_error_count();
+    module.Form.prototype.totalErrorCount = function() {
+        return this.errorCount() + this.globalErrorCount();
     };
     
     module.Form.prototype.render = function() {
@@ -94,30 +94,30 @@ obviel.forms = {};
         var el = self.el;
         
         obj.errors = obj.errors || {};
-        obj.global_errors = obj.global_errors || {};
+        obj.globalErrors = obj.globalErrors || {};
         obj.data = obj.data || {};
 
         $(el).bind('change', function(ev) {
             // if we are already updating the errors in a submit, we don't want
             // to trigger global validation again
-            if (self.updating_errors) {
+            if (self.updatingErrors) {
                 return;
             }
             var target = $(ev.target);
             // find view for target
-            var widget = $(target).parent_view();
+            var widget = $(target).parentView();
             if (!widget) {
                 return;
             }
             // if this widget has a global validator, revalidate
-            if (widget.obj.global_validator) {
+            if (widget.obj.globalValidator) {
                 // revalidate this form
                 self.validate();
             }
         });
         
         $(el).bind('form-change.obviel', function(ev) {
-            var count = self.total_error_count();
+            var count = self.totalErrorCount();
             if (count > 0) {
                 var msg = obviel.i18n.variables(ngettext(
                     "{count} field did not validate",
@@ -129,10 +129,10 @@ obviel.forms = {};
             }
             if (count) {
                 $('button.obviel-control', el).each(function(
-                index, control_el) {
-                    control_el = $(control_el);
-                    if (!control_el.data('obviel.no_validation')) {
-                        control_el.attr('disabled', 'true').trigger(
+                index, controlEl) {
+                    controlEl = $(controlEl);
+                    if (!controlEl.data('obviel.noValidation')) {
+                        controlEl.attr('disabled', 'true').trigger(
                             'button-updated.obviel');
                     }
                     
@@ -140,138 +140,138 @@ obviel.forms = {};
 
             } else {
                 $('button.obviel-control', el).each(function(
-                index, control_el) {
-                    control_el = $(control_el);
-                    if (!control_el.data('obviel.no_validation')) {
-                        control_el.removeAttr('disabled').trigger(
+                index, controlEl) {
+                    controlEl = $(controlEl);
+                    if (!controlEl.data('obviel.noValidation')) {
+                        controlEl.removeAttr('disabled').trigger(
                             'button-updated.obviel');
                     }
                 });
             }
         });
 
-        var form_name = obj.form.name;
-        if (form_name === undefined) {
-            form_name = 'auto' + auto_name.toString();
-            auto_name++;
-            obj.form.name = form_name;
+        var formName = obj.form.name;
+        if (formName === undefined) {
+            formName = 'auto' + autoName.toString();
+            autoName++;
+            obj.form.name = formName;
         }
-        self.render_widgets();
-        self.render_controls();
+        self.renderWidgets();
+        self.renderControls();
     };
 
-    module.Form.prototype.render_widgets = function() {
+    module.Form.prototype.renderWidgets = function() {
         var self = this;
         var obj = self.obj;
 
-        var form_el = $('form', self.el);
-        var fields_el = $('.obviel-fields', form_el);
+        var formEl = $('form', self.el);
+        var fieldsEl = $('.obviel-fields', formEl);
         
         $.each(obj.form.widgets, function(index, widget) {
-            widget.prefixed_name = obj.form.name + '-' + widget.name;
-            fields_el.append(self.render_widget(
-                widget, obj.data, obj.errors, obj.global_errors,
+            widget.prefixedName = obj.form.name + '-' + widget.name;
+            fieldsEl.append(self.renderWidget(
+                widget, obj.data, obj.errors, obj.globalErrors,
                 obj.form.disabled));
         });
     };
 
-    module.Form.prototype.render_widget = function(widget,
+    module.Form.prototype.renderWidget = function(widget,
                                                    data,
                                                    errors,
-                                                   global_errors,
+                                                   globalErrors,
                                                    disabled) {
         var self = this;
-        var field_el = $('<div class="obviel-field"></div>');
+        var fieldEl = $('<div class="obviel-field"></div>');
         $.each(widget.ifaces, function(index, value) {
-            field_el.addClass(value);
+            fieldEl.addClass(value);
         });
         if (widget.name) {
-            field_el.addClass('obviel-fieldname-' + widget.name);
+            fieldEl.addClass('obviel-fieldname-' + widget.name);
         }
         if (widget['class']) {
-            field_el.addClass(widget['class']);
+            fieldEl.addClass(widget['class']);
         }
         
         if (disabled) {
             widget.disabled = true;
         }
 
-        field_el.render(widget, function() {
+        fieldEl.render(widget, function() {
             var view = this;
-            view.render_label();
-            view.render_error_area();
+            view.renderLabel();
+            view.renderErrorArea();
             // now link everything up
-            view.link(data, errors, global_errors);
+            view.link(data, errors, globalErrors);
         });
 
-        self.widget_views.push(field_el.view());
+        self.widgetViews.push(fieldEl.view());
         
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
-        field_el.append(
+        fieldEl.append(
             '<div class="obviel-field-clear">&#xa0;</div>');
-        return field_el;
+        return fieldEl;
     };
 
-    module.Form.prototype.render_controls = function() {
+    module.Form.prototype.renderControls = function() {
         var self = this;
         
-        var form_el = $('form', self.el);
-        var controls_el = $('.obviel-controls', form_el);
+        var formEl = $('form', self.el);
+        var controlsEl = $('.obviel-controls', formEl);
         var controls = self.obj.form.controls || [];
 
         if (self.obj.form.disabled) {
             return;
         }
         $.each(controls, function(index, control) {
-            var control_el = self.render_control(control);
-            controls_el.append(control_el);
-            control_el.trigger("button-created.obviel");
+            var controlEl = self.renderControl(control);
+            controlsEl.append(controlEl);
+            controlEl.trigger("button-created.obviel");
         });
     };
 
-    module.Form.prototype.render_control = function(control) {
+    module.Form.prototype.renderControl = function(control) {
         var self = this;
-        var control_el = $('<button class="obviel-control" type="button" />');
-        control_el.text(control.label || '');
+        var controlEl = $('<button class="obviel-control" type="button" />');
+        controlEl.text(control.label || '');
         if (control['class']) {
-            control_el.addClass(control['class']);
+            controlEl.addClass(control['class']);
         }
         if (control.name) {
-            control_el.attr('name', control.name);
+            controlEl.attr('name', control.name);
         }
 
         // XXX not really nice to attach data to the control el,
         // but cleaner solution will have to wait until we have
         // a control view, which is a bigger refactoring
-        if (control.no_validation) {
-            control_el.data('obviel.no_validation', true);
+        if (control.noValidation) {
+            controlEl.data('obviel.noValidation', true);
         }
         
-        control_el.click(function(ev) {
-            self.submit_control(control_el, control);
+        controlEl.click(function(ev) {
+            self.submitControl(controlEl, control);
         });
 
-        return control_el;
+        return controlEl;
     };
 
-    var clean_data = function(data) {
+    var cleanData = function(data) {
         var clone = null;
         
         // clone the data object removing data link annotations
         if ($.isPlainObject(data)) {
             clone = {};
             $.each(data, function(key, value) {
-                if (!is_internal(key)) {
-                    clone[key] = clean_data(value);
+                if (!isInternal(key)) {
+                    clone[key] = cleanData(value);
                 }
             });
             return clone;
         } else if ($.isArray(data)) {
             clone = [];
             $.each(data, function(index, value) {
-                clone.push(clean_data(value));
+                clone.push(cleanData(value));
             });
             return clone;
             
@@ -280,20 +280,20 @@ obviel.forms = {};
         }
     };
 
-    var clear_linked_data = function(obj) {
-        var linked_obj = $(obj);
+    var clearLinkedData = function(obj) {
+        var linkedObj = $(obj);
         $.each(obj, function(key, value) {
-            if (is_internal(key)) {
+            if (isInternal(key)) {
                 return;
             }
             if ($.isPlainObject(value)) {
-                clear_linked_data(value);
+                clearLinkedData(value);
             } else if ($.isArray(value)) {
-                $.each(value, function(index, array_value) {
-                    clear_linked_data(array_value);
+                $.each(value, function(index, arrayValue) {
+                    clearLinkedData(arrayValue);
                 });
             } else {
-                linked_obj.setField(key, '');
+                linkedObj.setField(key, '');
             }
             return;
         });
@@ -301,55 +301,55 @@ obviel.forms = {};
     
     // use setField to set values in target according to source
     // source and target must have same structure
-    var set_linked_data = function(source, target) {
-        var linked_target = $(target);
-        clear_linked_data(target);
-        $.each(source, function(key, source_value) {
-            if (is_internal(key)) {
+    var setLinkedData = function(source, target) {
+        var linkedTarget = $(target);
+        clearLinkedData(target);
+        $.each(source, function(key, sourceValue) {
+            if (isInternal(key)) {
                 return;
             }
-            var target_value = null;
-            if ($.isPlainObject(source_value)) {
-                target_value = target[key];
-                set_linked_data(source_value, target_value);
-            } else if ($.isArray(source_value)) {
-                target_value = target[key];
-                $.each(source_value, function(index, array_value) {
-                    var target_array_value = target_value[index];
-                    set_linked_data(array_value, target_array_value);
+            var targetValue = null;
+            if ($.isPlainObject(sourceValue)) {
+                targetValue = target[key];
+                setLinkedData(sourceValue, targetValue);
+            } else if ($.isArray(sourceValue)) {
+                targetValue = target[key];
+                $.each(sourceValue, function(index, arrayValue) {
+                    var targetArrayValue = targetValue[index];
+                    setLinkedData(arrayValue, targetArrayValue);
                 });
             } else {
-                linked_target.setField(key, source_value);
+                linkedTarget.setField(key, sourceValue);
             }
             return;
         });
     };
     
-    module.Form.prototype.clean_data = function() {
-        return clean_data(this.obj.data);
+    module.Form.prototype.cleanData = function() {
+        return cleanData(this.obj.data);
     };
     
-    module.Form.prototype.update_errors = function() {
+    module.Form.prototype.updateErrors = function() {
         var self = this;
         // mark that we are updating errors so we don't trigger validation
-        // again during trigger_changes..
-        self.updating_errors = true;
+        // again during triggerChanges..
+        self.updatingErrors = true;
         // trigger change event for all widgets
-        self.trigger_changes();
+        self.triggerChanges();
         // trigger global validation
         return self.validate().done(function() {
-            self.updating_errors = false;
+            self.updatingErrors = false;
         });
     };
 
-    module.Form.prototype.set_global_errors = function(data) {
-        set_linked_data(data, this.obj.global_errors);
+    module.Form.prototype.setGlobalErrors = function(data) {
+        setLinkedData(data, this.obj.globalErrors);
     };
     
     module.Form.prototype.validate = function() {
         var self = this;
         
-        var url = self.obj.validation_url;
+        var url = self.obj.validationUrl;
         // no global validation
         var defer = null;
         if (url === undefined) {
@@ -357,7 +357,7 @@ obviel.forms = {};
             defer.resolve();
             return defer.promise();
         }
-        var data = self.json_data();
+        var data = self.jsonData();
         
         // otherwise do global validation and set errors accordingly
         defer = $.ajax({
@@ -370,49 +370,49 @@ obviel.forms = {};
         });
         
         defer.done(function(data) {
-            self.set_global_errors(data);
+            self.setGlobalErrors(data);
             // for any update to error status due to validate, trigger event
-            var form_el = $('form', self.el);
-            form_el.trigger('form-change.obviel');
+            var formEl = $('form', self.el);
+            formEl.trigger('form-change.obviel');
         });
         return defer;
     };
     
-    module.Form.prototype.submit_control = function(control_el, control) {
+    module.Form.prototype.submitControl = function(controlEl, control) {
         var self = this;
 
-        if (!control.no_validation) {
-            self.update_errors().done(function() {
+        if (!control.noValidation) {
+            self.updateErrors().done(function() {
                 // if there are  errors, disable submit
-                if (self.total_error_count() > 0) {
-                    control_el.attr('disabled', 'true').trigger(
+                if (self.totalErrorCount() > 0) {
+                    controlEl.attr('disabled', 'true').trigger(
                         'button-updated.obviel');
                     return;
                 }
-                self.direct_submit(control);
+                self.directSubmit(control);
             });
         } else {
-            self.direct_submit(control);
+            self.directSubmit(control);
         }
     };
     
     module.Form.prototype.submit = function(control) {
         var self = this;
 
-        self.update_errors().done(function() {
+        self.updateErrors().done(function() {
             // don't submit if there are any errors
-            if (self.total_error_count() > 0) {
+            if (self.totalErrorCount() > 0) {
                 return;
             }
-            self.direct_submit(control);
+            self.directSubmit(control);
         });
     };
 
-    module.Form.prototype.json_data = function() {
-        return JSON.stringify(this.clean_data());
+    module.Form.prototype.jsonData = function() {
+        return JSON.stringify(this.cleanData());
     };
     
-    module.Form.prototype.direct_submit = function(control) {
+    module.Form.prototype.directSubmit = function(control) {
         var self = this;
         
         // if there is no action, we just leave: we assume that
@@ -424,33 +424,33 @@ obviel.forms = {};
         }
 
         var data = null;
-        if (!control.no_validation) {
-            data = self.json_data();
+        if (!control.noValidation) {
+            data = self.jsonData();
         } else {
             data = undefined;
         }
         
         var method = control.method || 'POST';
-        var content_type = control.content_type || 'application/json';
-        var view_name = control.view_name || 'default';
+        var contentType = control.contentType || 'application/json';
+        var viewName = control.viewName || 'default';
 
         $.ajax({
             type: method,
             url: action,
             data: data,
             processData: false,
-            contentType: content_type,
+            contentType: contentType,
             dataType: 'json',
             success: function(data) {
-                self.el.render(data, view_name);
+                self.el.render(data, viewName);
             }
         });
     };
     
-    module.Form.prototype.trigger_changes = function() {
+    module.Form.prototype.triggerChanges = function() {
         var self = this;
         
-        $.each(self.widget_views, function(index, view) {
+        $.each(self.widgetViews, function(index, view) {
             view.change();
         });
         
@@ -477,41 +477,41 @@ obviel.forms = {};
 
 
     obviel.view({
-        iface: 'obviel_forms_error_area',
+        iface: 'obvielFormsErrorArea',
         render: function() {
             // add in field validation or conversion failing error area
             this.el.append('<div id="' +
-                           this.obj.field_error_id +
+                           this.obj.fieldErrorId +
                            '" class="obviel-field-error"></div>');
             // add in global level validation failure error area
             this.el.append('<div id="' +
-                           this.obj.global_error_id +
+                           this.obj.globalErrorId +
                            '" class="obviel-global-error"></div>');
         }
     });
     
-    module.Widget.prototype.render_error_area = function() {
+    module.Widget.prototype.renderErrorArea = function() {
         this.el.append('<div class="obviel-error-area"></div>');
         
         $('.obviel-error-area', this.el).render(
-            {iface: 'obviel_forms_error_area',
+            {iface: 'obvielFormsErrorArea',
              widget: this,
-             field_error_id: 'obviel-field-error-' + this.obj.prefixed_name,
-             global_error_id: 'obviel-global-error-' + this.obj.prefixed_name,
-             prefixed_name: this.obj.prefixed_name });
+             fieldErrorId: 'obviel-field-error-' + this.obj.prefixedName,
+             globalErrorId: 'obviel-global-error-' + this.obj.prefixedName,
+             prefixedName: this.obj.prefixedName });
     };
 
-    module.Widget.prototype.render_label = function() {
+    module.Widget.prototype.renderLabel = function() {
         var self = this;
         if (self.obj.title) {
-            var label_el = $('<label for="obviel-field-' +
-                            self.obj.prefixed_name + '">' +
+            var labelEl = $('<label for="obviel-field-' +
+                            self.obj.prefixedName + '">' +
                             entitize(self.obj.title) +
                             '</label>');
             if (self.obj.validate && self.obj.validate.required) {
-                label_el.addClass('obviel-required');
+                labelEl.addClass('obviel-required');
             }
-            self.el.prepend(label_el);
+            self.el.prepend(labelEl);
         } 
         
         // add in description
@@ -521,21 +521,21 @@ obviel.forms = {};
         }
     };
     
-    module.Widget.prototype.link = function(data, errors, global_errors) {
+    module.Widget.prototype.link = function(data, errors, globalErrors) {
         var self = this;
         var obj = self.obj;
 
         self.data = data;
         self.errors = errors;
-        self.global_errors = global_errors;
+        self.globalErrors = globalErrors;
         
         // prepare converters and back converters
-        var link_context = {};
-        var error_link_context = {};
-        var global_error_link_context = {};
+        var linkContext = {};
+        var errorLinkContext = {};
+        var globalErrorLinkContext = {};
         
-        var convert_wrapper = function(value, source, target) {
-            var result = self.handle_convert(value, source, target);
+        var convertWrapper = function(value, source, target) {
+            var result = self.handleConvert(value, source, target);
             if (result.error) {
                 $(errors).setField(obj.name, result.error);
                 // we cannot set the value later, so return undefined
@@ -549,19 +549,19 @@ obviel.forms = {};
             return result.value;
         };
         
-        var convert_back_wrapper = function(value, source, target) {
-            return self.handle_convert_back(value, source, target);
+        var convertBackWrapper = function(value, source, target) {
+            return self.handleConvertBack(value, source, target);
         };
         
-        link_context[obj.name] = {
+        linkContext[obj.name] = {
             twoWay: true,
-            name: 'obviel-field-' + obj.prefixed_name,
-            convert: convert_wrapper,
-            convertBack: convert_back_wrapper
+            name: 'obviel-field-' + obj.prefixedName,
+            convert: convertWrapper,
+            convertBack: convertBackWrapper
         };
-        error_link_context[obj.name] = {
+        errorLinkContext[obj.name] = {
             twoWay: true,
-            name: 'obviel-field-error-' + obj.prefixed_name,
+            name: 'obviel-field-error-' + obj.prefixedName,
             convertBack: function(value, source, target) {
                 $(target).text(value);
                 if (value) {
@@ -571,9 +571,9 @@ obviel.forms = {};
                 }
             }
         };
-        global_error_link_context[obj.name] = {
+        globalErrorLinkContext[obj.name] = {
             twoWay: true,
-            name: 'obviel-global-error-' + obj.prefixed_name,
+            name: 'obviel-global-error-' + obj.prefixedName,
             convertBack: function(value, source, target) {
                 $(target).text(value);
                 if (value) {
@@ -585,29 +585,29 @@ obviel.forms = {};
         };
         
         // set up actual links
-        var field_el = $('#obviel-field-' + obj.prefixed_name,
+        var fieldEl = $('#obviel-field-' + obj.prefixedName,
                          self.el);
-        field_el.link(data, link_context);
-        var error_el = $('#obviel-field-error-' + obj.prefixed_name,
+        fieldEl.link(data, linkContext);
+        var errorEl = $('#obviel-field-error-' + obj.prefixedName,
                          self.el);
-        error_el.link(errors, error_link_context);
-        var global_error_el = $('#obviel-global-error-' + obj.prefixed_name,
+        errorEl.link(errors, errorLinkContext);
+        var globalErrorEl = $('#obviel-global-error-' + obj.prefixedName,
                                 self.el);
-        global_error_el.link(global_errors,
-                             global_error_link_context);
+        globalErrorEl.link(globalErrors,
+                             globalErrorLinkContext);
         
         // if there is a value, update the widget
-        var linked_data = $(data);
-        var existing_value = data[obj.name];
-        if (existing_value !== undefined) {
-            linked_data.setField(obj.name, existing_value);
+        var linkedData = $(data);
+        var existingValue = data[obj.name];
+        if (existingValue !== undefined) {
+            linkedData.setField(obj.name, existingValue);
         } else {
             // no value, see whether we need to set the default value
             if (obj.defaultvalue !== undefined) {
-                linked_data.setField(obj.name, obj.defaultvalue);
+                linkedData.setField(obj.name, obj.defaultvalue);
             } else {
                 // no default, start at null
-                linked_data.setField(obj.name, null);
+                linkedData.setField(obj.name, null);
             }
         }
 
@@ -621,11 +621,11 @@ obviel.forms = {};
         return this.errors[this.obj.name];
     };
 
-    module.Widget.prototype.global_error = function() {
-        return this.global_errors[this.obj.name];
+    module.Widget.prototype.globalError = function() {
+        return this.globalErrors[this.obj.name];
     };
     
-    module.Widget.prototype.handle_convert = function(value, source, target) {
+    module.Widget.prototype.handleConvert = function(value, source, target) {
         var self = this;
         // try to convert original form value
         var result = self.convert(value, source, target);
@@ -654,17 +654,17 @@ obviel.forms = {};
         };
     };
 
-    module.Widget.prototype.handle_convert_back = function(value,
+    module.Widget.prototype.handleConvertBack = function(value,
                                                           source, target) {
         var self = this;
-        return self.convert_back(value, source, target);
+        return self.convertBack(value, source, target);
     };
     
     module.Widget.prototype.convert = function(value) {
         return {value: value};
     };
 
-    module.Widget.prototype.convert_back = function(value) {
+    module.Widget.prototype.convertBack = function(value) {
         return value;
     };
 
@@ -678,15 +678,15 @@ obviel.forms = {};
     module.Widget.prototype.change = function() {
         // notify that this widget changed, may need specific implementation
         // in subclasses but this is fairly generic
-        var field_el = $('#obviel-field-' + this.obj.prefixed_name);
-        field_el.trigger('change');
+        var fieldEl = $('#obviel-field-' + this.obj.prefixedName);
+        fieldEl.trigger('change');
     };
 
-    obviel.iface('composite_field', 'widget');
+    obviel.iface('compositeField', 'widget');
     module.CompositeWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'composite_field'
+            iface: 'compositeField'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -695,11 +695,11 @@ obviel.forms = {};
     module.CompositeWidget.prototype = new module.Widget();
 
     module.CompositeWidget.prototype.init = function() {
-        this.widget_views = [];
+        this.widgetViews = [];
     };
 
     module.CompositeWidget.prototype.cleanup = function() {
-        $.each(this.widget_views, function(index, view) {
+        $.each(this.widgetViews, function(index, view) {
             view.cleanup();
         });
     };
@@ -710,70 +710,70 @@ obviel.forms = {};
         var el = self.el;
         var obj = self.obj;
         
-        var field_el = $('<div class="obviel-field-input" ' +
-                            'id="obviel-field-' + obj.prefixed_name + '">');
+        var fieldEl = $('<div class="obviel-field-input" ' +
+                            'id="obviel-field-' + obj.prefixedName + '">');
         
-        $.each(obj.widgets, function(index, sub_widget) {
+        $.each(obj.widgets, function(index, subWidget) {
             if (obj.disabled) {
-                sub_widget.disabled = true;
+                subWidget.disabled = true;
             }
-            sub_widget.prefixed_name = (obj.prefixed_name +
-                                        '-' + sub_widget.name);
+            subWidget.prefixedName = (obj.prefixedName +
+                                        '-' + subWidget.name);
             
-            var sub_el = $('<div class="obviel-field obviel-subfield">');
-            sub_el.addClass('obviel-fieldname-' + sub_widget.name);
-            $.each(sub_widget.ifaces, function(i, value) {
-                sub_el.addClass(value);
+            var subEl = $('<div class="obviel-field obviel-subfield">');
+            subEl.addClass('obviel-fieldname-' + subWidget.name);
+            $.each(subWidget.ifaces, function(i, value) {
+                subEl.addClass(value);
             });
-            sub_el.render(sub_widget, function(el, view, widget, name) {
-                view.render_error_area();
+            subEl.render(subWidget, function(el, view, widget, name) {
+                view.renderErrorArea();
             });
-            self.widget_views.push(sub_el.view());
+            self.widgetViews.push(subEl.view());
             
-            field_el.append(sub_el);
+            fieldEl.append(subEl);
         });
-        el.append(field_el);
+        el.append(fieldEl);
     };
 
-    module.CompositeWidget.prototype.render_error_area = function() {
+    module.CompositeWidget.prototype.renderErrorArea = function() {
         // no error area
     };
 
     module.CompositeWidget.prototype.link = function(data, errors,
-                                                     global_errors) {
+                                                     globalErrors) {
         var self = this;
         var name = self.obj.name;
-        var sub_data = data[name];
-        var sub_errors = errors[name];
-        var sub_global_errors = global_errors[name];
-        if (sub_data === undefined) {
-            sub_data = data[name] = {};
+        var subData = data[name];
+        var subErrors = errors[name];
+        var subGlobalErrors = globalErrors[name];
+        if (subData === undefined) {
+            subData = data[name] = {};
         }
-        if (sub_errors === undefined) {
-            sub_errors = errors[name] = {};
+        if (subErrors === undefined) {
+            subErrors = errors[name] = {};
         }
-        if (sub_global_errors === undefined) {
-            sub_global_errors = global_errors[name] = {};
+        if (subGlobalErrors === undefined) {
+            subGlobalErrors = globalErrors[name] = {};
         }
-        $.each(self.widget_views, function(index, view) {
-            view.link(sub_data, sub_errors, sub_global_errors);
+        $.each(self.widgetViews, function(index, view) {
+            view.link(subData, subErrors, subGlobalErrors);
         });
     };
 
     module.CompositeWidget.prototype.change = function() {
         var self = this;
-        $.each(self.widget_views, function(index, view) {
+        $.each(self.widgetViews, function(index, view) {
             view.change();
         });
     };
     
     obviel.view(new module.CompositeWidget());
 
-    obviel.iface('group_field', 'widget');
+    obviel.iface('groupField', 'widget');
     module.GroupWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'group_field'
+            iface: 'groupField'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -782,20 +782,20 @@ obviel.forms = {};
     module.GroupWidget.prototype = new module.Widget();
 
     module.GroupWidget.prototype.init = function() {
-        this.widget_views = [];
+        this.widgetViews = [];
     };
 
     module.GroupWidget.prototype.cleanup = function() {
-        $.each(this.widget_views, function(index, view) {
+        $.each(this.widgetViews, function(index, view) {
             view.cleanup();
         });
     };
 
-    module.GroupWidget.prototype.render_label = function() {
+    module.GroupWidget.prototype.renderLabel = function() {
         // don't render label for group, fieldset already does this
     };
 
-    module.GroupWidget.prototype.render_error_area = function() {
+    module.GroupWidget.prototype.renderErrorArea = function() {
         // no error area
     };
     
@@ -803,61 +803,61 @@ obviel.forms = {};
         var self = this;
         var obj = self.obj;
         
-        var field_el = $(
+        var fieldEl = $(
             '<fieldset class="obviel-fieldset obviel-fieldset-' +
                 obj.name + '" ' +
-                'id="obviel-fieldset-' + obj.prefixed_name +
+                'id="obviel-fieldset-' + obj.prefixedName +
                 '"></fieldset>');
         if (obj.title) {
-            field_el.append(
+            fieldEl.append(
                 '<legend>' + entitize(obj.title) +
                     '</legend>');
         }
 
-        $.each(obj.widgets, function(index, sub_widget) {
+        $.each(obj.widgets, function(index, subWidget) {
             if (obj.disabled) {
-                sub_widget.disabled = true;
+                subWidget.disabled = true;
             }
-            sub_widget.prefixed_name = (obj.prefixed_name +
-                                        '-' + sub_widget.name);
+            subWidget.prefixedName = (obj.prefixedName +
+                                        '-' + subWidget.name);
             
-            var sub_el = $('<div class="obviel-field obviel-subfield">');
-            sub_el.addClass('obviel-fieldname-' + sub_widget.name);
-            $.each(sub_widget.ifaces, function(i, value) {
-                sub_el.addClass(value);
+            var subEl = $('<div class="obviel-field obviel-subfield">');
+            subEl.addClass('obviel-fieldname-' + subWidget.name);
+            $.each(subWidget.ifaces, function(i, value) {
+                subEl.addClass(value);
             });
-            if (sub_widget['class']) {
-                sub_el.addClass(sub_widget['class']);
+            if (subWidget['class']) {
+                subEl.addClass(subWidget['class']);
             }
-            sub_el.render(sub_widget, function(el, view, widget, name) {
-                view.render_label();
-                view.render_error_area();
+            subEl.render(subWidget, function(el, view, widget, name) {
+                view.renderLabel();
+                view.renderErrorArea();
             });
-            self.widget_views.push(sub_el.view());
+            self.widgetViews.push(subEl.view());
 
             // somewhat nasty, but required for a lot of style issues
             // (they need an element at the end they can rely on, and
             // the field-error div gets removed from view at times)
-            sub_el.append(
+            subEl.append(
                 '<div class="obviel-field-clear">&#xa0;</div>');
             
-            field_el.append(sub_el);
+            fieldEl.append(subEl);
         });
         
-        self.el.append(field_el);
+        self.el.append(fieldEl);
     };
     
     module.GroupWidget.prototype.link = function(data, errors,
-                                                 global_errors) {
+                                                 globalErrors) {
         var self = this;
-        $.each(self.widget_views, function(index, view) {
-            view.link(data, errors, global_errors);
+        $.each(self.widgetViews, function(index, view) {
+            view.link(data, errors, globalErrors);
         });
     };
 
     module.GroupWidget.prototype.change = function() {
         var self = this;
-        $.each(self.widget_views, function(index, view) {
+        $.each(self.widgetViews, function(index, view) {
             view.change();
         });
     };
@@ -865,11 +865,11 @@ obviel.forms = {};
     obviel.view(new module.GroupWidget());
 
     
-    obviel.iface('repeating_field', 'widget');
+    obviel.iface('repeatingField', 'widget');
     module.RepeatingWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'repeating_field'
+            iface: 'repeatingField'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -878,192 +878,192 @@ obviel.forms = {};
     module.RepeatingWidget.prototype = new module.Widget();
 
     module.RepeatingWidget.prototype.init = function() {
-        this.widget_views = [];
+        this.widgetViews = [];
     };
 
     module.RepeatingWidget.prototype.cleanup = function() {
-        $.each(this.widget_views, function(index, view) {
+        $.each(this.widgetViews, function(index, view) {
             view.cleanup();
         });
     };
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var field_el = $('<div class="obviel-field-input" ' +
-                            'id="obviel-field-' + self.obj.prefixed_name + '">');    
-        self.el.append(field_el);
+        var fieldEl = $('<div class="obviel-field-input" ' +
+                            'id="obviel-field-' + self.obj.prefixedName + '">');    
+        self.el.append(fieldEl);
     };
 
-    module.RepeatingWidget.prototype.render_error_area = function() {
+    module.RepeatingWidget.prototype.renderErrorArea = function() {
         // no error area
     };
 
     // receives data and error, the objects being linked
-    module.RepeatingWidget.prototype.add_item = function(data,
+    module.RepeatingWidget.prototype.addItem = function(data,
                                                          errors,
-                                                         global_errors,
+                                                         globalErrors,
                                                          index,
-                                                         remove_func) {
+                                                         removeFunc) {
         var self = this;
-        var repeat_el = $('<div class="obviel-field obviel-repeatfield">');
-        var composite_widget = {
-            ifaces: ['composite_field'],
+        var repeatEl = $('<div class="obviel-field obviel-repeatfield">');
+        var compositeWidget = {
+            ifaces: ['compositeField'],
             name: 'dummy',
             widgets: self.obj.widgets,
             disabled: self.obj.disabled,
-            prefixed_name: self.obj.prefixed_name + '-' + index.toString()
+            prefixedName: self.obj.prefixedName + '-' + index.toString()
         };
-        repeat_el.render(composite_widget);
-        var new_widget_view = repeat_el.view();
-        self.widget_views.push(new_widget_view);
-        var remove_button = $('<button class="obviel-repeat-remove-button" ' +
+        repeatEl.render(compositeWidget);
+        var newWidgetView = repeatEl.view();
+        self.widgetViews.push(newWidgetView);
+        var removeButton = $('<button class="obviel-repeat-remove-button" ' +
                               'type="button">-</button>');
-        remove_button.trigger('button-created.obviel');
-        remove_button.click(function() {
+        removeButton.trigger('button-created.obviel');
+        removeButton.click(function() {
             $(this).parent().remove();
-            remove_func();
+            removeFunc();
             // remove the widget view we added from the list too
-            var new_widget_views = [];
-            $.each(self.widget_views, function(index, widget_view) {
-                if (widget_view === new_widget_view) {
-                    widget_view.cleanup();
+            var newWidgetViews = [];
+            $.each(self.widgetViews, function(index, widgetView) {
+                if (widgetView === newWidgetView) {
+                    widgetView.cleanup();
                     return;
                 }
-                new_widget_views.push(widget_view);
+                newWidgetViews.push(widgetView);
             });
-            self.widget_views = new_widget_views;
+            self.widgetViews = newWidgetViews;
         });
-        repeat_el.append(remove_button);
+        repeatEl.append(removeButton);
 
-        var view = repeat_el.view();
+        var view = repeatEl.view();
         // XXX a hack to make sure the composite widget gets out
         // the data and errors in question
-        view.link({dummy: data}, {dummy: errors}, {dummy: global_errors});
-        return repeat_el;
+        view.link({dummy: data}, {dummy: errors}, {dummy: globalErrors});
+        return repeatEl;
     };
 
     // receives data and errors which contain the lists to manipulate
     // not the objects being linked
-    module.RepeatingWidget.prototype.remove_item = function(
-        data, errors, global_errors,
-        remove_item, remove_error_item, remove_global_error_item) {
+    module.RepeatingWidget.prototype.removeItem = function(
+        data, errors, globalErrors,
+        removeItem, removeErrorItem, removeGlobalErrorItem) {
         var self = this;
         var name = self.obj.name;
-        var old_items = data[name];
-        var old_error_items = errors[name];
-        var old_global_error_items = global_errors[name];
-        var new_items = [];
-        var new_error_items = [];
-        var new_global_error_items = [];
+        var oldItems = data[name];
+        var oldErrorItems = errors[name];
+        var oldGlobalErrorItems = globalErrors[name];
+        var newItems = [];
+        var newErrorItems = [];
+        var newGlobalErrorItems = [];
         
-        $.each(old_items, function(index, item) {
-            if (item === remove_item) {
+        $.each(oldItems, function(index, item) {
+            if (item === removeItem) {
                 return;
             }
-            new_items.push(item);
+            newItems.push(item);
         });
-        $.each(old_error_items, function(index, error_item) {
-            if (error_item === remove_error_item) {
+        $.each(oldErrorItems, function(index, errorItem) {
+            if (errorItem === removeErrorItem) {
                 return;
             }
-            new_error_items.push(error_item);
+            newErrorItems.push(errorItem);
         });
 
-        $.each(old_global_error_items, function(index, global_error_item) {
-            if (global_error_item === remove_global_error_item) {
+        $.each(oldGlobalErrorItems, function(index, globalErrorItem) {
+            if (globalErrorItem === removeGlobalErrorItem) {
                 return;
             }
-            new_global_error_items.push(global_error_item);
+            newGlobalErrorItems.push(globalErrorItem);
         });
-        data[name] = new_items;
-        errors[name] = new_error_items;
-        global_errors[name] = new_global_error_items;
+        data[name] = newItems;
+        errors[name] = newErrorItems;
+        globalErrors[name] = newGlobalErrorItems;
     };
     
     module.RepeatingWidget.prototype.link = function(data, errors,
-                                                     global_errors) {
+                                                     globalErrors) {
         var self = this;
 
         var obj = this.obj;
         
-        var field_el = $('#obviel-field-' + obj.prefixed_name, self.el);
-        var repeat_button = $('<button class="obviel-repeat-add-button" ' +
+        var fieldEl = $('#obviel-field-' + obj.prefixedName, self.el);
+        var repeatButton = $('<button class="obviel-repeat-add-button" ' +
                               'type="button">+</button>');
-        repeat_button.trigger('button-created.obviel');
-        field_el.append(repeat_button);
+        repeatButton.trigger('button-created.obviel');
+        fieldEl.append(repeatButton);
         
-        repeat_button.click(function() {
-            var new_data = {};
-            var new_errors = {};
-            var new_global_errors = {};
-            var new_index = field_el.data('obviel.repeat-index');
-            data[obj.name].push(new_data);
-            errors[obj.name].push(new_errors);
-            global_errors[obj.name].push(new_global_errors);
-            var remove_func = function() {
-                self.remove_item(data, errors, global_errors,
-                                 new_data, new_errors, new_global_errors);
+        repeatButton.click(function() {
+            var newData = {};
+            var newErrors = {};
+            var newGlobalErrors = {};
+            var newIndex = fieldEl.data('obviel.repeat-index');
+            data[obj.name].push(newData);
+            errors[obj.name].push(newErrors);
+            globalErrors[obj.name].push(newGlobalErrors);
+            var removeFunc = function() {
+                self.removeItem(data, errors, globalErrors,
+                                 newData, newErrors, newGlobalErrors);
             };
-            var new_el = self.add_item(new_data, new_errors, new_global_errors,
-                                       new_index, remove_func);
-            repeat_button.before(new_el);
-            field_el.data('obviel.repeat-index', new_index + 1);
+            var newEl = self.addItem(newData, newErrors, newGlobalErrors,
+                                       newIndex, removeFunc);
+            repeatButton.before(newEl);
+            fieldEl.data('obviel.repeat-index', newIndex + 1);
         });
 
         var items = data[obj.name];
-        var error_items = errors[obj.name];
-        var global_error_items = global_errors[obj.name];
+        var errorItems = errors[obj.name];
+        var globalErrorItems = globalErrors[obj.name];
         if (items === undefined) {
             items = data[obj.name] = [];
         }
-        if (error_items === undefined) {
-            error_items = errors[obj.name] = [];
+        if (errorItems === undefined) {
+            errorItems = errors[obj.name] = [];
         }
-        if (global_error_items === undefined) {
-            global_error_items = global_errors[obj.name] = [];
+        if (globalErrorItems === undefined) {
+            globalErrorItems = globalErrors[obj.name] = [];
         }
         
-        $.each(items, function(index, new_data) {
-            var new_errors = error_items[index];
-            if (new_errors === undefined) {
-                new_errors = {};
-                error_items.push(new_errors);
+        $.each(items, function(index, newData) {
+            var newErrors = errorItems[index];
+            if (newErrors === undefined) {
+                newErrors = {};
+                errorItems.push(newErrors);
             }
-            var new_global_errors = global_error_items[index];
-            if (new_global_errors === undefined) {
-                new_global_errors = {};
-                global_error_items.push(new_global_errors);
+            var newGlobalErrors = globalErrorItems[index];
+            if (newGlobalErrors === undefined) {
+                newGlobalErrors = {};
+                globalErrorItems.push(newGlobalErrors);
             }
-            var remove_func = function() {
-                self.remove_item(data, errors, global_errors,
-                                 new_data, new_errors);
+            var removeFunc = function() {
+                self.removeItem(data, errors, globalErrors,
+                                 newData, newErrors);
             };
-            var new_el = self.add_item(new_data, new_errors, new_global_errors,
-                                       index, remove_func);
-            repeat_button.before(new_el);
+            var newEl = self.addItem(newData, newErrors, newGlobalErrors,
+                                       index, removeFunc);
+            repeatButton.before(newEl);
         });
-        field_el.data('obviel.repeat-index', items.length);
+        fieldEl.data('obviel.repeat-index', items.length);
     };
 
     module.RepeatingWidget.prototype.change = function() {
         var self = this;
-        $.each(self.widget_views, function(index, view) {
+        $.each(self.widgetViews, function(index, view) {
             view.change();
         });
     };
     
     obviel.view(new module.RepeatingWidget());
     
-    obviel.iface('input_field', 'widget');
+    obviel.iface('inputField', 'widget');
     module.InputWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'input_field',
+            iface: 'inputField',
             obvt:
                 '<div class="obviel-field-input">' +
-                '<div data-el="input" type="text" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+                '<div data-el="input" type="text" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
                 '<div data-if="width" data-attr="style" data-value="width: {width}em;" />' +
-                '<div data-if="validate.max_length" data-attr="max_length" data-value="validate.max_length" />' +
+                '<div data-if="validate.maxLength" data-attr="maxLength" data-value="validate.maxLength" />' +
                 '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
                 '</div>' +
                 '</div>'
@@ -1081,11 +1081,11 @@ obviel.forms = {};
         return module.Widget.prototype.convert.call(this, value);
     };
 
-    module.InputWidget.prototype.convert_back = function(value) {
+    module.InputWidget.prototype.convertBack = function(value) {
         if (value === null) {
             return '';
         }
-        return module.Widget.prototype.convert_back.call(this, value);
+        return module.Widget.prototype.convertBack.call(this, value);
     };
 
     module.InputWidget.prototype.validate = function(value) {
@@ -1102,12 +1102,12 @@ obviel.forms = {};
         return undefined;
     };
     
-    obviel.iface('textline_field', 'input_field');
+    obviel.iface('textlineField', 'inputField');
 
     module.TextLineWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'textline_field'
+            iface: 'textlineField'
         };
         $.extend(d, settings);
         module.InputWidget.call(this, d);
@@ -1128,11 +1128,11 @@ obviel.forms = {};
             return undefined;
         }
         
-        if (obj.validate.min_length &&
-            value.length < obj.validate.min_length) {
+        if (obj.validate.minLength &&
+            value.length < obj.validate.minLength) {
             return _('value too short');
-        } else if (obj.validate.max_length &&
-                   value.length > obj.validate.max_length) {
+        } else if (obj.validate.maxLength &&
+                   value.length > obj.validate.maxLength) {
             return _('value too long');
         }
 
@@ -1157,15 +1157,15 @@ obviel.forms = {};
 
     // text field (textarea)
     // even though we subclass input field, we are going to
-    // reuse textline_field for most of its behavior
-    obviel.iface('text_field', 'input_field');
+    // reuse textlineField for most of its behavior
+    obviel.iface('textField', 'inputField');
     module.TextWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'text_field',
+            iface: 'textField',
             obvt:
             '<div class="obviel-field-input">' +
-            '<div data-el="textarea" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+            '<div data-el="textarea" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<div data-if="width" data-attr="style" data-value="width: {width}em;" />' +
             '<div data-if="height" data-attr="style" data-value="height: {height}em;" />' +
             '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
@@ -1179,11 +1179,11 @@ obviel.forms = {};
     module.TextWidget.prototype = new module.TextLineWidget();
     obviel.view(new module.TextWidget());
     
-    obviel.iface('integer_field', 'input_field');
+    obviel.iface('integerField', 'inputField');
     module.IntegerWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'integer_field'
+            iface: 'integerField'
         };
         $.extend(d, settings);
         module.InputWidget.call(this, d);
@@ -1205,8 +1205,8 @@ obviel.forms = {};
         return {value: asint};
     };
 
-    module.IntegerWidget.prototype.convert_back = function(value) {
-        value = module.InputWidget.prototype.convert_back.call(this, value);
+    module.IntegerWidget.prototype.convertBack = function(value) {
+        value = module.InputWidget.prototype.convertBack.call(this, value);
         return value.toString();
     };
  
@@ -1223,7 +1223,7 @@ obviel.forms = {};
             return undefined;
         }
 
-        if (!obj.validate.allow_negative && value < 0) {
+        if (!obj.validate.allowNegative && value < 0) {
             return _('negative numbers are not allowed');
         }
         if (obj.validate.length !== undefined) {
@@ -1241,16 +1241,16 @@ obviel.forms = {};
 
     obviel.view(new module.IntegerWidget());
     
-    var is_decimal = function(sep, value) {
+    var isDecimal = function(sep, value) {
         var reg = '^[-]?([0-9]*)([' + sep + ']([0-9]*))?$';
         return (new RegExp(reg)).exec(value);
     };
 
-    obviel.iface('float_field', 'input_field');
+    obviel.iface('floatField', 'inputField');
     module.FloatWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'float_field'
+            iface: 'floatField'
         };
         $.extend(d, settings);
         module.InputWidget.call(this, d);
@@ -1269,7 +1269,7 @@ obviel.forms = {};
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
 
-        if (!is_decimal(sep, value)) {
+        if (!isDecimal(sep, value)) {
             return {error: _("not a float")};
         }
         if (sep != '.') {
@@ -1282,11 +1282,11 @@ obviel.forms = {};
         return {value: asfloat};
     };
 
-    module.FloatWidget.prototype.convert_back = function(value) {
+    module.FloatWidget.prototype.convertBack = function(value) {
         var self = this;
         var obj = self.obj;
         
-        value = module.InputWidget.prototype.convert_back.call(this, value);
+        value = module.InputWidget.prototype.convertBack.call(this, value);
         value = value.toString();
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
@@ -1308,18 +1308,18 @@ obviel.forms = {};
             return undefined;
         }
 
-        if (!obj.validate.allow_negative && value < 0) {
+        if (!obj.validate.allowNegative && value < 0) {
             return _('negative numbers are not allowed');
         }
         return undefined;
     };
     obviel.view(new module.FloatWidget());
 
-    obviel.iface('decimal_field', 'input_field');
+    obviel.iface('decimalField', 'inputField');
     module.DecimalWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'decimal_field'
+            iface: 'decimalField'
         };
         $.extend(d, settings);
         module.InputWidget.call(this, d);
@@ -1338,7 +1338,7 @@ obviel.forms = {};
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
 
-        if (!is_decimal(sep, value)) {
+        if (!isDecimal(sep, value)) {
             return {error: _("not a decimal")};
         }
         
@@ -1356,10 +1356,10 @@ obviel.forms = {};
         return {value: value};
     };
 
-    module.DecimalWidget.prototype.convert_back = function(value) {
+    module.DecimalWidget.prototype.convertBack = function(value) {
         var self = this;
         var obj = self.obj;
-        value = module.InputWidget.prototype.convert_back.call(this, value);
+        value = module.InputWidget.prototype.convertBack.call(this, value);
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
         if (sep != '.') {
@@ -1380,71 +1380,71 @@ obviel.forms = {};
             return undefined;
         }
 
-        if (!obj.validate.allow_negative && value.charAt(0) == '-') {
+        if (!obj.validate.allowNegative && value.charAt(0) == '-') {
             return _('negative numbers are not allowed');
         }
         
         var parts = value.split('.');
-        var before_sep = parts[0];
-        var after_sep;
+        var beforeSep = parts[0];
+        var afterSep;
         if (parts.length > 1) {
-            after_sep = parts[1];
+            afterSep = parts[1];
         } else {
-            after_sep = '';
+            afterSep = '';
         }
 
-        if (before_sep.charAt(0) == '-') {
-            before_sep = before_sep.slice(1);
+        if (beforeSep.charAt(0) == '-') {
+            beforeSep = beforeSep.slice(1);
         }
 
-        var min_before_sep = obj.validate.min_before_sep;
+        var minBeforeSep = obj.validate.minBeforeSep;
         
-        if (min_before_sep !== undefined &&
-            before_sep.length < min_before_sep) {
+        if (minBeforeSep !== undefined &&
+            beforeSep.length < minBeforeSep) {
             return Gettext.strargs(
                 _('decimal must contain at least %1 digits before the decimal mark'),
-                [min_before_sep]);
+                [minBeforeSep]);
         }
-        var max_before_sep = obj.validate.max_before_sep;
-        if (max_before_sep !== undefined &&
-            before_sep.length > max_before_sep) {
+        var maxBeforeSep = obj.validate.maxBeforeSep;
+        if (maxBeforeSep !== undefined &&
+            beforeSep.length > maxBeforeSep) {
             return Gettext.strargs(
                 _('decimal may not contain more than %1 digits before the decimal mark'),
-                [max_before_sep]);
+                [maxBeforeSep]);
         }
 
-        var min_after_sep = obj.validate.min_after_sep;
-        if (min_after_sep !== undefined &&
-            after_sep.length < min_after_sep) {
+        var minAfterSep = obj.validate.minAfterSep;
+        if (minAfterSep !== undefined &&
+            afterSep.length < minAfterSep) {
             return Gettext.strargs(
                 _('decimal must contain at least %1 digits after the decimal mark'),
-                [min_after_sep]);
+                [minAfterSep]);
         }
 
-        var max_after_sep = obj.validate.max_after_sep;
-        if (max_after_sep !== undefined &&
-            after_sep.length > max_after_sep) {
+        var maxAfterSep = obj.validate.maxAfterSep;
+        if (maxAfterSep !== undefined &&
+            afterSep.length > maxAfterSep) {
             return Gettext.strargs(
                 _('decimal may not contain more than %1 digits after the decimal mark'),
-                [max_after_sep]);
+                [maxAfterSep]);
         }
         return undefined;
     };
     
     obviel.view(new module.DecimalWidget());
 
-    obviel.iface('boolean_field', 'widget');
+    obviel.iface('booleanField', 'widget');
 
     module.BooleanWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'boolean_field',
+            iface: 'booleanField',
             obvt:
-            '<div class="obviel-field-input"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="label_before_input">{label}</div></div>' +
-            '<div data-el="input" type="checkbox" name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+            '<div class="obviel-field-input"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="labelBeforeInput">{label}</div></div>' +
+            '<div data-el="input" type="checkbox" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +    
             '</div>' +
-            '<div data-unwrap="" data-if="label"><div unwrap="" data-if="!label_before_input">{label}</div></div>' +
+            '<div data-unwrap="" data-if="label"><div unwrap="" data-if="!labelBeforeInput">{label}</div></div>' +
             '</div>'
         };
         $.extend(d, settings);
@@ -1457,7 +1457,7 @@ obviel.forms = {};
         return {value:$(source).is(':checked')};
     };
 
-    module.BooleanWidget.prototype.convert_back = function(
+    module.BooleanWidget.prototype.convertBack = function(
         value, source, target) {
         value = value || false;
         $(target).attr('checked', value);
@@ -1465,20 +1465,20 @@ obviel.forms = {};
     
     obviel.view(new module.BooleanWidget());
 
-    obviel.iface('choice_field', 'widget');
+    obviel.iface('choiceField', 'widget');
     
     module.ChoiceWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'choice_field',
-            // XXX htmltag was used in jsontemplate for empty_option and label
+            iface: 'choiceField',
+            // XXX htmltag was used in jsontemplate for emptyOption and label
             // and value rendering
             obvt:
             '<div class="obviel-field-input">' +
-            '<select name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}">' +
+            '<select name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<div data-if="width" data-attr="style" data-name="style" data-value="width: {width}em;" />' +
             '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
-            '<option data-if="empty_option" value="">{empty_option}</option>' +
+            '<option data-if="emptyOption" value="">{emptyOption}</option>' +
             '<option data-each="choices" value="{value}">{label}</option>' +
             '</select>'
         };
@@ -1491,7 +1491,7 @@ obviel.forms = {};
     module.ChoiceWidget.prototype.render = function(el, widget, name) {
         widget.validate = widget.validate || {};
         if (!widget.validate.required &&
-            (widget.empty_option === undefined) &&
+            (widget.emptyOption === undefined) &&
             (widget.choices.length && widget.choices[0].value)) {
             $('select', el).prepend('<option></option>');
         }
@@ -1504,7 +1504,7 @@ obviel.forms = {};
         return {value: value};
     };
 
-    module.ChoiceWidget.prototype.convert_back = function(value) {
+    module.ChoiceWidget.prototype.convertBack = function(value) {
         if (value === null) {
             return '';
         }
@@ -1516,10 +1516,10 @@ obviel.forms = {};
     module.DisplayWidget = function (settings) {
         settings = settings || {};
         var d = {
-            iface: 'display_field',
+            iface: 'displayField',
             obvt:
                 '<div class="obviel-field-input">' +
-                '<span name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}"> ' +
+                '<span name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}"> ' +
                 '</span>' +
                 '</div>'
         };
@@ -1533,13 +1533,13 @@ obviel.forms = {};
         return value;
     };
 
-    module.DisplayWidget.prototype.convert_back = function(value) {
+    module.DisplayWidget.prototype.convertBack = function(value) {
         var self = this;
-        var value_to_label = self.obj.value_to_label || {};
-        var display_value = (value_to_label[value] || value ||
-                            self.obj.null_value);
-        $('#obviel-field-' + self.obj.prefixed_name,  self.el).html(
-                display_value
+        var valueToLabel = self.obj.valueToLabel || {};
+        var displayValue = (valueToLabel[value] || value ||
+                            self.obj.nullValue);
+        $('#obviel-field-' + self.obj.prefixedName,  self.el).html(
+                displayValue
         );
     };
 
@@ -1548,9 +1548,9 @@ obviel.forms = {};
     module.HiddenWidget = function (settings) {
         settings = settings || {};
         var d = {
-            iface: 'hidden_field',
+            iface: 'hiddenField',
             obvt:
-            '<input type="hidden" name="obviel-field-{prefixed-name} data-id="obviel-field-{prefixed_name}"/>'
+            '<input type="hidden" name="obviel-field-{prefixed-name} data-id="obviel-field-{prefixedName}"/>'
         };
         $.extend(d, settings);
         module.DisplayWidget.call(this, d);
@@ -1558,9 +1558,9 @@ obviel.forms = {};
 
     module.HiddenWidget.prototype = new module.DisplayWidget();
 
-    module.HiddenWidget.prototype.convert_back = function (value) {
+    module.HiddenWidget.prototype.convertBack = function (value) {
         var self = this;
-        $('#obviel-field-' + self.obj.prefixed_name).val(value);
+        $('#obviel-field-' + self.obj.prefixedName).val(value);
     };
 
     obviel.view(new module.HiddenWidget());

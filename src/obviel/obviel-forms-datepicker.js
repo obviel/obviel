@@ -1,16 +1,16 @@
-/*global obviel: true, jQuery: true, template_url: true
-  alert: true , browser: true, document: true, app_url: true,
+/*global obviel: true, jQuery: true, templateUrl: true
+  alert: true , browser: true, document: true, appUrl: true,
   window: true
 */
 
 (function($, obviel, module) {
     var _ = obviel.i18n.translate('obviel-forms');
     
-    obviel.iface('datepicker_field', 'textline_field');
+    obviel.iface('datepickerField', 'textlineField');
     module.DatePickerWidget = function(settings) {
         settings = settings || {};
         var d = {
-            iface: 'datepicker_field'
+            iface: 'datepickerField'
         };
         $.extend(d, settings);
         module.TextLineWidget.call(this, d);
@@ -18,9 +18,9 @@
 
     module.DatePickerWidget.prototype = new module.TextLineWidget();
 
-    var ensure_options = function(widget) {
-        var options = widget.datepicker_options || {};
-        widget.datepicker_options = options;
+    var ensureOptions = function(widget) {
+        var options = widget.datepickerOptions || {};
+        widget.datepickerOptions = options;
         // XXX use $.extend?
         options.dateFormat = options.dateFormat || 'mm/dd/yy';
         options.showOn = options.showOn || 'button';
@@ -30,11 +30,11 @@
     module.DatePickerWidget.prototype.render = function() {
         module.TextLineWidget.prototype.render.call(this);
         
-        var input_el = $('#obviel-field-' + this.obj.prefixed_name, this.el);
+        var inputEl = $('#obviel-field-' + this.obj.prefixedName, this.el);
         
-        ensure_options(this.obj);
+        ensureOptions(this.obj);
         if (!this.obj.disabled) {
-            input_el.datepicker(this.obj.datepicker_options);
+            inputEl.datepicker(this.obj.datepickerOptions);
         }
     };
 
@@ -45,12 +45,12 @@
         var result = module.TextLineWidget.prototype.convert.call(
             this, value);
 
-        ensure_options(this.obj);
+        ensureOptions(this.obj);
 
         var date = null;
         try {
             date = $.datepicker.parseDate(
-                this.obj.datepicker_options.dateFormat,
+                this.obj.datepickerOptions.dateFormat,
                 result.value);
         } catch(e) {
             return {error: _('invalid date')};
@@ -58,16 +58,16 @@
         return {value: $.datepicker.formatDate('yy-mm-dd', date)};
     };
 
-    module.DatePickerWidget.prototype.convert_back = function(value) {
-        value = module.TextLineWidget.prototype.convert_back.call(
+    module.DatePickerWidget.prototype.convertBack = function(value) {
+        value = module.TextLineWidget.prototype.convertBack.call(
             this, value);
         if (value === '') {
             return '';
         }
-        ensure_options(this.obj);
+        ensureOptions(this.obj);
         
         var date = $.datepicker.parseDate('yy-mm-dd', value);
-        return $.datepicker.formatDate(this.obj.datepicker_options.dateFormat,
+        return $.datepicker.formatDate(this.obj.datepickerOptions.dateFormat,
                                        date);
     };
     

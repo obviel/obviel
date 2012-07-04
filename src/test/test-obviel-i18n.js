@@ -7,68 +7,68 @@ module("i18n", {
         
     },
     teardown: function() {
-        obviel.i18n.clear_translations();
-        obviel.i18n.clear_locale();
+        obviel.i18n.clearTranslations();
+        obviel.i18n.clearLocale();
     }
 });
 
 var i18n = obviel.i18n;
 
-var setup_translations = function() {
-    var en_US = i18n.empty_translation_source();
-    var fr_FR = i18n.translation_source({'Hello world!':
+var setupTranslations = function() {
+    var en_US = i18n.emptyTranslationSource();
+    var fr_FR = i18n.translationSource({'Hello world!':
                                          'Bonjour monde!'});
-    var nl_NL = i18n.translation_source({'Hello world!':
-                                         'Hallo wereld!'});
-    i18n.register_translation('en_US', en_US, 'i18ntest');
-    i18n.register_translation('fr_FR', fr_FR, 'i18ntest');
-    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
+    var nl_NL = i18n.translationSource({'Hello world!':
+                                        'Hallo wereld!'});
+    i18n.registerTranslation('en_US', en_US, 'i18ntest');
+    i18n.registerTranslation('fr_FR', fr_FR, 'i18ntest');
+    i18n.registerTranslation('nl_NL', nl_NL, 'i18ntest');
 };
 
-var setup_translations_default_domain = function() {
-    var en_US = i18n.empty_translation_source();
-    var fr_FR = i18n.translation_source({'Hello world!':
+var setupTranslationsDefaultDomain = function() {
+    var en_US = i18n.emptyTranslationSource();
+    var fr_FR = i18n.translationSource({'Hello world!':
                                          'Bonjour monde!'});
-    var nl_NL = i18n.translation_source({'Hello world!':
+    var nl_NL = i18n.translationSource({'Hello world!':
                                          'Hallo wereld!'});
-    i18n.register_translation('en_US', en_US);
-    i18n.register_translation('fr_FR', fr_FR);
-    i18n.register_translation('nl_NL', nl_NL);
+    i18n.registerTranslation('en_US', en_US);
+    i18n.registerTranslation('fr_FR', fr_FR);
+    i18n.registerTranslation('nl_NL', nl_NL);
 };
 
-var setup_translations_multi_domains = function() {
-    var en_US = i18n.empty_translation_source();
-    var fr_FR = i18n.translation_source({'Hello world!':
+var setupTranslationsMultiDomains = function() {
+    var en_US = i18n.emptyTranslationSource();
+    var fr_FR = i18n.translationSource({'Hello world!':
                                          'Bonjour monde!'});
-    var nl_NL = i18n.translation_source({'Hello world!':
+    var nl_NL = i18n.translationSource({'Hello world!':
                                          'Hallo wereld!'});
-    i18n.register_translation('en_US', en_US, 'i18ntest');
-    i18n.register_translation('fr_FR', fr_FR, 'i18ntest');
-    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
+    i18n.registerTranslation('en_US', en_US, 'i18ntest');
+    i18n.registerTranslation('fr_FR', fr_FR, 'i18ntest');
+    i18n.registerTranslation('nl_NL', nl_NL, 'i18ntest');
 
     // now register second domain called 'other'
-    en_US = i18n.empty_translation_source();
-    fr_FR = i18n.translation_source({'Bye world!':
+    en_US = i18n.emptyTranslationSource();
+    fr_FR = i18n.translationSource({'Bye world!':
                                      'Au revoir monde!'});
-    nl_NL = i18n.translation_source({'Bye world!':
+    nl_NL = i18n.translationSource({'Bye world!':
                                      'Tot ziens wereld!'});
-    i18n.register_translation('en_US', en_US, 'other');
-    i18n.register_translation('fr_FR', fr_FR, 'other');
-    i18n.register_translation('nl_NL', nl_NL, 'other');
+    i18n.registerTranslation('en_US', en_US, 'other');
+    i18n.registerTranslation('fr_FR', fr_FR, 'other');
+    i18n.registerTranslation('nl_NL', nl_NL, 'other');
 };
 
-var setup_plural_translations = function() {
-    var en_US = i18n.empty_translation_source();
-    var nl_NL = i18n.translation_source({'1 elephant.':
+var setupPluralTranslations = function() {
+    var en_US = i18n.emptyTranslationSource();
+    var nl_NL = i18n.translationSource({'1 elephant.':
                                          ['{count} elephants.',
                                           '1 olifant.',
                                           '{count} olifanten.']});
-    i18n.register_translation('en_US', en_US, 'i18ntest');
-    i18n.register_translation('nl_NL', nl_NL, 'i18ntest');
+    i18n.registerTranslation('en_US', en_US, 'i18ntest');
+    i18n.registerTranslation('nl_NL', nl_NL, 'i18ntest');
 };
 
 test('no locale set', function() {
-    setup_translations();
+    setupTranslations();
 
     var _ = i18n.translate('i18ntest');
     
@@ -76,9 +76,9 @@ test('no locale set', function() {
 });
 
 test('non-translating en_US locale', function() {
-    setup_translations();
+    setupTranslations();
 
-    i18n.set_locale('en_US');
+    i18n.setLocale('en_US');
 
     var _ = i18n.translate('i18ntest');
     
@@ -86,9 +86,9 @@ test('non-translating en_US locale', function() {
 });
 
 test('fr_FR locale', function() {
-    setup_translations();
+    setupTranslations();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate('i18ntest');
     
@@ -96,78 +96,78 @@ test('fr_FR locale', function() {
 });
 
 test('switch locale from not set to fr_FR', function() {
-    setup_translations();
+    setupTranslations();
     
     var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Hello world!');
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
     
     equal(_('Hello world!'), 'Bonjour monde!');
 });
 
 test('switch locale from fr_FR to not set', function() {
-    setup_translations();
+    setupTranslations();
     
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
     
     var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
-    i18n.clear_locale();
+    i18n.clearLocale();
     
     equal(_('Hello world!'), 'Hello world!');
 });
 
 test('switch locale from non-translating en_US to translating fr_FR', function() {
-    setup_translations();
+    setupTranslations();
 
-    i18n.set_locale('en_US');
+    i18n.setLocale('en_US');
 
     var _ = i18n.translate('i18ntest');
     
     equal(_('Hello world!'), 'Hello world!');
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
     
     equal(_('Hello world!'), 'Bonjour monde!');
 });
 
 
-test('switch locale from translating fr_FR to non-translating en_EN', function() {
-    setup_translations();
+test('switch locale from translating fr_FR to non-translating enEN', function() {
+    setupTranslations();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
-    i18n.set_locale('en_US');
+    i18n.setLocale('en_US');
     
     equal(_('Hello world!'), 'Hello world!');
 });
 
 test('switch locale from translating fr_FR to translating nl_NL', function() {
-    setup_translations();
+    setupTranslations();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate('i18ntest');
 
     equal(_('Hello world!'), 'Bonjour monde!');
 
-    i18n.set_locale('nl_NL');
+    i18n.setLocale('nl_NL');
     
     equal(_('Hello world!'), 'Hallo wereld!');
 });
 
 test('switch domain, non-translating en_US locale', function() {
-    setup_translations_multi_domains();
+    setupTranslationsMultiDomains();
 
-    i18n.set_locale('en_US');
+    i18n.setLocale('en_US');
     
     var _ = i18n.translate('i18ntest');
     
@@ -182,10 +182,10 @@ test('switch domain, non-translating en_US locale', function() {
     equal(_('Bye world!'), 'Bye world!');
 });
 
-test('switch domain, translating fr_Fr locale', function() {
-    setup_translations_multi_domains();
+test('switch domain, translating frFr locale', function() {
+    setupTranslationsMultiDomains();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate('i18ntest');
     
@@ -201,9 +201,9 @@ test('switch domain, translating fr_Fr locale', function() {
 });
 
 test("default domain", function() {
-    setup_translations_default_domain();
+    setupTranslationsDefaultDomain();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate('default');
     
@@ -211,46 +211,46 @@ test("default domain", function() {
 });
 
 test("default domain no parameters", function() {
-    setup_translations_default_domain();
+    setupTranslationsDefaultDomain();
 
-    i18n.set_locale('fr_FR');
+    i18n.setLocale('fr_FR');
 
     var _ = i18n.translate();
     
     equal(_("Hello world!"), 'Bonjour monde!');
 });
 
-test('get_locale without locale set', function() {
-    equal(i18n.get_locale(), null);
+test('getLocale without locale set', function() {
+    equal(i18n.getLocale(), null);
 });
 
-test('get_locale with locale set', function() {
-    setup_translations_multi_domains();
+test('getLocale with locale set', function() {
+    setupTranslationsMultiDomains();
 
-    i18n.set_locale('fr_FR', 'i18ntest');
+    i18n.setLocale('fr_FR', 'i18ntest');
 
-    equal(i18n.get_locale(), 'fr_FR');
+    equal(i18n.getLocale(), 'fr_FR');
 });
 
-test('get_locale after locale change', function() {
-    setup_translations_multi_domains();
+test('getLocale after locale change', function() {
+    setupTranslationsMultiDomains();
 
-    i18n.set_locale('fr_FR');
-    i18n.set_locale('nl_NL');
+    i18n.setLocale('fr_FR');
+    i18n.setLocale('nl_NL');
     
-    equal(i18n.get_locale(), 'nl_NL');
+    equal(i18n.getLocale(), 'nl_NL');
 });
 
 test('use unknown locale', function() {
-    setup_translations();
+    setupTranslations();
 
     raises(function() {
-        i18n.set_locale('unknown');
+        i18n.setLocale('unknown');
     }, i18n.I18nError);
 });
 
 test('set unknown domain', function() {
-    setup_translations();
+    setupTranslations();
 
     var translate = i18n.translate('unknown');
     translate("foo");
@@ -258,7 +258,7 @@ test('set unknown domain', function() {
 });
 
 test('pluralize without translation', function() {
-    setup_plural_translations();
+    setupPluralTranslations();
 
     var ngettext = i18n.pluralize('i18ntest');
 
@@ -270,11 +270,11 @@ test('pluralize without translation', function() {
 
 
 test('pluralize with translation', function() {
-    setup_plural_translations();
+    setupPluralTranslations();
 
     var ngettext = i18n.pluralize('i18ntest');
 
-    i18n.set_locale('nl_NL');
+    i18n.setLocale('nl_NL');
     
     equal(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 1),
                          {count: 1}), '1 olifant.');
@@ -283,8 +283,8 @@ test('pluralize with translation', function() {
 });
 
 test('complex pluralization rule', function() {
-    var en_US = i18n.empty_translation_source();
-    var pl_PL = i18n.translation_source({
+    var en_US = i18n.emptyTranslationSource();
+    var pl_PL = i18n.translationSource({
         '': {
             'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
         },
@@ -293,12 +293,12 @@ test('complex pluralization rule', function() {
          '1 plik.',
          '{count} pliki.',
          "{count} pliko'w."]});
-    i18n.register_translation('en_US', en_US, 'i18ntest');
-    i18n.register_translation('pl_PL', pl_PL, 'i18ntest');
+    i18n.registerTranslation('en_US', en_US, 'i18ntest');
+    i18n.registerTranslation('pl_PL', pl_PL, 'i18ntest');
 
     var ngettext = i18n.pluralize('i18ntest');
     
-    i18n.set_locale('pl_PL');
+    i18n.setLocale('pl_PL');
     equal(i18n.variables(ngettext('1 file.', '{count} files.', 1), {count: 1}),
           '1 plik.');
     equal(i18n.variables(ngettext('1 file.', '{count} files.', 2), {count: 2}),
@@ -317,7 +317,7 @@ test('complex pluralization rule', function() {
 
 asyncTest("load i18n", function() {
     i18n.load().done(function() {
-        i18n.set_locale('nl_NL').done(function() {
+        i18n.setLocale('nl_NL').done(function() {
             var _ = i18n.translate('i18ntest');
             equal(_('greetings human!'), 'gegroet mens!');
             start();

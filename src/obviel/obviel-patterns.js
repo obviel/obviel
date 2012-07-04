@@ -1,5 +1,5 @@
-/*global jQuery:true, template_url:true,
-  alert:true , browser:true, document:true, app_url:true,
+/*global jQuery:true, templateUrl:true,
+  alert:true , browser:true, document:true, appUrl:true,
   window:true
 */
 (function($, obviel) {

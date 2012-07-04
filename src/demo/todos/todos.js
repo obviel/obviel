@@ -20,7 +20,7 @@
     };
     
     // create a special stats model from the todos
-    var get_stats = function(todos) {
+    var getStats = function(todos) {
         var remaining = 0;
         var done = 0;
         var amount = 0;
@@ -39,17 +39,17 @@
     // a view for the whole todos application
     obviel.view({
         iface: 'todos',
-        obvt_script: 'obvt-todos',
-        object_events: {
+        obvtScript: 'obvt-todos',
+        objectEvents: {
             update: 'rerender',
-            update_stats: 'update_stats'
+            updateStats: 'updateStats'
         },
         render: function() {
             $('#new-todo').focus();
-            this.update_stats();
+            this.updateStats();
         },
-        update_stats: function() {
-            var stats = get_stats(this.obj);
+        updateStats: function() {
+            var stats = getStats(this.obj);
             if (stats.amount) {
                 $('#toggle-all').get(0).checked = !stats.remaining;
                 $('footer', this.el).render(stats);
@@ -58,7 +58,7 @@
                 $('footer', this.el).hide();
             }
         },
-        create_on_enter: function(ev) {
+        createOnEnter: function(ev) {
             if (ev.keyCode !== KEYCODE) {
                 return;
             }
@@ -69,7 +69,7 @@
             this.obj.items.push({iface: 'todo', done: false, title: value});
             $(this.obj).trigger('update');
         },
-        toggle_all: function() {
+        toggleAll: function() {
             var done = $('#toggle-all').get(0).checked;
             $.each(this.obj.items, function(index, item) {
                 item.done = done;
@@ -81,15 +81,15 @@
     // a view for the stats
     obviel.view({
         iface: 'stats',
-        obvt_script: 'obvt-todo-stats',
-        clear_completed: function() {
-            var new_items = [];
+        obvtScript: 'obvt-todo-stats',
+        clearCompleted: function() {
+            var newItems = [];
             $.each(todos.items, function(index, item) {
                 if (!item.done) {
-                    new_items.push(item);
+                    newItems.push(item);
                 }
             });
-            todos.items = new_items;
+            todos.items = newItems;
             $(todos).trigger('update');
         }
     });
@@ -97,8 +97,8 @@
     // a view for an individual todo item, not editable
     obviel.view({
         iface: 'todo',
-        obvt_script: 'obvt-todo',
-        object_events: {
+        obvtScript: 'obvt-todo',
+        objectEvents: {
             update: 'rerender'
         },
         render: function() {
@@ -115,7 +115,7 @@
         toggle: function() {
             this.obj.done = !this.obj.done;
             $(this.obj).trigger('update');
-            $(todos).trigger('update_stats');
+            $(todos).trigger('updateStats');
         },
         clear: function() {
             clear(this.obj);
@@ -126,14 +126,14 @@
     // a view for an editable todo item
     obviel.view({
         iface: 'todo-editing',
-        obvt_script: 'obvt-todo-editing',
-        object_events: {
+        obvtScript: 'obvt-todo-editing',
+        objectEvents: {
             update: 'rerender'
         },
         render: function() {
             $('input.edit', this.el).focus();
         },
-        update_on_enter: function(ev) {
+        updateOnEnter: function(ev) {
             if (ev.keyCode === KEYCODE) {
                 this.close();
             }
@@ -155,7 +155,7 @@
     // when the document is ready, load up languages & render the app model
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
-            obviel.i18n.set_locale('nl_NL').done(function() {
+            obviel.i18n.setLocale('nl_NL').done(function() {
                 $('#app').render(todos);
             });
         });

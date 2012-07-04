@@ -7,21 +7,21 @@ module("Template", {
         $('#jsview-area').html('<div id="viewdiv"></div><div id="normalize"></div>');
     },
     teardown: function() {
-        obviel.template.clear_formatters();
-        obviel.template.clear_funcs();
-        obviel.clear_registry();
-        obviel.template.set_default_view_name('default');
+        obviel.template.clearFormatters();
+        obviel.template.clearFuncs();
+        obviel.clearRegistry();
+        obviel.template.setDefaultViewName('default');
     }
 });
 
 var obtemp = obviel.template;
 
-var normalize_html = function(html) {
+var normalizeHtml = function(html) {
     return $('#normalize').html(html).html();
 };
 
-var html_equal = function(a, b) {
-    equal(a, normalize_html(b));
+var htmlEqual = function(a, b) {
+    equal(a, normalizeHtml(b));
 };
 
 var Translations = function() {
@@ -35,7 +35,7 @@ var Translations = function() {
         'Hello {qualifier} {who}!': '{qualifier} {who}, hallo!',
         'Hello!{break}Bye!': 'Hallo!{break}Tot ziens!',
         'explicit': 'explicit translated',
-        'explicit_who': 'grote {who}',
+        'explicitWho': 'grote {who}',
         // note that the string in the HTML has whitespace in it, but not here
         'This has whitespace.': 'Dit heeft witruimte.'
     };
@@ -49,19 +49,19 @@ Translations.prototype.gettext = function(msgid) {
     return result;
 };
 
-var plural_translations = {
+var pluralTranslations = {
     '1 cow': {one: '1 koe', more: '{count} koeien'},
     '{count} cow': {one: '{count} koe', more: '{count} koeien'}
 };
 
-var get_plural_translation = function(singular_msgid, plural_msgid,
+var getPluralTranslation = function(singularMsgid, pluralMsgid,
                                       count) {
-    var translation = plural_translations[singular_msgid];
+    var translation = pluralTranslations[singularMsgid];
     if (translation === undefined) {
         if (count === 1) {
-            return singular_msgid;
+            return singularMsgid;
         } else {
-            return plural_msgid;
+            return pluralMsgid;
         }
     }
 
@@ -76,111 +76,111 @@ var render = function(text, obj) {
     var template = new obtemp.Template(text);
     var el = $("<div></div>"); // if you want to see it, use $('#viewdiv')
     var translations = new Translations();
-    var get_translation = function(msgid) {
+    var getTranslation = function(msgid) {
         return translations.gettext(msgid);
     };
     
-    template.render(el, obj, {get_translation: get_translation,
-                              get_plural_translation: get_plural_translation});
+    template.render(el, obj, {getTranslation: getTranslation,
+                              getPluralTranslation: getPluralTranslation});
     
     return el.html();
 };
 
 test('template with text, without variable', function() {
-    html_equal(render('<p>Hello world!</p>', {}),
+    htmlEqual(render('<p>Hello world!</p>', {}),
                '<p>Hello world!</p>'); 
 });
 
 test('render template twice on same element', function() {
-    html_equal(render('<p>Hello world!</p>', {}),
+    htmlEqual(render('<p>Hello world!</p>', {}),
                '<p>Hello world!</p>');
-    html_equal(render('<p>Bye world!</p>', {}),
+    htmlEqual(render('<p>Bye world!</p>', {}),
                '<p>Bye world!</p>');
 });
 
 test("empty element", function() {
-    html_equal(render('<p></p>', {}),
+    htmlEqual(render('<p></p>', {}),
                '<p></p>');
 });
 
 test("just text", function() {
-    html_equal(render("Hello world!", {}),
+    htmlEqual(render("Hello world!", {}),
                'Hello world!');
 });
 
 test("text with a variable", function() {
-    html_equal(render("Hello {who}!", {who: "world"}),
+    htmlEqual(render("Hello {who}!", {who: "world"}),
                'Hello world!');
 });
 
 
 test('text with sub element', function() {
-    html_equal(render('<p><em>Sub</em></p>', {}),
+    htmlEqual(render('<p><em>Sub</em></p>', {}),
                '<p><em>Sub</em></p>');
 });
 
 test("text with element with variable", function() {
-    html_equal(render("Hello <em>{who}</em>!", {who: "world"}),
+    htmlEqual(render("Hello <em>{who}</em>!", {who: "world"}),
                'Hello <em>world</em>!');
 });
 
 test('element with empty element', function() {
-    html_equal(render('<p><em></em></p>', {}),
+    htmlEqual(render('<p><em></em></p>', {}),
                '<p><em></em></p>');
 });
 
 test('element with variable', function() {
-    html_equal(render('<p>{who}</p>', {who: 'world'}),
+    htmlEqual(render('<p>{who}</p>', {who: 'world'}),
                '<p>world</p>');
 });
 
 test('element with text and variable', function() {
-    html_equal(render('<p>Hello {who}!</p>', {who: 'world'}),
+    htmlEqual(render('<p>Hello {who}!</p>', {who: 'world'}),
                '<p>Hello world!</p>'); 
 });
 
 test('variable and sub element', function() {
-    html_equal(render('<p>a <em>very nice</em> {time}, sir!</p>', {time: 'day'}),
+    htmlEqual(render('<p>a <em>very nice</em> {time}, sir!</p>', {time: 'day'}),
                '<p>a <em>very nice</em> day, sir!</p>');
 });
 
 
 test('two elements', function() {
-    html_equal(render('<p>First</p><p>Second</p>', {}),
+    htmlEqual(render('<p>First</p><p>Second</p>', {}),
                '<p>First</p><p>Second</p>');
 });
 
 test('element with text following', function() {
-    html_equal(render('<p>First</p>more', {}),
+    htmlEqual(render('<p>First</p>more', {}),
                '<p>First</p>more');
 });
 
 test('text with element following', function() {
-    html_equal(render('more<p>First</p>', {}),
+    htmlEqual(render('more<p>First</p>', {}),
                'more<p>First</p>');
 });
 
 test('variable in sub element', function() {
-    html_equal(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
+    htmlEqual(render('<p>a <em>{quality}</em> day, sir!</p>', {quality: 'nice'}),
                '<p>a <em>nice</em> day, sir!</p>');
 });
 
 
 test('template with multiple variables', function() {
-    html_equal(render('<p>{first}{second}</p>', {first: 'One', second: 'Two'}),
+    htmlEqual(render('<p>{first}{second}</p>', {first: 'One', second: 'Two'}),
                '<p>OneTwo</p>');
 });
 
 test("variable with dotted name", function() {
-    html_equal(render('<p>Hello {something.who}!</p>', {something: {who: 'world'}}),
+    htmlEqual(render('<p>Hello {something.who}!</p>', {something: {who: 'world'}}),
                '<p>Hello world!</p>');
 });
 
 test("variable with formatter", function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
-    html_equal(render('{foo|upper}', {foo: 'hello'}),
+    htmlEqual(render('{foo|upper}', {foo: 'hello'}),
           'HELLO');
 });
 
@@ -191,14 +191,14 @@ test("variable with formatter that does not exist", function() {
 });
 
 test("nested scoping", function() {
-    html_equal(render('<div data-with="second">{alpha}{beta}</div>',
+    htmlEqual(render('<div data-with="second">{alpha}{beta}</div>',
                  {'beta': 'Beta',
                   second: {alpha: "Alpha"}}),
           '<div>AlphaBeta</div>');
 });
 
 test("nested scoping with override", function() {
-    html_equal(render('<div data-with="second">{alpha}{beta}</div>',
+    htmlEqual(render('<div data-with="second">{alpha}{beta}</div>',
                  {beta: 'Beta',
                   second: {'alpha': "Alpha",
                            'beta': "BetaOverride"}}),
@@ -230,48 +230,48 @@ test("variable that does not exist", function() {
 // attribute retrieved using getAttribute versus .attr()
 
 // test('attribute change detected by innerHTML', function() {
-//     var outer_el = $('<div></div>');
-//     var inner_el = $('<p class="Bar"></p>');
-//     outer_el.append(inner_el);
-//     //inner_el.get(0).setAttribute('class', 'Bar');
-//     //inner_el.attr('class', 'Bar');
-//     var new_outer_el = outer_el.clone();
-//     //new_outer_el.get(0).childNodes[0].setAttribute('class', 'Foo');
+//     var outerEl = $('<div></div>');
+//     var innerEl = $('<p class="Bar"></p>');
+//     outerEl.append(innerEl);
+//     //innerEl.get(0).setAttribute('class', 'Bar');
+//     //innerEl.attr('class', 'Bar');
+//     var newOuterEl = outerEl.clone();
+//     //newOuterEl.get(0).childNodes[0].setAttribute('class', 'Foo');
     
-//     $(new_outer_el.get(0).childNodes[0]).attr('class', 'Foo');
-//     // equal(outer_el.children()[0].attr('class'), 'Foo');
-//     equal(new_outer_el.html(), '<P class=Foo></P>');
-//     equal(outer_el.html(), '');
+//     $(newOuterEl.get(0).childNodes[0]).attr('class', 'Foo');
+//     // equal(outerEl.children()[0].attr('class'), 'Foo');
+//     equal(newOuterEl.html(), '<P class=Foo></P>');
+//     equal(outerEl.html(), '');
 // });
 
 test('attribute variable', function() {
-    html_equal(render('<p class="{a}"></p>', {a: 'Alpha'}),
+    htmlEqual(render('<p class="{a}"></p>', {a: 'Alpha'}),
           '<p class="Alpha"></p>');
 });
 
 test('attribute text and variable', function() {
-    html_equal(render('<p class="the {text}!"></p>', {text: 'thing'}),
+    htmlEqual(render('<p class="the {text}!"></p>', {text: 'thing'}),
           '<p class="the thing!"></p>');
 });
 
 test('attribute in sub-element', function() {
-    html_equal(render('<p><em class="{a}">foo</em></p>', {a: 'silly'}),
+    htmlEqual(render('<p><em class="{a}">foo</em></p>', {a: 'silly'}),
           '<p><em class="silly">foo</em></p>');
 });
 
 test('json output for objects', function() {
-    html_equal(render('{@.}', {'a': 'silly'}),
+    htmlEqual(render('{@.}', {'a': 'silly'}),
           '{\n    "a": "silly"\n}');
 });
 
 test('json output for arrays', function() {
-    html_equal(render('{@.}', ['a', 'b']),
+    htmlEqual(render('{@.}', ['a', 'b']),
           "[\n    \"a\",\n    \"b\"\n]");
 });
 
 
 test("element with both id and variable", function() {
-    html_equal(render('<p id="foo">{content}</p>', {content: 'hello'}),
+    htmlEqual(render('<p id="foo">{content}</p>', {content: 'hello'}),
           '<p id="foo">hello</p>');
 });
 
@@ -282,17 +282,17 @@ test("disallow dynamic id in template", function() {
 });
 
 test("data-id", function() {
-    html_equal(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
+    htmlEqual(render('<p data-id="{foo}"></p>', {foo: 'Foo'}),
           '<p id="Foo"></p>');
 });
 
 test('non-dynamic data-id', function() {
-    html_equal(render('<p data-id="foo"></p>', {}),
+    htmlEqual(render('<p data-id="foo"></p>', {}),
           '<p id="foo"></p>');
 });
 
 test("data-with", function() {
-    html_equal(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
+    htmlEqual(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
           '<p>Hello</p>');
 });
 
@@ -311,67 +311,67 @@ test("data-with not pointing to anything", function() {
 });
 
 test("deeper data-with", function() {
-    html_equal(render('<div><p data-with="alpha">{beta}</p></div>',
+    htmlEqual(render('<div><p data-with="alpha">{beta}</p></div>',
                  {alpha: { beta: "Hello"}}),
           '<div><p>Hello</p></div>');
 });
 
 test("nested data-with", function() {
-    html_equal(render('<div data-with="alpha"><div data-with="beta"><div data-with="gamma">{delta}</div></div></div>',
+    htmlEqual(render('<div data-with="alpha"><div data-with="beta"><div data-with="gamma">{delta}</div></div></div>',
                  {alpha: { beta: { gamma: { delta: "Hello"}}}}),
           '<div><div><div>Hello</div></div></div>');
 });
 
 test("data-with with dotted name", function() {
-    html_equal(render('<div data-with="alpha.beta.gamma">{delta}</div>',
+    htmlEqual(render('<div data-with="alpha.beta.gamma">{delta}</div>',
                  {alpha: { beta: { gamma: { delta: "Hello"}}}}),
           '<div>Hello</div>');
 });
 
 test("data-with with attribute", function() {
-    html_equal(render('<div data-with="alpha" class="{beta}"></div>',
+    htmlEqual(render('<div data-with="alpha" class="{beta}"></div>',
                  {alpha: { beta: 'Beta'}}),
           '<div class="Beta"></div>');
 
 });
 
 test("deeper data-with with attribute", function() {
-    html_equal(render('<div><div data-with="alpha" class="{beta}"></div></div>',
+    htmlEqual(render('<div><div data-with="alpha" class="{beta}"></div></div>',
                  {alpha: { beta: 'Beta'}}),
           '<div><div class="Beta"></div></div>');
 
 });
 
 test("data-if where if is true", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: true,
                  beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
 test("data-if where if is false", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: false,
                  beta: 'Beta'}),
           '');
 });
 
 test('data-if in data-with', function() {
-    html_equal(
+    htmlEqual(
         render('<div data-with="something"><p data-if="!flag">not flag</p><p data-if="flag">flag</p></div>',
               {something: {flag: true}}),
         '<div><p>flag</p></div>');
 });
 
 test('data-if with not (!) where data is false', function() {
-    html_equal(render('<div data-if="!alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="!alpha">{beta}</div>',
                  {alpha: false,
                   beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
 test('data-if with not where data is true', function() {
-    html_equal(render('<div data-if="!alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="!alpha">{beta}</div>',
                  {alpha: true,
                   beta: 'Beta'}),
           '');
@@ -379,21 +379,21 @@ test('data-if with not where data is true', function() {
 
 
 test('data-if with not where data is null', function() {
-    html_equal(render('<div data-if="!alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="!alpha">{beta}</div>',
                  {alpha: null,
                   beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
 test('data-if with not where data is string', function() {
-    html_equal(render('<div data-if="!alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="!alpha">{beta}</div>',
                  {alpha: 'something',
                   beta: 'Beta'}),
           '');
 });
 
 test("deeper data-if where if is true", function() {
-    html_equal(render('<div><div data-if="alpha">{beta}</div></div>',
+    htmlEqual(render('<div><div data-if="alpha">{beta}</div></div>',
                 {alpha: true,
                  beta: 'Beta'}),
           '<div><div>Beta</div></div>');
@@ -401,21 +401,21 @@ test("deeper data-if where if is true", function() {
 
 
 test("deeper data-if where if is false", function() {
-    html_equal(render('<div><div data-if="alpha">{beta}</div></div>',
+    htmlEqual(render('<div><div data-if="alpha">{beta}</div></div>',
                 {alpha: false,
                  beta: 'Beta'}),
           '<div></div>');
 });
 
 test("data-if where if is null", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: null,
                  beta: 'Beta'}),
           '');
 });
 
 test("data-if where if is undefined", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: undefined,
                  beta: 'Beta'}),
           '');
@@ -423,7 +423,7 @@ test("data-if where if is undefined", function() {
 
 test('data-if with value if defined', function() {
     // textarea has replaceable text content, can only contain text..
-    html_equal(render('<div data-el="textarea"><div data-if="width" data-attr="style" data-value="width: {width}em;" /></div>',
+    htmlEqual(render('<div data-el="textarea"><div data-if="width" data-attr="style" data-value="width: {width}em;" /></div>',
                       {width: 10}),
                '<textarea style="width: 10em;"></textarea>');
 });
@@ -431,48 +431,48 @@ test('data-if with value if defined', function() {
 
 test('data-if with value if not defined', function() {
     // textarea has replaceable text content, can only contain text..
-    html_equal(render('<div data-el="textarea"><div data-if="width" data-attr="style" data-value="width: {width}em;" /></div>',
+    htmlEqual(render('<div data-el="textarea"><div data-if="width" data-attr="style" data-value="width: {width}em;" /></div>',
                       {}),
                '<textarea></textarea>');
 });
 
 test("data-if where if is 0", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: 0,
                  beta: 'Beta'}),
           '');
 });
 
 test("data-if where if is 1", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: 1,
                  beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
 test("data-if where if is empty string", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: '',
                  beta: 'Beta'}),
           '');
 });
 
 test("data-if where if is non-empty string", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: 'non empty',
                  beta: 'Beta'}),
           '<div>Beta</div>');
 });
 
 test("data-if where if is empty array", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: [],
                  beta: 'Beta'}),
           '');
 });
 
 test("data-if where if is non-empty array", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {alpha: ['a'],
                  beta: 'Beta'}),
           '<div>Beta</div>');
@@ -480,13 +480,13 @@ test("data-if where if is non-empty array", function() {
 
 
 test("data-if where if is not there", function() {
-    html_equal(render('<div data-if="alpha">{beta}</div>',
+    htmlEqual(render('<div data-if="alpha">{beta}</div>',
                 {beta: 'Beta'}),
           '');
 });
 
 test("data-with and data-if where if is true", function() {
-    html_equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
+    htmlEqual(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
                  {alpha: true,
                   beta: {
                       gamma: "Gamma"
@@ -496,7 +496,7 @@ test("data-with and data-if where if is true", function() {
 
 
 test("data-with and data-if where if is false", function() {
-    html_equal(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
+    htmlEqual(render('<div data-if="alpha" data-with="beta">{gamma}</div>',
                  {alpha: false,
                   beta: {
                       gamma: "Gamma"
@@ -506,7 +506,7 @@ test("data-with and data-if where if is false", function() {
 
 
 test('data-each with 3 elements', function() {
-    html_equal(render('<ul><li data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-each="list">{title}</li></ul>',
                  {list: [{title: 'a'},
                          {title: 'b'},
                          {title: 'c'}]}),
@@ -514,7 +514,7 @@ test('data-each with 3 elements', function() {
 });
 
 test('top-level data each', function() {
-    html_equal(render('<p data-each="list">{title}</p>',
+    htmlEqual(render('<p data-each="list">{title}</p>',
                  {list: [{title: 'a'},
                          {title: 'b'},
                          {title: 'c'}]}),
@@ -522,26 +522,26 @@ test('top-level data each', function() {
 });
 
 test('data-each with @.', function() {
-    html_equal(render('<p data-each="list">{@.}</p>',
+    htmlEqual(render('<p data-each="list">{@.}</p>',
                  {list: ['a', 'b', 'c']}),
           '<p>a</p><p>b</p><p>c</p>');
 });
 
 test('data-each with 2 elements', function() {
-    html_equal(render('<ul><li data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-each="list">{title}</li></ul>',
                  {list: [{title: 'a'},
                          {title: 'b'}]}),
           '<ul><li>a</li><li>b</li></ul>');
 });
 
 test('data-each with 1 element', function() {
-    html_equal(render('<ul><li data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-each="list">{title}</li></ul>',
                  {list: [{title: 'a'}]}),
           '<ul><li>a</li></ul>');
 });
 
 test('data-each with 0 elements', function() {
-    html_equal(render('<ul><li data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-each="list">{title}</li></ul>',
                  {list: []}),
           '<ul></ul>');
 });
@@ -551,7 +551,7 @@ test('data-each, small table', function() {
     for (var i = 0; i < 2; i++) {
         data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
-    html_equal(render('<table>' +
+    htmlEqual(render('<table>' +
                        '<tr data-each="table">' +
                        '<td data-each="@.">{@.}</td>' +
                        '</tr>' +
@@ -565,7 +565,7 @@ test('data-each, small table', function() {
 });
 
 test('data-each with deeper elements', function() {
-    html_equal(render('<ul><li data-each="list"><p>{title}</p></li></ul>',
+    htmlEqual(render('<ul><li data-each="list"><p>{title}</p></li></ul>',
                  {list: [{title: 'a'},
                          {title: 'b'},
                          {title: 'c'}]}),
@@ -573,7 +573,7 @@ test('data-each with deeper elements', function() {
 });
 
 test('data-each with some element content not rendered', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list"><p data-if="@.">whatever</p></li></ul>',
         {list: [true, false]}),
                '<ul><li><p>whatever</p></li><li></li></ul>');
@@ -581,14 +581,14 @@ test('data-each with some element content not rendered', function() {
 
 
 test('data-each with half of element content not rendered', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list"><p data-if="@.">True</p><p data-if="!@.">False</p></li></ul>',
         {list: [true, false]}),
                '<ul><li><p>True</p></li><li><p>False</p></li></ul>');
 });
 
 test('data-each with attributes', function() {
-    html_equal(render('<a data-each="list" href="{url}">link</a>',
+    htmlEqual(render('<a data-each="list" href="{url}">link</a>',
                  {list: [{url: 'a'},
                          {url: 'b'}]}),
           '<a href="a">link</a><a href="b">link</a>');
@@ -596,7 +596,7 @@ test('data-each with attributes', function() {
 });
 
 test('data-each with text after it', function() {
-    html_equal(render('<ul><li data-each="list">{title}</li>after</ul>',
+    htmlEqual(render('<ul><li data-each="list">{title}</li>after</ul>',
                  {list: [{title: 'a'},
                          {title: 'b'}]}),
           '<ul><li>a</li><li>b</li>after</ul>');
@@ -609,7 +609,7 @@ test('data-each not pointing to array', function() {
 });
      
 test('data-each with data-if and true', function() {
-    html_equal(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
                  {flag: true,
                   list: [{title: 'a'},
                          {title: 'b'}]}),
@@ -618,7 +618,7 @@ test('data-each with data-if and true', function() {
 });
 
 test('data-each with data-if and false', function() {
-    html_equal(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
                  {flag: false,
                   list: [{title: 'a'},
                          {title: 'b'}]}),
@@ -627,14 +627,14 @@ test('data-each with data-if and false', function() {
 });
 
 test('data-each with data-with', function() {
-    html_equal(render('<ul><li data-each="list" data-with="sub">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-each="list" data-with="sub">{title}</li></ul>',
                  {list: [{sub: {title: 'a'}},
                          {sub: {title: 'b'}}]}),
           '<ul><li>a</li><li>b</li></ul>');
 });
 
 test('data-each with data-with and data-if and true', function() {
-    html_equal(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
                  {flag: true,
                   list: [{sub: {title: 'a'}},
                          {sub: {title: 'b'}}]}),
@@ -642,7 +642,7 @@ test('data-each with data-with and data-if and true', function() {
 });
 
 test('data-each with data-with and data-if and false', function() {
-    html_equal(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+    htmlEqual(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
                  {flag: false,
                   list: [{sub: {title: 'a'}},
                          {sub: {title: 'b'}}]}),
@@ -650,7 +650,7 @@ test('data-each with data-with and data-if and false', function() {
 });
 
 test('data-each with data-trans', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list" data-trans="">Hello world!</li></ul>',
         {list: [1, 2]}),
           '<ul><li>Hallo wereld!</li><li>Hallo wereld!</li></ul>');
@@ -658,7 +658,7 @@ test('data-each with data-trans', function() {
 
 
 test('nested data-each', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="outer"><ul><li data-each="inner">{title}</li></ul></li></ul>',
         {outer: [
             {inner: [{title: 'a'}, {title: 'b'}]},
@@ -669,21 +669,21 @@ test('nested data-each', function() {
 });
 
 test('data-each with @each vars', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list">{@each.index} {@each.length}</li></ul>',
         {list: [1, 2]}),
                '<ul><li>0 2</li><li>1 2</li></ul>');
 });
 
 test('data-each with @each vars, explicit loop', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list">{@each.list.index} {@each.list.length}</li></ul>',
         {list: [1, 2]}),
                '<ul><li>0 2</li><li>1 2</li></ul>');
 });
 
 test('data-each with @each vars, nested loop', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="outer"><ul><li data-each="inner">{@each.inner.index} {@each.outer.index}</li></ul></li></ul>',
         {outer: [
             {inner: [{title: 'a'}, {title: 'b'}]},
@@ -694,54 +694,54 @@ test('data-each with @each vars, nested loop', function() {
 });
 
 test('data-each with @each vars using number', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list">{@each.number}</li></ul>',
         {list: ['a', 'b']}),
                '<ul><li>1</li><li>2</li></ul>');
 });
 
 test('data-each with @each vars using even/odd', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="list"><p data-if="@each.even">Even</p><p data-if="@each.odd">Odd</p></li></ul>',
         {list: ['a', 'b']}),
                '<ul><li><p>Even</p></li><li><p>Odd</p></li></ul>');
 });
 
 test('data-each with @each vars with dotted name', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<ul><li data-each="sub.list">{@each.sub_list.number}</li></ul>',
         {sub: {list: ['a', 'b']}}),
                '<ul><li>1</li><li>2</li></ul>');
 });
 
 test('data-func', function() {
-    obtemp.register_func('addattr', function(el) {
+    obtemp.registerFunc('addattr', function(el) {
         el.attr('magic', "Magic!");
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-func="addattr">Hello world!</p>', {}),
                '<p magic="Magic!">Hello world!</p>');
     
 });
 
 test('data-func with variable', function() {
-    obtemp.register_func('addattr', function(el, variable) {
+    obtemp.registerFunc('addattr', function(el, variable) {
         el.attr('magic', variable('foo'));
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-func="addattr">Hello world!</p>', {foo: "Foo!"}),
                '<p magic="Foo!">Hello world!</p>');
     
 });
 
 test('data-func with data-with', function() {
-    obtemp.register_func('addattr', function(el, variable) {
+    obtemp.registerFunc('addattr', function(el, variable) {
         el.attr('magic', variable('foo'));
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-with="sub" data-func="addattr">Hello world!</p>',
         {sub: {foo: "Foo!"}}),
                '<p magic="Foo!">Hello world!</p>');
@@ -749,11 +749,11 @@ test('data-func with data-with', function() {
 });
 
 test('data-func with data-if where if is true', function() {
-    obtemp.register_func('addattr', function(el, variable) {
+    obtemp.registerFunc('addattr', function(el, variable) {
         el.attr('magic', variable('foo'));
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-if="flag" data-func="addattr">Hello world!</p>',
         {foo: "Foo!", flag: true}),
                '<p magic="Foo!">Hello world!</p>');
@@ -761,31 +761,31 @@ test('data-func with data-if where if is true', function() {
 
 
 test('data-func with data-if where if is false', function() {
-    obtemp.register_func('addattr', function(el, variable) {
+    obtemp.registerFunc('addattr', function(el, variable) {
         el.attr('magic', variable('foo'));
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-if="flag" data-func="addattr">Hello world!</p>',
         {foo: "Foo!", flag: false}),
                '');
 });
 
 test('data-func with data-trans', function() {
-    obtemp.register_func('addattr', function(el, variable) {
+    obtemp.registerFunc('addattr', function(el, variable) {
         el.attr('magic', variable('foo'));
         // translation has happened before data-func is called
         equal(el.text(), 'Hallo wereld!');
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-trans="" data-func="addattr">Hello world!</p>',
         {foo: "Foo!"}),
                '<p magic="Foo!">Hallo wereld!</p>');
 });
 
 test('data-func with data-each', function() {
-    obtemp.register_func('even-odd', function(el, variable) {
+    obtemp.registerFunc('even-odd', function(el, variable) {
         if (variable('@each.index') % 2 === 0) {
             el.addClass('even');
         } else {
@@ -793,7 +793,7 @@ test('data-func with data-each', function() {
         }
     });
     
-    html_equal(render(
+    htmlEqual(render(
         '<p data-each="list" data-func="even-odd">{@.}</p>',
         {list: [0, 1, 2, 3]}),
                '<p class="even">0</p><p class="odd">1</p><p class="even">2</p><p class="odd">3</p>'
@@ -809,59 +809,59 @@ test('data-func where func is missing', function() {
 });
 
 test("data-trans with plain text, translation found", function() {
-    html_equal(render('<p data-trans="">Hello world!</p>', {}),
+    htmlEqual(render('<p data-trans="">Hello world!</p>', {}),
           '<p>Hallo wereld!</p>');
 });
 
 test('data-trans with text, translation not there', function() {
-    html_equal(render('<p data-trans="">This is not translated</p>', {}),
+    htmlEqual(render('<p data-trans="">This is not translated</p>', {}),
           '<p>This is not translated</p>');
 });
 
 test('data-trans with whitespace in element content, translation found', function() {
-    html_equal(render('<p data-trans="">  This has \n  whitespace.  </p>', {}),
+    htmlEqual(render('<p data-trans="">  This has \n  whitespace.  </p>', {}),
                '<p>Dit heeft witruimte.</p>');
 });
 
 test('data-tvar with whitespace, translation found', function() {
-    html_equal(render('<p data-trans=""><em data-tvar="something">  This has \n  whitespace.  </em> is there</p>', {}),
+    htmlEqual(render('<p data-trans=""><em data-tvar="something">  This has \n  whitespace.  </em> is there</p>', {}),
                '<p><em>Dit heeft witruimte.</em> is there</p>');
 });
 
 test('attribute with whitespace, translation not found', function() {
     // attributes do take whitespace literally, so translation won't be
     // found as we look up "  This has \n  whitespace.  " up literally
-    html_equal(render('<p data-trans="title" title="  This has \n  whitespace.  "></p>', {}),
+    htmlEqual(render('<p data-trans="title" title="  This has \n  whitespace.  "></p>', {}),
                '<p title="  This has \n  whitespace.  "></p>');
 });
 
 test('data-trans with whitespace in element content, not translated', function() {
-    html_equal(render('<p data-trans="">  This also has \n  whitespace.  </p>', {}),
+    htmlEqual(render('<p data-trans="">  This also has \n  whitespace.  </p>', {}),
                '<p>  This also has \n  whitespace.  </p>');
 });
 
 test('data-trans with text and msgid, translation not there', function() {
-    html_equal(render('<p data-trans=":foo">This is not translated</p>', {}),
+    htmlEqual(render('<p data-trans=":foo">This is not translated</p>', {}),
           '<p>This is not translated</p>');
 });
 
 test('data-trans with text and msgid for attr, translation not there', function() {
-    html_equal(render('<p data-trans="title:foo" title="This is not translated"></p>', {}),
+    htmlEqual(render('<p data-trans="title:foo" title="This is not translated"></p>', {}),
           '<p title="This is not translated"></p>');
 });
 
 test("data-trans with text & entity reference", function() {
-    html_equal(render('<p data-trans="">one &lt; two</p>', {}),
+    htmlEqual(render('<p data-trans="">one &lt; two</p>', {}),
           '<p>een &lt; twee</p>');
 });
 
 test("data-trans with text & comment", function() {
-    html_equal(render('<p data-trans="">Hello world!<!-- comment -->', {}),
+    htmlEqual(render('<p data-trans="">Hello world!<!-- comment -->', {}),
           '<p>Hallo wereld!</p>');
 });
 
 test("data-trans with text & comment and element", function() {
-    html_equal(render('<p data-trans=""><!-- comment -->Hello <!-- comment --><em data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans=""><!-- comment -->Hello <!-- comment --><em data-tvar="who">{who}</em>!</p>',
                  {who: "Bob"}),
           '<p><em>Bob</em>, hallo!</p>');
 });
@@ -870,39 +870,39 @@ test("data-trans with text & comment and element", function() {
 // see also CDATASection in HTML for more info:
 // http://reference.sitepoint.com/javascript/CDATASection
 // test("data-trans with text & CDATA section", function() {
-//     html_equal(render('<p data-trans=""><![CDATA[Hello world!]]></p>', {}),
+//     htmlEqual(render('<p data-trans=""><![CDATA[Hello world!]]></p>', {}),
 //           '<p>Hallo wereld!</p>');
 // });
 
 
 test("data-trans with variable", function() {
-    html_equal(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
+    htmlEqual(render('<p data-trans="">Hello {who}!</p>', {who: "Fred"}),
           '<p>Fred, hallo!</p>');
 });
 
 test('data-trans with variable and formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
-    html_equal(render('<p data-trans="">Hello {who|upper}!</p>', {who: "Fred"}),
+    htmlEqual(render('<p data-trans="">Hello {who|upper}!</p>', {who: "Fred"}),
           '<p>FRED, hallo!</p>');
 });
 
 test('data-trans with attribute and formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
-    html_equal(render('<p data-trans="title" title="Hello {who|upper}!"></p>',
+    htmlEqual(render('<p data-trans="title" title="Hello {who|upper}!"></p>',
                       {who: "Fred"}),
           '<p title="FRED, hallo!"></p>');
 
 });
 
 test('data-trans with multiple variables and different formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
-    obtemp.register_formatter('lower', function(value) {
+    obtemp.registerFormatter('lower', function(value) {
         return value.toLowerCase();
     });
 
@@ -915,10 +915,10 @@ test('data-trans with multiple variables and different formatter', function() {
 
 
 test('data-trans on attr with multiple variables and different formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
-    obtemp.register_formatter('lower', function(value) {
+    obtemp.registerFormatter('lower', function(value) {
         return value.toLowerCase();
     });
 
@@ -931,11 +931,11 @@ test('data-trans on attr with multiple variables and different formatter', funct
 
 
 test('data-trans with multiple variables and same formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
     
-    html_equal(
+    htmlEqual(
         render('<p data-trans="">Hello {who|upper}! ({who|upper}?)</p>',
                {who: "Fred"}),
         '<p>FRED, hallo! (FRED?)</p>');
@@ -943,11 +943,11 @@ test('data-trans with multiple variables and same formatter', function() {
 
 
 test('data-trans on attr with multiple variables and same formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
     
-    html_equal(
+    htmlEqual(
         render('<p data-trans="title" title="Hello {who|upper}! ({who|upper}?)"></p>',
                {who: "Fred"}),
         '<p title="FRED, hallo! (FRED?)"></p>');
@@ -967,11 +967,11 @@ test('data-trans on attribute with just variable', function() {
 
 
 test('data-trans with implicit tvar with formatter', function() {
-    obtemp.register_formatter('upper', function(value) {
+    obtemp.registerFormatter('upper', function(value) {
         return value.toUpperCase();
     });
     
-    html_equal(
+    htmlEqual(
         render('<p data-trans="">Hello <em>{who|upper}</em>!</p>',
                {who: "Fred"}),
         '<p><em>FRED</em>, hallo!</p>');
@@ -985,32 +985,32 @@ test('data-trans with view based tvar with name', function() {
             this.el.text('the ' + this.obj.name);
         }
     });
-    html_equal(render('<p data-trans="">Hello <em data-view="who|summary" />!</p>',
+    htmlEqual(render('<p data-trans="">Hello <em data-view="who|summary" />!</p>',
                       {who: {iface: 'person', name: 'Fred'}}),
                '<p><em>the Fred</em>, hallo!</p>');
 });
 
 test('data-trans with data-tvar', function() {
-    html_equal(render('<p data-trans="">Hello <em data-tvar="who">world</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <em data-tvar="who">world</em>!</p>',
                  {}),
           '<p><em>world</em>, hallo!</p>');
 });
 
 test('data-trans with data-tvar and variable in tvar', function() {
-    html_equal(render('<p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <em data-tvar="who">{who}</em>!</p>',
                  {who: 'wereld'}),
           '<p><em>wereld</em>, hallo!</p>');
 });
 
 
 test('implicit data-tvar for variable in element', function() {
-    html_equal(render('<p data-trans="">Hello <em>{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <em>{who}</em>!</p>',
                  {who: 'wereld'}),
           '<p><em>wereld</em>, hallo!</p>');
 });
 
 test('implicit data-tvar for variable in element when no translation available', function() {
-    html_equal(render('<p data-trans="">Greetings <em>{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Greetings <em>{who}</em>!</p>',
                  {who: 'wereld'}),
           '<p>Greetings <em>wereld</em>!</p>');
 });
@@ -1022,7 +1022,7 @@ test('data-tvar for variable in element when no translations are available', fun
     template.render(el, {who: 'wereld'}, {});
     var html = el.html();
 
-    html_equal(html, '<p>Greetings <em>wereld</em>!</p>'); 
+    htmlEqual(html, '<p>Greetings <em>wereld</em>!</p>'); 
 });
 
 test('implicit data-tvar for data-view', function() {
@@ -1033,7 +1033,7 @@ test('implicit data-tvar for data-view', function() {
         }
     });
 
-    html_equal(render('<p data-trans="">Hello <span data-view="who"></span>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <span data-view="who"></span>!</p>',
                       {who: {iface: 'person', name: 'Bob'}}),
                '<p><span><em>Bob</em></span>, hallo!</p>');
 });
@@ -1047,7 +1047,7 @@ test('implicit data-tvar not allowed for empty sub-element', function() {
 });
 
 test('data-trans with data-tvar and variable in text', function() {
-    html_equal(render('<p data-trans="">Hello {qualifier} <em data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello {qualifier} <em data-tvar="who">{who}</em>!</p>',
                  {who: 'wereld',
                   qualifier: 'beste'}),
           '<p>beste <em>wereld</em>, hallo!</p>');
@@ -1055,7 +1055,7 @@ test('data-trans with data-tvar and variable in text', function() {
 });
 
 test('data-trans with multiple data-tvars', function() {
-    html_equal(render('<p data-trans="">Hello <strong data-tvar="qualifier">{qualifier}</strong> <em data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <strong data-tvar="qualifier">{qualifier}</strong> <em data-tvar="who">{who}</em>!</p>',
                  {who: 'wereld',
                   qualifier: 'beste'}),
           '<p><strong>beste</strong> <em>wereld</em>, hallo!</p>');
@@ -1107,9 +1107,9 @@ test('data-tvar may not contain data-each', function() {
 });
 
 test('data-trans may contain data-id', function() {
-    html_equal(
-        render('<p data-trans="">Hello <strong data-id="{my_id}" data-tvar="who">{who}</strong>!</p>',
-               {who: 'X', my_id: 'foo'}),
+    htmlEqual(
+        render('<p data-trans="">Hello <strong data-id="{myId}" data-tvar="who">{who}</strong>!</p>',
+               {who: 'X', myId: 'foo'}),
         '<p><strong id="foo">X</strong>, hallo!</p>');
 });
 
@@ -1141,52 +1141,52 @@ test('data-trans with just a single data-tvar', function() {
 });
 
 test('data-trans on attribute with plain text', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<p data-trans="title" title="Hello world!">Hello world!</p>', {}),
                '<p title="Hallo wereld!">Hello world!</p>');
 });
 
 
 test('data-trans on attribute with variable', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<p data-trans="title" title="Hello {who}!">Hello world!</p>',
         {who: 'X'}),
                '<p title="X, hallo!">Hello world!</p>');
 });
 
 test('data-trans on text and attribute', function() {
-    html_equal(render(
+    htmlEqual(render(
         '<p data-trans=". title" title="Hello world!">Hello world!</p>', {}),
                '<p title="Hallo wereld!">Hallo wereld!</p>');
 });
 
 test('data-trans without translation available but with tvar', function() {
-    html_equal(render('<p data-trans="">Hey there <em data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hey there <em data-tvar="who">{who}</em>!</p>',
                       {who: 'pardner'}),
                '<p>Hey there <em>pardner</em>!</p>');
 });
 
 test('data-trans with translated tvar with variable', function() {
-    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello {who}!</em>".</p>',
+    htmlEqual(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello {who}!</em>".</p>',
                       {who: 'X'}),
                '<p>Hun boodschap was: "<em>X, hallo!</em>".</p>');
 });
 
 test('data-trans with translated tvar without variable', function() {
-    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello world!</em>".</p>',
+    htmlEqual(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello world!</em>".</p>',
                       {}),
                '<p>Hun boodschap was: "<em>Hallo wereld!</em>".</p>');
 });
 
 test('data-trans with tvar with tvar in it', function() {
-    html_equal(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello <strong data-tvar="who">{name}</strong>!</em>".</p>',
+    htmlEqual(render('<p data-trans="">Their message was: "<em data-tvar="message">Hello <strong data-tvar="who">{name}</strong>!</em>".</p>',
                       {name: 'X'}),
                '<p>Hun boodschap was: "<em><strong>X</strong>, hallo!</em>".</p>');
 });
 
 
 test('data-trans with data-tvar with data-trans on it for attribute', function() {
-    html_equal(render('<p data-trans="">Hello <em title="Hello world!" data-trans="title" data-tvar="who">{who}</em>!</p>',
+    htmlEqual(render('<p data-trans="">Hello <em title="Hello world!" data-trans="title" data-tvar="who">{who}</em>!</p>',
                       {who: 'X'}),
                '<p><em title="Hallo wereld!">X</em>, hallo!</p>');
 });
@@ -1227,7 +1227,7 @@ test('data-trans with non-unique tvar, matches variable other way around', funct
 });
 
 test('data-trans with multiple variables of same name is allowed', function() {
-    html_equal(render('<p data-trans="">{message} or {message}</p>',
+    htmlEqual(render('<p data-trans="">{message} or {message}</p>',
                       {message: 'X'}),
                '<p>X or X</p>');
 });
@@ -1235,7 +1235,7 @@ test('data-trans with multiple variables of same name is allowed', function() {
 
 // empty data-tvar element is allowed
 test('data-trans with empty tvar', function() {
-    html_equal(render('<p data-trans="">Hello!<br data-tvar="break"/>Bye!</p>',
+    htmlEqual(render('<p data-trans="">Hello!<br data-tvar="break"/>Bye!</p>',
                       {}),
                '<p>Hallo!<br/>Tot ziens!</p>');
 });
@@ -1243,38 +1243,38 @@ test('data-trans with empty tvar', function() {
 
 
 test('data-trans with explicit message id for text content', function() {
-    html_equal(render('<p data-trans=":explicit">test</p>', {}),
+    htmlEqual(render('<p data-trans=":explicit">test</p>', {}),
                '<p>explicit translated</p>');
 });
 
 test('data-trans with explicit message id for text content 2', function() {
-    html_equal(render('<p data-trans=".:explicit">test</p>', {}),
+    htmlEqual(render('<p data-trans=".:explicit">test</p>', {}),
                '<p>explicit translated</p>');
 });
 
 test('data-trans with explicit message id for attribute', function() {
-    html_equal(render('<p data-trans="title:explicit" title="test">test</p>', {}),
+    htmlEqual(render('<p data-trans="title:explicit" title="test">test</p>', {}),
                '<p title="explicit translated">test</p>');
 
 });
 
 test('data-trans with explicit message id for attribute and text', function() {
-    html_equal(render('<p data-trans=".:explicit title:explicit" title="test">test</p>', {}),
+    htmlEqual(render('<p data-trans=".:explicit title:explicit" title="test">test</p>', {}),
                '<p title="explicit translated">explicit translated</p>');
 
 });
 
 
 test('data-tvar with explicit message id', function() {
-    html_equal(render(
-        '<p data-trans="">Hello <em data-tvar="who:explicit_who">great {who}</em>!</p>',
+    htmlEqual(render(
+        '<p data-trans="">Hello <em data-tvar="who:explicitWho">great {who}</em>!</p>',
         {who: 'maker'}),
                '<p><em>grote maker</em>, hallo!</p>');
 
 });
 
 test('included html is escaped', function() {
-    html_equal(render('<p>{html}</p>', {html: '<em>test</em>'}),
+    htmlEqual(render('<p>{html}</p>', {html: '<em>test</em>'}),
           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
 });
 
@@ -1286,7 +1286,7 @@ test('data-view by itself', function() {
         }
     });
 
-    html_equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+    htmlEqual(render('<div data-view="bob"></div>', {bob: {iface: 'person',
                                                        name: 'Bob'}}),
           '<div><p>Bob</p></div>');
 });
@@ -1300,7 +1300,7 @@ test('data-view with named view', function() {
         }
     });
 
-    html_equal(render('<div data-view="bob|summary"></div>', {bob: {iface: 'person',
+    htmlEqual(render('<div data-view="bob|summary"></div>', {bob: {iface: 'person',
                                                                name: 'Bob'}}),
           '<div><p>Bob</p></div>');
 
@@ -1315,9 +1315,9 @@ test('data-view with altered default view', function() {
         }
     });
 
-    obtemp.set_default_view_name('summary');
+    obtemp.setDefaultViewName('summary');
     
-    html_equal(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+    htmlEqual(render('<div data-view="bob"></div>', {bob: {iface: 'person',
                                                        name: 'Bob'}}),
           '<div><p>Bob</p></div>');
 
@@ -1331,7 +1331,7 @@ test('data-view empties element', function() {
         }
     });
     
-    html_equal(render('<div data-view="bob"><div>Something</div></div>',
+    htmlEqual(render('<div data-view="bob"><div>Something</div></div>',
                       {bob: {iface: 'person',
                              name: 'Bob'}}),
                '<div><p>Bob</p></div>');
@@ -1347,7 +1347,7 @@ test('data-view must point to object', function() {
     });
 
     raises(function() {
-        render('<div data-view="bob"></div>', {bob: 'not_an_object'});
+        render('<div data-view="bob"></div>', {bob: 'notAnObject'});
     }, obtemp.RenderError); 
 });
 
@@ -1365,7 +1365,7 @@ test('data-view with data-with', function() {
             this.el.append('<p>' + this.obj.name + '</p>');
         }
     });
-    html_equal(render('<div data-with="sub" data-view="person">person</div>',
+    htmlEqual(render('<div data-with="sub" data-view="person">person</div>',
                  {sub: {person: {iface: 'person',
                                  name: 'Bob'}}}),
           '<div><p>Bob</p></div>');
@@ -1379,7 +1379,7 @@ test('deeper data-view with data-with', function() {
             this.el.append('<p>' + this.obj.name + '</p>');
         }
     });
-    html_equal(render('<div><div data-with="sub" data-view="person">person</div></div>',
+    htmlEqual(render('<div><div data-with="sub" data-view="person">person</div></div>',
                  {sub: {person: {iface: 'person',
                                  name: 'Bob'}}}),
           '<div><div><p>Bob</p></div></div>');
@@ -1395,7 +1395,7 @@ test('data-view with data-if where if is true', function() {
     });
     
     
-    html_equal(render('<div data-if="flag" data-view="person">person</div>',
+    htmlEqual(render('<div data-if="flag" data-view="person">person</div>',
                  {person: {iface: 'person',
                            name: 'Bob'},
                   flag: true}),
@@ -1413,7 +1413,7 @@ test('data-view with deeper data-if where if is false', function() {
     });
     
 
-    html_equal(render('<div><div data-if="flag" data-view="person"></div></div>',
+    htmlEqual(render('<div><div data-if="flag" data-view="person"></div></div>',
                  {person: {iface: 'person',
                            name: 'Bob'},
                   flag: false}),
@@ -1430,7 +1430,7 @@ test('data-view with data-each', function() {
         }
     });
     
-    html_equal(render('<div data-each="persons" data-view="@."></div>',
+    htmlEqual(render('<div data-each="persons" data-view="@."></div>',
                  {persons: [
                      {iface: 'person',
                       name: 'Bob'},
@@ -1452,7 +1452,7 @@ test('deeper data-view with data-each', function() {
         }
     });
     
-    html_equal(render('<div><div data-each="persons" data-view="@."></div></div>',
+    htmlEqual(render('<div><div data-each="persons" data-view="@."></div></div>',
                  {persons: [
                      {iface: 'person',
                       name: 'Bob'},
@@ -1479,7 +1479,7 @@ test('data-view with data-trans on same element for attributes is allowed', func
         }
     });
 
-    html_equal(
+    htmlEqual(
         render('<div data-view="foo" data-trans="title" title="Hello world!">foo</div>',
                {foo: {iface: 'person', name: 'Bob'}}),
         '<div title="Hallo wereld!"><p>Bob</p></div>');
@@ -1493,7 +1493,7 @@ test('data-view with data-tvar is allowed', function() {
         }
     });
 
-    html_equal(
+    htmlEqual(
         render('<div data-trans="">Hello <span data-tvar="who" data-view="foo"></span>!</div>',
                {foo: {iface: 'person', name: 'Bob'}}),
         '<div><span><strong>Bob</strong></span>, hallo!</div>');
@@ -1506,34 +1506,34 @@ test('data-tvar must be within data-trans or data-tvar', function() {
 });
 
 test('data-trans with data-with', function() {
-    html_equal(render('<div data-with="foo" data-trans="">Hello {who}!</div>',
+    htmlEqual(render('<div data-with="foo" data-trans="">Hello {who}!</div>',
                       {foo: {who: "X"}}),
                '<div>X, hallo!</div>');
     
 });
 
 test('data-trans with data-if where if is true', function() {
-    html_equal(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
+    htmlEqual(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
                       {flag: true, who: "X"}),
                '<div>X, hallo!</div>');
     
 });
 
 test('data-trans with data-if where if is false', function() {
-    html_equal(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
+    htmlEqual(render('<div data-if="flag" data-trans="">Hello {who}!</div>',
                       {flag: false, who: "X"}),
                '');
     
 });
 
 test('data-trans with data-each', function() {
-    html_equal(render('<div data-each="entries" data-trans="">Hello {who}!</div>',
+    htmlEqual(render('<div data-each="entries" data-trans="">Hello {who}!</div>',
                       {entries: [{who: 'Bob'}, {who: 'Jay'}]}),
                '<div>Bob, hallo!</div><div>Jay, hallo!</div>');
 });
 
 test("data-el by itself", function() {
-    html_equal(render('<div data-el="{name}" class="foo">Content</div>',
+    htmlEqual(render('<div data-el="{name}" class="foo">Content</div>',
                       {name: 'p'}),
                '<p class="foo">Content</p>');
 });
@@ -1546,57 +1546,57 @@ test('data-el without element name is an error', function() {
 });
 
 test("deeper data-el", function() {
-    html_equal(render('<div><div data-el="{name}" class="foo">Content</div></div>',
+    htmlEqual(render('<div><div data-el="{name}" class="foo">Content</div></div>',
                       {name: 'span'}),
                '<div><span class="foo">Content</span></div>');
 });
 
 test('deeper data-el with data-if and dynamic content where flag is true', function() {
-    html_equal(render('<div><div data-el="{name}" class="foo" data-if="flag"><em>{content}</em></div></div>',
+    htmlEqual(render('<div><div data-el="{name}" class="foo" data-if="flag"><em>{content}</em></div></div>',
                       {name: 'span', content: "Hello world", flag: true}),
                '<div><span class="foo"><em>Hello world</em></span></div>');
 });
 
 test('deeper data-el with data-if and dynamic content where flag is false', function() {
-    html_equal(render('<div><div data-el="{name}" class="foo" data-if="flag"><em>{content}</em></div></div>',
+    htmlEqual(render('<div><div data-el="{name}" class="foo" data-if="flag"><em>{content}</em></div></div>',
                       {name: 'span', content: "Hello world", flag: false}),
                '<div></div>');
 });
 
 test("data-el with data-each", function() {
-    html_equal(render('<div data-el="{@.}" data-each="list">Content</div>',
+    htmlEqual(render('<div data-el="{@.}" data-each="list">Content</div>',
                       {list: ['p', 'span']}),
                '<p>Content</p><span>Content</span>');
 });
 
 test('data-attr: dynamically generated attribute', function() {
-    html_equal(render('<p><span data-attr="class" data-value="foo"/>Hello world!</p>',
+    htmlEqual(render('<p><span data-attr="class" data-value="foo"/>Hello world!</p>',
                       {}),
                '<p class="foo">Hello world!</p>');
 });
 
 
 test('data-attr with data-if where if is true', function() {
-    html_equal(render('<p><span data-attr="{name}" data-if="flag" data-value="{value}"/>Hello world!</p>',
+    htmlEqual(render('<p><span data-attr="{name}" data-if="flag" data-value="{value}"/>Hello world!</p>',
                       {flag: true, name: 'class', value: 'foo'}),
                '<p class="foo">Hello world!</p>');
 });
 
 test('data-attr with data-if where if is false', function() {
-    html_equal(render('<p><span data-attr="{name}" data-if="flag" data-value="{value}"/>Hello world!</p>',
+    htmlEqual(render('<p><span data-attr="{name}" data-if="flag" data-value="{value}"/>Hello world!</p>',
                       {flag: false, name: 'class', value: 'foo'}),
                '<p>Hello world!</p>');
 });
 
 test('data-attr in section', function() {
-    html_equal(render('<p data-if="flag"><span data-attr="class" data-value="foo"/>Hello world!</p>',
+    htmlEqual(render('<p data-if="flag"><span data-attr="class" data-value="foo"/>Hello world!</p>',
                       {flag: true}),
                '<p class="foo">Hello world!</p>');
     
 });
 
 test('data-attr in section where data-if is false', function() {
-    html_equal(render('<p data-if="flag"><span data-attr="class" data-value="foo"/>Hello world!</p>',
+    htmlEqual(render('<p data-if="flag"><span data-attr="class" data-value="foo"/>Hello world!</p>',
                       {flag: false}),
                '');
     
@@ -1607,7 +1607,7 @@ test('data-attr on top, single element template', function() {
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     template.render(el, {}, {});
-    html_equal(el.html(), '');
+    htmlEqual(el.html(), '');
     equal(el.attr('class'), 'bar');
 });
 
@@ -1616,7 +1616,7 @@ test('data-attr on top, multi element template', function() {
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     template.render(el, {}, {});
-    html_equal(el.html(), '<div>Another</div>');
+    htmlEqual(el.html(), '<div>Another</div>');
     equal(el.attr('class'), 'bar');
 });
 
@@ -1625,20 +1625,20 @@ test('data-attr on top with text following', function() {
     var template = new obtemp.Template(text);
     var el = $("<div></div>");
     template.render(el, {}, {});
-    html_equal(el.html(), 'More');
+    htmlEqual(el.html(), 'More');
     equal(el.attr('class'), 'bar');
 });
 
 
 test('data-attr in data-each', function() {
-    html_equal(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul',
+    htmlEqual(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul',
                       {list: ['a', 'b']}),
                '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
 });
 
 
 test('data-attr multiple times for classs', function() {
-    html_equal(render('<p><span data-attr="class" data-value="a" /><span data-attr="class" data-value="b" /></p>', {}),
+    htmlEqual(render('<p><span data-attr="class" data-value="a" /><span data-attr="class" data-value="b" /></p>', {}),
                '<p class="a b"></p>');
 });
 
@@ -1656,7 +1656,7 @@ test('data-attr multiple times for classs', function() {
 //     // // equal(el.get(0).childNodes[0].style, 'foo');
     
     
-//    // html_equal(render(text, {}),
+//    // htmlEqual(render(text, {}),
 //    //           '<div style="width: 15em; height: 16em;"></div>');
 // });
 
@@ -1667,58 +1667,58 @@ test('data-attr without data-value is an error', function() {
 });
 
 test('data-attr in void element', function() {
-    html_equal(
+    htmlEqual(
         render('<div data-el="input"><div data-attr="class" data-value="foo" /></div>', {}),
         '<input class="foo" />');
 });
 
 // XXX data-attr-something support?
 // test('data-attr-name to set attr of name dynamically', function() {
-//     html_equal(
+//     htmlEqual(
 //         render('<div data-attr-class="{foo}"></div>', {foo: 'Foo'}),
 //         '<div class="Foo" />');
 // });
 
 test('data-unwrap in element', function() {
-    html_equal(render('<div><div data-unwrap="">Hello world!</div></div>', {}),
+    htmlEqual(render('<div><div data-unwrap="">Hello world!</div></div>', {}),
                '<div>Hello world!</div>');
 });
 
 test('data-unwrap with multiple elements inside it', function() {
-    html_equal(render('<div><div data-unwrap=""><p>Hello</p><p>world!</p></div></div>', {}),
+    htmlEqual(render('<div><div data-unwrap=""><p>Hello</p><p>world!</p></div></div>', {}),
                '<div><p>Hello</p><p>world!</p></div>');
 });
 
 test('data-unwrap on top', function() {
-    html_equal(render('<div data-unwrap="">Hello world!</div>', {}),
+    htmlEqual(render('<div data-unwrap="">Hello world!</div>', {}),
                'Hello world!');
 });
 
 test('data-unwrap with data-if where if is true', function() { 
-    html_equal(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
+    htmlEqual(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
                       {flag: true}),
                '<div>Hello world!Something</div>');
 });
 
 test('data-unwrap with data-if where if is false', function() { 
-    html_equal(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
+    htmlEqual(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
                       {flag: false}),
                '<div>Something</div>');
 });
 
 test('data-unwrap with data-each', function() {
-    html_equal(render('<div data-unwrap="" data-each="list">{@.}</div>',
+    htmlEqual(render('<div data-unwrap="" data-each="list">{@.}</div>',
                       {list: ['a', 'b']}),
                'ab');
 });
 
 test('data-unwrap in data-unwrap', function() {
-    html_equal(render('A<div data-unwrap="">B<div data-unwrap="">C</div>D</div>', {}),
+    htmlEqual(render('A<div data-unwrap="">B<div data-unwrap="">C</div>D</div>', {}),
                'ABCD');
 });
 
 test('data-unwrap with data-trans', function() {
-    html_equal(render('<div data-unwrap="" data-trans="">Hello world!</div>', {}),
+    htmlEqual(render('<div data-unwrap="" data-trans="">Hello world!</div>', {}),
                'Hallo wereld!');
 });
 
@@ -1760,20 +1760,20 @@ test('deeper empty data-with is illegal', function() {
 });
 
 test('fallback with inner dottedname not in outer scope', function() {
-    html_equal(render('<div data-with="a">{foo.bar}</div>',
+    htmlEqual(render('<div data-with="a">{foo.bar}</div>',
                       {a: {}, foo: {bar: 'hoi'}}),
                '<div>hoi</div>');
 });
 
 
 test('fallback with inner dottedname in outer scope but inner is not', function() {
-    html_equal(render('<div data-with="a">{foo.bar}</div>',
+    htmlEqual(render('<div data-with="a">{foo.bar}</div>',
                       {a: {foo: {}}, foo: {bar: 'hoi'}}),
                '<div>hoi</div>');
 });
 
 test('empty variable is literally rendered', function() {
-    html_equal(render('<div>{}</div>', {}),
+    htmlEqual(render('<div>{}</div>', {}),
                '<div>{}</div>');
 });
 
@@ -1796,12 +1796,12 @@ test('variable with ending dot is illegal', function() {
 });
 
 test('variable with number in it is legal', function() {
-    html_equal(render('<div>{12}</div>', { '12': 'foo'}),
+    htmlEqual(render('<div>{12}</div>', { '12': 'foo'}),
                '<div>foo</div>');
 });
 
 test('variable with underscore in it is legal', function() {
-    html_equal(render('<div>{foo_bar}</div>', { 'foo_bar': 'hoi'}),
+    htmlEqual(render('<div>{fooBar}</div>', { 'fooBar': 'hoi'}),
                '<div>hoi</div>');
 
 });
@@ -1850,48 +1850,48 @@ test('illegal variable in data-id is checked', function() {
 
 
 test('insert open {', function() {
-    html_equal(render('<div>{@open}</div>', {}),
+    htmlEqual(render('<div>{@open}</div>', {}),
                '<div>{</div>');
 });
 
 test('insert close }', function() {
-    html_equal(render('<div>{@close}</div>', {}),
+    htmlEqual(render('<div>{@close}</div>', {}),
                '<div>}</div>');
 });
 
 test('insert open { in data-trans', function() {
-    html_equal(render('<div data-trans="">Hello <em data-tvar="who">{@open}{who}{@close}</em>!</div>',
+    htmlEqual(render('<div data-trans="">Hello <em data-tvar="who">{@open}{who}{@close}</em>!</div>',
                       {who: "X"}),
                '<div><em>{X}</em>, hallo!</div>');
 });
 
 
 test('data-handler working', function() {
-    var handler_called = false;
+    var handlerCalled = false;
     var handlers = {
-        my_handler: function(ev) {
-            handler_called = true;
+        myHandler: function(ev) {
+            handlerCalled = true;
         }
     };
 
-    var get_handler = function(name) {
+    var getHandler = function(name) {
         return handlers[name];
     };
     
     var template = new obtemp.Template(
-        '<div id="one" data-handler="click|my_handler">Click here</div>');
+        '<div id="one" data-handler="click|myHandler">Click here</div>');
       
     var el = $('<div></div>');
-    template.render(el, {}, { get_handler: get_handler});
+    template.render(el, {}, { getHandler: getHandler});
     $('#one', el).trigger('click');
-    equal(handler_called, true);
+    equal(handlerCalled, true);
 });
 
 test('data-handler no handlers supplied', function() {
-    var handler_called = false;
+    var handlerCalled = false;
     
     var template = new obtemp.Template(
-        '<div id="one" data-handler="click|my_handler">Click here</div>');
+        '<div id="one" data-handler="click|myHandler">Click here</div>');
       
     var el = $('<div></div>');
     raises(function() {
@@ -1900,68 +1900,68 @@ test('data-handler no handlers supplied', function() {
 });
 
 test('data-handler specific handler not supplied', function() {
-    var handler_called = false;
+    var handlerCalled = false;
     
-    var get_handler = function(name) {
+    var getHandler = function(name) {
         return null;
     };
     
     var template = new obtemp.Template(
-        '<div id="one" data-handler="click|my_handler">Click here</div>');
+        '<div id="one" data-handler="click|myHandler">Click here</div>');
       
     var el = $('<div></div>');
     raises(function() {
-        template.render(el, {}, {get_handler: get_handler});
+        template.render(el, {}, {getHandler: getHandler});
     }, obtemp.RenderError);
 });
 
 test('data-handler with data-el', function() {
-    var handler_called = false;
+    var handlerCalled = false;
     var handlers = {
-        my_handler: function(ev) {
-            handler_called = true;
+        myHandler: function(ev) {
+            handlerCalled = true;
         }
     };
 
-    var get_handler = function(name) {
+    var getHandler = function(name) {
         return handlers[name];
     };
     
     var template = new obtemp.Template(
-        '<span data-el="div" id="one" data-handler="click|my_handler">Click here</span>');
+        '<span data-el="div" id="one" data-handler="click|myHandler">Click here</span>');
       
     var el = $('<div></div>');
-    template.render(el, {}, { get_handler: get_handler});
+    template.render(el, {}, { getHandler: getHandler});
     $('#one', el).trigger('click');
-    equal(handler_called, true);
+    equal(handlerCalled, true);
     
 });
 
 test('data-handler multiple on same el', function() {
-    var first_handler_called = false;
-    var second_handler_called = false;
+    var firstHandlerCalled = false;
+    var secondHandlerCalled = false;
     var handlers = {
-        first_handler: function(ev) {
-            first_handler_called = true;
+        firstHandler: function(ev) {
+            firstHandlerCalled = true;
         },
-        second_handler: function(ev) {
-            second_handler_called = true;
+        secondHandler: function(ev) {
+            secondHandlerCalled = true;
         }
     };
 
-    var get_handler = function(name) {
+    var getHandler = function(name) {
         return handlers[name];
     };
     
     var template = new obtemp.Template(
-        '<div id="one" data-handler="click|first_handler blur|second_handler">Click here</div>');
+        '<div id="one" data-handler="click|firstHandler blur|secondHandler">Click here</div>');
       
     var el = $('<div></div>');
-    template.render(el, {}, { get_handler: get_handler});
+    template.render(el, {}, { getHandler: getHandler});
     $('#one', el).trigger('click');
     $('#one', el).trigger('blur');
-    equal(first_handler_called, true); 
-    equal(second_handler_called, true);
+    equal(firstHandlerCalled, true); 
+    equal(secondHandlerCalled, true);
 });
 
 // XXX test failure if dotted name has non-end name to name that doesn't exist
@@ -1974,24 +1974,24 @@ test('access variable codegen', function() {
     var obj = {a: 'foo', b: { bar: 'bar'}};
     
     var scope = new obtemp.Scope(obj);
-    var f = obtemp.resolve_func('@.');
+    var f = obtemp.resolveFunc('@.');
     strictEqual(f(scope), obj);
 
-    f = obtemp.resolve_func('a');
+    f = obtemp.resolveFunc('a');
     equal(f(scope), 'foo');
 
-    f = obtemp.resolve_func('b.bar');
+    f = obtemp.resolveFunc('b.bar');
     equal(f(scope), 'bar');
 
     scope.push({c: 'C'});
 
-    f = obtemp.resolve_func('c');
+    f = obtemp.resolveFunc('c');
     equal(f(scope), 'C');
 
-    f = obtemp.resolve_func('a');
+    f = obtemp.resolveFunc('a');
     equal(f(scope), 'foo');
 
-    f = obtemp.resolve_func('nonexistent');
+    f = obtemp.resolveFunc('nonexistent');
     equal(f(scope), undefined);
 });
 
@@ -2001,37 +2001,37 @@ test('variables', function() {
 });
 
 test("pluralize in text without translation implicit data-plural", function() {
-    html_equal(render('<div data-trans="">1 elephant||{count} elephants</div>',
+    htmlEqual(render('<div data-trans="">1 elephant||{count} elephants</div>',
                       { 'count': 1}),
                '<div>1 elephant</div>');
-    html_equal(render('<div data-trans="">1 elephant||{count} elephants</div>',
+    htmlEqual(render('<div data-trans="">1 elephant||{count} elephants</div>',
                       { 'count': 2}),
                '<div>2 elephants</div>');
 });
 
 test("pluralize in tvar without translation implicit data-plural", function() {
-    html_equal(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
+    htmlEqual(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
                       { 'count': 1}),
                '<div><div>1 elephant</div>!</div>');
-    html_equal(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
+    htmlEqual(render('<div data-trans=""><div data-tvar="foo">1 elephant||{count} elephants</div>!</div>',
                       { 'count': 2}),
                '<div><div>2 elephants</div>!</div>');
 });
 
 test("pluralize in text without translation explicit data-plural", function() {
-    html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
                       { 'count': 1}),
                '<div>1 elephant</div>');
-    html_equal(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">1 elephant||{count} elephants</div>',
                       { 'count': 2}),
                '<div>2 elephants</div>');
 });
 
 test("pluralize in tvar without translation explicit data-plural", function() {
-    html_equal(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
+    htmlEqual(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
                       { 'count': 1}),
                '<div><div>1 elephant</div>!</div>');
-    html_equal(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
+    htmlEqual(render('<div data-trans=""><div data-tvar="foo" data-plural="count">1 elephant||{count} elephants</div>!</div>',
                       { 'count': 2}),
                '<div><div>2 elephants</div>!</div>');
 });
@@ -2052,11 +2052,11 @@ test("data-tvar does not count as implicit count variable", function() {
 });
 
 test("pluralize in text without translation use data-plural to indicate count variable", function() {
-    html_equal(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
                       {'count': 1, 'size': 'big'}),
                '<div>1 big elephant</div>');
     
-    html_equal(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">{count} {size} elephant||{count} {size} elephants</div>',
                       {'count': 2, 'size': 'big'}),
                '<div>2 big elephants</div>');
 });
@@ -2082,46 +2082,46 @@ test('data-plural without data-trans is not allowed', function() {
 });
 
 test("pluralize in text with translation", function() {
-    html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
                       { 'count': 1}),
                '<div>1 koe</div>');
-    html_equal(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count">1 cow||{count} cows</div>',
                       { 'count': 2}),
                '<div>2 koeien</div>');
 });
 
 test("pluralize in attr without translation", function() {
-    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
                       { 'count': 1}),
                '<div title="1 elephant"></div>');
-    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:count" title="1 elephant||{count} elephants"></div>',
                       { 'count': 2}),
                '<div title="2 elephants"></div>');
 });
 
 test("pluralize in attr with translation, same explicit as implicit", function() {
-    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
                       { 'count': 1}),
                '<div title="1 koe"></div>');
-    html_equal(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:count" title="1 cow||{count} cows"></div>',
                       { 'count': 2}),
                '<div title="2 koeien"></div>');
 });
 
 test("pluralize in attr with translation, different explicit as implicit", function() {
-    html_equal(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
                       { 'count': 1, 'amount': 2}),
                '<div title="1 koeien"></div>');
-    html_equal(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" data-plural="title:amount" title="1 cow||{count} cows"></div>',
                       { 'count': 2, 'amount': 1}),
                '<div title="1 koe"></div>');
 });
 
 test("implicit pluralize in attr with translation", function() {
-    html_equal(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
                       { 'count': 1}),
                '<div title="1 koe"></div>');
-    html_equal(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
+    htmlEqual(render('<div data-trans="title" title="1 cow||{count} cows"></div>',
                       { 'count': 2}),
                '<div title="2 koeien"></div>');
 });
@@ -2129,32 +2129,32 @@ test("implicit pluralize in attr with translation", function() {
 // test pluralize with explicit message ids
 // also test fallback when no translation is available
 
-// XXX is plural_message_id relevant? should there be a way to explicitly
+// XXX is pluralMessageId relevant? should there be a way to explicitly
 // define it or does it serve no purpose as it's never used for lookup?
 
 test("pluralize in attr and content translation", function() {
-    html_equal(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
+    htmlEqual(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
                       { 'count': 1, 'amount': 2, 'size': 'big'}),
                '<div title="1 big elephant">2 big elephants</div>');
-    html_equal(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
+    htmlEqual(render('<div data-trans=". title" data-plural=".:amount title:count" title="1 {size} elephant||{count} {size} elephants">1 {size} elephant||{amount} {size} elephants</div>',
                       { 'count': 2, 'amount': 1, 'size': 'big'}),
                '<div title="2 big elephants">1 big elephant</div>');
 });
 
 test("pluralize in text with tvar without translation", function() {
-    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
                       { 'count': 1}),
                '<div><em>1</em> elephant</div>');
-    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> elephant||<em>{count}</em> elephants</div>',
                       { 'count': 2}),
                '<div><em>2</em> elephants</div>');
 });
 
 test("pluralize in text with tvar with translation", function() {
-    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
                       { 'count': 1}),
                '<div><em>1</em> koe</div>');
-    html_equal(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
+    htmlEqual(render('<div data-trans="" data-plural="count"><em data-tvar="count">1</em> cow||<em>{count}</em> cows</div>',
                       { 'count': 2}),
                '<div><em>2</em> koeien</div>');
 });
@@ -2177,7 +2177,7 @@ test("data-each should not break finders with second section", function() {
         '</li>' +
         '</ul>');
     
-    html_equal(render(complex,
+    htmlEqual(render(complex,
                       { 'entries': [{}, {}], var: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></ul>');
 });
@@ -2193,7 +2193,7 @@ test("data-each should not break finders without second section", function() {
         '</li>' +
         '</ul>');
     
-    html_equal(render(complex,
+    htmlEqual(render(complex,
                       { 'entries': [{}, {}], var: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></li></ul>');
 });
@@ -2206,12 +2206,12 @@ test("data-each should not break finders without second section", function() {
 //     // var template = new obtemp.Template('<img src="bar.jpg" data-attr="src" data-value="{test}.jpg" />');
 //     // var el = $('#viewdiv');
 
-//     html_equal(render('<div data-el="img"><div data-attr="src" data-value="fixtures/{test}.png" /></div>',
+//     htmlEqual(render('<div data-el="img"><div data-attr="src" data-value="fixtures/{test}.png" /></div>',
 //                       {test: 'destroy'}),
 //                '<img data-blah="foo.jpg" />');
     
 //     // template.render(el, {test: 'foo'});
-//     // html_equal($('#viewdiv').html(), '<img src="foo.jpg" />');
+//     // htmlEqual($('#viewdiv').html(), '<img src="foo.jpg" />');
 // });
 
 test('tokenize single variable', function() {

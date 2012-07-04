@@ -2,7 +2,7 @@
   equal:false raises:false asyncTest:false start:false deepEqual: false
   stop:false  */
 
-$.fn.html_lower = function() {
+$.fn.htmlLower = function() {
     // some nasty normalization for IE
     var html = this.html();
     return html.toLowerCase().replace(/"/g, '');
@@ -30,7 +30,7 @@ module("Forms", {
 // * datepicker logic
 
 test('basic data link sanity check', function() {
-    var link_context = {
+    var linkContext = {
         twoWay: true,
         name: 'foo',
         convert: function(value, source, target) {
@@ -42,19 +42,19 @@ test('basic data link sanity check', function() {
     };
 
     var el = $('#viewdiv');
-    var form_el = $('<form></form>');
-    var input_el = $('<input name="foo" type="text" value="" />');
-    form_el.append(input_el);
-    el.append(form_el);
+    var formEl = $('<form></form>');
+    var inputEl = $('<input name="foo" type="text" value="" />');
+    formEl.append(inputEl);
+    el.append(formEl);
 
     var data = { foo: 'hoi' };
-    input_el.link(data, {foo: link_context});
-    form_el.link(data);
+    inputEl.link(data, {foo: linkContext});
+    formEl.link(data);
     
     $(data).setField('foo', 'dag');
-    equal(input_el.val(), 'dag');
-    input_el.val('something else');
-    input_el.trigger('change');
+    equal(inputEl.val(), 'dag');
+    inputEl.val('something else');
+    inputEl.trigger('change');
     equal(data.foo, 'something else');
     
 });
@@ -67,8 +67,8 @@ test('empty form', function() {
             widgets: []
             }
     });
-    var form_el = $('form', el);
-    equal($('.form-field', form_el).length, 0);
+    var formEl = $('form', el);
+    equal($('.form-field', formEl).length, 0);
 });
 
 test('simple form with one field', function() {
@@ -77,16 +77,16 @@ test('simple form with one field', function() {
         ifaces: ['viewform'],
         form: {
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A textline widget'
             }]
         }
     });
-    var form_el = $('form', el);
-    ok(form_el.length, 'checking for form element');
-    equal($('.obviel-field', form_el).length, 1);
+    var formEl = $('form', el);
+    ok(formEl.length, 'checking for form element');
+    equal($('.obviel-field', formEl).length, 1);
 });
 
 test('form with one field with class', function() {
@@ -96,7 +96,7 @@ test('form with one field with class', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 'class': 'foo',
                 title: 'Text',
@@ -104,11 +104,11 @@ test('form with one field with class', function() {
             }]
         }
     });
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var field_a_el = $('#obviel-field-test-text', form_el);
+    var fieldA_el = $('#obviel-field-test-text', formEl);
     
-    ok(field_a_el.parent_view().el.hasClass('foo'));
+    ok(fieldA_el.parentView().el.hasClass('foo'));
 });
 
 test('form with one group field with one composite field with class', function() {
@@ -118,17 +118,17 @@ test('form with one group field with one composite field with class', function()
         form: {
             name: 'test',
             widgets: [
-                {ifaces: ['group_field'],
+                {ifaces: ['groupField'],
                  name: 'group',
                  title: 'Group',
                  widgets: [{
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'text',
                     'class': 'foo',
                     title: 'Text',
                     description: 'A composite widget',
                     widgets: [{
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'subtext',
                         title: 'SubText',
                         description: 'A textline widget'
@@ -137,11 +137,11 @@ test('form with one group field with one composite field with class', function()
             }]
         }
     });
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var field_a_el = $('#obviel-field-test-group-text', form_el);
+    var fieldA_el = $('#obviel-field-test-group-text', formEl);
     
-    ok(field_a_el.parent_view().el.hasClass('foo'));
+    ok(fieldA_el.parentView().el.hasClass('foo'));
 });
 
 
@@ -152,7 +152,7 @@ test('form with disabled field', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 disabled: true,
@@ -160,8 +160,8 @@ test('form with disabled field', function() {
             }]
         }
     });
-    var form_el = $('form', el);
-    equal($('#obviel-field-test-text', form_el).is(':disabled'), true);
+    var formEl = $('form', el);
+    equal($('#obviel-field-test-text', formEl).is(':disabled'), true);
 });
 
 test('whole form disabled', function() {
@@ -171,7 +171,7 @@ test('whole form disabled', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A textline widget'
@@ -179,8 +179,8 @@ test('whole form disabled', function() {
             disabled: true
         }
     });
-    var form_el = $('form', el);
-    equal($('#obviel-field-test-text', form_el).is(':disabled'), true);
+    var formEl = $('form', el);
+    equal($('#obviel-field-test-text', formEl).is(':disabled'), true);
 });
 
 test('form with two fields', function() {
@@ -189,12 +189,12 @@ test('form with two fields', function() {
         ifaces: ['viewform'],
         form: {
             widgets: [
-                {ifaces: ['textline_field'],
+                {ifaces: ['textlineField'],
                  name: 'text1',
                  title: 'Text',
                  description: 'A textline widget'
                 },
-                {ifaces: ['textline_field'],
+                {ifaces: ['textlineField'],
                  name: 'text2',
                  title: 'Text',
                  description: 'A textline widget'
@@ -202,9 +202,9 @@ test('form with two fields', function() {
             ]
         }
     });
-    var form_el = $('form', el);
-    ok(form_el.length, 'checking for form element');
-    equal($('.obviel-field', form_el).length, 2);
+    var formEl = $('form', el);
+    ok(formEl.length, 'checking for form element');
+    equal($('.obviel-field', formEl).length, 2);
 });
 
 test('form with groups widgets', function() {
@@ -216,14 +216,14 @@ test('form with groups widgets', function() {
             widgets: 
             [{
                 name: 'one',
-                ifaces: ['group_field'],
+                ifaces: ['groupField'],
                 widgets: [
-                    {ifaces: ['textline_field'],
+                    {ifaces: ['textlineField'],
                      name: 'text1',
                      title: 'Text',
                      description: 'A textline widget'
                     },
-                    {ifaces: ['textline_field'],
+                    {ifaces: ['textlineField'],
                      name: 'text2',
                      title: 'Text',
                      description: 'A textline widget'
@@ -232,9 +232,9 @@ test('form with groups widgets', function() {
             },
              {
                  name: 'two',
-                 ifaces: ['group_field'],
+                 ifaces: ['groupField'],
                  widgets: [
-                     {ifaces: ['textline_field'],
+                     {ifaces: ['textlineField'],
                       name: 'alpha',
                       title: 'Alpha'
                      }
@@ -258,14 +258,14 @@ test('form with group widget titles', function() {
             [{
                 name: 'one',
                 title: "One",
-                ifaces: ['group_field'],
+                ifaces: ['groupField'],
                 widgets: [
-                    {ifaces: ['textline_field'],
+                    {ifaces: ['textlineField'],
                      name: 'text1',
                      title: 'Text',
                      description: 'A textline widget'
                     },
-                    {ifaces: ['textline_field'],
+                    {ifaces: ['textlineField'],
                      name: 'text2',
                      title: 'Text',
                      description: 'A textline widget'
@@ -275,9 +275,9 @@ test('form with group widget titles', function() {
              {
                  name: 'two',
                  title: "Two",
-                 ifaces: ['group_field'],
+                 ifaces: ['groupField'],
                  widgets: [
-                     {ifaces: ['textline_field'],
+                     {ifaces: ['textlineField'],
                       name: 'alpha',
                       title: 'Alpha'
                      }
@@ -296,7 +296,7 @@ test('form with controls', function() {
         ifaces: ['viewform'],
         form: {
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A textline widget'
@@ -308,7 +308,7 @@ test('form with controls', function() {
             }]
         }
     });
-    var form_el = $('form', el);
+    var formEl = $('form', el);
     equal($('button', el).length, 1);
     equal($('button', el).attr('name'), 'foo');
     equal($('button', el).attr('class'), 'obviel-control fooClass');
@@ -322,25 +322,25 @@ test('form with non-validating control', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A'
             }],
             controls: [{
                 name: 'foo',
-                no_validation: true
+                noValidation: true
             }]
         },
         errors: errors
     });
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var field_a_el = $('#obviel-field-test-a', form_el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
 
-    field_a_el.val('not an int');
+    fieldA_el.val('not an int');
     
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
     // shouldn't have done any validation
     equal(errors['a'], undefined);
@@ -355,40 +355,40 @@ test('form with non-validating control should still do action', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A'
             }],
             controls: [{
                 name: 'foo',
-                no_validation: true,
+                noValidation: true,
                 action: 'http://localhost'
             }]
         },
         errors: errors
     });
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
-        ajax_options = options;
+        ajaxOptions = options;
         // to trigger successful result
-        options.success({ifaces: ['success_iface']});
+        options.success({ifaces: ['successIface']});
     };
     
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
     // not a valid value, but it doesn't matter as we don't
-    // submit any actual data with a no_validation control
-    field_el.val('foo');
+    // submit any actual data with a noValidation control
+    fieldEl.val('foo');
 
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
-    $.ajax = original_ajax;
-    equal(ajax_options.data, undefined);
+    $.ajax = originalAjax;
+    equal(ajaxOptions.data, undefined);
 
-    // the success_iface should be rendered
+    // the successIface should be rendered
     equal(el.text(), 'success!');
 });
 
@@ -398,15 +398,15 @@ test('text rendering', function() {
         ifaces: ['viewform'],
         form: {
             widgets: [{
-                ifaces: ['text_field'],
+                ifaces: ['textField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget'
             }]
         }
     });
-    var form_el = $('form', el);
-    equal($('textarea', form_el).length, 1);
+    var formEl = $('form', el);
+    equal($('textarea', formEl).length, 1);
 });
 
 test("boolean rendering", function() {
@@ -415,15 +415,15 @@ test("boolean rendering", function() {
         ifaces: ['viewform'],
         form: {
             widgets: [{
-                ifaces: ['boolean_field'],
+                ifaces: ['booleanField'],
                 name: 'boolean',
                 title: 'Boolean',
                 description: 'A boolean widget'
             }]
         }
     });
-    var form_el = $('form', el);
-    equal($('input[type="checkbox"]', form_el).length, 1);
+    var formEl = $('form', el);
+    equal($('input[type="checkbox"]', formEl).length, 1);
 });
 
 // note that in these conversion and validation tests the widget is
@@ -459,11 +459,11 @@ test("textline validate not required", function() {
     equal(widget.validate(null), undefined);
 });
 
-test("textline validate min_length", function() {
+test("textline validate minLength", function() {
     var widget = new obviel.forms.TextLineWidget().clone({
         obj:  {
             validate: {
-                min_length: 3
+                minLength: 3
             }
         }
     });
@@ -471,11 +471,11 @@ test("textline validate min_length", function() {
     equal(widget.validate('fo'), "value too short");
 });
 
-test("textline validate max_length", function() {
+test("textline validate maxLength", function() {
     var widget = new obviel.forms.TextLineWidget().clone({
         obj: {
             validate: {
-                max_length: 3
+                maxLength: 3
             }
         }
     });
@@ -583,7 +583,7 @@ test('integer validate allow negative', function() {
     var widget = new obviel.forms.IntegerWidget().clone({
         obj: {
             validate: {
-                allow_negative: true
+                allowNegative: true
             }
         }
     });
@@ -595,7 +595,7 @@ test('integer validate lengths in digits', function() {
         obj:  {
             validate: {
                 length: 3,
-                allow_negative: true
+                allowNegative: true
             }
         }
     });
@@ -725,7 +725,7 @@ test('decimal validate', function() {
     widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
-                allow_negative: true
+                allowNegative: true
             }
         }
     });
@@ -735,11 +735,11 @@ test('decimal validate', function() {
     widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
-                allow_negative: true,
-                min_before_sep: 2,
-                max_before_sep: 5,
-                min_after_sep: 2,
-                max_after_sep: 5
+                allowNegative: true,
+                minBeforeSep: 2,
+                maxBeforeSep: 5,
+                minAfterSep: 2,
+                maxAfterSep: 5
             }
         }
     });
@@ -782,7 +782,7 @@ test('decimal validate', function() {
     widget = new obviel.forms.DecimalWidget().clone({
         obj: {
             validate: {
-                allow_negative: true
+                allowNegative: true
             }
         }
     });
@@ -822,17 +822,17 @@ test("form starts out with empty data", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['textline_field'],
+                    ifaces: ['textlineField'],
                     name: 'a',
                     title: 'A'
                 },
                 {
-                    ifaces: ['integer_field'],
+                    ifaces: ['integerField'],
                     name: 'b',
                     title: 'B'
                 },
                 {
-                    ifaces: ['integer_field'],
+                    ifaces: ['integerField'],
                     name: 'c',
                     title: 'C',
                     defaultvalue: 1
@@ -859,7 +859,7 @@ test("form disabled with data", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['textline_field'],
+                    ifaces: ['textlineField'],
                     name: 'a',
                     title: 'A',
                     disabled: true
@@ -883,16 +883,16 @@ test("composite datalink", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -905,14 +905,14 @@ test("composite datalink", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-composite-a', form_el);
-    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-composite-a', formEl);
+    var fieldB_el = $('#obviel-field-test-composite-b', formEl);
     
-    field_a_el.val('foo');
-    field_b_el.val('not an int'); // not an int
-    field_a_el.trigger('change');
-    field_b_el.trigger('change');
+    fieldA_el.val('foo');
+    fieldB_el.val('not an int'); // not an int
+    fieldA_el.trigger('change');
+    fieldB_el.trigger('change');
 
     equal(errors.composite.a, '');
     equal(errors.composite.b, 'not a number');
@@ -920,8 +920,8 @@ test("composite datalink", function() {
     equal(data.composite.b, undefined); // conversion failed so undefined
 
     // now put in the right value
-    field_b_el.val('3');
-    field_b_el.trigger('change');
+    fieldB_el.val('3');
+    fieldB_el.trigger('change');
     equal(errors.composite.b, '');
     equal(data.composite.b, 3);
 });
@@ -936,17 +936,17 @@ test("composite back datalink", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     title: 'Test',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -957,17 +957,17 @@ test("composite back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-composite-a', form_el);
-    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-composite-a', formEl);
+    var fieldB_el = $('#obviel-field-test-composite-b', formEl);
     $(data.composite).setField('a', 'Bar');
     $(data.composite).setField('b', 3);
     
-    equal(field_a_el.val(), 'Bar');
-    equal(field_b_el.val(), '3');
+    equal(fieldA_el.val(), 'Bar');
+    equal(fieldB_el.val(), '3');
     
     $(data.composite).setField('a', null);
-    equal(field_a_el.val(), '');
+    equal(fieldA_el.val(), '');
 });
 
 
@@ -981,16 +981,16 @@ test("composite empty", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1016,21 +1016,21 @@ test("nested composite datalink", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     widgets: [
                         {
-                            ifaces: ['composite_field'],
+                            ifaces: ['compositeField'],
                             name: 'composite',
                             widgets: [
                                 {
-                                    ifaces: ['textline_field'],
+                                    ifaces: ['textlineField'],
                                     name: 'a',
                                     title: 'A'
              
                                 },
                                 {
-                                    ifaces: ['integer_field'],
+                                    ifaces: ['integerField'],
                                     name: 'b',
                                     title: 'B'
                                 }
@@ -1038,7 +1038,7 @@ test("nested composite datalink", function() {
                             ]
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1050,21 +1050,21 @@ test("nested composite datalink", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
-    var field_composite_composite_a_el = $(
-        '#obviel-field-test-composite-composite-a', form_el);
-    var field_composite_composite_b_el = $(
-        '#obviel-field-test-composite-composite-b', form_el);
-    var field_composite_b_el = $(
-        '#obviel-field-test-composite-b', form_el);
+    var formEl = $('form', el);
+    var fieldCompositeCompositeA_el = $(
+        '#obviel-field-test-composite-composite-a', formEl);
+    var fieldCompositeCompositeB_el = $(
+        '#obviel-field-test-composite-composite-b', formEl);
+    var fieldCompositeB_el = $(
+        '#obviel-field-test-composite-b', formEl);
     
-    field_composite_composite_a_el.val('foo');
-    field_composite_composite_b_el.val('3');
-    field_composite_b_el.val('4');
+    fieldCompositeCompositeA_el.val('foo');
+    fieldCompositeCompositeB_el.val('3');
+    fieldCompositeB_el.val('4');
     
-    field_composite_composite_a_el.trigger('change');
-    field_composite_composite_b_el.trigger('change');
-    field_composite_b_el.trigger('change');
+    fieldCompositeCompositeA_el.trigger('change');
+    fieldCompositeCompositeB_el.trigger('change');
+    fieldCompositeB_el.trigger('change');
 
     equal(data.composite.composite.a, 'foo');
     equal(data.composite.composite.b, 3);
@@ -1081,16 +1081,16 @@ test("repeating entries show up", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1103,16 +1103,16 @@ test("repeating entries show up", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
-    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
-    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
-    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    var formEl = $('form', el);
+    var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
+    var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
+    var field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
+    var field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
 
-    equal(field_0_a_el.val(), 'foo');
-    equal(field_0_b_el.val(), '1');
-    equal(field_1_a_el.val(), 'bar');
-    equal(field_1_b_el.val(), '2');
+    equal(field0_aEl.val(), 'foo');
+    equal(field0_bEl.val(), '1');
+    equal(field1_aEl.val(), 'bar');
+    equal(field1_bEl.val(), '2');
 
 });
 
@@ -1126,16 +1126,16 @@ test("repeating datalink", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1148,21 +1148,21 @@ test("repeating datalink", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
 
     equal(data.repeating.length, 1);
     equal(errors.repeating.length, 1);
     
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
     
-    field_a_el.val('foo');
-    field_b_el.val('not an int'); // not an int
-    field_a_el.trigger('change');
-    field_b_el.trigger('change');
+    fieldA_el.val('foo');
+    fieldB_el.val('not an int'); // not an int
+    fieldA_el.trigger('change');
+    fieldB_el.trigger('change');
 
     equal(errors.repeating[0].a, '');
     equal(errors.repeating[0].b, 'not a number');
@@ -1170,8 +1170,8 @@ test("repeating datalink", function() {
     equal(data.repeating[0].b, undefined); // conversion failed so undefined
 
     // now put in the right value
-    field_b_el.val('3');
-    field_b_el.trigger('change');
+    fieldB_el.val('3');
+    fieldB_el.trigger('change');
     equal(errors.repeating[0].b, '');
     equal(data.repeating[0].b, 3);
 });
@@ -1186,17 +1186,17 @@ test("repeating defaults", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A',
                             defaultvalue: 'foo'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B',
                             defaultvalue: 1
@@ -1210,19 +1210,19 @@ test("repeating defaults", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
 
     equal(data.repeating.length, 1);
     equal(errors.repeating.length, 1);
     
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
 
-    equal(field_a_el.val(), 'foo');
-    equal(field_b_el.val(), '1');
+    equal(fieldA_el.val(), 'foo');
+    equal(fieldB_el.val(), '1');
 
     equal(data.repeating[0].a, 'foo');
     equal(data.repeating[0].b, 1);
@@ -1239,16 +1239,16 @@ test("repeating empty entries without defaults", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1261,16 +1261,16 @@ test("repeating empty entries without defaults", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
 
     equal(data.repeating.length, 1);
     equal(errors.repeating.length, 1);
     
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
 
     ok(data.repeating[0].a === null);
     ok(data.repeating[0].b === null);
@@ -1287,17 +1287,17 @@ test("repeating back datalink", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     title: 'Test',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1308,21 +1308,21 @@ test("repeating back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var formEl = $('form', el);
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
     
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
     
     $(data.repeating[0]).setField('a', 'Bar');
     $(data.repeating[0]).setField('b', 3);
     
-    equal(field_a_el.val(), 'Bar');
-    equal(field_b_el.val(), '3');
+    equal(fieldA_el.val(), 'Bar');
+    equal(fieldB_el.val(), '3');
     
     $(data.repeating[0]).setField('a', null);
-    equal(field_a_el.val(), '');
+    equal(fieldA_el.val(), '');
 });
 
 
@@ -1340,16 +1340,16 @@ test("repeating remove item", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1362,39 +1362,39 @@ test("repeating remove item", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
-    add_button.trigger('click');
-    add_button.trigger('click');
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
+    addButton.trigger('click');
+    addButton.trigger('click');
     
     equal(data.repeating.length, 3);
     equal(errors.repeating.length, 3);
     
-    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
+    var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
 
-    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
-    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    var field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
+    var field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
     
-    var field_2_a_el = $('#obviel-field-test-repeating-2-a', form_el);
-    var field_2_b_el = $('#obviel-field-test-repeating-2-b', form_el);
+    var field2_aEl = $('#obviel-field-test-repeating-2-a', formEl);
+    var field2_bEl = $('#obviel-field-test-repeating-2-b', formEl);
     
     
-    field_0_a_el.val('foo');
-    field_0_b_el.val('10');
-    field_1_a_el.val('bar');
-    field_1_b_el.val('20');
-    field_2_a_el.val('baz');
-    field_2_b_el.val('30');
+    field0_aEl.val('foo');
+    field0_bEl.val('10');
+    field1_aEl.val('bar');
+    field1_bEl.val('20');
+    field2_aEl.val('baz');
+    field2_bEl.val('30');
 
-    change(field_0_a_el);
-    change(field_0_b_el);
-    change(field_1_a_el);
-    change(field_1_b_el);
-    change(field_2_a_el);
-    change(field_2_b_el);
+    change(field0_aEl);
+    change(field0_bEl);
+    change(field1_aEl);
+    change(field1_bEl);
+    change(field2_aEl);
+    change(field2_bEl);
     
     equal(data.repeating[0].a, 'foo');
     equal(data.repeating[0].b, 10);
@@ -1404,17 +1404,17 @@ test("repeating remove item", function() {
     equal(data.repeating[2].b, 30);
 
     // now remove entry indexed 1
-    var remove_button = $('.obviel-repeat-remove-button',
-                          field_1_a_el.parent().parent().parent().parent());
-    remove_button.trigger('click');
+    var removeButton = $('.obviel-repeat-remove-button',
+                          field1_aEl.parent().parent().parent().parent());
+    removeButton.trigger('click');
 
     equal(data.repeating.length, 2);
     equal(errors.repeating.length, 2);
 
-    field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
-    field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
-    equal(field_1_a_el.length, 0);
-    equal(field_1_b_el.length, 0);
+    field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
+    field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
+    equal(field1_aEl.length, 0);
+    equal(field1_bEl.length, 0);
     
     equal(data.repeating[0].a, 'foo');
     equal(data.repeating[0].b, 10);
@@ -1422,15 +1422,15 @@ test("repeating remove item", function() {
     equal(data.repeating[1].b, 30);
 
     // do some modifications, should end up in the right place
-    field_0_a_el.val('qux');
-    field_0_b_el.val('11');
-    field_2_a_el.val('hoi');
-    field_2_b_el.val('44');
+    field0_aEl.val('qux');
+    field0_bEl.val('11');
+    field2_aEl.val('hoi');
+    field2_bEl.val('44');
 
-    change(field_0_a_el);
-    change(field_0_b_el);
-    change(field_2_a_el);
-    change(field_2_b_el);
+    change(field0_aEl);
+    change(field0_bEl);
+    change(field2_aEl);
+    change(field2_bEl);
 
     equal(data.repeating[0].a, 'qux');
     equal(data.repeating[0].b, 11);
@@ -1439,11 +1439,11 @@ test("repeating remove item", function() {
 
     // now add a field again, new entry should show up with higher number
     // than seen before, to avoid overlap
-    add_button.trigger('click');
-    var field_3_a_el = $('#obviel-field-test-repeating-3-a', form_el);
-    var field_3_b_el = $('#obviel-field-test-repeating-3-b', form_el);
-    equal(field_3_a_el.length, 1);
-    equal(field_3_b_el.length, 1);
+    addButton.trigger('click');
+    var field3_aEl = $('#obviel-field-test-repeating-3-a', formEl);
+    var field3_bEl = $('#obviel-field-test-repeating-3-b', formEl);
+    equal(field3_aEl.length, 1);
+    equal(field3_bEl.length, 1);
     equal(data.repeating.length, 3);
 });
 
@@ -1461,16 +1461,16 @@ test("repeating removing added item from data", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -1483,33 +1483,33 @@ test("repeating removing added item from data", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
+    var formEl = $('form', el);
     
     equal(data.repeating.length, 3);
     equal(errors.repeating.length, 3);
     
-    var field_0_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_0_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
+    var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
 
-    var field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
-    var field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
+    var field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
+    var field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
     
-    var field_2_a_el = $('#obviel-field-test-repeating-2-a', form_el);
-    var field_2_b_el = $('#obviel-field-test-repeating-2-b', form_el);
+    var field2_aEl = $('#obviel-field-test-repeating-2-a', formEl);
+    var field2_bEl = $('#obviel-field-test-repeating-2-b', formEl);
     
-    field_0_a_el.val('foo-changed');
-    field_0_b_el.val('11');
-    field_1_a_el.val('bar-changed');
-    field_1_b_el.val('21');
-    field_2_a_el.val('baz-changed');
-    field_2_b_el.val('31');
+    field0_aEl.val('foo-changed');
+    field0_bEl.val('11');
+    field1_aEl.val('bar-changed');
+    field1_bEl.val('21');
+    field2_aEl.val('baz-changed');
+    field2_bEl.val('31');
 
-    change(field_0_a_el);
-    change(field_0_b_el);
-    change(field_1_a_el);
-    change(field_1_b_el);
-    change(field_2_a_el);
-    change(field_2_b_el);
+    change(field0_aEl);
+    change(field0_bEl);
+    change(field1_aEl);
+    change(field1_bEl);
+    change(field2_aEl);
+    change(field2_bEl);
     
     equal(data.repeating[0].a, 'foo-changed');
     equal(data.repeating[0].b, 11);
@@ -1519,17 +1519,17 @@ test("repeating removing added item from data", function() {
     equal(data.repeating[2].b, 31);
 
     // now remove entry indexed 1
-    var remove_button = $('.obviel-repeat-remove-button',
-                          field_1_a_el.parent().parent().parent().parent());
-    remove_button.trigger('click');
+    var removeButton = $('.obviel-repeat-remove-button',
+                          field1_aEl.parent().parent().parent().parent());
+    removeButton.trigger('click');
 
     equal(data.repeating.length, 2);
     equal(errors.repeating.length, 2);
 
-    field_1_a_el = $('#obviel-field-test-repeating-1-a', form_el);
-    field_1_b_el = $('#obviel-field-test-repeating-1-b', form_el);
-    equal(field_1_a_el.length, 0);
-    equal(field_1_b_el.length, 0);
+    field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
+    field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
+    equal(field1_aEl.length, 0);
+    equal(field1_bEl.length, 0);
     
     equal(data.repeating[0].a, 'foo-changed');
     equal(data.repeating[0].b, 11);
@@ -1537,15 +1537,15 @@ test("repeating removing added item from data", function() {
     equal(data.repeating[1].b, 31);
 
     // do some modifications, should end up in the right place
-    field_0_a_el.val('qux');
-    field_0_b_el.val('12');
-    field_2_a_el.val('hoi');
-    field_2_b_el.val('42');
+    field0_aEl.val('qux');
+    field0_bEl.val('12');
+    field2_aEl.val('hoi');
+    field2_bEl.val('42');
 
-    change(field_0_a_el);
-    change(field_0_b_el);
-    change(field_2_a_el);
-    change(field_2_b_el);
+    change(field0_aEl);
+    change(field0_bEl);
+    change(field2_aEl);
+    change(field2_bEl);
 
     equal(data.repeating[0].a, 'qux');
     equal(data.repeating[0].b, 12);
@@ -1554,12 +1554,12 @@ test("repeating removing added item from data", function() {
 
     // now add a field again, new entry should show up with higher number
     // than seen before, to avoid overlap
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
-    var field_3_a_el = $('#obviel-field-test-repeating-3-a', form_el);
-    var field_3_b_el = $('#obviel-field-test-repeating-3-b', form_el);
-    equal(field_3_a_el.length, 1);
-    equal(field_3_b_el.length, 1);
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
+    var field3_aEl = $('#obviel-field-test-repeating-3-a', formEl);
+    var field3_bEl = $('#obviel-field-test-repeating-3-b', formEl);
+    equal(field3_aEl.length, 1);
+    equal(field3_bEl.length, 1);
     equal(data.repeating.length, 3);
 });
 
@@ -1572,7 +1572,7 @@ test("textline datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1582,10 +1582,10 @@ test("textline datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('foo');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('foo');
+    fieldEl.trigger('change');
     equal(data.a, 'foo');
 });
 
@@ -1597,7 +1597,7 @@ test("textline back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1607,12 +1607,12 @@ test("textline back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
     $(data).setField('a', 'Bar');
-    equal(field_el.val(), 'Bar');
+    equal(fieldEl.val(), 'Bar');
     $(data).setField('a', null);
-    equal(field_el.val(), '');
+    equal(fieldEl.val(), '');
 });
 
 test("integer datalink conversion error", function() {
@@ -1624,7 +1624,7 @@ test("integer datalink conversion error", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1636,12 +1636,12 @@ test("integer datalink conversion error", function() {
         
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('foo'); // not an int
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('foo'); // not an int
+    fieldEl.trigger('change');
     equal(errors.a, 'not a number');
-    equal(field_el.parent_view().error(), 'not a number');
+    equal(fieldEl.parentView().error(), 'not a number');
     // the value is undefined
     equal(data.a, undefined);
 });
@@ -1654,7 +1654,7 @@ test("integer datalink without error", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1664,10 +1664,10 @@ test("integer datalink without error", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('3');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('3');
+    fieldEl.trigger('change');
     equal(data.a, 3);
 });
 
@@ -1680,7 +1680,7 @@ test("integer back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1690,10 +1690,10 @@ test("integer back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
     $(data).setField('a', 1);
-    equal(field_el.val(), 1);
+    equal(fieldEl.val(), 1);
 });
 
 test("float datalink", function() {
@@ -1704,7 +1704,7 @@ test("float datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['float_field'],
+                ifaces: ['floatField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1714,10 +1714,10 @@ test("float datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('3.3');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('3.3');
+    fieldEl.trigger('change');
     equal(data.a, 3.3);
 });
 
@@ -1729,7 +1729,7 @@ test("float back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['float_field'],
+                ifaces: ['floatField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1739,11 +1739,11 @@ test("float back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     $(data).setField('a', 3.4);
-    equal(field_el.val(), '3.4');
+    equal(fieldEl.val(), '3.4');
 });
 
 test("float back datalink different sep", function() {
@@ -1754,7 +1754,7 @@ test("float back datalink different sep", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['float_field'],
+                ifaces: ['floatField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1765,11 +1765,11 @@ test("float back datalink different sep", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     $(data).setField('a', 3.4);
-    equal(field_el.val(), '3,4');
+    equal(fieldEl.val(), '3,4');
 });
 
 test("decimal datalink", function() {
@@ -1780,7 +1780,7 @@ test("decimal datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['decimal_field'],
+                ifaces: ['decimalField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1790,10 +1790,10 @@ test("decimal datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('3.3');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('3.3');
+    fieldEl.trigger('change');
     equal(data.a, '3.3');
 });
 
@@ -1805,7 +1805,7 @@ test("decimal back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['decimal_field'],
+                ifaces: ['decimalField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1815,11 +1815,11 @@ test("decimal back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     $(data).setField('a', '3.4');
-    equal(field_el.val(), '3.4');
+    equal(fieldEl.val(), '3.4');
 });
 
 test("decimal back datalink different sep", function() {
@@ -1830,7 +1830,7 @@ test("decimal back datalink different sep", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['decimal_field'],
+                ifaces: ['decimalField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1841,11 +1841,11 @@ test("decimal back datalink different sep", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     $(data).setField('a', '3.4');
-    equal(field_el.val(), '3,4');
+    equal(fieldEl.val(), '3,4');
 });
 
 test("boolean datalink", function() {
@@ -1856,7 +1856,7 @@ test("boolean datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['boolean_field'],
+                ifaces: ['booleanField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1866,21 +1866,21 @@ test("boolean datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     // starts as off
-    field_el.trigger('change');
+    fieldEl.trigger('change');
     equal(data.a, false);
     
     // set to on
-    field_el.attr('checked', true);
-    field_el.trigger('change');
+    fieldEl.attr('checked', true);
+    fieldEl.trigger('change');
     equal(data.a, true);
 
     // turn off again
-    field_el.attr('checked', false);
-    field_el.trigger('change');
+    fieldEl.attr('checked', false);
+    fieldEl.trigger('change');
     equal(data.a, false);
 });
 
@@ -1892,7 +1892,7 @@ test("boolean back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['boolean_field'],
+                ifaces: ['booleanField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -1902,14 +1902,14 @@ test("boolean back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
     $(data).setField('a', true);
-    equal(field_el.is(':checked'), true);
+    equal(fieldEl.is(':checked'), true);
     
     $(data).setField('a', false);
-    equal(field_el.is(':checked'), false);
+    equal(fieldEl.is(':checked'), false);
 });
 
 test("choice datalink", function() {
@@ -1920,7 +1920,7 @@ test("choice datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -1932,11 +1932,11 @@ test("choice datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
     
-    field_el.val('foo');
-    field_el.trigger('change');
+    fieldEl.val('foo');
+    fieldEl.trigger('change');
     equal(data.a, 'foo');
 });
 
@@ -1948,7 +1948,7 @@ test("choice datalink empty", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -1960,11 +1960,11 @@ test("choice datalink empty", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
-    equal(field_el.length, 1);
-    field_el.val('');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
+    equal(fieldEl.length, 1);
+    fieldEl.val('');
+    fieldEl.trigger('change');
     equal(data.a, null);
 });
 
@@ -1976,7 +1976,7 @@ test("choice back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -1988,11 +1988,11 @@ test("choice back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
 
     $(data).setField('a', 'bar');
-    equal(field_el.val(), 'bar');
+    equal(fieldEl.val(), 'bar');
 });
 
 
@@ -2004,7 +2004,7 @@ test("choice back datalink empty", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -2016,11 +2016,11 @@ test("choice back datalink empty", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
 
     $(data).setField('a', null);
-    equal(field_el.val(), '');
+    equal(fieldEl.val(), '');
 });
 
 test("choice empty", function() {
@@ -2031,22 +2031,22 @@ test("choice empty", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
                           {value: 'bar', label: 'Bar'}],
                 description: 'A',
-                empty_option: 'Empty',
+                emptyOption: 'Empty',
                 validate: {
                 }
             }]
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
-    equal($('option', field_el).length, 3);    
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
+    equal($('option', fieldEl).length, 3);    
 });
 
 test('choice required no empty', function() {
@@ -2057,7 +2057,7 @@ test('choice required no empty', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -2071,9 +2071,9 @@ test('choice required no empty', function() {
         data: data
     });
 
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
-    equal($('option', field_el).length, 2);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
+    equal($('option', fieldEl).length, 2);
 });
 
 test("choice no empty", function() {
@@ -2084,7 +2084,7 @@ test("choice no empty", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'foo', label: 'Foo'},
@@ -2096,9 +2096,9 @@ test("choice no empty", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
-    equal($('option', field_el).length, 3);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
+    equal($('option', fieldEl).length, 3);
 });
 
 test("choice no empty but own empty", function() {
@@ -2109,7 +2109,7 @@ test("choice no empty but own empty", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [
@@ -2123,23 +2123,23 @@ test("choice no empty but own empty", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);    
-    equal($('option', field_el).length, 3);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);    
+    equal($('option', fieldEl).length, 3);
 });
 
 test('choice global validation', function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a == 'wrong') {
@@ -2158,7 +2158,7 @@ test('choice global validation', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['choice_field'],
+                ifaces: ['choiceField'],
                 name: 'a',
                 title: 'A',
                 choices: [{value: 'wrong', label: 'Wrong'},
@@ -2168,35 +2168,35 @@ test('choice global validation', function() {
                 }
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
 
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
     
-    field_a_el.val('wrong');
+    fieldA_el.val('wrong');
     
     // submitting this should trigger a global error
     var view = el.view();
     view.submit({});
 
-    equal(global_errors.a, 'must not be wrong');
+    equal(globalErrors.a, 'must not be wrong');
     
     // it also shows up in the element
-    var field_global_a = $('#obviel-global-error-test-a', form_el);
-    equal(field_global_a.text(), 'must not be wrong');
+    var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
+    equal(fieldGlobalA.text(), 'must not be wrong');
     
     // make the global validation problem go away again
-    field_a_el.val('right');
+    fieldA_el.val('right');
     view.submit({});
     
-    equal(global_errors.a, '');
-    equal(field_global_a.text(), '');
+    equal(globalErrors.a, '');
+    equal(fieldGlobalA.text(), '');
     
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });
 
 test("field error rendering", function() {
@@ -2207,12 +2207,12 @@ test("field error rendering", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
@@ -2222,25 +2222,25 @@ test("field error rendering", function() {
         },
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
     // put in a value that's too short, so should trigger error
-    field_el.val('fo');
-    field_el.trigger('change');
+    fieldEl.val('fo');
+    fieldEl.trigger('change');
     // we now expect the error
-    var error_el = $('.obviel-field-error', form_el);
-    equal(error_el.text(), 'value too short');
+    var errorEl = $('.obviel-field-error', formEl);
+    equal(errorEl.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
     // and the form displays that there's an error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '1 field did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '1 field did not validate');
     // the submit buttons are disabled
-    var control_els = $('button[class="obviel-control"]', el);
-    equal(control_els.is(':disabled'), true);
+    var controlEls = $('button[class="obviel-control"]', el);
+    equal(controlEls.is(':disabled'), true);
 });
 
-test("no_validation control should not be disabled", function() {
+test("noValidation control should not be disabled", function() {
     var el = $('#viewdiv');
     var errors = {};
     el.render({
@@ -2248,39 +2248,39 @@ test("no_validation control should not be disabled", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
                 'label': 'Submit!',
                 'action': 'http://localhost'
             }, {
-                'label': 'no_validation',
-                no_validation: true
+                'label': 'noValidation',
+                noValidation: true
             }]
         },
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
     // put in a value that's too short, so should trigger error
-    field_el.val('fo');
-    field_el.trigger('change');
+    fieldEl.val('fo');
+    fieldEl.trigger('change');
     // we now expect the error
     // the form displays that there's an error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '1 field did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '1 field did not validate');
     // the validating button is disabled
-    var submit_el = $("button:contains('Submit!')", el);
-    equal(submit_el.is(':disabled'), true);
+    var submitEl = $("button:contains('Submit!')", el);
+    equal(submitEl.is(':disabled'), true);
     // the non validating button is not, however
-    var no_validating_el = $("button:contains('no_validation')", el);
-    equal(no_validating_el.is(':disabled'), false);
+    var noValidatingEl = $("button:contains('noValidation')", el);
+    equal(noValidatingEl.is(':disabled'), false);
 });
 
 test("field error clearing", function() {
@@ -2291,12 +2291,12 @@ test("field error clearing", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
@@ -2306,32 +2306,32 @@ test("field error clearing", function() {
         },
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
     // put in a value that's too short, so should trigger error
-    field_el.val('fo');
-    field_el.trigger('change');
+    fieldEl.val('fo');
+    fieldEl.trigger('change');
     // we now expect the error
-    var error_el = $('.obviel-field-error', form_el);
-    equal(error_el.text(), 'value too short');
+    var errorEl = $('.obviel-field-error', formEl);
+    equal(errorEl.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
     // there's a form error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '1 field did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '1 field did not validate');
     
     // now we put in a correct value
-    field_el.val('long enough');
-    field_el.trigger('change');
+    fieldEl.val('long enough');
+    fieldEl.trigger('change');
     // we now expect the error to be gone
-    equal(error_el.text(), '');
+    equal(errorEl.text(), '');
     // the errors object should also be cleared
     equal(errors.text, '');
     // we don't see a form error anymore
-    equal(form_error_el.text(), '');
+    equal(formErrorEl.text(), '');
     // the submit button isn't disabled
-    var control_els = $('button[class="obviel-control"]', el);
-    equal(control_els.is(':disabled'), false);
+    var controlEls = $('button[class="obviel-control"]', el);
+    equal(controlEls.is(':disabled'), false);
     
 });
 
@@ -2343,12 +2343,12 @@ test("field error not seen until submit", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
@@ -2358,23 +2358,23 @@ test("field error not seen until submit", function() {
         },
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
     // put in a value that's too short, so should trigger error
-    field_el.val('fo');
+    fieldEl.val('fo');
     // there is no error yet
-    var error_el = $('.obviel-field-error', form_el);
-    equal(error_el.text(), '');
+    var errorEl = $('.obviel-field-error', formEl);
+    equal(errorEl.text(), '');
     // don't trigger event but try submitting immediately
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
     // we now expect the error
-    equal(error_el.text(), 'value too short');
+    equal(errorEl.text(), 'value too short');
     // it's also in the errors object
     equal(errors.text, 'value too short');
     // and there's a form error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '1 field did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '1 field did not validate');
 });
 
 test("composite field error not seen until submit", function() {
@@ -2385,20 +2385,20 @@ test("composite field error not seen until submit", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['composite_field'],
+                ifaces: ['compositeField'],
                 name: 'composite',
                 title: 'Composite',
                 widgets: [
                     {
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'a',
                         title: 'A',
                         validate: {
-                            min_length: 3
+                            minLength: 3
                         }
                     },
                     {
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B'
                     }
@@ -2411,30 +2411,30 @@ test("composite field error not seen until submit", function() {
         },
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-composite-a', form_el);
-    var field_b_el = $('#obviel-field-test-composite-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-composite-a', formEl);
+    var fieldB_el = $('#obviel-field-test-composite-b', formEl);
     // put in a value that's too short, so should trigger error
-    field_a_el.val('fo');
+    fieldA_el.val('fo');
     // put in a non integer
-    field_b_el.val('not integer');
+    fieldB_el.val('not integer');
     // there is no error yet
-    var error_a_el = $('#obviel-field-error-test-composite-a', form_el);
-    var error_b_el = $('#obviel-field-error-test-composite-b', form_el);
-    equal(error_a_el.text(), '');
-    equal(error_b_el.text(), '');
+    var errorA_el = $('#obviel-field-error-test-composite-a', formEl);
+    var errorB_el = $('#obviel-field-error-test-composite-b', formEl);
+    equal(errorA_el.text(), '');
+    equal(errorB_el.text(), '');
     // don't trigger event but try submitting immediately
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
     // we now expect the error
-    equal(error_a_el.text(), 'value too short');
-    equal(error_b_el.text(), 'not a number');
+    equal(errorA_el.text(), 'value too short');
+    equal(errorB_el.text(), 'not a number');
     // it's also in the errors object
     equal(errors.composite.a, 'value too short');
     equal(errors.composite.b, 'not a number');
     // and there's a form error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '2 fields did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '2 fields did not validate');
 });
 
 test("repeating field error not seen until submit", function() {
@@ -2446,20 +2446,20 @@ test("repeating field error not seen until submit", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['repeating_field'],
+                ifaces: ['repeatingField'],
                 name: 'repeating',
                 title: 'Repeating',
                 widgets: [
                     {
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'a',
                         title: 'A',
                         validate: {
-                            min_length: 3
+                            minLength: 3
                         }
                     },
                     {
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B'
                     }
@@ -2474,39 +2474,39 @@ test("repeating field error not seen until submit", function() {
         errors: errors
     });
     
-    var form_el = $('form', el);
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var formEl = $('form', el);
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
 
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
     // put in a value that's too short, so should trigger error
-    field_a_el.val('fo');
+    fieldA_el.val('fo');
     // put in a non integer
-    field_b_el.val('not integer');
+    fieldB_el.val('not integer');
     // there is no error yet
-    var error_a_el = $('#obviel-field-error-test-repeating-0-a', form_el);
-    var error_b_el = $('#obviel-field-error-test-repeating-0-b', form_el);
-    equal(error_a_el.text(), '');
-    equal(error_b_el.text(), '');
+    var errorA_el = $('#obviel-field-error-test-repeating-0-a', formEl);
+    var errorB_el = $('#obviel-field-error-test-repeating-0-b', formEl);
+    equal(errorA_el.text(), '');
+    equal(errorB_el.text(), '');
     // don't trigger event but try submitting immediately
-    var button_el = $('button[class="obviel-control"]', el);
-    button_el.trigger('click');
+    var buttonEl = $('button[class="obviel-control"]', el);
+    buttonEl.trigger('click');
     // we now expect the error
-    equal(error_a_el.text(), 'value too short');
-    equal(error_b_el.text(), 'not a number');
+    equal(errorA_el.text(), 'value too short');
+    equal(errorB_el.text(), 'not a number');
     // it's also in the errors object
     equal(errors.repeating[0].a, 'value too short');
     equal(errors.repeating[0].b, 'not a number');
     // and there's a form error
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '2 fields did not validate');
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '2 fields did not validate');
 });
 
 
-obviel.iface('success_iface');
+obviel.iface('successIface');
 obviel.view({
-    iface: 'success_iface',
+    iface: 'successIface',
     render: function(el, obj, name) {
         el.text("success!");
     }
@@ -2520,12 +2520,12 @@ test("actual submit", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
@@ -2536,25 +2536,25 @@ test("actual submit", function() {
         errors: errors
     });
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
-        ajax_options = options;
+        ajaxOptions = options;
         // to trigger successful result
-        options.success({ifaces: ['success_iface']});
+        options.success({ifaces: ['successIface']});
     };
     
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
-    field_el.val('foo');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
+    fieldEl.val('foo');
 
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
-    $.ajax = original_ajax;
-    equal(ajax_options.data, '{"text":"foo"}');
+    $.ajax = originalAjax;
+    equal(ajaxOptions.data, '{"text":"foo"}');
 
-    // the success_iface should be rendered
+    // the successIface should be rendered
     equal(el.text(), 'success!');
 });
 
@@ -2566,16 +2566,16 @@ test("actual submit with disabled field", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             },
             {
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text2',
                 title: 'Text2',
                 disabled: true
@@ -2589,28 +2589,28 @@ test("actual submit with disabled field", function() {
         errors: errors
     });
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
-        ajax_options = options;
+        ajaxOptions = options;
         // to trigger successful result
-        options.success({ifaces: ['success_iface']});
+        options.success({ifaces: ['successIface']});
     };
     
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-text', form_el);
-    field_el.val('foo');
-    var field2_el = $('#obviel-field-test-text2', form_el);
-    field2_el.val('bar');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-text', formEl);
+    fieldEl.val('foo');
+    var field2El = $('#obviel-field-test-text2', formEl);
+    field2El.val('bar');
     
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 
-    equal(ajax_options.data, '{"text":"foo","text2":"bar"}');
+    equal(ajaxOptions.data, '{"text":"foo","text2":"bar"}');
 
-    // the success_iface should be rendered
+    // the successIface should be rendered
     equal(el.text(), 'success!');
 });
 
@@ -2622,20 +2622,20 @@ test("actual submit with composite field", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['composite_field'],
+                ifaces: ['compositeField'],
                 name: 'composite',
                 title: 'Composite',
                 widgets: [
                     {
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'a',
                         title: 'A',
                         validate: {
-                            min_length: 3
+                            minLength: 3
                         }
                     },
                     {
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B'
                     }
@@ -2650,22 +2650,22 @@ test("actual submit with composite field", function () {
     });
 
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
-        ajax_options = options;
+        ajaxOptions = options;
         // to trigger successful result
-        options.success({ifaces: ['success_iface']});
+        options.success({ifaces: ['successIface']});
     };
 
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
-    $.ajax = original_ajax;
-    equal(ajax_options.data, '{"composite":{"a":null,"b":null}}');
-    // the success_iface should be rendered
+    $.ajax = originalAjax;
+    equal(ajaxOptions.data, '{"composite":{"a":null,"b":null}}');
+    // the successIface should be rendered
     equal(el.text(), 'success!');
 
 });
@@ -2679,17 +2679,17 @@ test("control without action", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'text',
                 title: 'Text',
                 description: 'A text widget',
                 validate: {
-                    min_length: 3
+                    minLength: 3
                 }
             }],
             controls: [{
                 'label': 'Do something!',
-                'class': 'do_something'
+                'class': 'doSomething'
             }]
         },
         data: data,
@@ -2699,18 +2699,18 @@ test("control without action", function() {
     
     // monkey patch jquery's ajax(): but this shouldn't be called
     // in the end
-    var original_ajax = $.ajax;
+    var originalAjax = $.ajax;
     var called = 0;
     $.ajax = function(options) {
         called++;
     };
 
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var button_el = $('button', el);
-    button_el.trigger('click');
+    var buttonEl = $('button', el);
+    buttonEl.trigger('click');
 
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
     equal(called, 0);
 });
 
@@ -2723,12 +2723,12 @@ test("existing values", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'a',
                 title: 'A'
             },
             {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B'
             }
@@ -2740,10 +2740,10 @@ test("existing values", function() {
         },
         data: data
     });
-      var a_el = $('#obviel-field-test-a', el);
-    equal(a_el.val(), 'Something already');
-    var b_el = $('#obviel-field-test-b', el);
-    equal(b_el.val(), '3');
+      var aEl = $('#obviel-field-test-a', el);
+    equal(aEl.val(), 'Something already');
+    var bEl = $('#obviel-field-test-b', el);
+    equal(bEl.val(), '3');
 });
 
 test("default values", function() {
@@ -2754,13 +2754,13 @@ test("default values", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'a',
                 title: 'A',
                 defaultvalue: 'A default'
             },
             {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 defaultvalue: 3
@@ -2775,10 +2775,10 @@ test("default values", function() {
     });
     equal(data.a, 'A default');
     equal(data.b, 3);
-    var a_el = $('#obviel-field-test-a', el);
-    equal(a_el.val(), 'A default');
-    var b_el = $('#obviel-field-test-b', el);
-    equal(b_el.val(), '3');
+    var aEl = $('#obviel-field-test-a', el);
+    equal(aEl.val(), 'A default');
+    var bEl = $('#obviel-field-test-b', el);
+    equal(bEl.val(), '3');
 });
 
 test("default values with composite", function() {
@@ -2790,17 +2790,17 @@ test("default values with composite", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['composite_field'],
+                    ifaces: ['compositeField'],
                     name: 'composite',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A',
                             defaultvalue: 'A default'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B',
                             defaultvalue: 3
@@ -2817,10 +2817,10 @@ test("default values with composite", function() {
     });
     equal(data.composite.a, 'A default');
     equal(data.composite.b, 3);
-    var a_el = $('#obviel-field-test-composite-a', el);
-    equal(a_el.val(), 'A default');
-    var b_el = $('#obviel-field-test-composite-b', el);
-    equal(b_el.val(), '3');
+    var aEl = $('#obviel-field-test-composite-a', el);
+    equal(aEl.val(), 'A default');
+    var bEl = $('#obviel-field-test-composite-b', el);
+    equal(bEl.val(), '3');
 });
 
 test("default values interacting with existent", function() {
@@ -2831,13 +2831,13 @@ test("default values interacting with existent", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['textline_field'],
+                ifaces: ['textlineField'],
                 name: 'a',
                 title: 'A',
                 defaultvalue: 'A default'
             },
             {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 defaultvalue: 3
@@ -2852,10 +2852,10 @@ test("default values interacting with existent", function() {
     });
     equal(data.a, 'Something already');
     equal(data.b, 3);
-    var a_el = $('#obviel-field-test-a', el);
-    equal(a_el.val(), 'Something already');
-    var b_el = $('#obviel-field-test-b', el);
-    equal(b_el.val(), '3');
+    var aEl = $('#obviel-field-test-a', el);
+    equal(aEl.val(), 'Something already');
+    var bEl = $('#obviel-field-test-b', el);
+    equal(bEl.val(), '3');
 });
 
 
@@ -2867,17 +2867,17 @@ test("default values in composite interacting with existent", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['composite_field'],
+                ifaces: ['compositeField'],
                 name: 'composite',
                 widgets: [
                     {
-                        ifaces: ['textline_field'],
+                        ifaces: ['textlineField'],
                         name: 'a',
                         title: 'A',
                         defaultvalue: 'A default'
                     },
                     {
-                        ifaces: ['integer_field'],
+                        ifaces: ['integerField'],
                         name: 'b',
                         title: 'B',
                         defaultvalue: 3
@@ -2893,10 +2893,10 @@ test("default values in composite interacting with existent", function() {
     });
     equal(data.composite.a, 'Something already');
     equal(data.composite.b, 3);
-    var a_el = $('#obviel-field-test-composite-a', el);
-    equal(a_el.val(), 'Something already');
-    var b_el = $('#obviel-field-test-composite-b', el);
-    equal(b_el.val(), '3');
+    var aEl = $('#obviel-field-test-composite-a', el);
+    equal(aEl.val(), 'Something already');
+    var bEl = $('#obviel-field-test-composite-b', el);
+    equal(bEl.val(), '3');
 });
 
 
@@ -2904,14 +2904,14 @@ test("global errors", function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a > data.b) {
@@ -2931,77 +2931,77 @@ test("global errors", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A'
             }, {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 description: 'B'
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
-    var field_b_el = $('#obviel-field-test-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
+    var fieldB_el = $('#obviel-field-test-b', formEl);
 
-    field_a_el.val('1');
-    field_b_el.val('10');
+    fieldA_el.val('1');
+    fieldB_el.val('10');
 
     // submitting this, everything should be fine
     var view = el.view();
     // no action defined, so submit will succeed quietly
     view.submit({});
 
-    equal(global_errors.a, undefined);
-    equal(global_errors.b, undefined);
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '');
+    equal(globalErrors.a, undefined);
+    equal(globalErrors.b, undefined);
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '');
     
-    field_a_el.val('10');
-    field_b_el.val('1');
+    fieldA_el.val('10');
+    fieldB_el.val('1');
     view.submit({});
 
-    equal(global_errors.a, 'must be smaller than b');
-    equal(global_errors.b, 'must be greater than a');
+    equal(globalErrors.a, 'must be smaller than b');
+    equal(globalErrors.b, 'must be greater than a');
 
     // it also shows up in the element
-    var field_global_a = $('#obviel-global-error-test-a', form_el);
-    equal(field_global_a.text(), 'must be smaller than b');
-    equal(form_error_el.text(), '2 fields did not validate');
+    var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
+    equal(fieldGlobalA.text(), 'must be smaller than b');
+    equal(formErrorEl.text(), '2 fields did not validate');
     // and in the widget
-    equal(field_global_a.parent().parent().parent_view().global_error(),
+    equal(fieldGlobalA.parent().parent().parentView().globalError(),
           'must be smaller than b');
     
     // make the global validation problem go away again
-    field_b_el.val('100');
+    fieldB_el.val('100');
     view.submit({});
-    equal(global_errors.a, '');
-    equal(global_errors.b, '');
-    equal(field_global_a.text(), '');
-    equal(form_error_el.text(), '');
+    equal(globalErrors.a, '');
+    equal(globalErrors.b, '');
+    equal(fieldGlobalA.text(), '');
+    equal(formErrorEl.text(), '');
 
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });
 
 asyncTest('global errors revalidate upon possible correction', function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a > data.b) {
@@ -3023,92 +3023,92 @@ asyncTest('global errors revalidate upon possible correction', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
-                global_validator: true
+                globalValidator: true
             }, {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 description: 'B',
-                global_validator: true
+                globalValidator: true
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
-    var field_b_el = $('#obviel-field-test-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
+    var fieldB_el = $('#obviel-field-test-b', formEl);
 
-    field_a_el.val('1');
-    field_b_el.val('10');
+    fieldA_el.val('1');
+    fieldB_el.val('10');
 
     // submitting this, everything should be fine
     var view = el.view();
     // no action defined, so submit will succeed quietly
     view.submit({});
 
-    equal(global_errors.a, undefined);
-    equal(global_errors.b, undefined);
-    var form_error_el = $('.obviel-formerror', el);
-    equal(form_error_el.text(), '');
+    equal(globalErrors.a, undefined);
+    equal(globalErrors.b, undefined);
+    var formErrorEl = $('.obviel-formerror', el);
+    equal(formErrorEl.text(), '');
     
-    field_a_el.val('10');
-    field_b_el.val('1');
+    fieldA_el.val('10');
+    fieldB_el.val('1');
     view.submit({});
 
-    equal(global_errors.a, 'must be smaller than b');
-    equal(global_errors.b, 'must be greater than a');
+    equal(globalErrors.a, 'must be smaller than b');
+    equal(globalErrors.b, 'must be greater than a');
 
     // it also shows up in the element
-    var field_global_a = $('#obviel-global-error-test-a', form_el);
-    equal(field_global_a.text(), 'must be smaller than b');
-    equal(form_error_el.text(), '2 fields did not validate');
+    var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
+    equal(fieldGlobalA.text(), 'must be smaller than b');
+    equal(formErrorEl.text(), '2 fields did not validate');
 
     // possibly make the global validation problem go away (but not)
     // by modifying one of the affected fields
     stop();
-    field_a_el.val('11');
-    field_a_el.parent_view().change();
+    fieldA_el.val('11');
+    fieldA_el.parentView().change();
     
-    equal(global_errors.a, 'must be smaller than b');
-    equal(global_errors.b, 'must be greater than a');
+    equal(globalErrors.a, 'must be smaller than b');
+    equal(globalErrors.b, 'must be greater than a');
     
     // make the global validation problem go away
     stop();
-    field_b_el.val('100');
-    field_b_el.parent_view().change();
+    fieldB_el.val('100');
+    fieldB_el.parentView().change();
     
     // this should've resubmitted for validation, so the problem should be
     // gone already
-    equal(global_errors.a, '');
-    equal(global_errors.b, '');
-    equal(field_global_a.text(), '');
-    equal(form_error_el.text(), '');
+    equal(globalErrors.a, '');
+    equal(globalErrors.b, '');
+    equal(fieldGlobalA.text(), '');
+    equal(formErrorEl.text(), '');
 
     
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });
 
 asyncTest('global errors do not revalidate upon non-correction', function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     var count = 0;
     
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             count++;
             var data = $.parseJSON(options.data);
@@ -3131,36 +3131,36 @@ asyncTest('global errors do not revalidate upon non-correction', function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
-                global_validator: true
+                globalValidator: true
             }, {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 description: 'B',
-                global_validator: true
+                globalValidator: true
             }, {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'c',
                 title: 'C',
                 description: 'C'
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
-    var field_b_el = $('#obviel-field-test-b', form_el);
-    var field_c_el = $('#obviel-field-test-c', form_el);
-    field_a_el.val('1');
-    field_b_el.val('10');
-    field_c_el.val('5');
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
+    var fieldB_el = $('#obviel-field-test-b', formEl);
+    var fieldC_el = $('#obviel-field-test-c', formEl);
+    fieldA_el.val('1');
+    fieldB_el.val('10');
+    fieldC_el.val('5');
     // submitting this, everything should be fine
     var view = el.view();
     // no action defined, so submit will succeed quietly
@@ -3168,27 +3168,27 @@ asyncTest('global errors do not revalidate upon non-correction', function() {
     equal(count, 1);
     
     // create error
-    field_a_el.val('10');
-    field_b_el.val('1');
+    fieldA_el.val('10');
+    fieldB_el.val('1');
     stop();
     view.submit({});
     
-    equal(global_errors.a, 'must be smaller than b');
-    equal(global_errors.b, 'must be greater than a');
+    equal(globalErrors.a, 'must be smaller than b');
+    equal(globalErrors.b, 'must be greater than a');
 
     equal(count, 2);
     
     // possibly make the global validation problem go away (but not)
     // by modifying unrelated field
     stop();
-    field_c_el.val('55');
-    field_c_el.parent_view().change();
+    fieldC_el.val('55');
+    fieldC_el.parentView().change();
     
     // we should not have done any global validation check, as this
     // field is unrelated to global validation errors
     equal(count, 2);
     
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 
     start();
 });
@@ -3197,17 +3197,17 @@ asyncTest("global errors with repeating", function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
-            if (data.repeating[0].a == 'trigger_error') {
+            if (data.repeating[0].a == 'triggerError') {
                 defer.resolve({
                     'repeating': [{'a': 'error'}]
                 });
@@ -3226,16 +3226,16 @@ asyncTest("global errors with repeating", function() {
             name: 'test',
             widgets: [
                 {
-                    ifaces: ['repeating_field'],
+                    ifaces: ['repeatingField'],
                     name: 'repeating',
                     widgets: [
                         {
-                            ifaces: ['textline_field'],
+                            ifaces: ['textlineField'],
                             name: 'a',
                             title: 'A'
                         },
                         {
-                            ifaces: ['integer_field'],
+                            ifaces: ['integerField'],
                             name: 'b',
                             title: 'B'
                         }
@@ -3244,46 +3244,46 @@ asyncTest("global errors with repeating", function() {
                 }
             ]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
-    var add_button = $('.obviel-repeat-add-button', form_el);
-    add_button.trigger('click');
+    var addButton = $('.obviel-repeat-add-button', formEl);
+    addButton.trigger('click');
  
-    var field_a_el = $('#obviel-field-test-repeating-0-a', form_el);
-    var field_b_el = $('#obviel-field-test-repeating-0-b', form_el);
-    field_a_el.val('foo');
-    field_b_el.val('10');
+    var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
+    var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
+    fieldA_el.val('foo');
+    fieldB_el.val('10');
 
     // submitting this, everything should be fine
     var view = el.view();
     // no action defined, so submit will succeed quietly
     view.submit({});
 
-    equal(global_errors.repeating[0].a, undefined);
-    equal(global_errors.repeating[0].b, undefined);
+    equal(globalErrors.repeating[0].a, undefined);
+    equal(globalErrors.repeating[0].b, undefined);
     
-    field_a_el.val('trigger_error');
-    field_b_el.val('1');
+    fieldA_el.val('triggerError');
+    fieldB_el.val('1');
     stop();
     view.submit({});
 
-    equal(global_errors.repeating[0].a, 'error');
-    equal(global_errors.repeating[0].b, undefined);
+    equal(globalErrors.repeating[0].a, 'error');
+    equal(globalErrors.repeating[0].b, undefined);
     
     // make the global validation problem go away again
-    field_a_el.val('nothing');
+    fieldA_el.val('nothing');
     stop();
     view.submit({});
 
-    equal(global_errors.repeating[0].a, '');
-    equal(global_errors.repeating[0].b, undefined);
+    equal(globalErrors.repeating[0].a, '');
+    equal(globalErrors.repeating[0].b, undefined);
 
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });
 
 module("Datepicker", {
@@ -3328,7 +3328,7 @@ test("datepicker datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_field'],
+                ifaces: ['datepickerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -3338,10 +3338,10 @@ test("datepicker datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('01/02/10');
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('01/02/10');
+    fieldEl.trigger('change');
     equal(data.a, '2010-01-02');
 });
 
@@ -3353,7 +3353,7 @@ test("datepicker back datalink", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_field'],
+                ifaces: ['datepickerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -3363,12 +3363,12 @@ test("datepicker back datalink", function() {
         },
         data: data
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
     $(data).setField('a', '2010-03-04');
-    equal(field_el.val(), '03/04/2010');
+    equal(fieldEl.val(), '03/04/2010');
     $(data).setField('a', null);
-    equal(field_el.val(), '');
+    equal(fieldEl.val(), '');
 });
 
 test("datepicker datalink conversion error", function() {
@@ -3380,7 +3380,7 @@ test("datepicker datalink conversion error", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['datepicker_field'],
+                ifaces: ['datepickerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -3391,10 +3391,10 @@ test("datepicker datalink conversion error", function() {
         data: data,
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('foo'); // not a datetime
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('foo'); // not a datetime
+    fieldEl.trigger('change');
     equal(errors.a, 'invalid date');
     equal(data.a, undefined);
 });
@@ -3420,7 +3420,7 @@ test("autocomplete set values", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_field'],
+                ifaces: ['autocompleteField'],
                 name: 'a',
                 title: 'Autocomplete',
                 data: [
@@ -3434,15 +3434,15 @@ test("autocomplete set values", function () {
         errors: errors
     });
 
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('Qux'); // invalid value
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('Qux'); // invalid value
+    fieldEl.trigger('change');
     equal(errors.a, 'unknown value');
     equal(data.a, 'foo');
 
-    field_el.val('Bar');
-    field_el.trigger('change');
+    fieldEl.val('Bar');
+    fieldEl.trigger('change');
     equal(errors.a, '');
     equal(data.a, 'bar');
 });
@@ -3457,7 +3457,7 @@ test("autocomplete requiredness", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_field'],
+                ifaces: ['autocompleteField'],
                 name: 'a',
                 title: 'Autocomplete',
                 data: [
@@ -3473,10 +3473,10 @@ test("autocomplete requiredness", function () {
         errors: errors
     });
 
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val(''); // empty while it's required
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val(''); // empty while it's required
+    fieldEl.trigger('change');
     equal(errors.a, 'this field is required');
 });
 
@@ -3484,14 +3484,14 @@ test("autocomplete with global error", function () {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a == 'wrong') {
@@ -3510,7 +3510,7 @@ test("autocomplete with global error", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_field'],
+                ifaces: ['autocompleteField'],
                 name: 'a',
                 title: 'A',
                 data: [{value: 'wrong', label: 'Wrong'},
@@ -3520,35 +3520,35 @@ test("autocomplete with global error", function () {
                 }
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
 
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
     
-    field_a_el.val('Wrong');
+    fieldA_el.val('Wrong');
     
     // submitting this should trigger a global error
     var view = el.view();
     view.submit({});
 
-    equal(global_errors.a, 'must not be wrong');
+    equal(globalErrors.a, 'must not be wrong');
     
     // it also shows up in the element
-    var field_global_a = $('#obviel-global-error-test-a', form_el);
-    equal(field_global_a.text(), 'must not be wrong');
+    var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
+    equal(fieldGlobalA.text(), 'must not be wrong');
     
     // make the global validation problem go away again
-    field_a_el.val('Right');
+    fieldA_el.val('Right');
     view.submit({});
     
-    equal(global_errors.a, '');
-    equal(field_global_a.text(), '');
+    equal(globalErrors.a, '');
+    equal(fieldGlobalA.text(), '');
     
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });
 
 test("autocomplete url set values", function () {
@@ -3556,7 +3556,7 @@ test("autocomplete url set values", function () {
     var data = {};
     var errors = {};
 
-    var orig_ajax = $.ajax;
+    var origAjax = $.ajax;
     $.ajax = function(settings) {
         var key = settings.data.identifier || settings.data.term || '';
         key = key.toLowerCase();
@@ -3574,7 +3574,7 @@ test("autocomplete url set values", function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['autocomplete_field'],
+                ifaces: ['autocompleteField'],
                 name: 'a',
                 title: 'Autocomplete',
                 data: 'http://url',
@@ -3584,28 +3584,28 @@ test("autocomplete url set values", function () {
         data: data,
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('Doo'); // invalid value
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('Doo'); // invalid value
+    fieldEl.trigger('change');
     equal(errors.a, 'unknown value');
     equal(data.a, 'foo');
 
     // cache value for autocomplete
-    var view = field_el.closest('.obviel-field').view();
+    var view = fieldEl.closest('.obviel-field').view();
     view.source({term: 'Bar'}, function () {});
     view.source({term: 'Qux'}, function () {});
 
-    field_el.val('Bar');
-    field_el.trigger('change');
+    fieldEl.val('Bar');
+    fieldEl.trigger('change');
     equal(errors.a, '');
     equal(data.a, 'bar');
 
     $(data).setField('a', 'qux');
-    equal(field_el.val(), 'Qux');
+    equal(fieldEl.val(), 'Qux');
 
     // restore old ajax
-    $.ajax = orig_ajax;
+    $.ajax = origAjax;
 });
 
 module("Display", {
@@ -3631,21 +3631,21 @@ test('display value', function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['display_field'],
-                null_value: '?',
+                ifaces: ['displayField'],
+                nullValue: '?',
                 name: 'a'
             }]
         },
         data: data,
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
-    equal(field_el.text(), '?');
+    equal(fieldEl.text(), '?');
 
     $(data).setField('a', 'alpha');
-    equal(field_el.text(), 'alpha');
+    equal(fieldEl.text(), 'alpha');
 });
 
 test('display label', function () {
@@ -3660,10 +3660,10 @@ test('display label', function () {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['display_field'],
-                null_value: '?',
+                ifaces: ['displayField'],
+                nullValue: '?',
                 name: 'a',
-                value_to_label: {
+                valueToLabel: {
                     'alpha': 'Alpha'
                 }
             }]
@@ -3671,10 +3671,10 @@ test('display label', function () {
         data: data,
         errors: errors
     });
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
 
-    equal(field_el.text(), 'Alpha');
+    equal(fieldEl.text(), 'Alpha');
 });
 
 test("modify error area", function() {
@@ -3682,12 +3682,12 @@ test("modify error area", function() {
     // XXX test runner for forms doesn't clean this up yet
 
     obviel.view({
-        iface: 'obviel_forms_error_area',
+        iface: 'obvielFormsErrorArea',
         obvt: ('<div class="obviel-error-wrapper">' +
                 '<div class="obviel-error-content">' +
                 '<div class="obviel-error-arrow"></div>' +
-                '<div data-id="{field_error_id}" class="obviel-field-error"></div>' +
-                '<div data-id="{global_error_id}" class="obviel-global-error"></div>' +
+                '<div data-id="{fieldErrorId}" class="obviel-field-error"></div>' +
+                '<div data-id="{globalErrorId}" class="obviel-global-error"></div>' +
                 '</div>' +
                 '</div>')
     });
@@ -3701,7 +3701,7 @@ test("modify error area", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -3718,10 +3718,10 @@ test("modify error area", function() {
     equal($('.obviel-error-arrow', el).length, 1);
 
     // change so we get an error
-    var form_el = $('form', el);
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('foo'); // not an int
-    field_el.trigger('change');
+    var formEl = $('form', el);
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('foo'); // not an int
+    fieldEl.trigger('change');
     // now check whether error information is indeed updated
     equal($('#obviel-field-error-test-a', el).text(), 'not a number');
 });
@@ -3736,7 +3736,7 @@ test("error events", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A',
@@ -3749,43 +3749,43 @@ test("error events", function() {
         errors: errors
     });
 
-    var form_el = $('form', el);
+    var formEl = $('form', el);
 
     // bind to error event
     
-    form_el.bind('field-error.obviel-forms', function(ev) {
+    formEl.bind('field-error.obviel-forms', function(ev) {
         $(ev.target).parents('.obviel-field').addClass('foo');
     });
 
        
-    form_el.bind('field-error-clear.obviel-forms', function(ev) {
+    formEl.bind('field-error-clear.obviel-forms', function(ev) {
         $(ev.target).parents('.obviel-field').removeClass('foo');
     });
  
-    var field_el = $('#obviel-field-test-a', form_el);
-    field_el.val('foo'); // not an int
-    field_el.trigger('change');
+    var fieldEl = $('#obviel-field-test-a', formEl);
+    fieldEl.val('foo'); // not an int
+    fieldEl.trigger('change');
 
-    ok(field_el.parents('.obviel-field').hasClass('foo'));
+    ok(fieldEl.parents('.obviel-field').hasClass('foo'));
 
-    field_el.val(1); // an int
-    field_el.trigger('change');
+    fieldEl.val(1); // an int
+    fieldEl.trigger('change');
     
-    ok(!field_el.parents('.obviel-field').hasClass('foo'));
+    ok(!fieldEl.parents('.obviel-field').hasClass('foo'));
 });
 
 test("global error events", function() {
     var el = $('#viewdiv');
     var data = {};
     var errors = {};
-    var global_errors = {};
+    var globalErrors = {};
     
     // monkey patch jquery's ajax() so we can test
-    var original_ajax = $.ajax;
-    var ajax_options;
+    var originalAjax = $.ajax;
+    var ajaxOptions;
     $.ajax = function(options) {
         var defer = $.Deferred();      
-        ajax_options = options;
+        ajaxOptions = options;
         if (options.url == 'validate') {
             var data = $.parseJSON(options.data);
             if (data.a > data.b) {
@@ -3805,53 +3805,53 @@ test("global error events", function() {
         form: {
             name: 'test',
             widgets: [{
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'a',
                 title: 'A',
                 description: 'A'
             }, {
-                ifaces: ['integer_field'],
+                ifaces: ['integerField'],
                 name: 'b',
                 title: 'B',
                 description: 'B'
             }]
         },
-        validation_url: 'validate',
+        validationUrl: 'validate',
         data: data,
         errors: errors,
-        global_errors: global_errors
+        globalErrors: globalErrors
     });
-    var form_el = $('form', el);
-    var field_a_el = $('#obviel-field-test-a', form_el);
-    var field_b_el = $('#obviel-field-test-b', form_el);
+    var formEl = $('form', el);
+    var fieldA_el = $('#obviel-field-test-a', formEl);
+    var fieldB_el = $('#obviel-field-test-b', formEl);
 
-    form_el.bind('global-error.obviel-forms', function(ev) {
+    formEl.bind('global-error.obviel-forms', function(ev) {
         $(ev.target).parents('.obviel-field').addClass('foo');
     });
-    form_el.bind('global-error-clear.obviel-forms', function(ev) {
+    formEl.bind('global-error-clear.obviel-forms', function(ev) {
         $(ev.target).parents('.obviel-field').removeClass('foo');
     });
 
     // set up global error situation
-    field_a_el.val('10');
-    field_b_el.val('1');
+    fieldA_el.val('10');
+    fieldB_el.val('1');
     var view = el.view();
     view.submit({});
 
-    equal(global_errors.a, 'must be smaller than b');
-    equal(global_errors.b, 'must be greater than a');
+    equal(globalErrors.a, 'must be smaller than b');
+    equal(globalErrors.b, 'must be greater than a');
 
     // the event has triggered for both fields
-    ok(field_a_el.parents('.obviel-field').hasClass('foo'));
-    ok(field_b_el.parents('.obviel-field').hasClass('foo'));
+    ok(fieldA_el.parents('.obviel-field').hasClass('foo'));
+    ok(fieldB_el.parents('.obviel-field').hasClass('foo'));
 
     // make the global validation problem go away again
-    field_b_el.val('100');
+    fieldB_el.val('100');
     view.submit({});
 
     // the clear event has triggered for both fields
-    ok(!field_a_el.parents('.obviel-field').hasClass('foo'));
-    ok(!field_b_el.parents('.obviel-field').hasClass('foo'));
+    ok(!fieldA_el.parents('.obviel-field').hasClass('foo'));
+    ok(!fieldB_el.parents('.obviel-field').hasClass('foo'));
     
-    $.ajax = original_ajax;
+    $.ajax = originalAjax;
 });

@@ -23,11 +23,11 @@ $(document).ready(function() {
         });
     });
 
-    /* we bind to special_event so we can report when it has been triggered */
-    $('#single_event').bind('special_event', function() {
+    /* we bind to specialEvent so we can report when it has been triggered */
+    $('#single_event').bind('specialEvent', function() {
         $(this).render({
             iface: 'message',
-            message: 'The event special_event was triggered'
+            message: 'The event specialEvent was triggered'
         });
     });
 
@@ -36,22 +36,22 @@ $(document).ready(function() {
     $('#single_event').bind('click', function() {
         $(this).render({
             iface: 'event',
-            name: 'special_event'
+            name: 'specialEvent'
         });
     });
 
     /* we capture special events a & b so we can report on them */
-    $('#multiple_events').bind('special_event_a', function() {
+    $('#multiple_events').bind('specialEventA', function() {
         $(this).render({
             iface: 'message',
-            message: 'The event special_event_a was triggered'
+            message: 'The event specialEventA was triggered'
         });
     });
     
-    $('#multiple_events').bind('special_event_b', function() {
+    $('#multiple_events').bind('specialEventB', function() {
         $(this).render({
             iface: 'message',
-            message: 'The event special_event_b was triggered'
+            message: 'The event specialEventB was triggered'
         });
     });
 
@@ -60,15 +60,15 @@ $(document).ready(function() {
         $(this).render({
             iface: 'multi',
             objects: [{iface: 'event',
-                       name: 'special_event_a'},
+                       name: 'specialEventA'},
                       {iface: 'event',
-                       name: 'special_event_b'}]
+                       name: 'specialEventB'}]
         });
     });
 
 
     obviel.view({
-        iface: 'redirect_target',
+        iface: 'redirectTarget',
         render: function() {
             this.el.render({
                 iface: 'message',
@@ -85,7 +85,7 @@ $(document).ready(function() {
         $(this).render({
             iface: 'redirect',
             target: {
-                iface: 'redirect_target'
+                iface: 'redirectTarget'
             }
         });
     });

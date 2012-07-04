@@ -1,6 +1,6 @@
-/*global obviel: true, jQuery: true, template_url: true
-  alert: true , browser: true, document: true, app_url: true,
-  window: true, Gettext: true, json_locale_data: true
+/*global obviel: true, jQuery: true, templateUrl: true
+  alert: true , browser: true, document: true, appUrl: true,
+  window: true, Gettext: true, jsonLocaleData: true
 */
 /*jshint evil: true */
 
@@ -65,16 +65,16 @@ obviel.template = {};
 (function($, module) {
 
     // will define these later, is to please jshint
-    var is_html_text, trim, normalize_space;
+    var isHtmlText, trim, normalizeSpace;
     var formatters, funcs;
-    var default_view_name = null;
-    var resolve_in_obj, get_directive, validate_dotted_name;
-    var cached_tokenize, morph_element;
-    var split_name_formatter, split_name_formatters;
-    var parse_text_for_plural, parse_tvar, get_implicit_count_variable;
-    var check_message_id;
+    var defaultViewName = null;
+    var resolveInObj, getDirective, validateDottedName;
+    var cachedTokenize, morphElement;
+    var splitNameFormatter, splitNameFormatters;
+    var parseTextForPlural, parseTvar, getImplicitCountVariable;
+    var checkMessageId;
     
-    var OBVIEL_TEMPLATE_ID_PREFIX = 'obviel-template-';
+    var OBVIELTEMPLATEIDPREFIX = 'obviel-template-';
 
     module.NAME_TOKEN = 0;
     module.TEXT_TOKEN = 1;
@@ -144,16 +144,16 @@ obviel.template = {};
     module.Template.prototype.render = function(el, obj, context) {
         var scope = new module.Scope(obj);
         if (!context) {
-            context = { get_translation: null, get_handler: null };
+            context = { getTranslation: null, getHandler: null };
         
         }
-        // use global get_formatter if nothing more specific was registered
-        if (!context.get_formatter) {
-            context.get_formatter = module.get_formatter;
+        // use global getFormatter if nothing more specific was registered
+        if (!context.getFormatter) {
+            context.getFormatter = module.getFormatter;
         }
-        // use global get_func if nothing more specific was registered
-        if (!context.get_func) {
-            context.get_func = module.get_func;
+        // use global getFunc if nothing more specific was registered
+        if (!context.getFunc) {
+            context.getFunc = module.getFunc;
         }
         
         // clear the element first
@@ -161,7 +161,7 @@ obviel.template = {};
 
         var node = el.get(0);
         for (var i = 0; i < this.parts.length; i++) {
-            this.parts[i].render_root(node, scope, context);
+            this.parts[i].renderRoot(node, scope, context);
         }
         
         // wipe out any elements marked for removal by data-if; these
@@ -171,8 +171,8 @@ obviel.template = {};
 
         // data-id becomes id
         $('.obviel-template-data-id', el).each(function() {
-            var data_id = get_directive(this, 'data-id');
-            this.setAttribute('id', data_id);
+            var dataId = getDirective(this, 'data-id');
+            this.setAttribute('id', dataId);
             var el = $(this);
             el.removeClass('obviel-template-data-id');
             if (el.attr('class') === '') {
@@ -182,11 +182,11 @@ obviel.template = {};
 
         // swap in those elements that had a dynamic element name
         $('.obviel-template-data-el', el).each(function() {
-            var data_el = get_directive(this, 'data-el');
-            var new_el = $(morph_element(this, data_el));
-            new_el.removeClass('obviel-template-data-el');
-            if (new_el.attr('class') === '') {
-                new_el.removeAttr('class');
+            var dataEl = getDirective(this, 'data-el');
+            var newEl = $(morphElement(this, dataEl));
+            newEl.removeClass('obviel-template-data-el');
+            if (newEl.attr('class') === '') {
+                newEl.removeAttr('class');
             }
         });
         // remove any unwrap tags
@@ -200,66 +200,66 @@ obviel.template = {};
         });
     };
     
-    module.Section = function(el, root_section) {
+    module.Section = function(el, rootSection) {
         this.el = el;
 
-        var data_if = get_directive(el, 'data-if');
-        var data_with = get_directive(el, 'data-with');
-        var data_each = get_directive(el, 'data-each');
+        var dataIf = getDirective(el, 'data-if');
+        var dataWith = getDirective(el, 'data-with');
+        var dataEach = getDirective(el, 'data-each');
         
-        if (!root_section && !data_if && !data_with && !data_each) {
+        if (!rootSection && !dataIf && !dataWith && !dataEach) {
             this.dynamic = false;
             return;
         }
 
         this.dynamic = true;
         
-        if (data_if) {
-            this.data_if = new module.IfExpression(el, data_if);
+        if (dataIf) {
+            this.dataIf = new module.IfExpression(el, dataIf);
         } else {
-            this.data_if = null;
+            this.dataIf = null;
         }
-        if (data_with) {
-            validate_dotted_name(el, data_with);
-            this.data_with_name = data_with;
-            this.data_with = module.resolve_func(data_with);
+        if (dataWith) {
+            validateDottedName(el, dataWith);
+            this.dataWithName = dataWith;
+            this.dataWith = module.resolveFunc(dataWith);
         } else {
-            this.data_with = null;
+            this.dataWith = null;
         }
-        if (data_each) {
-            validate_dotted_name(el, data_each);
-            this.data_each = module.resolve_func(data_each);
-            this.data_each_name = data_each.replace('.', '_');
+        if (dataEach) {
+            validateDottedName(el, dataEach);
+            this.dataEach = module.resolveFunc(dataEach);
+            this.dataEachName = dataEach.replace('.', '_');
         } else {
-            this.data_each = null;
+            this.dataEach = null;
         }
 
-        //this.el_funcs = { funcs: [], sub: {} };
+        //this.elFuncs = { funcs: [], sub: {} };
         
-        this.dynamic_elements = [];
-        this.view_elements = [];
-        this.sub_sections = [];
+        this.dynamicElements = [];
+        this.viewElements = [];
+        this.subSections = [];
         this.compile(el);
     };
 
-    module.Section.prototype.is_dynamic = function() {
+    module.Section.prototype.isDynamic = function() {
         return this.dynamic;
     };
     
     module.Section.prototype.compile = function(el) {
         // always compile any dynamic elements on top element
-        var has_message_id = this.compile_dynamic_element(el);
+        var hasMessageId = this.compileDynamicElement(el);
         
         // if we have a message id, we don't want to compile down
         // into the section any further
         // XXX do some checking for illegal constructs
-        if (has_message_id) {
-            this.compile_fragment(el);
+        if (hasMessageId) {
+            this.compileFragment(el);
             return;
         }
 
         // compile any view on top element
-        this.compile_view(el);
+        this.compileView(el);
         
         // now compile sub-elements
         for (var i = 0; i < el.childNodes.length; i++) {
@@ -268,13 +268,13 @@ obviel.template = {};
                 // skip all non-element nodes
                 continue;
             }
-            this.compile_el(node);
+            this.compileEl(node);
         }
         
-        this.compile_fragment(el);
+        this.compileFragment(el);
     };
 
-    module.Section.prototype.compile_fragment = function(el) {
+    module.Section.prototype.compileFragment = function(el) {
         var frag = document.createDocumentFragment();
         while (el.hasChildNodes()) {
             frag.appendChild(el.removeChild(el.firstChild));
@@ -282,29 +282,29 @@ obviel.template = {};
         this.frag = frag;
     };
     
-    module.Section.prototype.compile_el = function(el) {
+    module.Section.prototype.compileEl = function(el) {
         // compile element as sub-section
-        var is_sub_section = this.compile_sub_section(el);
+        var isSubSection = this.compileSubSection(el);
 
         // if it's a sub-section, we're done with it
         // we don't want to compile dynamic elements for it,
         // as that's done in the sub-section. we also don't want
         // to process further child elements, as that's done in the
         // sub section
-        if (is_sub_section) {
+        if (isSubSection) {
             return;
         }
         
-        var has_message_id = this.compile_dynamic_element(el);
+        var hasMessageId = this.compileDynamicElement(el);
         
         // if we have a message id, we don't want to compile down
         // into the element
         // XXX do some checking for illegal constructs
-        if (has_message_id) {
+        if (hasMessageId) {
             return;
         }
 
-        this.compile_view(el);
+        this.compileView(el);
 
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
@@ -312,28 +312,28 @@ obviel.template = {};
                 // skip all non-element nodes
                 continue;
             }
-            this.compile_el(node);
+            this.compileEl(node);
         }
     };
 
-    module.Section.prototype.compile_dynamic_element = function(el) {
-        var dynamic_element = new module.DynamicElement(el);
-        if (!dynamic_element.is_dynamic()) {
+    module.Section.prototype.compileDynamicElement = function(el) {
+        var dynamicElement = new module.DynamicElement(el);
+        if (!dynamicElement.isDynamic()) {
             return false;
         }
         
-        this.dynamic_elements.push({
-            finder: this.get_el_finder(el),
-            dynamic_element: dynamic_element
+        this.dynamicElements.push({
+            finder: this.getElFinder(el),
+            dynamicElement: dynamicElement
         });
-        return dynamic_element.content_trans !== null;
+        return dynamicElement.contentTrans !== null;
     };
     
-    module.Section.prototype.get_el_indexes = function(el) {
+    module.Section.prototype.getElIndexes = function(el) {
         var indexes = [];
-        var parent_node = this.el;
+        var parentNode = this.el;
         var node = el;
-        while (node !== parent_node) {
+        while (node !== parentNode) {
             var children = node.parentNode.childNodes;
             for (var i = 0; i < children.length; i++) {
                 if (children[i] === node) {
@@ -347,11 +347,11 @@ obviel.template = {};
         return indexes;
     };
     
-    module.Section.prototype.get_el_finder = function(el) {
+    module.Section.prototype.getElFinder = function(el) {
         var indexes = [];
-        var parent_node = this.el;
+        var parentNode = this.el;
         var node = el;
-        while (node !== parent_node) {
+        while (node !== parentNode) {
             var children = node.parentNode.childNodes;
             for (var i = 0; i < children.length; i++) {
                 if (children[i] === node) {
@@ -368,74 +368,74 @@ obviel.template = {};
             c.push('node = node.childNodes[' + indexes[j] + '];');
         }
         c.push('return node;');
-        return c.get_function();
+        return c.getFunction();
     };
     
-    module.Section.prototype.compile_view = function(el) {
-        var view_element = new module.ViewElement(el);
+    module.Section.prototype.compileView = function(el) {
+        var viewElement = new module.ViewElement(el);
 
-        if (!view_element.is_dynamic()) {
+        if (!viewElement.isDynamic()) {
             return;
         }
         
-        this.view_elements.push({
-            finder: this.get_el_finder(el),
-            view_element: view_element
+        this.viewElements.push({
+            finder: this.getElFinder(el),
+            viewElement: viewElement
         });
     };
     
-    module.Section.prototype.compile_sub_section = function(el) {
+    module.Section.prototype.compileSubSection = function(el) {
         // create sub section with copied contents
-        var sub_section = new module.Section(el);
+        var subSection = new module.Section(el);
         
-        if (!sub_section.is_dynamic()) {
+        if (!subSection.isDynamic()) {
             return false;
         }
 
-        var old_el = el;
+        var oldEl = el;
         
         // make shallow copy of the element
-        el = old_el.cloneNode(false);
+        el = oldEl.cloneNode(false);
 
         // replace original el with shallow clone
-        old_el.parentNode.replaceChild(el, old_el);
+        oldEl.parentNode.replaceChild(el, oldEl);
    
-        this.sub_sections.push({
-            finder: this.get_el_finder(el),
-            sub_section: sub_section
+        this.subSections.push({
+            finder: this.getElFinder(el),
+            subSection: subSection
         });
         return true;
     };
     
     module.Section.prototype.render = function(el, scope, context) {
-        if (this.data_if) {
-            var data_if = this.data_if.resolve(el, scope);
-            if (!data_if) {
+        if (this.dataIf) {
+            var dataIf = this.dataIf.resolve(el, scope);
+            if (!dataIf) {
                 $(el).addClass('obviel-template-removal');
                 return;
             }
         }
 
-        if (this.data_each) {
-            this.render_each(el, scope, context);
+        if (this.dataEach) {
+            this.renderEach(el, scope, context);
         } else {
-            this.render_el(el, scope, context);
+            this.renderEl(el, scope, context);
         }
     };
 
-    module.Section.prototype.render_root = function(el, scope, context) {
-        var top_el = this.el.cloneNode(false);
+    module.Section.prototype.renderRoot = function(el, scope, context) {
+        var topEl = this.el.cloneNode(false);
         // append first, so that parentNode is available
-        el.appendChild(top_el);
-        this.render(top_el, scope, context);
+        el.appendChild(topEl);
+        this.render(topEl, scope, context);
     };
     
-    var each_info = function(index, name, data_each) {
+    var eachInfo = function(index, name, dataEach) {
         var even = index % 2 === 0;
         var info = {
             index: index,
             number: index + 1,
-            length: data_each.length,
+            length: dataEach.length,
             even: even,
             odd: !even
         };
@@ -447,15 +447,15 @@ obviel.template = {};
         };
     };
     
-    module.Section.prototype.render_each = function(el, scope, context) {
-        var data_each = this.data_each(scope);
-        if (!$.isArray(data_each)) {
+    module.Section.prototype.renderEach = function(el, scope, context) {
+        var dataEach = this.dataEach(scope);
+        if (!$.isArray(dataEach)) {
             throw new module.RenderError(
                 el, ("data-each must point to an array, not to " +
-                     $.type(data_each)));
+                     $.type(dataEach)));
         }
         // empty array, so don't render any elements
-        if (data_each.length === 0) {
+        if (dataEach.length === 0) {
             el.parentNode.removeChild(el);
             return;
         }
@@ -463,126 +463,126 @@ obviel.template = {};
         // prepare the element to keep cloning back into the
         // DOM for each iteration. this needs to be done here,
         // before its id is removed
-        var iteration_node = el.cloneNode(false);
+        var iterationNode = el.cloneNode(false);
 
         // store some information about the first iteration
-        var insert_before_node = el.nextSibling;
-        var parent_node = el.parentNode;
+        var insertBeforeNode = el.nextSibling;
+        var parentNode = el.parentNode;
 
         // render the first iteration on the element
-        scope.push(each_info(0, this.data_each_name, data_each));
-        scope.push(data_each[0]);
-        this.render_el(el, scope, context);
+        scope.push(eachInfo(0, this.dataEachName, dataEach));
+        scope.push(dataEach[0]);
+        this.renderEl(el, scope, context);
         scope.pop();
         scope.pop();
 
         // now insert the next iterations after the first iteration
-        for (var i = 1; i < data_each.length; i++) {
-            var iteration_clone = iteration_node.cloneNode(false);
-            parent_node.insertBefore(iteration_clone, insert_before_node);
+        for (var i = 1; i < dataEach.length; i++) {
+            var iterationClone = iterationNode.cloneNode(false);
+            parentNode.insertBefore(iterationClone, insertBeforeNode);
 
-            scope.push(each_info(i, this.data_each_name, data_each));
-            scope.push(data_each[i]);
-            this.render_el(iteration_clone, scope, context);
+            scope.push(eachInfo(i, this.dataEachName, dataEach));
+            scope.push(dataEach[i]);
+            this.renderEl(iterationClone, scope, context);
             scope.pop();
             scope.pop();
         }
     };
     
-    module.Section.prototype.render_el = function(el, scope, context) {
-        if (this.data_with) {
-            var data_with = this.data_with(scope);
-            if (data_with === undefined) {
+    module.Section.prototype.renderEl = function(el, scope, context) {
+        if (this.dataWith) {
+            var dataWith = this.dataWith(scope);
+            if (dataWith === undefined) {
                 throw new module.RenderError(
-                    el, "data-with '" + this.data_with_name + "' " +
+                    el, "data-with '" + this.dataWithName + "' " +
                     "could not be found");
             }
-            var type = $.type(data_with);
+            var type = $.type(dataWith);
             if (type !== 'object') {
                 throw new module.RenderError(el,
                     "data-with must point to an object, not to " + type);
             }
-            scope.push(data_with);
+            scope.push(dataWith);
         }
 
         el.appendChild(this.frag.cloneNode(true));
         
-        this.render_dynamic_elements(el, scope, context);
-        this.render_views(el, scope, context);
-        this.render_sub_sections(el, scope, context);
+        this.renderDynamicElements(el, scope, context);
+        this.renderViews(el, scope, context);
+        this.renderSubSections(el, scope, context);
 
-        if (this.data_with) {
+        if (this.dataWith) {
             scope.pop();
         }
     };
     
-    module.Section.prototype.render_dynamic_elements = function(el, scope,
+    module.Section.prototype.renderDynamicElements = function(el, scope,
                                                                 context) {
-        for (var i in this.dynamic_elements) {
-            var value = this.dynamic_elements[i];
-            var dynamic_el = value.finder(el);
-            value.dynamic_element.render(dynamic_el, scope, context);
+        for (var i in this.dynamicElements) {
+            var value = this.dynamicElements[i];
+            var dynamicEl = value.finder(el);
+            value.dynamicElement.render(dynamicEl, scope, context);
         }
     };
 
-    module.Section.prototype.render_views = function(el, scope,
+    module.Section.prototype.renderViews = function(el, scope,
                                                      context) {
-        for (var i in this.view_elements) {
-            var value = this.view_elements[i];
-            var view_el = value.finder(el);
-            value.view_element.render(view_el, scope, context);
+        for (var i in this.viewElements) {
+            var value = this.viewElements[i];
+            var viewEl = value.finder(el);
+            value.viewElement.render(viewEl, scope, context);
         }
     };
 
-    module.Section.prototype.render_sub_sections = function(el, scope,
+    module.Section.prototype.renderSubSections = function(el, scope,
                                                             context) {
-        var to_render = [];
+        var toRender = [];
         // first we find all elements. we do this before rendering starts,
         // as rendering can in some cases (data-each) insert new elements
         // and that would break the finding
-        for (var i in this.sub_sections) {
-            to_render.push({value: this.sub_sections[i],
-                            sub_section_el: this.sub_sections[i].finder(el)});
+        for (var i in this.subSections) {
+            toRender.push({value: this.subSections[i],
+                            subSectionEl: this.subSections[i].finder(el)});
         }
         // now we can do the rendering
-        for (i in to_render) {
-            var r = to_render[i];
-            r.value.sub_section.render(r.sub_section_el, scope, context);
+        for (i in toRender) {
+            var r = toRender[i];
+            r.value.subSection.render(r.subSectionEl, scope, context);
         }
     };
     
-    module.DynamicElement = function(el, allow_tvar) {
-        this.attr_texts = {};
-        this.content_texts = [];
+    module.DynamicElement = function(el, allowTvar) {
+        this.attrTexts = {};
+        this.contentTexts = [];
         this.handlers = [];
-        this.content_trans = null;
-        this.func_name = null;
-        this.has_data_attr = false;
+        this.contentTrans = null;
+        this.funcName = null;
+        this.hasDataAttr = false;
         this._dynamic = false;
-        this.trans_info = null;
-        this.compile(el, allow_tvar);
+        this.transInfo = null;
+        this.compile(el, allowTvar);
     };
 
-    module.DynamicElement.prototype.is_dynamic = function() {
+    module.DynamicElement.prototype.isDynamic = function() {
         return this._dynamic;
     };
     
-    module.DynamicElement.prototype.compile = function(el, allow_tvar) {
-        this.trans_info = new module.TransInfo(el, allow_tvar);
+    module.DynamicElement.prototype.compile = function(el, allowTvar) {
+        this.transInfo = new module.TransInfo(el, allowTvar);
         
-        this.compile_attr_texts(el);
-        this.compile_content_texts(el);
-        this.compile_data_handler(el);
-        this.compile_func(el);
-        this.compile_data_id(el);
-        this.compile_data_el(el);
-        this.compile_data_attr(el);
-        this.compile_data_unwrap(el);
-        this.compile_content_trans(el);
+        this.compileAttrTexts(el);
+        this.compileContentTexts(el);
+        this.compileDataHandler(el);
+        this.compileFunc(el);
+        this.compileDataId(el);
+        this.compileDataEl(el);
+        this.compileDataAttr(el);
+        this.compileDataUnwrap(el);
+        this.compileContentTrans(el);
     };
     
-    module.DynamicElement.prototype.compile_attr_texts = function(el) {
-        var attr_text;
+    module.DynamicElement.prototype.compileAttrTexts = function(el) {
+        var attrText;
         for (var i = 0; i < el.attributes.length; i++) {
             var attr = el.attributes[i];
             if (attr.specified !== true) {
@@ -591,21 +591,21 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
-            var trans_info = this.trans_info.attributes[attr.name];
-            if (trans_info === undefined) {
-                trans_info = null;
+            var transInfo = this.transInfo.attributes[attr.name];
+            if (transInfo === undefined) {
+                transInfo = null;
             }
-            attr_text = new module.DynamicAttribute(el, attr.name, attr.value,
-                                                    trans_info);
-            if (!attr_text.is_dynamic()) {
+            attrText = new module.DynamicAttribute(el, attr.name, attr.value,
+                                                    transInfo);
+            if (!attrText.isDynamic()) {
                 continue;
             }
-            this.attr_texts[attr.name] = attr_text;
+            this.attrTexts[attr.name] = attrText;
             this._dynamic = true;
         }
     };
     
-    module.DynamicElement.prototype.compile_content_texts = function(el) {
+    module.DynamicElement.prototype.compileContentTexts = function(el) {
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
             if (node.nodeType !== 3) {
@@ -614,57 +614,57 @@ obviel.template = {};
             if (node.nodeValue === null) {
                 continue;
             }
-            var dynamic_text = new module.DynamicText(el, node.nodeValue);
-            if (dynamic_text.is_dynamic()) {
-                this.content_texts.push({
+            var dynamicText = new module.DynamicText(el, node.nodeValue);
+            if (dynamicText.isDynamic()) {
+                this.contentTexts.push({
                     index: i,
-                    dynamic_text: dynamic_text
+                    dynamicText: dynamicText
                 });
                 this._dynamic = true;
             }
         }
     };
     
-    module.DynamicElement.prototype.compile_data_handler = function(el) {
-        var data_handler = get_directive(el, 'data-handler');
-        if (data_handler === null) {
+    module.DynamicElement.prototype.compileDataHandler = function(el) {
+        var dataHandler = getDirective(el, 'data-handler');
+        if (dataHandler === null) {
             return;
         }
-        var name_formatters = split_name_formatters(el, data_handler);
-        if (name_formatters.length === 0) {
+        var nameFormatters = splitNameFormatters(el, dataHandler);
+        if (nameFormatters.length === 0) {
             throw new module.CompilationError(
                 el, 'data-handler: must have content');
         }
-        for (var i = 0; i < name_formatters.length; i++) {
-            var name_formatter = name_formatters[i];
+        for (var i = 0; i < nameFormatters.length; i++) {
+            var nameFormatter = nameFormatters[i];
     
-            if (!name_formatter.formatter) {
+            if (!nameFormatter.formatter) {
                 throw new module.CompilationError(
                     el, "data-handler: handler function name is not specified");
             }
-            this.handlers.push({event_name: name_formatter.name,
-                                handler_name: name_formatter.formatter});
+            this.handlers.push({eventName: nameFormatter.name,
+                                handlerName: nameFormatter.formatter});
         }
         this._dynamic = true;
     };
     
-    module.DynamicElement.prototype.compile_func = function(el) {
-        var func_name = get_directive(el, 'data-func');
-        if (func_name === null) {
+    module.DynamicElement.prototype.compileFunc = function(el) {
+        var funcName = getDirective(el, 'data-func');
+        if (funcName === null) {
             return;
         }
-        this.func_name = func_name;
+        this.funcName = funcName;
         this._dynamic = true;
     };
 
-    module.DynamicElement.prototype.compile_data_id = function(el) {
+    module.DynamicElement.prototype.compileDataId = function(el) {
         if (!el.hasAttribute('data-id')) {
             return;
         }
         // non-destructively read data-id attribute, leave it in place
         // so variables can be used in it
-        var data_id = el.getAttribute('data-id');
-        if (!data_id) {
+        var dataId = el.getAttribute('data-id');
+        if (!dataId) {
             throw new module.CompilationError(
                 el, "data-id cannot be empty");
         }
@@ -672,28 +672,28 @@ obviel.template = {};
         $(el).addClass('obviel-template-data-id');
     };
     
-    module.DynamicElement.prototype.compile_data_el = function(el) {
+    module.DynamicElement.prototype.compileDataEl = function(el) {
         if (!el.hasAttribute('data-el')) {
             return;
         }
         // non-destructively read data-el attribute, leave it in place
         // so variables can be used in it
-        var data_el = el.getAttribute('data-el');
-        if (!data_el) {
+        var dataEl = el.getAttribute('data-el');
+        if (!dataEl) {
             throw new module.CompilationError(
                 el, "data-el cannot be empty");
         }
         $(el).addClass('obviel-template-data-el');
     };
 
-    module.DynamicElement.prototype.compile_data_attr = function(el) {
+    module.DynamicElement.prototype.compileDataAttr = function(el) {
         if (!el.hasAttribute('data-attr')) {
             return;
         }
         // non-destructively read data-attr attribute, leave it in place
         // so variables can be used in it
-        var data_attr = el.getAttribute('data-attr');
-        if (!data_attr) {
+        var dataAttr = el.getAttribute('data-attr');
+        if (!dataAttr) {
             throw new module.CompilationError(
                 el, "data-attr cannot be empty");
         }
@@ -702,29 +702,29 @@ obviel.template = {};
                 el, "data-attr must be combined with data-value");
         }
         $(el).addClass('obviel-template-removal');
-        this.has_data_attr = true;
+        this.hasDataAttr = true;
         this._dynamic = true;
     };
 
-    module.DynamicElement.prototype.compile_data_unwrap = function(el) {
+    module.DynamicElement.prototype.compileDataUnwrap = function(el) {
         if (!el.hasAttribute('data-unwrap')) {
             return;
         }
         $(el).addClass('obviel-template-data-unwrap');
     };
 
-    module.DynamicElement.prototype.compile_content_trans = function(el) {
-        if (this.trans_info.content === null) {
+    module.DynamicElement.prototype.compileContentTrans = function(el) {
+        if (this.transInfo.content === null) {
             return;
         }
         this._dynamic = true;
 
-        var trans_info = this.trans_info.content;
+        var transInfo = this.transInfo.content;
         
         var singular = new module.ContentTrans(
-            trans_info.message_id, trans_info.directive);
+            transInfo.messageId, transInfo.directive);
         var plural = new module.ContentTrans(
-            trans_info.plural_message_id, trans_info.directive);
+            transInfo.pluralMessageId, transInfo.directive);
 
         var current = singular;
         // XXX index only relevant for notrans case,
@@ -734,98 +734,98 @@ obviel.template = {};
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
             if (node.nodeType === 3) {
-                // TEXT_NODE
-                var info = parse_text_for_plural(node.nodeValue);
-                if (info.after_plural === null) {
-                    current.compile_node(node, c);
+                // TEXTNODE
+                var info = parseTextForPlural(node.nodeValue);
+                if (info.afterPlural === null) {
+                    current.compileNode(node, c);
                     c++;
                 } else {
-                    current.compile_node(document.createTextNode(
-                        info.before_plural), c);
+                    current.compileNode(document.createTextNode(
+                        info.beforePlural), c);
                     c++;
                     current = plural;
-                    current.compile_node(document.createTextNode(
-                        info.after_plural), c);
+                    current.compileNode(document.createTextNode(
+                        info.afterPlural), c);
                     c++;
                 }
             } else if (node.nodeType === 1) {
                 // ELEMENT NODE
-                current.compile_node(node, c);
+                current.compileNode(node, c);
                 c++;
             }
         }
 
-        singular.finalize_compile(el);
+        singular.finalizeCompile(el);
         
         if (current === plural) {
-            plural.finalize_compile(el);
+            plural.finalizeCompile(el);
         } else {
             plural = null;
         }
 
-        if (trans_info.count_variable !== null && plural === null) {
+        if (transInfo.countVariable !== null && plural === null) {
             throw new module.CompilationError(
                 el, "data-plural used for element content but no || used " +
                     "to indicate plural text");
         }
 
         if (plural === null) {
-            this.content_trans = singular;
+            this.contentTrans = singular;
             return;
         }
         
-        var count_variable;
+        var countVariable;
         
-        if (trans_info.count_variable !== null) {
-            count_variable = trans_info.count_variable;
+        if (transInfo.countVariable !== null) {
+            countVariable = transInfo.countVariable;
         } else {
-            count_variable = get_implicit_count_variable(el, singular, plural);
+            countVariable = getImplicitCountVariable(el, singular, plural);
         }
         
-        this.content_trans = new module.PluralTrans(
+        this.contentTrans = new module.PluralTrans(
             singular,
             plural,
-            count_variable);
+            countVariable);
     };
     
     module.DynamicElement.prototype.render = function(el, scope, context) {
         var self = this;
         
-        for (var key in this.attr_texts) {
-            this.attr_texts[key].render(el, scope, context);
+        for (var key in this.attrTexts) {
+            this.attrTexts[key].render(el, scope, context);
         }
         
         // fast path without translations; elements do not need to be
         // reorganized
-        if (this.content_trans === null) {
-            this.render_notrans(el, scope, context);
-            this.finalize_render(el, scope, context);
+        if (this.contentTrans === null) {
+            this.renderNotrans(el, scope, context);
+            this.finalizeRender(el, scope, context);
             return;
         }
 
-        this.content_trans.render(
+        this.contentTrans.render(
             el, scope, context,
             function(el, scope, context) {
-                self.render_notrans(el, scope, context);
+                self.renderNotrans(el, scope, context);
             });
-        this.finalize_render(el, scope, context);
+        this.finalizeRender(el, scope, context);
     };
 
-    module.DynamicElement.prototype.render_notrans = function(el, scope,
+    module.DynamicElement.prototype.renderNotrans = function(el, scope,
                                                               context) {
-        for (var i = 0; i < this.content_texts.length; i++) {
-            var value = this.content_texts[i];
-            el.childNodes[value.index].nodeValue = value.dynamic_text.render(
+        for (var i = 0; i < this.contentTexts.length; i++) {
+            var value = this.contentTexts[i];
+            el.childNodes[value.index].nodeValue = value.dynamicText.render(
                 el, scope, context);
         }
     };
     
-    module.DynamicElement.prototype.render_data_attr = function(el) {
-        if (!this.has_data_attr) {
+    module.DynamicElement.prototype.renderDataAttr = function(el) {
+        if (!this.hasDataAttr) {
             return;
         }
-        var name = get_directive(el, 'data-attr');
-        var value = get_directive(el, 'data-value');
+        var name = getDirective(el, 'data-attr');
+        var value = getDirective(el, 'data-value');
 
         var parent = $(el.parentNode);
         
@@ -837,7 +837,7 @@ obviel.template = {};
         parent.attr(name, value);
     };
 
-    module.DynamicElement.prototype.render_data_handler = function(
+    module.DynamicElement.prototype.renderDataHandler = function(
         el, context) {
         if (this.handlers.length === 0) {
             return;
@@ -845,37 +845,37 @@ obviel.template = {};
         
         for (var i = 0; i < this.handlers.length; i++) {
             var handler = this.handlers[i];
-            if (context.get_handler === null ||
-                context.get_handler === undefined) {
+            if (context.getHandler === null ||
+                context.getHandler === undefined) {
                 throw new module.RenderError(
                     el, "cannot render data-handler for event '" +
-                        handler.event_name + "' and handler '" +
-                        handler.handler_name +
-                        "' because no get_handler function " +
+                        handler.eventName + "' and handler '" +
+                        handler.handlerName +
+                        "' because no getHandler function " +
                         "was supplied");
             }
-            var f = context.get_handler(handler.handler_name);
+            var f = context.getHandler(handler.handlerName);
             if (f === undefined || f === null) {
                 throw new module.RenderError(
                     el, "cannot render data-handler for event '" +
-                        handler.event_name + "' and handler '" +
-                        handler.handler_name + "' because handler function " +
+                        handler.eventName + "' and handler '" +
+                        handler.handlerName + "' because handler function " +
                         "could not be found");
             }
-            $(el).bind(handler.event_name, f);
+            $(el).bind(handler.eventName, f);
         }
     };
     
-    module.DynamicElement.prototype.render_data_func = function(
+    module.DynamicElement.prototype.renderDataFunc = function(
         el, scope, context) {
-        if (this.func_name === null) {
+        if (this.funcName === null) {
             return;
         }
-        var func = context.get_func(this.func_name);
+        var func = context.getFunc(this.funcName);
         if (!func) {
             throw new module.RenderError(
                 el, 'cannot render data-func because cannot find func: ' +
-                    this.func_name);
+                    this.funcName);
         }
         func($(el),
              function(name) { return scope.resolve(name); },
@@ -883,11 +883,11 @@ obviel.template = {};
     };
     
     
-    module.DynamicElement.prototype.finalize_render = function(
+    module.DynamicElement.prototype.finalizeRender = function(
         el, scope, context) {
-        this.render_data_attr(el);
-        this.render_data_handler(el, context);
-        this.render_data_func(el, scope, context);
+        this.renderDataAttr(el);
+        this.renderDataHandler(el, context);
+        this.renderDataFunc(el, scope, context);
     };
     
     module.DynamicText = function(el, text) {
@@ -913,7 +913,7 @@ obviel.template = {};
         this._dynamic = dynamic;
     };
 
-    module.DynamicText.prototype.is_dynamic = function() {
+    module.DynamicText.prototype.isDynamic = function() {
         return this._dynamic;
     };
     
@@ -926,31 +926,31 @@ obviel.template = {};
         return result.join('');
     };
 
-    module.DynamicText.prototype.render_root = function(el, scope, context) {
+    module.DynamicText.prototype.renderRoot = function(el, scope, context) {
         var node = document.createTextNode(this.render(el, scope, context));
         el.appendChild(node);
     };
     
-    module.DynamicAttribute = function(el, name, value, trans_info) {
+    module.DynamicAttribute = function(el, name, value, transInfo) {
         this.name = name;
         this.value = value;
-        this.trans_info = trans_info;
-        this.attr_trans = null;
-        this.dynamic_text = null;
+        this.transInfo = transInfo;
+        this.attrTrans = null;
+        this.dynamicText = null;
         this._dynamic = false;
-        this.compile_notrans(el);
-        this.compile_trans(el);
+        this.compileNotrans(el);
+        this.compileTrans(el);
     };
 
-    module.DynamicAttribute.prototype.is_dynamic = function() {
+    module.DynamicAttribute.prototype.isDynamic = function() {
         return this._dynamic;
     };
     
-    module.DynamicAttribute.prototype.compile_notrans = function(el) {
-        var dynamic_text = new module.DynamicText(el, this.value);
+    module.DynamicAttribute.prototype.compileNotrans = function(el) {
+        var dynamicText = new module.DynamicText(el, this.value);
         // if there's nothing dynamic nor anything to translate,
         // we don't have a dynamic attribute at all
-        if (!dynamic_text.is_dynamic() && this.trans_info === null) {
+        if (!dynamicText.isDynamic() && this.transInfo === null) {
             return;
         }
         if (this.name === 'id') {
@@ -958,91 +958,91 @@ obviel.template = {};
                 el, ("not allowed to use variables (or translation) " +
                      "in id attribute. use data-id instead"));
         }
-        this.dynamic_text = dynamic_text;
+        this.dynamicText = dynamicText;
         
         this._dynamic = true;
     };
     
-    module.DynamicAttribute.prototype.compile_trans = function(el) {
-        if (this.trans_info === null) {
+    module.DynamicAttribute.prototype.compileTrans = function(el) {
+        if (this.transInfo === null) {
             return;
         }
         
         var parts = this.value.split('||');
         if (parts.length == 1) {
-            if (this.trans_info.count_variable !== null) {
+            if (this.transInfo.countVariable !== null) {
                 throw new module.CompilationError(
                     el, "data-plural used for attribute content but no || " +
                     "used to indicate plural text: " +
-                    this.trans_info.count_variable);
+                    this.transInfo.countVariable);
             }
-            this.attr_trans = new module.AttributeTrans(
-                el, this.name, this.value, this.trans_info.message_id);
+            this.attrTrans = new module.AttributeTrans(
+                el, this.name, this.value, this.transInfo.messageId);
             this._dynamic = true;
             return;
         }
         
         var singular = new module.AttributeTrans(
             el, this.name, parts[0],
-            this.trans_info.message_id);
+            this.transInfo.messageId);
         var plural = new module.AttributeTrans(
             el, this.name, parts[1],
-            this.trans_info.plural_message_id);
+            this.transInfo.pluralMessageId);
         
-        var count_variable;
+        var countVariable;
 
-        if (this.trans_info.count_variable !== null) {
-            count_variable = this.trans_info.count_variable;
+        if (this.transInfo.countVariable !== null) {
+            countVariable = this.transInfo.countVariable;
         } else {
-            count_variable = get_implicit_count_variable(
+            countVariable = getImplicitCountVariable(
                 el, singular, plural);
         }
 
         this._dynamic = true;
-        this.attr_trans = new module.PluralTrans(
-            singular, plural, count_variable);
+        this.attrTrans = new module.PluralTrans(
+            singular, plural, countVariable);
     };
     
     module.DynamicAttribute.prototype.render = function(el, scope, context) {
         var self = this;
         // fast path without translations
-        if (context.get_translation === undefined ||
-            context.get_translation === null ||
-            this.attr_trans === null) {
-            this.render_notrans(el, scope, context);
+        if (context.getTranslation === undefined ||
+            context.getTranslation === null ||
+            this.attrTrans === null) {
+            this.renderNotrans(el, scope, context);
             return;
         }
-        this.attr_trans.render(
+        this.attrTrans.render(
             el, scope, context,
             function(el, scope, context) {
-                self.render_notrans(el, scope, context);
+                self.renderNotrans(el, scope, context);
             });
     };
     
-    module.DynamicAttribute.prototype.render_notrans = function(
+    module.DynamicAttribute.prototype.renderNotrans = function(
         el, scope, context) {
         el.setAttribute(this.name,
-                        this.dynamic_text.render(el, scope, context));
+                        this.dynamicText.render(el, scope, context));
     };
     
     module.Variable = function(el, name) {
-        var r = split_name_formatter(el, name);
+        var r = splitNameFormatter(el, name);
         this.name = r.name;
         this.formatter = r.formatter;
-        this.full_name = name;
-        validate_dotted_name(el, this.name);
-        this.get_value = module.resolve_func(r.name);
+        this.fullName = name;
+        validateDottedName(el, this.name);
+        this.getValue = module.resolveFunc(r.name);
     };
     
     module.Variable.prototype.render = function(el, scope, context) {
-        var result = this.get_value(scope);
+        var result = this.getValue(scope);
         if (result === undefined) {
             throw new module.RenderError(el, "variable '" + this.name + "' " +
                                          "could not be found");
         }
 
         if (this.formatter !== null) {
-            var formatter = context.get_formatter(this.formatter);
+            var formatter = context.getFormatter(this.formatter);
             if (!formatter) {
                 throw new module.RenderError(
                     el, "cannot find formatter with name: " +
@@ -1060,31 +1060,31 @@ obviel.template = {};
     };
 
     module.ViewElement = function(el) {
-        var data_view = get_directive(el, 'data-view');
-        if (data_view === null) {
+        var dataView = getDirective(el, 'data-view');
+        if (dataView === null) {
             this.dynamic = false;
             return;
         }
-        validate_dotted_name(el, data_view);
+        validateDottedName(el, dataView);
         this.dynamic = true;
-        var r = split_name_formatter(el, data_view);
-        this.obj_name = r.name;
-        this.get_value = module.resolve_func(r.name);
-        this.view_name = r.formatter;
-        if (this.view_name === null) {
-            this.view_name = default_view_name;
+        var r = splitNameFormatter(el, dataView);
+        this.objName = r.name;
+        this.getValue = module.resolveFunc(r.name);
+        this.viewName = r.formatter;
+        if (this.viewName === null) {
+            this.viewName = defaultViewName;
         }
     };
     
-    module.ViewElement.prototype.is_dynamic = function() {
+    module.ViewElement.prototype.isDynamic = function() {
         return this.dynamic;
     };
 
     module.ViewElement.prototype.render = function(el, scope, context) {
-        var obj = this.get_value(scope);
+        var obj = this.getValue(scope);
         if (obj === undefined) {
             throw new module.RenderError(
-                el, "data-view object '" + this.property_name + "' " +
+                el, "data-view object '" + this.propertyName + "' " +
                     "could not be found");
         }
         var type = $.type(obj);
@@ -1099,7 +1099,7 @@ obviel.template = {};
             el.removeChild(el.firstChild);
         }
         try {
-            $(el).render(obj, this.view_name);
+            $(el).render(obj, this.viewName);
         } catch(e) {
             if (e instanceof obviel.LookupError) {
                 throw new module.RenderError(el, e.toString());
@@ -1109,74 +1109,74 @@ obviel.template = {};
         }
     };
     
-    module.TransInfo = function(el, allow_tvar) {
+    module.TransInfo = function(el, allowTvar) {
         this.content = null;
         this.attributes = {};
-        this.any_translations = false;
-        this.allow_tvar = allow_tvar;
+        this.anyTranslations = false;
+        this.allowTvar = allowTvar;
         this.compile(el);
     };
 
     module.TransInfo.prototype.compile = function(el) {
-        this.compile_data_trans(el);
+        this.compileDataTrans(el);
         if (this.content !== null && el.hasAttribute('data-view')) {
             throw new module.CompilationError(
                 el,
                 "data-view not allowed when content is marked with data-trans");
         }
-        this.compile_data_tvar(el);
-        this.compile_data_plural(el);
+        this.compileDataTvar(el);
+        this.compileDataPlural(el);
     };
     
-    module.TransInfo.prototype.compile_data_trans = function(el) {
-        var data_trans = null;
+    module.TransInfo.prototype.compileDataTrans = function(el) {
+        var dataTrans = null;
         if (el.hasAttribute('data-trans')) {
-            data_trans = el.getAttribute('data-trans');
+            dataTrans = el.getAttribute('data-trans');
             el.removeAttribute('data-trans');
         }
 
-        if (data_trans === null) {
+        if (dataTrans === null) {
             return;
         }
         
-        data_trans = trim(data_trans);
+        dataTrans = trim(dataTrans);
         
         // empty string will mean translating text content only
-        if (data_trans === '') {
-            this.content = {id: '.', count_variable: null,
-                            directive: 'data_trans',
-                            message_id: null, plural_message_id: null};
+        if (dataTrans === '') {
+            this.content = {id: '.', countVariable: null,
+                            directive: 'dataTrans',
+                            messageId: null, pluralMessageId: null};
             this.attributes = {};
-            this.any_translations = true;
+            this.anyTranslations = true;
             return;
         }
         
         // split with space character
-        var parts = data_trans.split(' ');
+        var parts = dataTrans.split(' ');
         
         for (var i in parts) {
             var part = trim(parts[i]);
             if (part === '') {
                 continue;
             }
-            var trans_info = this.compile_data_trans_part(el, part);
-            if (trans_info.id === '.') {
-                this.content = trans_info;
-                this.any_translations = true;
+            var transInfo = this.compileDataTransPart(el, part);
+            if (transInfo.id === '.') {
+                this.content = transInfo;
+                this.anyTranslations = true;
             } else {
-                this.attributes[trans_info.id] = trans_info;
-                this.any_translations = true;
+                this.attributes[transInfo.id] = transInfo;
+                this.anyTranslations = true;
             }
         }
     };
 
     
-    module.TransInfo.prototype.compile_data_trans_part = function(el, text) {
+    module.TransInfo.prototype.compileDataTransPart = function(el, text) {
         var parts = text.split(':');
         // there is nothing to translate
         if (parts.length === 1) {
-            return {id: parts[0], count_variable: null,
-                    message_id: null, plural_message_id: null};
+            return {id: parts[0], countVariable: null,
+                    messageId: null, pluralMessageId: null};
         }
         // too many :
         if (parts.length > 2) {
@@ -1186,33 +1186,33 @@ obviel.template = {};
         // we are referring to the text if we have no actual
         // content identifier
         if (parts[0] === '') {
-            return {id: '.', count_variable: null,
+            return {id: '.', countVariable: null,
                     directive: 'data-trans',
-                    message_id: parts[1], plural_message_id: null};
+                    messageId: parts[1], pluralMessageId: null};
         }
         // we really do want to have the attribute we are trying to translate
         if (parts[0] !== '.' && !el.hasAttribute(parts[0])) {
             throw new module.CompilationError(
                 el, "data-trans refers to a non-existent attribute");
         }
-        return {id: parts[0], count_variable: null,
-                message_id: parts[1], plural_message_id: null};
+        return {id: parts[0], countVariable: null,
+                messageId: parts[1], pluralMessageId: null};
     };
 
 
-    module.TransInfo.prototype.compile_data_tvar = function(el) {
-        var data_tvar = null;
+    module.TransInfo.prototype.compileDataTvar = function(el) {
+        var dataTvar = null;
         if (el.hasAttribute('data-tvar')) {
-            data_tvar = el.getAttribute('data-tvar');
+            dataTvar = el.getAttribute('data-tvar');
             el.removeAttribute('data-tvar');
         }
 
-        if (data_tvar === null) {
+        if (dataTvar === null) {
             return;
         }
         
         // we are not in a data-trans, so we cannot allow data-tvar here
-        if (!this.allow_tvar) {
+        if (!this.allowTvar) {
             throw new module.CompilationError(
                 el, ("data-tvar is not allowed outside data-trans or " +
                      "other data-tvar"));
@@ -1223,67 +1223,67 @@ obviel.template = {};
                 el, ("data-trans for element content and " +
                      "data-tvar cannot be both on same element"));
         }
-        var tvar_info = parse_tvar(el, data_tvar);
+        var tvarInfo = parseTvar(el, dataTvar);
         this.content = {id: '.',
                         directive: 'data-tvar',
-                        message_id: tvar_info.message_id,
-                        plural_message_id: tvar_info.plural_message_id,
-                        count_variable: null};
+                        messageId: tvarInfo.messageId,
+                        pluralMessageId: tvarInfo.pluralMessageId,
+                        countVariable: null};
     };
     
-    module.TransInfo.prototype.compile_data_plural = function(el) {
-        var data_plural = null;
+    module.TransInfo.prototype.compileDataPlural = function(el) {
+        var dataPlural = null;
         if (el.hasAttribute('data-plural')) {
-            data_plural = el.getAttribute('data-plural');
+            dataPlural = el.getAttribute('data-plural');
             el.removeAttribute('data-plural');
         }
 
-        if (data_plural === null) {
+        if (dataPlural === null) {
             return;
         }
         
-        data_plural = trim(data_plural);
+        dataPlural = trim(dataPlural);
         
         // empty string is not allowed for data-plural
-        if (data_plural === '') {
+        if (dataPlural === '') {
             throw new module.CompilationError(
                 el, 'data-plural cannot be empty');
         }
         
         // split with space character
-        var parts = data_plural.split(' ');
+        var parts = dataPlural.split(' ');
         
         for (var i in parts) {
             var part = trim(parts[i]);
             if (part === '') {
                 continue;
             }
-            var plural_info = this.compile_data_plural_part(el, part);
-            if (plural_info.id === '.') {
+            var pluralInfo = this.compileDataPluralPart(el, part);
+            if (pluralInfo.id === '.') {
                 if (this.content === null) {
                     throw new module.CompilationError(
                         el, "data-plural indicates element content not " +
                             "marked with data-trans");
                 }
-                this.content.count_variable = plural_info.count_variable;
+                this.content.countVariable = pluralInfo.countVariable;
                 
             } else {
-                var attr_info = this.attributes[plural_info.id];
-                if (attr_info === undefined) {
+                var attrInfo = this.attributes[pluralInfo.id];
+                if (attrInfo === undefined) {
                     throw new module.CompilationError(
                         el, "data-plural indicates attribute not " +
-                            "marked with data-trans: " + plural_info.id);
+                            "marked with data-trans: " + pluralInfo.id);
                 }
-                attr_info.count_variable = plural_info.count_variable;
+                attrInfo.countVariable = pluralInfo.countVariable;
             }
         }
     };
     
-    module.TransInfo.prototype.compile_data_plural_part = function(el, text) {
+    module.TransInfo.prototype.compileDataPluralPart = function(el, text) {
         var parts = text.split(':');
         // only a count variable for content
         if (parts.length === 1) {
-            return {id: '.', count_variable: parts[0]};
+            return {id: '.', countVariable: parts[0]};
         }
         // too many :
         if (parts.length > 2) {
@@ -1293,58 +1293,58 @@ obviel.template = {};
         // we are referring to the text if we have no actual
         // content identifier
         if (parts[0] === '') {
-            return {id: '.', count_variable: parts[1]};
+            return {id: '.', countVariable: parts[1]};
         }
-        return {id: parts[0], count_variable: parts[1]};
+        return {id: parts[0], countVariable: parts[1]};
     };
 
-    module.AttributeTrans = function(el, name, value, message_id) {
-        this.message_id = null;
+    module.AttributeTrans = function(el, name, value, messageId) {
+        this.messageId = null;
         this.variables = {};
         this.name = name;
         this.compile(el, value);
-        if (message_id !== null) {
-            this.message_id = message_id;
+        if (messageId !== null) {
+            this.messageId = messageId;
         }
     };
 
     module.AttributeTrans.prototype.compile = function(el, value) {
         var result = [];
-        // can use cached_tokenize to speed up rendering slightly later
-        var tokens = cached_tokenize(value);
+        // can use cachedTokenize to speed up rendering slightly later
+        var tokens = cachedTokenize(value);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                var name_formatter = split_name_formatter(el, token.value);
-                var variable = this.variables[name_formatter.name];
+                var nameFormatter = splitNameFormatter(el, token.value);
+                var variable = this.variables[nameFormatter.name];
                 if (variable !== undefined &&
-                    variable.full_name !== token.value) {
+                    variable.fullName !== token.value) {
                     throw new module.CompilationError(
                         el, ("same variables in translation " +
                              "must all use same formatter"));
                 }
-                this.variables[name_formatter.name] = new module.Variable(
+                this.variables[nameFormatter.name] = new module.Variable(
                     el, token.value);
-                result.push('{' + name_formatter.name + '}');
+                result.push('{' + nameFormatter.name + '}');
             } else {
                 result.push(token.value);
             }
         }
-        var message_id = result.join('');
-        this.validate_message_id(el, message_id);
-        this.message_id = message_id;
+        var messageId = result.join('');
+        this.validateMessageId(el, messageId);
+        this.messageId = messageId;
     };
     
-    module.AttributeTrans.prototype.validate_message_id = function(
-        el, message_id) {
-        if (message_id === '') {
+    module.AttributeTrans.prototype.validateMessageId = function(
+        el, messageId) {
+        if (messageId === '') {
             throw new module.CompilationError(
                 el, "data-trans used on attribute with no text to translate");
         }
-        check_message_id(el, message_id, 'attribute');
+        checkMessageId(el, messageId, 'attribute');
     };
 
-    module.AttributeTrans.prototype.get_variable = function(el, scope,
+    module.AttributeTrans.prototype.getVariable = function(el, scope,
                                                             context, name) {
         var variable = this.variables[name];
         if (variable === undefined) {
@@ -1354,18 +1354,18 @@ obviel.template = {};
         return variable.render(el, scope, context);
     };
 
-    module.AttributeTrans.prototype.render_translation = function(
+    module.AttributeTrans.prototype.renderTranslation = function(
         el, scope, context, translation) {
         var result = [];
 
-        var tokens = cached_tokenize(translation);
+        var tokens = cachedTokenize(translation);
         
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.TEXT_TOKEN) {
                 result.push(token.value);
             } else if (token.type === module.NAME_TOKEN) {
-                result.push(this.get_variable(el, scope, context,
+                result.push(this.getVariable(el, scope, context,
                                               token.value));
             }
         }
@@ -1374,76 +1374,76 @@ obviel.template = {};
     };
     
     module.AttributeTrans.prototype.render = function(el, scope, context,
-                                                      render_notrans) {
-        var get_translation = context.get_translation;
+                                                      renderNotrans) {
+        var getTranslation = context.getTranslation;
 
-        var translation = context.get_translation(this.message_id);
-        if (translation === this.message_id) {
+        var translation = context.getTranslation(this.messageId);
+        if (translation === this.messageId) {
             // if translation is original message id, we can use fast path
-            render_notrans(el, scope, context);
+            renderNotrans(el, scope, context);
             return;
         }
 
-        this.render_translation(el, scope, context, translation);
+        this.renderTranslation(el, scope, context, translation);
     };
 
-    module.ContentTrans = function(message_id, directive_name) {
+    module.ContentTrans = function(messageId, directiveName) {
         this.parts = [];
-        this.message_id = null;
+        this.messageId = null;
         this.tvars = {};
         this.variables = {};
-        this.directive_name = directive_name;
-        this.explicit_message_id = message_id;
+        this.directiveName = directiveName;
+        this.explicitMessageId = messageId;
     };
 
-    module.ContentTrans.prototype.compile_node = function(node, index) {
+    module.ContentTrans.prototype.compileNode = function(node, index) {
         if (node.nodeType === 3) {
-            // TEXT_NODE
-            var text = this.compile_text(node);
+            // TEXTNODE
+            var text = this.compileText(node);
             this.parts.push(text);
         } else if (node.nodeType === 1) {
             // ELEMENT NODE
-            this.check_data_trans_restrictions(node);
-            var tvar_node = node.cloneNode(true);
-            var tvar_info = this.compile_tvar(tvar_node);
-            this.parts.push("{" + tvar_info.tvar + "}");
-            // XXX dynamic_notrans is a bit ugly
-            this.tvars[tvar_info.tvar] = {
-                node: tvar_node,
+            this.checkDataTransRestrictions(node);
+            var tvarNode = node.cloneNode(true);
+            var tvarInfo = this.compileTvar(tvarNode);
+            this.parts.push("{" + tvarInfo.tvar + "}");
+            // XXX dynamicNotrans is a bit ugly
+            this.tvars[tvarInfo.tvar] = {
+                node: tvarNode,
                 index: index,
-                dynamic: new module.DynamicElement(tvar_node, true),
-                dynamic_notrans: new module.DynamicElement(node, true),
-                view: tvar_info.view
+                dynamic: new module.DynamicElement(tvarNode, true),
+                dynamicNotrans: new module.DynamicElement(node, true),
+                view: tvarInfo.view
             };
         }
-        // COMMENT_NODE
+        // COMMENTNODE
         // no need to do anything, index for tvars will be correct
-        // CDATA_SECTION_NODE
+        // CDATASECTIONNODE
         // browser differences are rather severe, we just
         // don't support this in output as it's of a limited utility
         // see also:
         // http://reference.sitepoint.com/javascript/CDATASection
-        // PROCESSING_INSTRUCTION_NODE
+        // PROCESSINGINSTRUCTIONNODE
         // we also don't support processing instructions in any
         // consistent way; again they have limited utility
-        // ATTRIBUTE_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE,
-        // DOCUMENT_TYPE_NODE, ENTITY_NODE, NOTATION_NODE do not
+        // ATTRIBUTENODE, DOCUMENTFRAGMENTNODE, DOCUMENTNODE,
+        // DOCUMENTTYPENODE, ENTITYNODE, NOTATIONNODE do not
         // occur under elements
-        // ENTITY_REFERENCE_NODE does not occur either in FF, as this will
+        // ENTITYREFERENCENODE does not occur either in FF, as this will
         // be merged with text nodes
     };
 
-    module.ContentTrans.prototype.finalize_compile = function(el) {
-        var message_id = this.parts.join('');
-        message_id = normalize_space(trim(message_id));
-        this.validate_message_id(el, message_id);
-        this.message_id = message_id;
-        if (this.explicit_message_id !== null) {
-            this.message_id = this.explicit_message_id;
+    module.ContentTrans.prototype.finalizeCompile = function(el) {
+        var messageId = this.parts.join('');
+        messageId = normalizeSpace(trim(messageId));
+        this.validateMessageId(el, messageId);
+        this.messageId = messageId;
+        if (this.explicitMessageId !== null) {
+            this.messageId = this.explicitMessageId;
         }
     };
     
-    module.ContentTrans.prototype.check_data_trans_restrictions = function(
+    module.ContentTrans.prototype.checkDataTransRestrictions = function(
         el) {
         // XXX more restrictions?
         if (el.hasAttribute('data-if')) {
@@ -1463,30 +1463,30 @@ obviel.template = {};
         }
     };
     
-    module.ContentTrans.prototype.compile_text = function(node) {
+    module.ContentTrans.prototype.compileText = function(node) {
         // need to extract all variables for tvar uniqueness checking
         var result = [];
         var tokens = module.tokenize(node.nodeValue);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
             if (token.type === module.NAME_TOKEN) {
-                var name_formatter = split_name_formatter(node, token.value);
-                var variable = this.variables[name_formatter.name];
+                var nameFormatter = splitNameFormatter(node, token.value);
+                var variable = this.variables[nameFormatter.name];
                 if (variable !== undefined &&
-                    variable.full_name !== token.value) {
+                    variable.fullName !== token.value) {
                     throw new module.CompilationError(
                         node, ("same variables in translation " +
                                "must all use same formatter"));
                 }
-                this.variables[name_formatter.name] = new module.Variable(
+                this.variables[nameFormatter.name] = new module.Variable(
                     node.parentNode, token.value);
-                if (this.tvars[name_formatter.name] !== undefined) {
+                if (this.tvars[nameFormatter.name] !== undefined) {
                     throw new module.CompilationError(
                         node, "data-tvar must be unique within " +
-                            this.directive_name + ":" +
+                            this.directiveName + ":" +
                             token.value);
                 }
-                result.push('{' + name_formatter.name + '}');
+                result.push('{' + nameFormatter.name + '}');
             } else {
                 result.push(token.value);
             }
@@ -1494,23 +1494,23 @@ obviel.template = {};
         return result.join('');
     };
     
-    module.ContentTrans.prototype.validate_message_id = function(
-        el, message_id) {
+    module.ContentTrans.prototype.validateMessageId = function(
+        el, messageId) {
         // data-tvar doesn't need any of these checks
-        if (this.directive_name === 'data-tvar') {
+        if (this.directiveName === 'data-tvar') {
             return;
         }
-        if (message_id === '') {
+        if (messageId === '') {
             throw new module.CompilationError(
                 el, "data-trans used on element with no text to translate");
         }
-        check_message_id(el, message_id, 'element');
+        checkMessageId(el, messageId, 'element');
     };
     
-    module.ContentTrans.prototype.implicit_tvar = function(node, view) {
+    module.ContentTrans.prototype.implicitTvar = function(node, view) {
         if (view !== null) {
             // data-view exists on element, use name as tvar name
-            return view.obj_name;
+            return view.objName;
         }
         // only if we have a single text child node that is a variable
         // by itself do we have an implicit tvar
@@ -1525,28 +1525,28 @@ obviel.template = {};
         if (tokens.length !== 1 || tokens[0].type !== module.NAME_TOKEN) {
             return null;
         }
-        var name_formatter = split_name_formatter(node, tokens[0].value);
-        return name_formatter.name;
+        var nameFormatter = splitNameFormatter(node, tokens[0].value);
+        return nameFormatter.name;
     };
 
-    module.ContentTrans.prototype.compile_tvar = function(el) {
+    module.ContentTrans.prototype.compileTvar = function(el) {
         var tvar = null;
         if (el.hasAttribute('data-tvar')) {
             tvar = el.getAttribute('data-tvar');
         }
         if (tvar !== null) {
-            var tvar_info = parse_tvar(el, tvar);
-            tvar = tvar_info.tvar;
+            var tvarInfo = parseTvar(el, tvar);
+            tvar = tvarInfo.tvar;
         }
         var view = null;
         if (el.hasAttribute('data-view')) {
             view = new module.ViewElement(el);
         }
         if (tvar === null) {
-            tvar = this.implicit_tvar(el, view);
+            tvar = this.implicitTvar(el, view);
             if (tvar === null) {
                 throw new module.CompilationError(
-                    el, this.directive_name + " element has sub-elements " +
+                    el, this.directiveName + " element has sub-elements " +
                         "that are not marked with data-tvar");
             }
         }
@@ -1555,28 +1555,28 @@ obviel.template = {};
             this.variables[tvar] !== undefined) {
             throw new module.CompilationError(
                 el, "data-tvar must be unique within " +
-                    this.directive_name + ": " + tvar);
+                    this.directiveName + ": " + tvar);
         }
         return {tvar: tvar, view: view};
     };
 
-    module.ContentTrans.prototype.get_tvar_node = function(
+    module.ContentTrans.prototype.getTvarNode = function(
         el, scope, context, name) {
-        var tvar_info = this.tvars[name];
-        if (tvar_info === undefined) {
+        var tvarInfo = this.tvars[name];
+        if (tvarInfo === undefined) {
             return null;
         }
       
-        var tvar_node = tvar_info.node.cloneNode(true);
+        var tvarNode = tvarInfo.node.cloneNode(true);
 
-        tvar_info.dynamic.render(tvar_node, scope, context);
-        if (tvar_info.view !== null) {
-            tvar_info.view.render(tvar_node, scope, context);
+        tvarInfo.dynamic.render(tvarNode, scope, context);
+        if (tvarInfo.view !== null) {
+            tvarInfo.view.render(tvarNode, scope, context);
         }
-        return tvar_node;
+        return tvarNode;
     };
 
-    module.ContentTrans.prototype.get_variable_node = function(
+    module.ContentTrans.prototype.getVariableNode = function(
         el, scope, context, name) {
         var variable = this.variables[name];
         if (variable === undefined) {
@@ -1586,19 +1586,19 @@ obviel.template = {};
         return document.createTextNode(variable.render(el, scope, context));
     };
 
-    module.ContentTrans.prototype.get_node = function(
+    module.ContentTrans.prototype.getNode = function(
         el, scope, context, name) {
-        var tvar_node = this.get_tvar_node(el, scope, context,
+        var tvarNode = this.getTvarNode(el, scope, context,
                                            name);
-        if (tvar_node !== null) {
-            return tvar_node;
+        if (tvarNode !== null) {
+            return tvarNode;
         }
-        return this.get_variable_node(el, scope, context, name);
+        return this.getVariableNode(el, scope, context, name);
     };
 
-    module.ContentTrans.prototype.render_translation = function(
+    module.ContentTrans.prototype.renderTranslation = function(
         el, scope, context, translation) {
-        var tokens = cached_tokenize(translation);
+        var tokens = cachedTokenize(translation);
 
         var frag = document.createDocumentFragment();
         
@@ -1607,7 +1607,7 @@ obviel.template = {};
             if (token.type === module.TEXT_TOKEN) {
                 frag.appendChild(document.createTextNode(token.value));
             } else if (token.type === module.NAME_TOKEN) {
-                frag.appendChild(this.get_node(el, scope, context,
+                frag.appendChild(this.getNode(el, scope, context,
                                                token.value));
             }
         }
@@ -1621,43 +1621,43 @@ obviel.template = {};
     };
     
     module.ContentTrans.prototype.render = function(el, scope, context,
-                                                    render_notrans) {
-        var message_id = this.message_id;
-        var translation = message_id;
-        var get_translation = context.get_translation;
-        if (get_translation !== null && get_translation !== undefined) {
-            translation = get_translation(message_id);
+                                                    renderNotrans) {
+        var messageId = this.messageId;
+        var translation = messageId;
+        var getTranslation = context.getTranslation;
+        if (getTranslation !== null && getTranslation !== undefined) {
+            translation = getTranslation(messageId);
         }
 
-        if (translation === message_id) {
-            render_notrans(el, scope, context);
-            this.render_notrans_tvars(el, scope, context);
+        if (translation === messageId) {
+            renderNotrans(el, scope, context);
+            this.renderNotransTvars(el, scope, context);
             return;
         }
         
-        this.render_translation(el, scope, context, translation);
+        this.renderTranslation(el, scope, context, translation);
     };
 
-    module.ContentTrans.prototype.render_notrans_tvars = function(
+    module.ContentTrans.prototype.renderNotransTvars = function(
         el, scope, context) {
         var children = el.childNodes;
         for (var key in this.tvars) {
             var info = this.tvars[key];
             // this can use index, as we're not in a plural
-            info.dynamic_notrans.render(children[info.index], scope, context);
+            info.dynamicNotrans.render(children[info.index], scope, context);
         }
     };
     
     module.PluralTrans = function(singular,
                                   plural,
-                                  count_variable) {
+                                  countVariable) {
         this.singular = singular;
         this.plural = plural;
-        this.count_variable = count_variable;
+        this.countVariable = countVariable;
     };
     
-    module.PluralTrans.prototype.get_count = function(el, scope) {
-        var result = scope.resolve(this.count_variable);
+    module.PluralTrans.prototype.getCount = function(el, scope) {
+        var result = scope.resolve(this.countVariable);
         if (typeof result !== 'number') {
             throw new module.RenderError(
                 el, "count variable in plural is not a number: " + result);
@@ -1666,35 +1666,35 @@ obviel.template = {};
     };
     
     module.PluralTrans.prototype.render = function(
-        el, scope, context, render_notrans) {
-        var count = this.get_count(el, scope);
-        var translation = context.get_plural_translation(
-            this.singular.message_id,
-            this.plural.message_id,
+        el, scope, context, renderNotrans) {
+        var count = this.getCount(el, scope);
+        var translation = context.getPluralTranslation(
+            this.singular.messageId,
+            this.plural.messageId,
             count);
         // we use the source language plural form as the basis for
         // translation, meaning its tvars will end up in the translated
         // content if referred to by variable in the translation
-        this.plural.render_translation(el, scope, context, translation);
+        this.plural.renderTranslation(el, scope, context, translation);
     };
     
     module.IfExpression = function(el, text) {
         this.el = el;
         text = trim(text);
-        this.not_enabled = text.charAt(0) === '!';
+        this.notEnabled = text.charAt(0) === '!';
         var name = null;
-        if (this.not_enabled) {
+        if (this.notEnabled) {
             name = text.slice(1);
         } else {
             name = text;
         }
-        validate_dotted_name(el, name);
-        this.data_if = module.resolve_func(name);
+        validateDottedName(el, name);
+        this.dataIf = module.resolveFunc(name);
     };
 
     module.IfExpression.prototype.resolve = function(el, scope) {
-        var result = this.data_if(scope);
-        if (this.not_enabled) {
+        var result = this.dataIf(scope);
+        if (this.notEnabled) {
             /* XXX jshint doesn't like the == false comparison */
             return (result === undefined ||
                     result === null ||
@@ -1723,18 +1723,18 @@ obviel.template = {};
     // note that this function is not used outside of the
     // translation system; instead function generated with the code
     // generator is used
-    module.Scope.prototype.resolve = function(dotted_name) {
-        if (dotted_name === '@.') {
+    module.Scope.prototype.resolve = function(dottedName) {
+        if (dottedName === '@.') {
             return this.stack[this.stack.length - 1];
-        } else if (dotted_name === '@open') {
+        } else if (dottedName === '@open') {
             return '{';
-        } else if (dotted_name === '@close') {
+        } else if (dottedName === '@close') {
             return '}';
         }
-        var names = dotted_name.split('.');
+        var names = dottedName.split('.');
         for (var i = this.stack.length - 1; i >= 0; i--) {
             var obj = this.stack[i];
-            var result = resolve_in_obj(obj, names);
+            var result = resolveInObj(obj, names);
             if (result !== undefined) {
                 return result;
             }
@@ -1742,7 +1742,7 @@ obviel.template = {};
         return undefined;
     };
 
-    resolve_in_obj = function(obj, names) {
+    resolveInObj = function(obj, names) {
         for (var i in names) {
             var name = names[i];
             obj = obj[name];
@@ -1753,20 +1753,20 @@ obviel.template = {};
         return obj;
     };
     
-    module.resolve_func = function(dotted_name) {
+    module.resolveFunc = function(dottedName) {
         var c = new module.Codegen('scope');
-        if (dotted_name === '@.') {
+        if (dottedName === '@.') {
             c.push('return scope.stack[scope.stack.length - 1];');
-            return c.get_function();
-        } else if (dotted_name === '@open') {
+            return c.getFunction();
+        } else if (dottedName === '@open') {
             c.push('return "{";');
-        } else if (dotted_name === '@close') {
+        } else if (dottedName === '@close') {
             c.push('return "}";');
         }
         
         c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');
         c.push('  var obj = scope.stack[i];');
-        var names = dotted_name.split('.');
+        var names = dottedName.split('.');
         var name = null;
         for (var i = 0; i < names.length - 1; i++) {
             name = names[i];
@@ -1783,7 +1783,7 @@ obviel.template = {};
         
         c.push('}');
         c.push('return undefined;' );
-        return c.get_function();
+        return c.getFunction();
     };
 
     module.Registry = function() {
@@ -1804,40 +1804,40 @@ obviel.template = {};
     
     formatters = new module.Registry();
 
-    module.register_formatter = function(name, f) {
+    module.registerFormatter = function(name, f) {
         formatters.register(name, f);
     };
 
-    module.get_formatter = function(name) {
+    module.getFormatter = function(name) {
         return formatters.get(name);
     };
     
-    module.clear_formatters = function() {
+    module.clearFormatters = function() {
         formatters.clear();
     };
     
     funcs = new module.Registry();
 
-    module.register_func = function(name, f) {
+    module.registerFunc = function(name, f) {
         funcs.register(name, f);
     };
 
-    module.get_func = function(name) {
+    module.getFunc = function(name) {
         return funcs.get(name);
     };
     
-    module.clear_funcs = function() {
+    module.clearFuncs = function() {
         funcs.clear();
     };
    
-    default_view_name = 'default';
+    defaultViewName = 'default';
 
-    module.set_default_view_name = function(name) {
-        default_view_name = name;
+    module.setDefaultViewName = function(name) {
+        defaultViewName = name;
     };
 
-    morph_element = function(el, name) {
-        var new_el = document.createElement(name);
+    morphElement = function(el, name) {
+        var newEl = document.createElement(name);
         var i;
         
         // copy over all attributes from old element
@@ -1849,13 +1849,13 @@ obviel.template = {};
             if (attr.value === null) {
                 continue;
             }
-            new_el.setAttribute(attr.name, attr.value);
+            newEl.setAttribute(attr.name, attr.value);
         }
         
         // copy over all sub-elements from old element
         for (i = 0; i < el.childNodes.length; i++) {
             var child = el.childNodes[i];
-            new_el.appendChild(child);
+            newEl.appendChild(child);
         }
 
         // copy all events
@@ -1863,19 +1863,19 @@ obviel.template = {};
         if (events !== undefined) {
             $.each(events, function(key, value) {
                 $.each(value, function(sub, v) {
-                    $(new_el).bind(v.type, v.handler);
+                    $(newEl).bind(v.type, v.handler);
                 });
             });
         }
 
         // put new element in its place
-        el.parentNode.replaceChild(new_el, el);
+        el.parentNode.replaceChild(newEl, el);
 
 
-        return new_el;
+        return newEl;
     };
     
-    get_directive = function(el, name) {
+    getDirective = function(el, name) {
         var value = null;
         if (!el.hasAttribute(name)) {
             return null;
@@ -1892,72 +1892,72 @@ obviel.template = {};
         return value;
     };
 
-    split_name_formatters = function(el, text) {
+    splitNameFormatters = function(el, text) {
         var parts = trim(text).split(' ');
         var result = [];
         for (var i = 0; i < parts.length; i++) {
             var part = parts[i];
-            result.push(split_name_formatter(el, part));
+            result.push(splitNameFormatter(el, part));
         }
         return result;
     };
     
-    split_name_formatter = function(el, name) {
-        var name_parts = name.split('|');
-        if (name_parts.length === 1) {
+    splitNameFormatter = function(el, name) {
+        var nameParts = name.split('|');
+        if (nameParts.length === 1) {
             return {
-                name: name_parts[0],
+                name: nameParts[0],
                 formatter: null
             };
         }
-        if (name_parts.length !== 2) {
+        if (nameParts.length !== 2) {
             throw new module.CompilationError(
                 el, "variable may only have a single | in it");
         }
         return {
-            name: name_parts[0],
-            formatter: name_parts[1]
+            name: nameParts[0],
+            formatter: nameParts[1]
         };
     };
 
-    check_message_id = function(el, message_id, element_or_attribute) {
+    checkMessageId = function(el, messageId, elementOrAttribute) {
         // cache the tokens so we get things faster during rendering time
-        var tokens = cached_tokenize(message_id);
-        var name_tokens = 0;
+        var tokens = cachedTokenize(messageId);
+        var nameTokens = 0;
         for (var i in tokens) {
             var token = tokens[i];
             // if we run into any non-whitespace text token at all,
             // we assume we have something to translate
             if (token.type === module.TEXT_TOKEN) {
                 if (trim(token.value) !== '') {
-                    name_tokens = null;
+                    nameTokens = null;
                     break;
                 }
             } else if (token.type === module.NAME_TOKEN) {
-                name_tokens++;
+                nameTokens++;
             }
         }
         // we have found non-empty text tokens we can translate them
-        if (name_tokens === null) {
+        if (nameTokens === null) {
             return;
         }
         // if we find no or only a single name token, we consider this
         // an error. more than one name tokens are considered translatable,
         // at least in their order
-        if (name_tokens <= 1) {
+        if (nameTokens <= 1) {
             throw new module.CompilationError(
-                el, "data-trans used on " + element_or_attribute +
+                el, "data-trans used on " + elementOrAttribute +
                     " with no text to translate");
         }
     };
 
-    parse_tvar = function(el, tvar) {
+    parseTvar = function(el, tvar) {
         var parts = tvar.split(':');
         if (parts.length === 1) {
             return {
                 tvar: parts[0],
-                message_id: null,
-                plural_message_id: null
+                messageId: null,
+                pluralMessageId: null
             };
         } else if (parts.length === 0 ||
                    parts.length > 2 ||
@@ -1968,16 +1968,16 @@ obviel.template = {};
         }
         return {
             tvar: parts[0],
-            message_id: parts[1],
-            plural_message_id: null
+            messageId: parts[1],
+            pluralMessageId: null
         };
     };
 
-    parse_text_for_plural = function(text) {
-        var before_plural = [];
-        var after_plural = [];
+    parseTextForPlural = function(text) {
+        var beforePlural = [];
+        var afterPlural = [];
         
-        var current = before_plural;
+        var current = beforePlural;
         var tokens = module.tokenize(text);
         for (var i = 0; i < tokens.length; i++) {
             var token = tokens[i];
@@ -1989,26 +1989,26 @@ obviel.template = {};
                 var index = value.indexOf('||');
                 if (index !== -1) {
                     current.push(value.slice(0, index));
-                    current = after_plural;
+                    current = afterPlural;
                     value = value.slice(index + 2);
                 }
                 current.push(value);
             }
         }
 
-        before_plural = before_plural.join('');
+        beforePlural = beforePlural.join('');
         
-        if (current === after_plural) {
-            after_plural = after_plural.join('');
+        if (current === afterPlural) {
+            afterPlural = afterPlural.join('');
         } else {
-            after_plural = null;
+            afterPlural = null;
         }
         
-        return {before_plural: before_plural,
-                after_plural: after_plural};
+        return {beforePlural: beforePlural,
+                afterPlural: afterPlural};
     };
 
-    var get_all_variable_names = function(singular, plural) {
+    var getAllVariableNames = function(singular, plural) {
         var names = $.extend({}, singular.variables);
         if (plural !== null) {
             $.extend(names, plural.variables);
@@ -2016,8 +2016,8 @@ obviel.template = {};
         return names;
     };
     
-    get_implicit_count_variable = function(el, singular, plural) {
-        var names = get_all_variable_names(singular, plural);
+    getImplicitCountVariable = function(el, singular, plural) {
+        var names = getAllVariableNames(singular, plural);
         
         var result = null;
         for (var name in names) {
@@ -2042,26 +2042,26 @@ obviel.template = {};
     // run. We definitely don't want to open to {}, \, ' and ", as this
     // could potentially be used to sneak code into the
     // resolve function code generator.
-    var valid_name_re = new RegExp('[A-Za-z0-9_]+');
+    var validNameRe = new RegExp('[A-Za-z0-9_]+');
     
-    validate_dotted_name = function(el, dotted_name) {
-        dotted_name = trim(dotted_name);
-        if (dotted_name === '') {
+    validateDottedName = function(el, dottedName) {
+        dottedName = trim(dottedName);
+        if (dottedName === '') {
             throw new module.CompilationError(el, 'name cannot be empty');
         }
-        if (dotted_name === '@.') {
+        if (dottedName === '@.') {
             return;
         }
-        var parts = dotted_name.split('.');
+        var parts = dottedName.split('.');
         for (var i = 0; i < parts.length; i++) {
-            if (!valid_name_re.exec(parts[i])) {
+            if (!validNameRe.exec(parts[i])) {
                 throw new module.CompilationError(
-                    el, "invalid name: " + dotted_name);
+                    el, "invalid name: " + dottedName);
             }
         }
     };
     
-    var starts_with = function(s, startswith) {
+    var startsWith = function(s, startswith) {
         return (s.slice(0, startswith.length) === startswith);
     };
 
@@ -2069,11 +2069,11 @@ obviel.template = {};
         return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
 
-    normalize_space = function(s) {
+    normalizeSpace = function(s) {
         return s.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
     };
     
-    is_html_text = function(text) {
+    isHtmlText = function(text) {
         return trim(text).charAt(0) === '<';
     };
 
@@ -2086,7 +2086,7 @@ obviel.template = {};
         this.result.push(s);
     };
 
-    module.Codegen.prototype.get_function = function() {
+    module.Codegen.prototype.getFunction = function() {
         var code = this.result.join('');
         return new Function(this.args, code);
     };
@@ -2112,82 +2112,82 @@ obviel.template = {};
         }
         var result = [];
         var index = 0;
-        var last_index = 0;
-        var text_token = '';
+        var lastIndex = 0;
+        var textToken = '';
         while (true) {
-            var open_index = text.indexOf('{', index);
-            if (open_index === -1) {
-                text_token = text.slice(last_index);
-                if (text_token !== '') {
+            var openIndex = text.indexOf('{', index);
+            if (openIndex === -1) {
+                textToken = text.slice(lastIndex);
+                if (textToken !== '') {
                     result.push({
                         type: module.TEXT_TOKEN,
-                        value: text_token
+                        value: textToken
                     });
                 }
                 break;
             }
-            var next_char = text.charAt(open_index + 1);
-            if (next_char === '' ||
-                next_char === ' ' ||
-                next_char === '\t' ||
-                next_char === '\n') {
-                index = open_index + 1;
+            var nextChar = text.charAt(openIndex + 1);
+            if (nextChar === '' ||
+                nextChar === ' ' ||
+                nextChar === '\t' ||
+                nextChar === '\n') {
+                index = openIndex + 1;
                 continue;
             }
-            index = open_index + 1;
-            var close_index = text.indexOf('}', index);
-            if (close_index === -1) {
-                text_token = text.slice(last_index);
-                if (text_token !== '') {
+            index = openIndex + 1;
+            var closeIndex = text.indexOf('}', index);
+            if (closeIndex === -1) {
+                textToken = text.slice(lastIndex);
+                if (textToken !== '') {
                     result.push({
                         type: module.TEXT_TOKEN,
-                        value: text_token
+                        value: textToken
                     });
                 }
                 break;
             }
-            text_token = text.slice(last_index, open_index);
-            if (text_token !== '') {
+            textToken = text.slice(lastIndex, openIndex);
+            if (textToken !== '') {
                 result.push({
                     type: module.TEXT_TOKEN,
-                    value: text_token
+                    value: textToken
                 });
             }
-            var name_token = text.slice(index, close_index);
-            var trimmed_name_token = trim(name_token);
-            if (trimmed_name_token === '') {
+            var nameToken = text.slice(index, closeIndex);
+            var trimmedNameToken = trim(nameToken);
+            if (trimmedNameToken === '') {
                 result.push({
                     type: module.TEXT_TOKEN,
-                    value: '{' + name_token + '}'
+                    value: '{' + nameToken + '}'
                 });
             } else {
                 result.push({
                     type: module.NAME_TOKEN,
-                    value: trimmed_name_token
+                    value: trimmedNameToken
                 });
             }
-            index = close_index + 1;
-            last_index = index;
+            index = closeIndex + 1;
+            lastIndex = index;
         }
         
         return result;
     };
 
-    var _token_cache = {};
+    var _tokenCache = {};
 
-    var MAX_CACHED_TEXT_LENGTH = 100;
+    var MAXCACHEDTEXTLENGTH = 100;
     
-    cached_tokenize = function(text) {
+    cachedTokenize = function(text) {
         // don't cache if it's too big
-        if (text.length > MAX_CACHED_TEXT_LENGTH) {
+        if (text.length > MAXCACHEDTEXTLENGTH) {
             return module.tokenize(text);
         }
-        var cached = _token_cache[text];
+        var cached = _tokenCache[text];
         if (cached !== undefined) {
             return cached;
         }
         var result = module.tokenize(text);
-        _token_cache[text] = result;
+        _tokenCache[text] = result;
         return result;
     };
     
