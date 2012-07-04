@@ -1860,18 +1860,50 @@ asyncTest('render returns a promise', function() {
     equal(called, true);
 });
 
+test("location of inline compiler error in top section", function() {
+    obviel.view({
+        iface: 'foo',
+        obvt: '<p data-each=""></p>' // deliberately broken
+    });
+
+    // first time rendering will also compile
+    try {
+        $('#viewdiv').render({iface: 'foo'});
+    } catch(e) {
+        equal(e.toString(),
+              "data-each may not be empty (foo obvt /p)");
+    }
+});
+
+test("location of inline compiler error in deeper section", function() {
+    obviel.view({
+        iface: 'foo',
+        obvt: '<div data-if="foo"><p data-each=""></p></div>' // deliberately broken
+    });
+
+    // first time rendering will also compile
+    try {
+        $('#viewdiv').render({iface: 'foo'});
+    } catch(e) {
+        equal(e.toString(),
+              "data-each may not be empty (foo obvt /div/p)");
+    }
+});
+
 test("location of inline template error", function() {
     obviel.view({
         iface: 'foo',
         obvt: '<p>{notfound}</p>'
     });
 
-    raises(function() {
+    try {
         $('#viewdiv').render({iface: 'foo'});
-    }, function(e) {
-        return (e.toString() ===
-                "variable 'notfound' could not be found (iface: foo name: default; obvt inline)");
-    });
+    } catch(e) {
+        equal(e.toString(),
+              "variable 'notfound' could not be found (foo obvt /p)");
+    }
+
+    expect(1);
 });
 
 
@@ -1881,12 +1913,14 @@ test("location of script template error", function() {
         obvtScript: 'obvt_notfound_id'
     });
 
-    raises(function() {
+    try {
         $('#viewdiv').render({iface: 'foo'});
-    }, function(e) {
-        return (e.toString() ===
-                "variable 'notfound' could not be found (iface: foo name: default; obvt from script with id obvt_notfound_id)");
-    });
+    } catch (e) {
+        equal(e.toString(),
+              "variable 'notfound' could not be found (foo obvtScript:obvt_notfound_id /)");
+    }
+
+    expect(1);
 });
 
 // XXX problems testing this due to asynchronous nature of JS; exception

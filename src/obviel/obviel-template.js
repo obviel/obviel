@@ -83,18 +83,6 @@ obviel.template = {};
         this.el = el;
         this.message = message;
     };
-
-    // XXX this doesn't generate the right paths yet
-    module.Error.prototype.path = function() {
-        var path = [];
-        var el = this.el;
-        while (el !== null && el.nodeType === 1) {
-            path.push(el.tagName.toLowerCase());
-            el = el.parentNode;
-        }
-        path.reverse();
-        return path.join('/');
-    };
     
     module.Error.prototype.toString = function() {
         return this.message;
@@ -116,20 +104,18 @@ obviel.template = {};
 
     module.Template = function(text) {
         var parsed;
-        // if text is already a jQuery selector, we already have parsed
-        if (text instanceof $) {
-            parsed = text.get(0);
-        } else {
-            // allow us to deal with partial templates
-            // (only text or an element plus top-level text,
-            // or multiple top-level elements)
-            text = '<div>' + text + '</div>';
-            parsed = $(text).get(0);
-        }
-        
+
+        // allow us to deal with partial templates
+        // (only text or an element plus top-level text,
+        // or multiple top-level elements)
+        // in the loop below the nodes are removed form the div again
+        text = '<div>' + text + '</div>';
+        parsed = $(text).get(0);
+    
         var parts = [];
-        for (var i = 0; i < parsed.childNodes.length; i++) {
-            var node = parsed.childNodes[i];
+        while (parsed.hasChildNodes()) {
+            var node = parsed.firstChild;
+            parsed.removeChild(node);
             if (node.nodeType === 1) {
                 // ELEMENT
                 parts.push(new module.Section(node, true));
@@ -2064,7 +2050,35 @@ obviel.template = {};
             }
         }
     };
+
+    getIndexInParent = function(el) {
+        var parent = el.parentNode;
+        if (parent === null || parent.nodeType !== 1) {
+            return null;
+        }
+        for (var i = 0; i < parent.childNodes.length; i++) {
+            if (parent.childNodes[i] === el) {
+                return i;
+            }
+        }
+        return null;
+    };
     
+    module.getXpath = function(el) {
+        var index, name, path = [];
+        while (el !== null && el.nodeType === 1) {
+            name = el.tagName.toLowerCase();
+            index = getIndexInParent(el);
+            if (index !== null && index !== 0) {
+                name += '[' + (index + 1) + ']';
+            }
+            path.push(name);
+            el = el.parentNode;
+        }
+        path.reverse();
+        return '/' + path.join('/');
+    };
+
     var startsWith = function(s, startswith) {
         return (s.slice(0, startswith.length) === startswith);
     };

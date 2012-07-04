@@ -510,6 +510,14 @@ if (typeof obviel === "undefined") {
         );
     };
 
+    module.View.prototype.location = function() {
+        var result = this.iface;
+        if (this.name !== 'default') {
+            result += '|' + name;
+        }
+        return result;
+    };
+    
     /* a tranformer that doesn't do anything */
     var nullTransformer = function(obj, url, name) {
         return obj;
@@ -694,7 +702,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.InlineSourceLoader.prototype.location = function() {
-        return this.compilerIdentifier + " inline";
+        return this.compilerIdentifier;
     };
     
     module.InlineSourceLoader.prototype.load = function() {
@@ -716,7 +724,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.ScriptSourceLoader.prototype.location = function() {
-        return (this.compilerIdentifier + " from script with id " +
+        return (this.compilerIdentifier + "Script:" +
                 this.scriptId);
     };
 
@@ -748,8 +756,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.UrlSourceLoader.prototype.location = function() {
-        return (this.compilerIdentifier + " " +
-                "from url " + this.url);
+        return (this.compilerIdentifier + "Url:" + this.url);
     };
 
     module.UrlSourceLoader.prototype.load = function() {
@@ -804,12 +811,13 @@ if (typeof obviel === "undefined") {
         return null;
     };
 
-    module.Compilers.prototype.compile = function(loader) {
+    module.Compilers.prototype.compile = function(loader, view) {
         var self = this;
         var defer = $.Deferred();
         loader.load().done(function(source) {
+            var location = view.location() + ' ' + loader.location();
             var compiler = self.compilers[loader.compilerIdentifier];
-            var template = compiler.compile(loader.location(), source);
+            var template = compiler.compile(location, source);
             defer.resolve(template);
         });
         return defer.promise();
@@ -844,7 +852,7 @@ if (typeof obviel === "undefined") {
             return defer.promise();
         }
         // otherwise compile source indicated by loader, and render
-        this.compile(loader).done(function(template) {
+        this.compile(loader, view).done(function(template) {
             module.cachedTemplates.register(key, template);
             template.render(view);
             defer.resolve();
@@ -871,9 +879,19 @@ if (typeof obviel === "undefined") {
     module.ObvielTemplateCompiler = function() {
     };
 
-    module.ObvielTemplateCompiler.prototype.compile = function(location,
-                                                               source) {
-        return new module.ObvielTemplate(location, source);
+    var exceptionInfo = function(location, e) {
+        return (e.toString() + " (" + location + ' ' +
+                obviel.template.getXpath(e.el) + ')');
+    };
+    
+    module.ObvielTemplateCompiler.prototype.compile = function(location, source) {
+        try {
+            return new module.ObvielTemplate(location, source);
+        } catch (e) {
+            var text = exceptionInfo(location, e);
+            console.log("obvt compiler error: " + text);
+            throw new obviel.template.CompilationError(e.el, text);
+        }
     };
     
     module.ObvielTemplate = function(location, source) {
@@ -907,10 +925,8 @@ if (typeof obviel === "undefined") {
         try {
             this.compiled.render(view.el, view.obj, context);
         } catch (e) {
-            var text = (e.toString() + " " +
-                        "(iface: " + view.iface + " name: " + view.name + "; " +
-                        this.location + ")");
-            console.log(text);
+            var text = exceptionInfo(this.location, e);
+            console.log("obvt render error: " + text);
             throw new obviel.template.RenderError(e.el, text);
         };
     };

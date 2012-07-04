@@ -2217,6 +2217,21 @@ test("data-each should not break finders without second section", function() {
 //     // htmlEqual($('#viewdiv').html(), '<img src="foo.jpg" />');
 // });
 
+test('getXpath for top element', function() {
+    var el = $('<html></html>');
+    equal(obtemp.getXpath(el.get(0)), '/html');
+});
+
+test('getXpath for lower element', function() {
+    var doc = $('<div><span class="the_span"></span></div>');
+    equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span');
+});
+
+test('getXpath for second element', function() {
+    var doc = $('<div><span></span><span class="the_span"></span></html>');
+    equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span[2]');
+});
+
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,
                                           value: 'foo'}]);
