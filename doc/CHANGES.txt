@@ -44,9 +44,12 @@ CHANGES
   makes use of this by looking up formatters and funcs on the view
   first, then if it cannot be found there, in the global registries.
 
+* Improved i18n infrastructure for translations. See the :doc:`i18n
+  documentation <i18n>` for more information.
+
 * Pluralization support both in JavaScript and in Obviel
   Templates. See :doc:`i18n documentation <i18n>` for more
-  information. Expanded documentation.
+  information. 
 
 * use Pygments to highlight HTML and JavaScript snippets properly
   in the docs.
