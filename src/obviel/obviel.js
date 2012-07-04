@@ -77,7 +77,7 @@ if (typeof obviel === "undefined") {
     }
 })(jQuery);
 
-(function($, module) {    
+(function($, module) {
     module._ifaces = {
         'base': []
     };
@@ -184,7 +184,7 @@ if (typeof obviel === "undefined") {
     /**
      * Return the interfaces of an obj, breadth first.
      * @param obj: the object
-     * 
+     *
      * The object can have an ifaces attributes. If not,
      * the JS type of the object is returned.
      */
@@ -328,7 +328,7 @@ if (typeof obviel === "undefined") {
                         /// BBB arguments are for backwards compatibility only
                         self.callback(self.el, self, self.obj);
                     }
-                    self.defer.resolve(self);                    
+                    self.defer.resolve(self);
                 });
             });
         });
@@ -356,7 +356,7 @@ if (typeof obviel === "undefined") {
             return null;
         }
         return function() {
-            var args = Array.prototype.slice.call(arguments);      
+            var args = Array.prototype.slice.call(arguments);
             return f.apply(self, args);
         };
     };
@@ -571,7 +571,8 @@ if (typeof obviel === "undefined") {
         // render_handled is a hack to make sure that we handle render
         // events globally if we are dealing with an unattached element
         // in jQuery 1.6.4 events would fall back to $(document) level handlers
-        // no matter what, but in jQuery 1.7 and later this would not happen anymore
+        // no matter what, but in jQuery 1.7 and later this would not
+        // happen anymore
         // for unattached elements, only for attached ones
         // XXX I wish there were a way to register an event handler globally no
         // matter what. see: http://bugs.jquery.com/ticket/11891
@@ -582,7 +583,7 @@ if (typeof obviel === "undefined") {
     };
 
     module.Registry.prototype.render = function(el, obj, name,
-                                                callback, errback) {        
+                                                callback, errback) {
         var self = this;
         var url = null;
         if (typeof obj == 'string') {
@@ -595,7 +596,7 @@ if (typeof obviel === "undefined") {
                                         defer);
         } else {
             promise = self.view_for_obj(el, obj, name, callback, errback,
-                                        defer); 
+                                        defer);
         }
         
         promise.done(function(view) {
@@ -829,7 +830,8 @@ if (typeof obviel === "undefined") {
         // special shortcut for inline html, no need to cache this
         if (loader.compiler_identifier === 'html' &&
             loader.type === 'inline') {
-            template = new module.HtmlTemplate(loader.location(), loader.source);
+            template = new module.HtmlTemplate(loader.location(),
+                                               loader.source);
             template.render(view);
             defer.resolve();
             return defer.promise();
@@ -850,7 +852,7 @@ if (typeof obviel === "undefined") {
         });
         return defer.promise();
     };
- 
+    
     module.HtmlCompiler = function() {
     };
     
@@ -870,7 +872,8 @@ if (typeof obviel === "undefined") {
     module.ObvielTemplateCompiler = function() {
     };
 
-    module.ObvielTemplateCompiler.prototype.compile = function(location, source) {
+    module.ObvielTemplateCompiler.prototype.compile = function(location,
+                                                               source) {
         return new module.ObvielTemplate(location, source);
     };
     
@@ -899,7 +902,8 @@ if (typeof obviel === "undefined") {
                 return func;
             },
             get_translation: obviel.i18n.get_translation_func(view.domain),
-            get_plural_translation: obviel.i18n.get_plural_translation_func(view.domain)
+            get_plural_translation: obviel.i18n.get_plural_translation_func(
+                view.domain)
         };
         try {
             this.compiled.render(view.el, view.obj, context);
