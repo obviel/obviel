@@ -59,7 +59,7 @@ Variables
 
   Note that formatters are not included in the message ids, so this::
 
-    <p data-trans="">I saw {thing|my_formatter}.</p>
+    <p data-trans="">I saw {thing|myFormatter}.</p>
  
   will use the same message id as this::
 

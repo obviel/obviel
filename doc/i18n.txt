@@ -68,13 +68,13 @@ and you need to include ``obviel-i18n`` itself:
 We now need to make a translation source available for our ``Hello
 world!`` message. This is what that looks like::
 
-  var fr_FR = obviel.i18n.translation_source(
+  var fr_FR = obviel.i18n.translationSource(
     {'Hello world!': 'Bonjour monde!'});
-  obviel.i18n.register_translation('fr_FR', fr_FR);
+  obviel.i18n.registerTranslation('fr_FR', fr_FR);
 
 Here we create a translation source from a simple JavaScript object
-using ``translation_source``, and then register this source using
-``register_translation``. Later we'll see how to load translations
+using ``translationSource``, and then register this source using
+``registerTranslation``. Later we'll see how to load translations
 from a URL source.
 
 .. sidebar:: ``obviel.i18n.translate`` and templates
@@ -109,7 +109,7 @@ world!``. Without a specific locale set the texts embedded in the code
 itself will be used. But earlier we registered the locale ``fr_FR``,
 and we can alter the locale to that::
 
-  obviel.i18n.set_locale('fr_FR');
+  obviel.i18n.setLocale('fr_FR');
 
 Now when we run the program we'll see ``Bonjour monde!``.
 
@@ -165,9 +165,9 @@ that for any other number.
 Let's consider another language, Dutch, which has the same pluralization
 rule, but different pluralization. We'll set up a translation::
 
-  var nl_NL = obviel.i18n.translation_source(
+  var nl_NL = obviel.i18n.translationSource(
     {'1 cow': ['{count} cows', '1 koe', '{count} koeien']});
-  obviel.i18n.register_translation('nl_NL', nl_NL);
+  obviel.i18n.registerTranslation('nl_NL', nl_NL);
 
 Here we see that ``1 cow`` should be translated as ``1 koe``, and
 ``{count} cows``, where count is any other number than 1, should be
@@ -197,7 +197,7 @@ the second argument. We then use ``variables`` to interpolate
 
 Now we'll change the locale to Dutch::
 
-  obviel.i18n.set_locale('nl_NL');
+  obviel.i18n.setLocale('nl_NL');
 
 You'll now see ``1 koe`` and ``3 koeien`` instead (for count ``1`` and
 ``3``), as we expected.
@@ -247,7 +247,7 @@ With Polish, we want the output to be like this:
 We can specify the Polish rule when registering the source in the
 ``Plural-Forms`` metadata::
 
-    var pl_PL = i18n.translation_source({
+    var pl_PL = i18n.translationSource({
         '': {
             'Plural-Forms': 'nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)'
         },
@@ -312,9 +312,9 @@ each library and application. By default, ``obviel.i18n`` uses the
 ``default`` domain, but let's change this now. Let's alter our basic
 "Hello world" application so that it uses a separate domain::
 
-  var fr_FR = obviel.i18n.translation_source(
+  var fr_FR = obviel.i18n.translationSource(
     {'Hello world!': 'Bonjour monde!'});
-  obviel.i18n.register_translation('fr_FR', fr_FR, 'hello_world_app');
+  obviel.i18n.registerTranslation('fr_FR', fr_FR, 'hello_world_app');
 
   var _ = obviel.i18n.translate('hello_world_app');
 
@@ -607,7 +607,7 @@ ready, so like this::
 
   $(document).ready(function() {
      obviel.i18n.load().done(function() {
-        obviel.i18n.set_locale('fr_FR').done(function() {
+        obviel.i18n.setLocale('fr_FR').done(function() {
             ... start application ...
         });
      });

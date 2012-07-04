@@ -135,7 +135,7 @@ Here is an Obviel form::
     ifaces: ['viewform'],
     form: {
       widgets: [
-        ifaces: ['textline_field'],
+        ifaces: ['textlineField'],
         name: 'test',
         title: 'Test',
         validate: {
@@ -172,8 +172,8 @@ filling in this field, and submission will not proceed. Validation is
 handled on the client side. 
 
 Conversion is also performed partially on the client-side: an
-``integer_field`` will convert to a JavaScript number for instance,
-and a ``boolean_field`` to a JavaScript ``true`` or ``false`` value.
+``integerField`` will convert to a JavaScript number for instance,
+and a ``booleanField`` to a JavaScript ``true`` or ``false`` value.
 
 Further conversion and validation can be performed on the server-side.
 Conversion is done to cast a value into one more convenient for the
@@ -224,8 +224,8 @@ Overriding the error area
 -------------------------
 
 You can override the way the error area per fields looks by
-registering a view on the special ``obviel_forms_error_area``
+registering a view on the special ``obvielFormsErrorArea``
 iface. You need to do this after the obviel-forms file has been
 included. In it you should make sure of creating two elements which
-can contain text content that have the id ``this.obj.field_error_id``
-and ``this.obj.global_error_id``, so that the errors can be rendered.
+can contain text content that have the id ``this.obj.fieldErrorId``
+and ``this.obj.globalErrorId``, so that the errors can be rendered.

@@ -134,29 +134,3 @@ available in ``doc/_build/html``.
 Note that the ``src`` directory in its entirety is also copied into
 the documentation tree under _static. This is done to make it easy to
 publish demo code as part of the website.
-
-Obviel test server
-------------------
-
-We've included obvielts, which is a simple Python-based web server
-that is used to test integration with dynamic server code.
-
-To build obvielts, you need to do a buildout (if you've installed the
-documentation you already will have it)::
-
-  $ python bootstrap.py -d
-  $ bin/buildout
-
-You can now start the obvielts server using paster_::
-
-  $ bin/paster serve parts/etc/debug.ini
-
-It will be available here::
-
-  http://localhost:8080
-
-.. _paster: http://pythonpaste.org/script/#paster-serve
-
-The code is in ``py/obvielts``. It makes use of Obviel's Fanstatic
-:doc:`integration <integration>`, which is in ``py/js.obviel``.
-

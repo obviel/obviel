@@ -558,7 +558,7 @@ views to use another view globally you can do so in JavaScript:
 
 .. code-block:: javascript
 
-  obviel.template.set_default_view_name('summary');
+  obviel.template.setDefaultViewName('summary');
 
 from now on if you don't specify the view name explicitly, Obviel will
 look up views by the name of ``summary`` by default. If you decide to
@@ -579,7 +579,7 @@ Obviel Template like this:
 
 .. code-block:: javascript
 
-  obviel.template.register_formatter('upper', function(value) {
+  obviel.template.registerFormatter('upper', function(value) {
      return value.toUpperCase();
   });
 
@@ -615,18 +615,18 @@ an Obviel view, methods on the view will handle the events.
 For instance, if you want to register a handler for the ``click``
 event on a ``div``, you can do it like this::
 
-  <div data-handler="click|some_function">Click here!</click>
+  <div data-handler="click|someFunction">Click here!</click>
 
 When the user now clicks on the ``div`` element, the function
-indicated by ``some_function`` will be executed. Obviel Template will
-try to lookup ``some_function`` in the ``handlers`` property that can
+indicated by ``someFunction`` will be executed. Obviel Template will
+try to lookup ``someFunction`` in the ``handlers`` property that can
 be passed with the ``context`` argument to render. In case Obviel
 views are in use, this will be the view.
 
 To bind more than one event handler on an element at the same time, 
 separate them by a space character::
 
-  <div data-handler="click|on_click dblclick|on_dblclick">Click here!</div>
+  <div data-handler="click|onClick dblclick|onDblclick">Click here!</div>
 
 It is a ``RenderError`` if the function is not availabe on the view
 during render time.
@@ -684,7 +684,7 @@ When this is rendered, you'll see this just like with the first example::
 
 What this lets you do is dynamically generate element names::
 
-  <div data-el="{my_element_name}"></div>
+  <div data-el="{myElementName}"></div>
 
 You could also use ``data-repeat`` to generate a whole series of elements::
 
@@ -859,7 +859,7 @@ useless) case first. We register the func ``magic``:
 
 .. code-block:: javascript
 
-  obviel.template.register_func('magic', function(el) {
+  obviel.template.registerFunc('magic', function(el) {
      el.attr('magic', 'Magic!');
   });
 
@@ -936,7 +936,7 @@ our application:
 
 .. code-block:: javascript
 
-  obviel.template.register_func('evenodd', evenodd);
+  obviel.template.registerFunc('evenodd', evenodd);
 
 And then we can use it on ``p``::
 
@@ -965,7 +965,7 @@ to add a ``class`` attribute on even or odd, but every third item:
      }
   };
 
-  obviel.template.register_func('everythird', everythird);
+  obviel.template.registerFunc('everythird', everythird);
 
 and then use it::
 
@@ -1000,19 +1000,19 @@ should be unique. You can just use ids like for any other HTML::
   <div id="foo"></div>
 
 But variables in ids are not allowed, because it would be too easy to
-have a HTML fragment with the same id (such ``{my_id}``) in multiple
+have a HTML fragment with the same id (such ``{myId}``) in multiple
 ``id`` attributes. So this is **illegal**::
 
-  <div id="{not_allowed}"></div>
+  <div id="{notAllowed}"></div>
 
 To generate an id, you can instead use the ``data-id`` directive::
 
-  <div data-id="{some_id}"></div>
+  <div data-id="{someId}"></div>
 
 This works just like any other attribute, so you can put things before
 and after the variable::
 
-  <div data-id="prefix{some_id}postfix"></div>
+  <div data-id="prefix{someId}postfix"></div>
 
 This will generate HTML with proper ``id`` attributes.
  

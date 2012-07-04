@@ -49,7 +49,7 @@ Obviel core
   :param obj: Any JavaScript object
   :returns: a list of ifaces that the obj provides.
 
-.. function:: obviel.clear_template_cache()
+.. function:: obviel.clearTemplateCache()
 
   Clear the template cache from any cached templates. Useful to do as
   cleanup between unit test.
@@ -160,7 +160,7 @@ Obviel core
     element. If no non-ephemeral view was rendered on the element,
     ``undefined`` is returned.
 
-.. function:: element.parent_view()
+.. function:: element.parentView()
 
   Get nearest view registered on element or parent.
 
@@ -244,7 +244,7 @@ Views have a number of options you can pass into them in the
     This property is optional, and by default there will be no HTML
     snippet insertion.
 
-  .. attribute:: html_url
+  .. attribute:: htmlUrl
  
     A string with a URL to a resource with a HTML snippet in it. This
     HTML snippet will be loaded if the URL has not been previously
@@ -253,6 +253,24 @@ Views have a number of options you can pass into them in the
 
     This property is optional.
 
+  .. attribute:: obvt
+   
+    A string with an :doc:`Obviel template <template>` that should be
+    rendered on the view element. This will be done before any
+    :func:`obviel.view.render` function is called.
+
+    This property is optional.
+
+  .. attribute:: obvtUrl
+
+    A URL referencing a resource that is a :doc:`Obviel template
+    <template>`. This template will be loaded if the URL has not been
+    previously seen, otherwise it is retrieved from a cache. The
+    template is then rendered on the view element, combined with the
+    object being viewed.
+
+    This property is optional.
+     
   .. attribute:: jsont
 
     A string with a JSON template. The template is rendered with the
@@ -261,7 +279,7 @@ Views have a number of options you can pass into them in the
  
     This property is optional.
 
-  .. attribute:: jsont_url
+  .. attribute:: jsontUrl
 
     A URL referencing a resource that is a JSON template. This
     template will be loaded if the URL has not been previously seen,
@@ -308,7 +326,7 @@ Views have a number of options you can pass into them in the
     receives a parameter ``ev`` that has a ``view`` property, but the
     view can in this case also be accessed as ``this``.
 
-  .. attribute:: object_events
+  .. attribute:: objectEvents
 
     A JavaScript object literal describing event handlers to hook up
     to the object rendered by this view. Each property name is the
@@ -370,18 +388,18 @@ Everything is in the ``obviel.template`` namespace.
 
     Message describing what went wrong during rendering.
 
-.. function:: obviel.template.register_formatter(name, func)
+.. function:: obviel.template.registerFormatter(name, func)
 
   Register a global formatter. Is done when the UI starts up (per
   page), before any templates are compiled. Note that with Obviel
   you can also use view methods as formatters.
 
   :param string name: the name of the formatter. This is how it is
-    addressed in the template language (using ``{foo|formatter_name}``).
+    addressed in the template language (using ``{foo|formatterName}``).
   :param function func: the formatting function. It gets the text (string)
     to format as its argument and should return the formatted text.
 
-.. function:: obviel.template.get_formatter(name)
+.. function:: obviel.template.getFormatter(name)
 
   Return a global formatter. If no formatter can be found,
   ``undefined`` is returned.
@@ -389,19 +407,19 @@ Everything is in the ``obviel.template`` namespace.
   :param string name: the name of the formatter to look up.
   :returns: the formatter function or ``undefined``.
 
-.. function:: obviel.template.clear_formatters()
+.. function:: obviel.template.clearFormatters()
 
    Clear all previously registered formatters. Typically used during
    unit test teardown.
 
-.. function:: obviel.template.register_func(name, func)
+.. function:: obviel.template.registerFunc(name, func)
 
   Register a global element adjustment function. Is done when the UI
   starts up (per page), before any templates are compiled. Note that
   with Obviel you can use view methods as funcs
 
   :param string name: the name of the func. This is how it is
-    addressed in the template language (using ``data-func="func_name"``).
+    addressed in the template language (using ``data-func="funcName"``).
   :param function func:  the function that manipulates the element. This 
     function takes 1 to 3 arguments: the jQuery element ``el`` to manipulate, 
     a ``variable`` resolver function (optional) and a ``context``
@@ -409,9 +427,9 @@ Everything is in the ``obviel.template`` namespace.
     using ``el.addClass``. The ``variable`` resolver function can
     be used by the function to look up variables; get the value of
     variables in the current scope by calling it with a variable
-    name as a string (``variable(variable_name)``).
+    name as a string (``variable(variableName)``).
 
-.. function:: obviel.template.get_func(name)
+.. function:: obviel.template.getFunc(name)
 
   Return a global element adjustment function. If no func can be found,
   ``undefined`` is returned.
@@ -419,7 +437,7 @@ Everything is in the ``obviel.template`` namespace.
   :param string name: the name of the func to look up.
   :returns: the func or ``undefined``.
 
-.. function:: obviel.template.clear_funcs()
+.. function:: obviel.template.clearFuncs()
 
    Clear all previously registered funcs. Typically used during
    unit test teardown.
@@ -445,40 +463,40 @@ Everything is in the ``obviel.template`` namespace.
     :param object context: This is an object that may have these
       properties:
 
-      ``get_translation``
+      ``getTranslation``
         A function that takes a single string argument and returns the
         translation for that string. If no translation is available
         the string itself should be returned. If not supplied no
         translations are looked up. Used by ``data-trans``.
 
-      ``get_handler``
+      ``getHandler``
         A function that gets a single name argument and returns the
         handler that matches that name. If no handler can be found by
         that name, ``null`` should be returned. Used by
         ``data-handler``.
 
-      ``get_formatter``
+      ``getFormatter``
         A function that gets a single name argument and returns the
         formatter function that matches that name. This function will
         get a single value argument and should return the formatted
         value.  If no formatter can be found by that name, ``null`` or
         ``undefined`` should be returned. Used by
-        ``{variable|formatter}``. If no ``get_formatter`` is supplied,
+        ``{variable|formatter}``. If no ``getFormatter`` is supplied,
         the template engine will use globally registered formatters
-        (using ``obviel.template.register_formatter``). See also
-        :func:`obviel.template.register_formatter`.
+        (using ``obviel.template.registerFormatter``). See also
+        :func:`obviel.template.registerFormatter`.
 
-      ``get_func``
+      ``getFunc``
         A function that gets a single name argument and returns the
         element manipulation function that matches that name. This
         function will get three arguments: the element to manipulate,
         a variable lookup function and a context. If no func can be
         found by that name, ``null`` or ``undefined`` should be
         returned. Used by ``data-func`` to look up the func. If no
-        ``get_func`` is supplied, the template engine will use
+        ``getFunc`` is supplied, the template engine will use
         globally registred funcs (using
-        ``obviel.template.register_func``). See also
-        :func:`obviel.template.register_func`.
+        ``obviel.template.registerFunc``). See also
+        :func:`obviel.template.registerFunc`.
 
 .. function:: obviel.template.variables(translation, variables)
 
@@ -537,7 +555,7 @@ Form options
     A boolean. If ``true``, the whole form is rendered in a disabled
     state and cannot be submitted.
 
-  .. attribute:: validation_url
+  .. attribute:: validationUrl
 
     A URL to do global validation on. Submitted to this URL will be
     the form's ``data`` object (as JSON). The server needs to decode
@@ -546,7 +564,7 @@ Form options
     submitted, with the values replaced by error messages (or left
     out). The minimum object a global validator needs to return is the
     empty (``{}``) object. This object will be placed in the
-    ``global_errors`` attribute of the form.
+    ``globalErrors`` attribute of the form.
 
   .. attribute:: errors
 
@@ -555,7 +573,7 @@ Form options
 
     This defaults to the empty object and is maintained by the form.
 
-  .. attribute:: global_errors
+  .. attribute:: globalErrors
 
     The object representing server-generated error messages currently
     visible in the form. If this object is not empty, form submission
@@ -596,7 +614,7 @@ Widgets
 
 .. class:: obviel.forms.InputWidget
 
-  iface: ``input_field``
+  iface: ``inputField``
 
   Base class for all widgets based on the ``<input type="text">`` field.
 
@@ -608,7 +626,7 @@ Widgets
     and the system uses the browser-defined default width of the input
     field.
 
-  .. attribute:: max_length
+  .. attribute:: maxLength
 
     The maximum length that may be entered into this widget by the
     user.  This is a physical limitation in the browser, not a
@@ -633,18 +651,18 @@ Widgets
 
 .. class:: obviel.forms.TextLineWidget
 
-  iface: ``textline_field``
+  iface: ``textlineField``
 
   Lets the user enter a single line of text, in an ``<input
   type="text">`` widget. Becomes a string in the ``data`` object.
 
   Derives from :class:`InputWidget`.
 
-  .. attribute:: validate.min_length
+  .. attribute:: validate.minLength
 
     The minimum input length in characters allowed.
 
-  .. attribute:: validate.max_length
+  .. attribute:: validate.maxLength
   
     The maximum input length in characters allowed.
 
@@ -660,7 +678,7 @@ Widgets
 
 .. class:: obviel.forms.TextWidget
 
-  iface: ``text_field``
+  iface: ``textField``
 
   Lets the user enter a multiline text in a ``<textarea>``
   widget. Becomes a string in the ``data`` object. 
@@ -677,7 +695,7 @@ Widgets
 
 .. class:: obviel.forms.IntegerWidget
 
-  iface: ``integer_field``
+  iface: ``integerField``
 
   Lets the user enter an integer number. Floating point numbers are
   not accepted, only integers. Becomes a JavaScript number in the
@@ -685,7 +703,7 @@ Widgets
 
   Derives from :class:`InputWidget`.
 
-  .. attribute:: validate.allow_negative
+  .. attribute:: validate.allowNegative
 
     If ``true``, negative numbers are allowed as input. Defaults to ``false``,
     not allowing negative numbers.
@@ -697,7 +715,7 @@ Widgets
 
 .. class:: obviel.forms.FloatWidget
 
-  iface: ``float_field``
+  iface: ``floatField``
 
   Lets the user enter a floating point number. Becomes a JavaScript
   number in the ``data`` object.
@@ -710,14 +728,14 @@ Widgets
    (``.``), but could be set to ``,`` or something else to suit other
    locales.
 
-  .. attribute:: validate.allow_negative
+  .. attribute:: validate.allowNegative
 
     If ``true``, negative numbers are allowed as input. Defaults to ``false``,
     not allowing negative numbers.
 
 .. class:: obviel.forms.DecimalWidget
 
-  iface: ``decimal_field``
+  iface: ``decimalField``
 
   Lets the user enter a decimal number. Becomes a string in the
   ``data`` object for parsing into a server decimal object.
@@ -730,34 +748,34 @@ Widgets
    (``.``), but could be set to ``,`` or something else to suit other
    locales.
 
-  .. attribute:: validate.allow_negative
+  .. attribute:: validate.allowNegative
 
     If ``true``, negative numbers are allowed as input. Defaults to ``false``,
     not allowing negative numbers.
 
-  .. attribute:: validate.min_before_sep
+  .. attribute:: validate.minBeforeSep
 
     Minimum amount of digits that need to be present before the separator.
     If omitted, there is no minimum.
 
-  .. attribute:: validate.max_before_sep
+  .. attribute:: validate.maxBeforeSep
 
     Maximum amount of digits that are allowed to be present before the
     separator. If omitted, there is no maximum.
 
-  .. attribute:: validate.min_after_sep
+  .. attribute:: validate.minAfterSep
 
     Minimum amount of digits that need to be present after the separator.
     If omitted, there is no minimum.
 
-  .. attribute:: validate.max_after_sep
+  .. attribute:: validate.maxAfterSep
 
     Maximum amount of digits that are allowed to be present after the
     separator. If omitted, there is no maximum.
 
 .. class:: obviel.forms.BooleanWidget
 
-  iface: ``boolean_field``
+  iface: ``booleanField``
 
   Lets the user enter a boolean, ``true`` or ``false`` in a checkbox,
   using ``<input type="checkbox">``.
@@ -768,7 +786,7 @@ Widgets
 
 .. class:: obviel.forms.ChoiceWidget
 
-  iface: ``choice_field``
+  iface: ``choiceField``
 
   Lets the user select a choice from a drop-down box. This uses 
   ``<input type="select">``.
@@ -777,7 +795,7 @@ Widgets
 
   Derives from :class:`Widget`.
 
-  .. attribute:: empty_option
+  .. attribute:: emptyOption
 
     The value that will be shown and submitted if the field is not
     filled in. If not given, the first option in the drop down list will
@@ -796,7 +814,7 @@ Widgets
 
 .. class:: obviel.forms.DisplayWidget
  
-  iface: ``display_field``
+  iface: ``displayField``
 
   This is a display-only field that the user is not allowed to edit. The
   value will be shown in a ``<span>`` element. 
@@ -808,7 +826,7 @@ Widgets
   
 .. class:: obviel.forms.HiddenWidget
 
-  iface: ``hiden_field``
+  iface: ``hiddenField``
 
   This is special form of the display field that will be hidden from 
   view, represented using ``<input type="hidden">``.
@@ -817,7 +835,7 @@ Widgets
 
 .. class:: obviel.forms.DatePickerWidget
  
-  iface:: ``datepicker_field``
+  iface:: ``datepickerField``
 
   This is data input widget which offers picking a date from a
   calendar. Is represented in ``data`` in the ``yy-mm-dd`` format,
@@ -863,7 +881,7 @@ Widgets
 
 .. class:: obviel.forms.AutocompleteWidget
  
-  iface:: ``autocomplete_field``
+  iface:: ``autocompleteField``
 
   This is a text line input with autocompletion, and can therefore be
   used like a :class:`ChoiceWidget`. Autocomplete widgets can either
@@ -901,13 +919,13 @@ Custom widgets
 Custom widgets will need to subclass :class:`InputWidget` and
 provide some methods. This is the typical pattern::
 
-  obviel.iface('custom_field', 'input_field')
+  obviel.iface('customField', 'inputField')
 
   // constructor
   module.CustomWidget = function(settings) {
      settings = settings || {};
      var d = {
-         iface: 'custom_field' // set up iface
+         iface: 'customField' // set up iface
      };
      $.extend(d, settings);
      module.InputWidget.call(this, d); // call superclass
@@ -933,7 +951,7 @@ provide some methods. This is the typical pattern::
   // value. Can also be used for strings even if we don't convert 
   // away from it, for instance to check whether a date string is really
   // parseable at all, and to format it to a common format if so.
-  // in addition convert and its pair convert_back can be used to update
+  // in addition convert and its pair convertBack can be used to update
   // the browser DOM in more complex ways than the default implementation
   // allows.
   module.CustomWidget.prototype.convert = function(value) {
@@ -956,9 +974,9 @@ provide some methods. This is the typical pattern::
 
   // convert a JavaScript representation back into the widget representation
   // (typically a string)
-  module.CustomWidget.prototype.convert_back = function(value) {
+  module.CustomWidget.prototype.convertBack = function(value) {
     // super call
-    value = module.InputWidget.prototype.convert_back.call(this, value);
+    value = module.InputWidget.prototype.convertBack.call(this, value);
     return value.toString();
   }
 
@@ -1004,20 +1022,20 @@ Everything is in the ``traject`` namespace.
 
 .. class:: traject.Patterns
 
-  .. function:: register_converter(converter_name, converter_func)
+  .. function:: registerConverter(converterName, converterFunc)
 
   Register a variable converter.
 
-  :param string converter_name: The name of the converter as it will
-    appear in the variable declaration (``$foo:<converter_name>``).
-  :param function converter_func: A function that takes the variable
+  :param string converterName: The name of the converter as it will
+    appear in the variable declaration (``$foo:<converterName>``).
+  :param function converterFunc: A function that takes the variable
     to convert and returns the converted variable.
 
-  .. function:: register(pattern_str, lookup)
+  .. function:: register(patternStr, lookup)
 
   Register a lookup function for a path pattern.
 
-  :param string pattern_str: A path pattern. These are zero or more
+  :param string patternStr: A path pattern. These are zero or more
     steps separated by ``/``, where each steps is either a string, or a 
     $variable (or $variable:converter).
   :param function lookup: A function that should return the object
@@ -1031,7 +1049,7 @@ Everything is in the ``traject`` namespace.
   Can throw :class:`RegistrationError`` if the path cannot be
   registered due to unknown converters or conflicts in registration.
 
-  .. function:: register_inverse(iface, pattern_str, inverse)
+  .. function:: registerInverse(iface, patternStr, inverse)
  
   Register an inverse function (from object to variables) for 
   objects of an iface and a pattern.
@@ -1039,20 +1057,20 @@ Everything is in the ``traject`` namespace.
   :param string iface: The iface that this inverse is registered for.
     When an object is located, the iface of the object is used to
     look up the inverse function.
-  :param string pattern_str: A path pattern as for :func:`register`.
+  :param string patternStr: A path pattern as for :func:`register`.
     This is used to reconstruct the path for the objects.
   :param function inverse: A function that takes an object as an argument
     and returns a variables object for it that can be used to reconstruct
     its path, so should have a property for each of the variables in the path.
 
-  .. function:: pattern(iface, pattern_str, lookup, inverse)
+  .. function:: pattern(iface, patternStr, lookup, inverse)
 
   Register both a path lookup as well as the inverse at the same time.
 
   :param string iface: The iface that this inverse is registered for.
     When an object is located, the iface of the object is used to
     look up the inverse function.
-  :param string pattern_str: A path pattern as for :func:`register`.
+  :param string patternStr: A path pattern as for :func:`register`.
     This is used to reconstruct the path for the objects.
   :param function lookup: A function that should return the object
     matching the path variables. It will receive a single variables
@@ -1067,7 +1085,7 @@ Everything is in the ``traject`` namespace.
   Can throw :class:`RegistrationError` if the path cannot be
   registered due to unknown converters or conflicts in registration.
 
-  .. function:: set_default_lookup(f)
+  .. function:: setDefaultLookup(f)
 
   Register a function that looks up a default object for those
   paths that don't have a more specific lookup registered for them.
@@ -1080,7 +1098,7 @@ Everything is in the ``traject`` namespace.
   starting at ``root``.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param string path: A concrete path. It will be matched with the
     registered paths to find the lookup function.
@@ -1089,14 +1107,14 @@ Everything is in the ``traject`` namespace.
   Can throw :class:`ResolutionError` in case the path cannot be
   resolved to an object.
 
-  .. function:: resolve_stack(root, stack)
+  .. function:: resolveStack(root, stack)
 
   Resolve a stack to an object according to registered patterns,
   starting at ``root``. A stack is a stack of steps in a path, in
   reverse order.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param array stack: A stack of steps, in reverse order from the path.
     It will be matched with the registered paths to find the lookup function.
@@ -1112,7 +1130,7 @@ Everything is in the ``traject`` namespace.
   :class:`ResolutionError`, instead simply stops.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param string path: A concrete path. It will be matched with the
     registered paths to find the lookup function.
@@ -1123,14 +1141,14 @@ Everything is in the ``traject`` namespace.
     path consumption (if no path could be consumed at all, this object
     will be ``root``).
 
-  .. function:: consume_stack(root, stack)
+  .. function:: consumeStack(root, stack)
 
   Resolve a stack of steps as far as it can be resolved according to
   registered patterns, then stop resolving the stack. Does not throw a
   :class:`ResolutionError`, instead simply stops.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param array stack: A stack of steps, in reverse order from the path.
     It will be matched with the registered paths to find the lookup function.
@@ -1143,13 +1161,13 @@ Everything is in the ``traject`` namespace.
 
   .. function:: locate(root, obj)
 
-  Locate ``obj``, giving it ``traject_name`` and ``traject_parent``
+  Locate ``obj``, giving it ``trajectName`` and ``trajectParent``
   properties and placing it in a virtual hierarchy, such that
-  following ``traject_parent`` will eventually result in the ``root``
+  following ``trajectParent`` will eventually result in the ``root``
   object.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param object obj: The object to locate.
 
@@ -1158,12 +1176,12 @@ Everything is in the ``traject`` namespace.
   .. function:: path(root, obj)
 
   Locate ``obj``, and return its path. This also gives the obj
-  ``traject_name`` and ``traject_parent`` properties and places it in
-  a virtual hierarchy, such that following ``traject_parent`` will
+  ``trajectName`` and ``trajectParent`` properties and places it in
+  a virtual hierarchy, such that following ``trajectParent`` will
   eventually result in the ``root`` object.
 
   :param object root: An object that is the root to the virtual hierarchy
-    created by traject. When following ``traject_parent`` back you will
+    created by traject. When following ``trajectParent`` back you will
     end up at the ``root`` object.
   :param object obj: The object to get the path for.
   :returns: The path for ``obj`` according to the patterns.
@@ -1184,7 +1202,7 @@ Everything is in the ``obviel.i18n`` namespace.
 
     Message describing what went wrong.
 
-.. function:: obviel.i18n.translation_source(data)
+.. function:: obviel.i18n.translationSource(data)
 
   Create a source of translations from mapping.
 
@@ -1193,7 +1211,7 @@ Everything is in the ``obviel.i18n`` namespace.
     jsgettext array structure as values.
   :returns: The translation source.
 
-.. function:: obviel.i18n.translation_source_from_json_url(url)
+.. function:: obviel.i18n.translationSourceFromJsonUrl(url)
 
   Create a source of translations from a URL.
 
@@ -1201,7 +1219,7 @@ Everything is in the ``obviel.i18n`` namespace.
     translation.
   :returns: The translation source.
 
-.. function:: obviel.i18n.empty_translation_source()
+.. function:: obviel.i18n.emptyTranslationSource()
 
   Create an empty source of translations. This means no translation
   will take place. This can be useful to register the translations for
@@ -1209,7 +1227,7 @@ Everything is in the ``obviel.i18n`` namespace.
 
   :returns: The translation source.
 
-.. function:: obviel.i18n.register_translation(locale, translation_source[, domain])
+.. function:: obviel.i18n.registerTranslation(locale, translationSource[, domain])
 
   Register a translation source for a locale and a domain.
   
@@ -1218,11 +1236,11 @@ Everything is in the ``obviel.i18n`` namespace.
   :param domain: The i18n domain for the translations. If domain is not 
     specified, the ``default`` domain is used.
 
-.. function:: obviel.i18n.clear_translations()
+.. function:: obviel.i18n.clearTranslations()
 
   Clear the translations. Useful during test teardown.
 
-.. function:: obviel.i18n.set_locale(locale)
+.. function:: obviel.i18n.setLocale(locale)
 
   Changes the locale that the application is working in to a new
   one. This loads the locale information according to previously
@@ -1231,16 +1249,16 @@ Everything is in the ``obviel.i18n`` namespace.
   :param string locale: A locale identifier, such as ``en_US``.
   :returns: A promise that is done when the locale has been loaded.
 
-.. function:: obviel.i18n.clear_locale()
+.. function:: obviel.i18n.clearLocale()
 
   Clears the locale that the application is working in to an empty one.
   Useful during test teardown.
 
-.. function:: obviel.i18n.get_locale()
+.. function:: obviel.i18n.getLocale()
 
   Returns the current locale.
 
-.. function:: obviel.i18n.get_translation(msgid, domain)
+.. function:: obviel.i18n.getTranslation(msgid, domain)
 
   Gives back the translation for a msgid in a particular domain, given
   the current locale.
@@ -1249,7 +1267,7 @@ Everything is in the ``obviel.i18n`` namespace.
   :param string domain: The translation domain.
   :returns: The translation for msgid in the domain.
 
-.. function:: obviel.i18n.get_translation_func(domain)
+.. function:: obviel.i18n.getTranslationFunc(domain)
  
   Gives back a function that takes the msgid and returns the
   translation in the domain.
@@ -1298,7 +1316,7 @@ Everything is in the ``obviel.i18n`` namespace.
   :returns: A function that can be given a singular msgid, a plural msgid
     and a count and will return the right text for the locale, domain and count.
 
-.. function:: obviel.i18n.get_template_domain()
+.. function:: obviel.i18n.getTemplateDomain()
 
   Gives back the default domain in use by Obviel templates.
 
@@ -1325,7 +1343,7 @@ Everything is in the ``obviel.i18n`` namespace.
        "<domain>": [
            { 
              "locale": "<locale>",
-             "url": "<locale_url>"
+             "url": "<localeUrl>"
            }
        ]
     }
@@ -1339,6 +1357,6 @@ Everything is in the ``obviel.i18n`` namespace.
 
   :returns: A promise that is done when the i18n information has been
     loaded.  Recommended is you do the
-    :func:`obviel.i18n.set_locale()` in the done handler.
+    :func:`obviel.i18n.setLocale()` in the done handler.
 
 

@@ -87,12 +87,12 @@ Here is a suggestion on how to structure your code, using the
      // .. views are defined here ..
 
      $(document).ready(function() {
-       $(some_selector).render(some_object_or_url);
+       $(someSelector).render(someObjectOrUrl);
      });
   })(jQuery, obviel);
 
-We'll go into what you can put in for ``some_selector`` and
-``some_object_or_url`` below.
+We'll go into what you can put in for ``someSelector`` and
+``someObjectOrUrl`` below.
 
 .. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
 
@@ -344,8 +344,8 @@ properties of this object to determine what to render.
 This is the name of the current view. By default it is ``default``.
 
 
-``html`` and ``html_url``
--------------------------
+``html`` and ``htmlUrl``
+------------------------
 
 A view can be configured so that it renders a piece of static HTML
 into the element (using the jQuery ``.html`` function) before the
@@ -360,14 +360,14 @@ Here's an example::
 
   obviel.view({
      ifaces: ['foo'],
-     html: '<div class="a_class">Some HTML</div>',
+     html: '<div class="aClass">Some HTML</div>',
      render: function() {
-        var el = $('.a_class', this.el);
+        var el = $('.aClass', this.el);
         el.text("Changed the text!");
      }
   });
 
-This will add the structure ``<div class="a_class">Some HTML</div>``
+This will add the structure ``<div class="aClass">Some HTML</div>``
 into the element the view is rendered on, and then calls the
 ``render`` function, which can now make some assumptions about what is
 in the element.
@@ -375,30 +375,30 @@ in the element.
 If the HTML fragment to insert has multiple lines, it is nicer to
 maintain it in a separate file instead of in an embedded string. The
 view can also refer to a static HTML resource on the server using the
-``html_url`` property::
+``htmlUrl`` property::
 
   obviel.view({
      ifaces: ['foo'],
-     html_url: 'http://www.example.com/some.html',
+     htmlUrl: 'http://www.example.com/some.html',
      render: function() {
         // ...
      }
   });
 
-The HTML referred to by ``html_url`` will be cached by the system, so
+The HTML referred to by ``htmlUrl`` will be cached by the system, so
 when you render the view next time no more request will be made to the
 server to retrieve the HTML fragment.
 
 In some cases you may want to let the server supply the HTML in the
 model instead of using it from the view. If the object to be rendered
-has a ``html`` or ``html_url`` property those will be interpreted as
+has a ``html`` or ``htmlUrl`` property those will be interpreted as
 if they were on the view.
 
-If both ``html`` and ``html_url`` are found on a view or a model, the
-``html`` property has precedence. The ``html`` and ``html_url``
+If both ``html`` and ``htmlUrl`` are found on a view or a model, the
+``html`` property has precedence. The ``html`` and ``htmlUrl``
 properties of the model have precedence over any defined on the view.
 
-``obvt`` and ``obvt_url``: Obviel Template
+``obvt`` and ``obvtUrl``: Obviel Template
 ------------------------------------------
 
 .. sidebar:: Alternative template languages for Obviel
@@ -426,7 +426,7 @@ Obviel also provides an API to extend it to support other template
 languages.
 
 How do you use Obviel Template? The properties ``obvt`` and
-``obvt_url`` work like ``html`` and ``html_url`` and can be provided
+``obvtUrl`` work like ``html`` and ``htmlUrl`` and can be provided
 both by the view and the model. Let's look at an example::
 
   obviel.view({
@@ -452,29 +452,29 @@ Obviel Template has many features, including the ability to directly
 render sub-objects within the template language. Read the
 :doc:`template documentation <template>` for much more information.
 
-Loading templates from the page (``_script``)
----------------------------------------------
+Loading templates from the page (``Script`` postfix)
+----------------------------------------------------
 
 Besides loading up html or obvt templates directly
-(``<compiler_name>``) or from a separate url
-(``<compiler_name>_url``), you can also load up templates from the web
-page itself, using ``<compiler_name>_script``.
+(``<compilerName>``) or from a separate url
+(``<compilerName>Url``), you can also load up templates from the web
+page itself, using ``<compilerName>Script``.
 
-``<compiler_name>_script`` loads up the template from a ``script`` tag
+``<compilerName>Script`` loads up the template from a ``script`` tag
 on the web page. If you have a web page that includes the following:
 
 .. code-block:: html
 
-  <script type="text/template" id="my_id">Hello <em>world</em>!</script>
+  <script type="text/template" id="myId">Hello <em>world</em>!</script>
 
 you can refer to this by id, as follows::
 
   obviel.view(
      iface: 'foo',
-     html_script: 'my_id'
+     htmlScript: 'myId'
   );
 
-This also works for ``obvt_script`` and ``jsont_script``.
+This also works for ``obvtScript`` and ``jsontScript``.
 
 Rendering Sub-Objects
 ---------------------
@@ -530,8 +530,8 @@ for the ``text`` iface::
   obviel.view({
      iface: 'text'
      render: function() {
-        var p_el = this.el.append('<p>');
-        p_el.text(this.obj.text);
+        var pEl = this.el.append('<p>');
+        pEl.text(this.obj.text);
      }
   });
 
@@ -544,10 +544,10 @@ We'll also create a view for ``list``::
      iface: 'list'
      render: function() {
         var self = this;
-        var ul_el = self.el.append('<ul>');
+        var ulEl = self.el.append('<ul>');
         $.each(self.obj.entries, function(index, entry) {
-           var li_el = ul_el.append('<li>');
-           li_el.text(entry);
+           var liEl = ulEl.append('<li>');
+           liEl.text(entry);
         });
      }
   });
@@ -581,14 +581,14 @@ We'll also create a view for ``list``::
     obviel.view({
        subviews: {
           '#alpha': 'alpha',
-          '#beta': 'beta_url'
+          '#beta': 'betaUrl'
     });
 
   And render it with the following context object::
 
     {
      alpha: {text: 'foo'},
-     beta_url: '/beta.json'
+     betaUrl: '/beta.json'
     }
 
   the system will, in effect, call::
@@ -629,8 +629,8 @@ Now let's create a view that renders all the ``page`` iface::
      render: function() {
         var self = this;
         $.each(self.obj.parts, function(index, part) {
-           var div_el = self.el.append($('<div>');
-           div_el.render(part);
+           var divEl = self.el.append($('<div>');
+           divEl.render(part);
         });
      }
   });
@@ -755,7 +755,7 @@ example::
 will fetch the JSON from ``http://example.com/somejson``, and then
 call ``render`` on that object::
 
-  $('#foo').render(retrieved_obj)
+  $('#foo').render(retrievedObj)
 
 This behavior of Obviel allows you to create a hyperlinked structure
 of JavaScript objects. We can demonstrate that using the ``page`` view
@@ -766,8 +766,8 @@ we created before. We'll show it here again, unchanged::
      render: function() {
         var self = this;
         $.each(self.obj.parts, function(index, part) {
-           var div_el = self.el.append($('<div>');
-           div_el.render(part);
+           var divEl = self.el.append($('<div>');
+           divEl.render(part);
         });
      }
   });
@@ -1012,8 +1012,8 @@ Declarative Event Registration
       iface: 'foo',
       events: {
           click: {
-             '#some_id': function(ev) {
-               $('#click_result', ev.view.el).text('clicked!');
+             '#someId': function(ev) {
+               $('#clickResult', ev.view.el).text('clicked!');
              }
           }
       }
@@ -1030,10 +1030,10 @@ Declarative Event Registration
       render: function() {},
       events: {
          click: {
-           '#some_id': 'handle_click'
+           '#someId': 'handleClick'
          }
       },
-      handle_click: function(ev) {
+      handleClick: function(ev) {
          this.el.text('clicked!');
       }
     });
@@ -1046,11 +1046,11 @@ by the view. You can do this by hand using jQuery::
 
   obviel.view({ 
      iface: 'foo',
-     obvt: '<div id="press">Click me!</div><div id="click_result"></div>', 
+     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
      render: function() {
         var self = this;
         $('#press', this.el).click(function(ev) {
-           $('#click_result', self.el).text('clicked!');
+           $('#clickResult', self.el).text('clicked!');
         });
      }
   });
@@ -1060,12 +1060,12 @@ handler::
 
   obviel.view({ 
      iface: 'foo',
-     obvt: '<div id="press">Click me!</div><div id="click_result"></div>', 
+     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
      render: function() {
-        $('#press', this.el).click(this.click_handler);
+        $('#press', this.el).click(this.clickHandler);
      },
-     click_handler: function(ev) {
-        $('#click_result', this.el).text('clicked!');
+     clickHandler: function(ev) {
+        $('#clickResult', this.el).text('clicked!');
      }
   });
 
@@ -1074,9 +1074,9 @@ the ``data-handler`` directive::
 
   obviel.view({ 
      iface: 'foo',
-     obvt: '<div data-handler="click|click_handler">Click me!</div><div id="click_result"></div>', 
-     click_handler: function(ev) {
-        $('#click_result', this.el).text('clicked!');
+     obvt: '<div data-handler="click|clickHandler">Click me!</div><div id="clickResult"></div>', 
+     clickHandler: function(ev) {
+        $('#clickResult', this.el).text('clicked!');
      }
   });
 
@@ -1094,31 +1094,31 @@ Consider the following view with a template that uses a formatter::
 
   obviel.view({
      iface: 'foo',
-     obvt: '{my_variable|some_formatter}'
+     obvt: '{myVariable|someFormatter}'
   });
 
-When you render this view, ``some_formatter`` will be looked up in the
+When you render this view, ``someFormatter`` will be looked up in the
 global formatter registry. You can use Obviel Templates's
-:func:`obviel.template.register_formatter` to fill it when the application starts. 
+:func:`obviel.template.registerFormatter` to fill it when the application starts. 
 
 You can however also define this formatter on the view itself::
 
   obviel.view({
      iface: 'foo',
-     obvt: '{my_variable|some_formatter}',
-     some_formatter: function(value) {
+     obvt: '{myVariable|someFormatter}',
+     someFormatter: function(value) {
         return value + " formatted";
      }
   });
 
-Now ``some_formatter`` will be called on the view to render ``my_variable``.
+Now ``someFormatter`` will be called on the view to render ``myVariable``.
 
 The same approach works for ``data-func``::
 
   obviel.view({
      iface: 'foo',
-     obvt: '<div data-func="some_func"></div>',
-     some_func: function(el, variable, context) {
+     obvt: '<div data-func="someFunc"></div>',
+     someFunc: function(el, variable, context) {
         if (variable('flag')) {
            el.addClass('foo');
         }
@@ -1147,7 +1147,7 @@ Here is an example::
   obviel.view({ 
     iface: 'foo',
     render: function() {},
-    object_events: {
+    objectEvents: {
        'update': 'rerender'
     },
     rerender: function() {
@@ -1158,16 +1158,16 @@ Here is an example::
 This registers a handler that gets triggered when the custom
 ``update`` event is sent to the object. Let's first render an object::
 
-  var my_obj = {iface: 'ifoo'};
-  some_el.render(my_obj);
+  var myObj = {iface: 'ifoo'};
+  some_el.render(myObj);
 
-and now let's trigger the ``update`` event on ``my_obj``. This is done by
+and now let's trigger the ``update`` event on ``myObj``. This is done by
 wrapping the object in ``$`` first::
 
-  $(my_obj).trigger('custom');
+  $(myObj).trigger('custom');
 
 This will cause ``rerender`` to be called, which will redraw the
-view. If ``my_obj`` has changed in the mean time, the view will be
+view. If ``myObj`` has changed in the mean time, the view will be
 redrawn to reflect this.
 
 As a convenience, ``rerender`` has been predefined on views, so you
@@ -1176,7 +1176,7 @@ don't have to define it like we did above. This is sufficient::
   obviel.view({ 
     iface: 'foo',
     render: function() {},
-    object_events: {
+    objectEvents: {
        'update': 'rerender'
     }
   });
@@ -1191,17 +1191,17 @@ can access by following hyperlinks in JSON.
 This is an example of Obviel bootstrapping code in your application::
 
   $(document).ready(function() {
-    $('#main').render(app_url);
+    $('#main').render(appUrl);
   });
 
-This renders the object at ``app_url`` when the DOM is ready, and will
+This renders the object at ``appUrl`` when the DOM is ready, and will
 render it into the HTML element identified with the ``main`` id.
 
-We call the object referred to by ``app_url`` the *root object*.  The
+We call the object referred to by ``appUrl`` the *root object*.  The
 root object should include hyperlinks to other objects in your
 application, which it will then in turn render as sub-objects.
 
-The question remains how to actually set app_url in your
+The question remains how to actually set ``appUrl`` in your
 application. It is a URL that will be dependent on how your
 application is installed.
 
@@ -1211,16 +1211,16 @@ system, and set it in a ``<script>`` element somewhere in your web page:
 .. code-block:: html
 
   <script type="text/javascript">
-     var app_url = "[the app url goes here using a template directive]";
+     var appUrl = "[the app url goes here using a template directive]";
   </script>
 
 Another way is to include a separate JavaScript file that you dynamically
-generate, that only sets app_url::
+generate, that only sets appUrl::
 
-  var app_url = "[the app url goes here, using server-side programming]";
+  var appUrl = "[the app url goes here, using server-side programming]";
 
 There is a second URL that is handy to include using one of these
-methods as well: ``template_url``. This is the URL that identifies
+methods as well: ``templateUrl``. This is the URL that identifies
 your template (or HTML snippet) directory. It could for instance look
 like this::
 
@@ -1228,26 +1228,26 @@ like this::
 
 Note how it ends with a forward slash (``/``).
 
-Once ``template_url`` is available, your views can refer to individual
+Once ``templateUrl`` is available, your views can refer to individual
 templates like this::
 
   v.view({
-     html_url: template_url + 'some_snippet.html'
+     htmlUrl: templateUrl + 'some_snippet.html'
   });
 
-You can set up ``template_url`` in the same way you set up
-``app_url``, though there is one extra requirement: ``template_url``
+You can set up ``templateUrl`` in the same way you set up
+``appUrl``, though there is one extra requirement: ``templateUrl``
 must be known *before* any Obviel views are registered, whereas
-``app_url`` only needs to be known when the DOM is ready. If you are
-going to set ``template_url`` it is therefore important to do this
+``appUrl`` only needs to be known when the DOM is ready. If you are
+going to set ``templateUrl`` it is therefore important to do this
 early, in a ``<script>`` tag that comes before the ``<script>`` tag
 that includes your code that registers views. For example:
 
 .. code-block:: html
 
   <script type="text/javascript">
-     var template_url = "http://example.com/templates/";
-     var app_url = "http://example.com/app_root";
+     var templateUrl = "http://example.com/templates/";
+     var appUrl = "http://example.com/app_root";
   </script>
   <script type="text/javascript" src="http://example.com/obviel_app.js"></script>
 
@@ -1316,7 +1316,7 @@ To retrieve the associated view of an element, you can use the
 ``$(el).view()`` function to get it back again.
 
 To access a view in this element or its nearest parent, use
-``$(el).parent_view()``.
+``$(el).parentView()``.
 
 To remove the element association, you can call ``$(el).unview()``.
 
@@ -1362,7 +1362,7 @@ Iface extension
 It is sometimes useful to be able to register an iface more
 generically, for a whole selection of related objects. We may have
 more particular ``person`` objects such as ``employee``,
-``contest_winner``, etc, but if we register a view for ``person``
+``contestWinner``, etc, but if we register a view for ``person``
 objects we want it to automatically apply to those other types of
 objects as well, unless we registered more specific views for the
 latter.

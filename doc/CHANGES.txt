@@ -4,6 +4,49 @@ CHANGES
 1.0b2 (unreleased)
 ==================
 
+* **GREAT RENAMING**: this one breaks backwards compatibility! Any
+  names previously using under_scores now use camelCase, to better
+  follow JavaScript conventions. This means your previous Obviel code
+  will break. In particular:
+
+  * ``html_url, ``jsont_url`` and ``obvt_url`` are now ``htmlUrl``,
+    ``jsontUrl`` and ``obvtUrl``.
+
+  * ``object_events`` becomes ``objectEvents``.
+
+  * API functions are also camel-case now, i.e. ``registerFormatter``
+    instead of ``register_formatter``.
+
+  * Form field names are now camel-case, so ``inputField``, ``textlineField``,
+    ``textField``, ``integerField``, ``floatField``, ``decimalField``,
+    ``booleanField``, ``choiceField``, ``displayField``, ``hiddenField``,
+    ``datapickerField``, ``autocompleteField``.
+    
+  * ``validationUrl`` instead of ``validation_url`` for forms.
+
+  * ``maxLength``, ``minLength``, ``maxLength``, ``allowNegative``,
+    ``minBeforeSep``, ``maxBeforeSep``, ``minAfterSep``,
+    ``maxAfterSep``, ``emptyOption``, for widgets.
+
+  In general you can straightforwardly translate under_score to
+  camelCase everywhere. 
+
+  There are a few exceptions. ``_`` is of course still to mark
+  translations. Constants such as ``NAME_TOKEN`` also keep the
+  underscore. We also recommend that if you have a variable named
+  after a translation domain (i.e. ``en_US``) you keep the underscore
+  as well. Finally in Obviel template it is still used to refer to
+  special variables when you loop through a dotted name
+  (i.e. ``{@each.something_persons.number}`` if you are looping
+  through ``something.persons``.
+
+  If you use Emacs you can translate the underscores to camelcase in a
+  file automatically, using the following command::
+
+    M-x replace-regexp
+    Replace regexp: \(\w\)_\(\w\)
+    with:           \1\,(upcase \2)
+
 * Unfortunately ``<element>``, ``<attribute>`` and ``<block>`` did not
   work well in IE. Instead you can now use ``data-el``, ``data-attr``
   and ``data-unwrap`` on any DOM element.
@@ -17,7 +60,7 @@ CHANGES
   ("text<p>following</p>") or are an element followed by a piece of
   text ("<p>first</p>followed").
 
-* Templates can be inlined in a ``<compiler_name>_script`` section 
+* Templates can be inlined in a ``<compilerName>Script`` section 
   in the HTML document.
  
 * Fix a bug in ``data-id`` generation where ``data-id="not_a_variable"``
@@ -70,7 +113,7 @@ CHANGES
   dealing in what view and template error occurred.
 
 * Added missing API docs for :func:`element.rerender()`,
-  :func:`element.view`, :func:`element.parent_view()` and
+  :func:`element.view`, :func:`element.parentView()` and
   :func:`element.unview()`.
 
 * Use mockjax for cleaner AJAX testing.

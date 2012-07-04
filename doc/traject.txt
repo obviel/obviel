@@ -137,21 +137,21 @@ path is ``a``, ``b`` when the path is ``b``, and, you guessed it,
 
 Let's do it::
 
-   var get_a = function(variables) {
+   var getA = function(variables) {
       return app.objects.a;
    };
 
-   var get_b = function(variables) {
+   var getB = function(variables) {
       return app.objects.b;
    };
 
-   var get_c = function(variables) {
+   var getC = function(variables) {
       return app.objects.c;
    };
 
-   patterns.register('a', get_a);
-   patterns.register('b', get_b);
-   patterns.register('c', get_c);
+   patterns.register('a', getA);
+   patterns.register('b', getB);
+   patterns.register('c', getC);
 
 When we now resolve a path with the patterns registry, we will find the
 appropriate objects::
@@ -166,7 +166,7 @@ So, what you register with the patterns registry is a path (the first
 argument) and a function to call when this path is matched. You then
 resolve a path. We'll explain what the ``root`` object is for later,
 but you also may have noticed the ``variables`` argument to the
-``get_`` lookup functions, which we'll go into next.
+``get`` lookup functions, which we'll go into next.
 
 Variables in Paths
 ------------------
@@ -178,11 +178,11 @@ register a new path in the patterns registry so it can be found. We
 can use this code shorter and more flexible by using a variable in the path
 instead. Instead of the above registrations, we'll use this::
 
-  var get_object = function(variables) {
+  var getObject = function(variables) {
      return app.objects[variables.name];
   };  
 
-  patterns.register('$name', get_object);
+  patterns.register('$name', getObject);
 
 Now we can look up paths with arbitrary names, and each will be
 resolved to an object in ``app.objects``.
@@ -198,14 +198,14 @@ Longer Paths
 Paths are not restricted to single names, you can also use the slash
 (``/``) character in them::
 
-  patterns.register('foo/bar/baz', get_something);
-  patterns.register('stores/$store_id', get_store);
+  patterns.register('foo/bar/baz', getSomething);
+  patterns.register('stores/$storeId', getStore);
 
 Paths may also use multiple variables at the same time::
   
-  patterns.register('stores/$store_id/products/$product_id');
+  patterns.register('stores/$storeId/products/$productId');
 
-Both ``store_id`` and ``product_id`` will be passed into the lookup
+Both ``storeId`` and ``productId`` will be passed into the lookup
 function as properties of the ``variables`` object.
 
 Name and Parent
@@ -219,19 +219,19 @@ when we look up an object like this::
    var obj = patterns.resolve(root, 'a');
 
 ``obj`` will be placed within the ``root`` object. This is done by
-adding two properties to ``obj``, ``traject_name`` and ``traject_parent``.
+adding two properties to ``obj``, ``trajectName`` and ``trajectParent``.
 
-``traject_name`` is the name the object was looked up under, in this
-case ``a``. ``traject_parent`` is the object that is placed under, in
+``trajectName`` is the name the object was looked up under, in this
+case ``a``. ``trajectParent`` is the object that is placed under, in
 this case ``root``. So these are true::
 
-  obj.traject_name === 'a'
-  obj.traject_parent === root
+  obj.trajectName === 'a'
+  obj.trajectParent === root
 
 You can also construct deeper paths. Consider a registration like this::
 
-  patterns.register('foo', get_foo);
-  patterns.register('foo/bar', get_bar);
+  patterns.register('foo', getFoo);
+  patterns.register('foo/bar', getBar);
 
 When we now retrieve ``foo`` and ``bar`` using the following code::
 
@@ -241,24 +241,24 @@ When we now retrieve ``foo`` and ``bar`` using the following code::
 
 the following will be true::
 
-  obj.traject_name === 'bar'
-  obj.traject_parent === foo
-  foo.traject_name === 'foo'
-  foo.traject_parent === root
+  obj.trajectName === 'bar'
+  obj.trajectParent === foo
+  foo.trajectName === 'foo'
+  foo.trajectParent === root
 
 This works with variables too::
 
-  patterns.register('departments/$department_id', get_department)
+  patterns.register('departments/$departmentId', getDepartment)
 
   var department1 = patterns.resolve(root, 'departments/1');
 
-  obj.traject_name === '1'
-  obj.traject_parent.traject_name === 'departments'
-  obj.traject_parent.traject_parent === root
+  obj.trajectName === '1'
+  obj.trajectParent.trajectName === 'departments'
+  obj.trajectParent.trajectParent === root
 
-Here we've registered the path ``departments/$department_id``, but we
+Here we've registered the path ``departments/$departmentId``, but we
 have not registered ``department``. So what kind of object is
-``obj.department_parent``? It's a special default object that traject
+``obj.departmentParent``? It's a special default object that traject
 creates if it doesn't have any more specific lookup function
 registered for that path::
 
@@ -267,8 +267,8 @@ registered for that path::
 You can specify a custom default object lookup with a patterns
 registry if you want::
 
-  patterns.set_default_lookup(function() {
-    return { iface: 'some_custom_default_object'};
+  patterns.setDefaultLookup(function() {
+    return { iface: 'someCustomDefaultObject'};
   });
 
 Converters
@@ -278,15 +278,15 @@ In some cases it is convenient to have a variable be converted to a
 particular type, for instance an integer automatically. You 
 can do this by indicating the converter behind the variable::
 
-  patterns.register('customers/$customer_id:int', get_customer);
+  patterns.register('customers/$customerId:int', getCustomer);
 
-The ``variables`` object passed to the ``get_customer`` function will
-now get the variable ``customer_id`` as an integer. If a non-integer
-is in the path for ``$customer_id``, the path will fail to resolve.
+The ``variables`` object passed to the ``getCustomer`` function will
+now get the variable ``customerId`` as an integer. If a non-integer
+is in the path for ``$customerId``, the path will fail to resolve.
 
 You can also register new converters with the patterns registry::
 
-  patterns.register_converter('float', function(value) {
+  patterns.registerConverter('float', function(value) {
      var result = parseFloat(value);
      if (isNaN(result) {
        return null;
@@ -295,7 +295,7 @@ You can also register new converters with the patterns registry::
   });
 
 You can now use a variable definition with ``:float``, such as
-``$customer_id:float``.
+``$customerId:float``.
 
 Inverse: Locating Objects
 -------------------------
@@ -304,8 +304,8 @@ So far we've considered looking up an object for a path, using
 ``resolve``.  Traject also supports the inverse scenario: given an
 object, reconstruct what path it has. More generally, we are able to
 *locate* an object using traject. To locate an object means it has a
-``traject_parent`` and ``traject_name``, and following the
-``traject_parent`` chain will eventually lead to the root object.
+``trajectParent`` and ``trajectName``, and following the
+``trajectParent`` chain will eventually lead to the root object.
 
 To help traject locate an object, we need to register an inverse
 function of the lookup function. A lookup function looks up an object
@@ -320,38 +320,38 @@ Let's consider a simple scenario::
     gamma: {iface: 'department', title: 'Gamma'}
   };
 
-  var get_department = function(variables) {
-     return departments[variables.department_name];
+  var getDepartment = function(variables) {
+     return departments[variables.departmentName];
   };  
 
-  patterns.register('departments/$department_name', get_department);
+  patterns.register('departments/$departmentName', getDepartment);
 
 We now need to create a function that given a department object, gives
-back its name (``$department_name``), in a ``variables`` object like this:
-``{department_name: 'the name'};``. 
+back its name (``$departmentName``), in a ``variables`` object like this:
+``{departmentName: 'the name'};``. 
 
 How do we find the name of a department in ``departments``? We can loop
 through it until we find the department we want the name for, like this::
 
-  var get_department_variables = function(department) {
-     for (var department_name in departments) {
-        if (department === departments[department_name]) {
-            return {department_name: department_name};
+  var getDepartmentVariables = function(department) {
+     for (var departmentName in departments) {
+        if (department === departments[departmentName]) {
+            return {departmentName: departmentName};
         }
      }
   };
 
 Now we can register the inverse function::
 
-  patterns.register_inverse('department', 'departments/$department_name',
-                            get_department_variables);
+  patterns.registerInverse('department', 'departments/$departmentName',
+                            getDepartmentVariables);
 
 Now we can locate a department object::
 
   patterns.locate(departments.alpha);
 
-Once we've located the department, it will have a ``traject_parent``
-and a ``traject_name``. Locating an object is especially good to
+Once we've located the department, it will have a ``trajectParent``
+and a ``trajectName``. Locating an object is especially good to
 reconstruct its path, which can be useful to help construct links in
 the the user interface. To construct the path for an object (and automatically
 locate it first if necessary), you can use ``patterns.path``::
@@ -366,8 +366,8 @@ Registering Lookup and Inverse Together
 In many cases you'd like to register the lookup and inverse at the same
 time. You can do this using the ``pattern`` method::
 
-  patterns.pattern('department', 'departments/$department_name', 
-                   get_department, get_department_variables);
+  patterns.pattern('department', 'departments/$departmentName', 
+                   getDepartment, getDepartmentVariables);
 
 
 
