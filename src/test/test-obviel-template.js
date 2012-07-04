@@ -1672,6 +1672,13 @@ test('data-attr in void element', function() {
         '<input class="foo" />');
 });
 
+// XXX data-attr-something support?
+// test('data-attr-name to set attr of name dynamically', function() {
+//     html_equal(
+//         render('<div data-attr-class="{foo}"></div>', {foo: 'Foo'}),
+//         '<div class="Foo" />');
+// });
+
 test('data-unwrap in element', function() {
     html_equal(render('<div><div data-unwrap="">Hello world!</div></div>', {}),
                '<div>Hello world!</div>');
@@ -2190,6 +2197,22 @@ test("data-each should not break finders without second section", function() {
                       { 'entries': [{}, {}], var: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></li></ul>');
 });
+
+// XXX img issue
+// test('img src should not be loaded', function() {
+//     // we test whether it tries to load {test}.jpg when the template is
+//     // compiled. that shouldn't happen; we shouldn't get any network request
+//     // for the image at all
+//     // var template = new obtemp.Template('<img src="bar.jpg" data-attr="src" data-value="{test}.jpg" />');
+//     // var el = $('#viewdiv');
+
+//     html_equal(render('<div data-el="img"><div data-attr="src" data-value="fixtures/{test}.png" /></div>',
+//                       {test: 'destroy'}),
+//                '<img data-blah="foo.jpg" />');
+    
+//     // template.render(el, {test: 'foo'});
+//     // html_equal($('#viewdiv').html(), '<img src="foo.jpg" />');
+// });
 
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,

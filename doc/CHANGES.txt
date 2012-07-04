@@ -73,6 +73,8 @@ CHANGES
   :func:`element.view`, :func:`element.parent_view()` and
   :func:`element.unview()`.
 
+* Use mockjax for cleaner AJAX testing.
+
 1.0b (2012-05-31)
 =================
 
