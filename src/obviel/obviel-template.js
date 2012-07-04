@@ -1,5 +1,5 @@
 /*global obviel: true, jQuery: true, template_url: true
-  alert: true , browser: true, document: true, app_url: true, 
+  alert: true , browser: true, document: true, app_url: true,
   window: true, Gettext: true, json_locale_data: true
 */
 /*jshint evil: true */
@@ -311,7 +311,7 @@ obviel.template = {};
             if (node.nodeType !== 1) {
                 // skip all non-element nodes
                 continue;
-            }            
+            }
             this.compile_el(node);
         }
     };
@@ -493,12 +493,13 @@ obviel.template = {};
         if (this.data_with) {
             var data_with = this.data_with(scope);
             if (data_with === undefined) {
-                throw new module.RenderError(el, "data-with '" + this.data_with_name + "' " +
-                                             "could not be found");
+                throw new module.RenderError(
+                    el, "data-with '" + this.data_with_name + "' " +
+                    "could not be found");
             }
             var type = $.type(data_with);
             if (type !== 'object') {
-                throw new module.RenderError(el, 
+                throw new module.RenderError(el,
                     "data-with must point to an object, not to " + type);
             }
             scope.push(data_with);
@@ -564,7 +565,7 @@ obviel.template = {};
 
     module.DynamicElement.prototype.is_dynamic = function() {
         return this._dynamic;
-    };   
+    };
     
     module.DynamicElement.prototype.compile = function(el, allow_tvar) {
         this.trans_info = new module.TransInfo(el, allow_tvar);
@@ -621,7 +622,7 @@ obviel.template = {};
                 });
                 this._dynamic = true;
             }
-        }        
+        }
     };
     
     module.DynamicElement.prototype.compile_data_handler = function(el) {
@@ -661,7 +662,7 @@ obviel.template = {};
             return;
         }
         // non-destructively read data-id attribute, leave it in place
-        // so variables can be used in it            
+        // so variables can be used in it
         var data_id = el.getAttribute('data-id');
         if (!data_id) {
             throw new module.CompilationError(
@@ -676,7 +677,7 @@ obviel.template = {};
             return;
         }
         // non-destructively read data-el attribute, leave it in place
-        // so variables can be used in it            
+        // so variables can be used in it
         var data_el = el.getAttribute('data-el');
         if (!data_el) {
             throw new module.CompilationError(
@@ -755,7 +756,7 @@ obviel.template = {};
         }
 
         singular.finalize_compile(el);
-                                   
+        
         if (current === plural) {
             plural.finalize_compile(el);
         } else {
@@ -829,7 +830,7 @@ obviel.template = {};
         var parent = $(el.parentNode);
         
         // use jQuery to make attribute access more uniform (style in IE, etc)
-            
+        
         if (parent.attr(name)) {
             value = parent.attr(name) + ' ' + value;
         }
@@ -841,10 +842,11 @@ obviel.template = {};
         if (this.handlers.length === 0) {
             return;
         }
-            
+        
         for (var i = 0; i < this.handlers.length; i++) {
             var handler = this.handlers[i];
-            if (context.get_handler === null || context.get_handler === undefined) {
+            if (context.get_handler === null ||
+                context.get_handler === undefined) {
                 throw new module.RenderError(
                     el, "cannot render data-handler for event '" +
                         handler.event_name + "' and handler '" +
@@ -888,7 +890,7 @@ obviel.template = {};
         this.render_data_func(el, scope, context);
     };
     
-    module.DynamicText = function(el, text) {        
+    module.DynamicText = function(el, text) {
         this.parts = [];
         this.variables = [];
       
@@ -921,7 +923,7 @@ obviel.template = {};
             var variable = this.variables[i];
             result[variable.index] = variable.value.render(el, scope, context);
         }
-        return result.join('');        
+        return result.join('');
     };
 
     module.DynamicText.prototype.render_root = function(el, scope, context) {
@@ -970,8 +972,9 @@ obviel.template = {};
         if (parts.length == 1) {
             if (this.trans_info.count_variable !== null) {
                 throw new module.CompilationError(
-                    el, "data-plural used for attribute content but no || used " +
-                        "to indicate plural text: " + this.trans_info.count_variable);
+                    el, "data-plural used for attribute content but no || " +
+                    "used to indicate plural text: " +
+                    this.trans_info.count_variable);
             }
             this.attr_trans = new module.AttributeTrans(
                 el, this.name, this.value, this.trans_info.message_id);
@@ -1020,7 +1023,6 @@ obviel.template = {};
         el, scope, context) {
         el.setAttribute(this.name,
                         this.dynamic_text.render(el, scope, context));
-        
     };
     
     module.Variable = function(el, name) {
@@ -1029,10 +1031,9 @@ obviel.template = {};
         this.formatter = r.formatter;
         this.full_name = name;
         validate_dotted_name(el, this.name);
-        
         this.get_value = module.resolve_func(r.name);
     };
-        
+    
     module.Variable.prototype.render = function(el, scope, context) {
         var result = this.get_value(scope);
         if (result === undefined) {
@@ -1059,7 +1060,7 @@ obviel.template = {};
     };
 
     module.ViewElement = function(el) {
-        var data_view = get_directive(el, 'data-view'); 
+        var data_view = get_directive(el, 'data-view');
         if (data_view === null) {
             this.dynamic = false;
             return;
@@ -1089,7 +1090,7 @@ obviel.template = {};
         var type = $.type(obj);
         if (type !== 'object') {
             throw new module.RenderError(
-                el, 
+                el,
                 "data-view must point to an object, not to " + type);
         }
         
@@ -1348,7 +1349,7 @@ obviel.template = {};
         var variable = this.variables[name];
         if (variable === undefined) {
             throw new module.RenderError(
-                el, "unknown variable in translation: " + name);   
+                el, "unknown variable in translation: " + name);
         }
         return variable.render(el, scope, context);
     };
@@ -1404,7 +1405,7 @@ obviel.template = {};
             // ELEMENT NODE
             this.check_data_trans_restrictions(node);
             var tvar_node = node.cloneNode(true);
-            var tvar_info = this.compile_tvar(tvar_node);                
+            var tvar_info = this.compile_tvar(tvar_node);
             this.parts.push("{" + tvar_info.tvar + "}");
             // XXX dynamic_notrans is a bit ugly
             this.tvars[tvar_info.tvar] = {
@@ -1514,7 +1515,7 @@ obviel.template = {};
         // only if we have a single text child node that is a variable
         // by itself do we have an implicit tvar
         if (node.childNodes.length !== 1) {
-            return null;   
+            return null;
         }
         if (node.childNodes[0].nodeType !== 3) {
             return null;
@@ -1580,7 +1581,7 @@ obviel.template = {};
         var variable = this.variables[name];
         if (variable === undefined) {
             throw new module.RenderError(
-                el, "unknown variable in translation: " + name);   
+                el, "unknown variable in translation: " + name);
         }
         return document.createTextNode(variable.render(el, scope, context));
     };
@@ -1916,7 +1917,7 @@ obviel.template = {};
         return {
             name: name_parts[0],
             formatter: name_parts[1]
-        };   
+        };
     };
 
     check_message_id = function(el, message_id, element_or_attribute) {

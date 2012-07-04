@@ -1,4 +1,4 @@
-/*global jQuery:true, template_url:true, 
+/*global jQuery:true, template_url:true,
   alert:true , browser:true, document:true, app_url:true,
   window:true
 */

@@ -5,7 +5,7 @@
 
 obviel.forms = {};
 
-(function($, obviel, module) {    
+(function($, obviel, module) {
     var _ = obviel.i18n.translate('obviel-forms');
     var ngettext = obviel.i18n.pluralize('obviel-forms');
     
@@ -46,15 +46,15 @@ obviel.forms = {};
         $.extend(d, settings);
         obviel.View.call(this, d);
     };
- 
+
     var auto_name = 0;
- 
+
     module.Form.prototype = new obviel.View();
- 
+
     module.Form.prototype.init = function() {
         this.widget_views = [];
     };
- 
+
     var count_errors = function(errors) {
         var result = 0;
         $.each(errors, function(key, value) {
@@ -128,7 +128,8 @@ obviel.forms = {};
                 $('.obviel-formerror', el).text('');
             }
             if (count) {
-                $('button.obviel-control', el).each(function(index, control_el) {
+                $('button.obviel-control', el).each(function(
+                index, control_el) {
                     control_el = $(control_el);
                     if (!control_el.data('obviel.no_validation')) {
                         control_el.attr('disabled', 'true').trigger(
@@ -137,9 +138,9 @@ obviel.forms = {};
                     
                 });
 
-                    
             } else {
-                $('button.obviel-control', el).each(function(index, control_el) {
+                $('button.obviel-control', el).each(function(
+                index, control_el) {
                     control_el = $(control_el);
                     if (!control_el.data('obviel.no_validation')) {
                         control_el.removeAttr('disabled').trigger(
@@ -386,7 +387,7 @@ obviel.forms = {};
                 if (self.total_error_count() > 0) {
                     control_el.attr('disabled', 'true').trigger(
                         'button-updated.obviel');
-                    return;   
+                    return;
                 }
                 self.direct_submit(control);
             });
@@ -465,7 +466,7 @@ obviel.forms = {};
             name: 'default'
         };
         $.extend(d, settings);
-        obviel.View.call(this, d); 
+        obviel.View.call(this, d);
     };
 
     module.Widget.prototype = new obviel.View();
@@ -709,7 +710,7 @@ obviel.forms = {};
         var el = self.el;
         var obj = self.obj;
         
-        var field_el = $('<div class="obviel-field-input" ' + 
+        var field_el = $('<div class="obviel-field-input" ' +
                             'id="obviel-field-' + obj.prefixed_name + '">');
         
         $.each(obj.widgets, function(index, sub_widget) {
@@ -810,7 +811,7 @@ obviel.forms = {};
         if (obj.title) {
             field_el.append(
                 '<legend>' + entitize(obj.title) +
-                    '</legend>');  
+                    '</legend>');
         }
 
         $.each(obj.widgets, function(index, sub_widget) {
@@ -888,7 +889,7 @@ obviel.forms = {};
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var field_el = $('<div class="obviel-field-input" ' + 
+        var field_el = $('<div class="obviel-field-input" ' +
                             'id="obviel-field-' + self.obj.prefixed_name + '">');    
         self.el.append(field_el);
     };
@@ -1230,7 +1231,7 @@ obviel.forms = {};
             if (asstring.charAt(0) == '-') {
                 asstring = asstring.slice(1);
             }
-            if (asstring.length != obj.validate.length) {     
+            if (asstring.length != obj.validate.length) {
                 return Gettext.strargs(_('value must be %1 digits long'),
                                        [obj.validate.length]);
             }
@@ -1520,7 +1521,7 @@ obviel.forms = {};
                 '<div class="obviel-field-input">' +
                 '<span name="obviel-field-{prefixed_name}" data-id="obviel-field-{prefixed_name}"> ' +
                 '</span>' +
-                '</div>'            
+                '</div>'
         };
         $.extend(d, settings);
         module.Widget.call(this, d);
@@ -1535,7 +1536,7 @@ obviel.forms = {};
     module.DisplayWidget.prototype.convert_back = function(value) {
         var self = this;
         var value_to_label = self.obj.value_to_label || {};
-        var display_value = (value_to_label[value] || value || 
+        var display_value = (value_to_label[value] || value ||
                             self.obj.null_value);
         $('#obviel-field-' + self.obj.prefixed_name,  self.el).html(
                 display_value
@@ -1557,7 +1558,7 @@ obviel.forms = {};
 
     module.HiddenWidget.prototype = new module.DisplayWidget();
 
-    module.HiddenWidget.prototype.convert_back = function (value) { 
+    module.HiddenWidget.prototype.convert_back = function (value) {
         var self = this;
         $('#obviel-field-' + self.obj.prefixed_name).val(value);
     };

@@ -140,7 +140,7 @@ var traject = {};
                     throw new traject.RegistrationError(
                         "Could not register " + pattern.join('/') +
                         "because of a conflict between variable " +
-                        value + " and already registered " + prev_value);    
+                        value + " and already registered " + prev_value);
                 }
                 
             } else {
@@ -213,7 +213,7 @@ var traject = {};
             var step_pattern = pattern.concat(name);
             var step_pattern_str = step_pattern.join('/');
             var next_step = this._step_registry[step_pattern_str];
-                
+            
             var pattern_str = null;
             
             if (next_step !== undefined) {
@@ -246,7 +246,7 @@ var traject = {};
                     stack.push(name);
                     return {unconsumed: stack, consumed: consumed,
                             obj: obj};
-                }   
+                }
             }
             var lookup = this._lookup_registry[pattern_str];
             if (lookup === undefined) {
@@ -280,7 +280,7 @@ var traject = {};
                 provided_by(obj));
         }
         /* need to make a copy of pattern before manipulating it */
-        var pattern = v.pattern.slice(0); 
+        var pattern = v.pattern.slice(0);
         var inverse = v.inverse;
 
         var gen_pattern = generalize_pattern(pattern);
@@ -331,7 +331,7 @@ var traject = {};
                 return;
             }
         }
-        
+    
     };
 
     traject.Patterns.prototype.path = function(root, obj) {
@@ -346,4 +346,3 @@ var traject = {};
         return stack.join('/');
     };
 }(jQuery, traject));
- 

@@ -83,7 +83,8 @@
                     }
                 });
             };
-        } else if (autocomplete_data.length && typeof autocomplete_data[0] != 'string') {
+        } else if (autocomplete_data.length &&
+                   typeof autocomplete_data[0] != 'string') {
             label_to_value = {};
             value_to_label = {};
             labels = [];
@@ -154,8 +155,8 @@
         return {value: value};
     };
 
-    module.AutocompleteWidget.prototype.convert_back = function(value,
-                                                                source, target) {
+    module.AutocompleteWidget.prototype.convert_back = function(
+        value, source, target) {
         var self = this;
         var result = module.TextLineWidget.prototype.convert_back.call(
             this, value);
@@ -179,7 +180,7 @@
 
         if (!$.isFunction(this.source)) {
             set_value();
-        } else if (this.value_to_label === undefined || 
+        } else if (this.value_to_label === undefined ||
                     this.value_to_label[value] === undefined) {
             this.source.call(this, {identifier: value}, set_value);
         } else {

@@ -2,7 +2,7 @@
 // uses jsgettext. some of the logic is more hairy than it should
 // be as jsgettext for some reason decided to globally share all state
 // between Gettext objects...
-    
+
 if (typeof obviel === "undefined") {
     var obviel = {};
 }
@@ -193,7 +193,7 @@ obviel.i18n = {};
             return rel_url;
         }
         base_url = base_url.slice(0, i);
-        return base_url + '/' + rel_url; 
+        return base_url + '/' + rel_url;
     };
 
     module.load_i18n = function(url) {
@@ -216,7 +216,7 @@ obviel.i18n = {};
                             source_url);
                     }
                     module.register_translation(entry.locale, source, domain);
-                }       
+                }
             }
         });
         defer.fail(function(jqXHR, textStatus) {
