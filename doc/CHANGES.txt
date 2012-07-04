@@ -67,8 +67,8 @@ CHANGES
   dealing in what view and template error occurred.
 
 * Added missing API docs for :func:`element.rerender()`,
-  func:`element.view()`, :func:`element.parent_view()` and
-  func:`element.unview()`.
+  :func:`element.view`, :func:`element.parent_view()` and
+  :func:`element.unview()`.
 
 1.0b (2012-05-31)
 =================
