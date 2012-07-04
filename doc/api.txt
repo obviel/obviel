@@ -137,11 +137,36 @@ Obviel core
 
 .. function:: element.rerender([callback, errback])
 
+  Re-render (non-ephemeral) view on element. 
+
+  If there is a previous view on the element, and the view was rendered
+  from an object, the object is re-rendered on the element.
+
+  If there is a previous view on the element and the view was rendered
+  from a URL, the object for the URL is re-fetched and then rendered.
+
+  If there is no previous view on the element, nothing will happen.
+
 .. function:: element.view()
+
+  Get the (non-epheremal) view previously rendered on element. 
+
+  :returns: The non-ephemeral view previously rendered on the
+    element. If no non-ephemeral view was rendered on the element,
+    ``undefined`` is returned.
 
 .. function:: element.parent_view()
 
+  Get nearest view registered on element or parent.
+
+  :returns: The non-ephemeral view rendered on element, or if missing,
+    walk up the ancestor chain until a view is found. If no view can
+    be found return ``null``.
+ 
 .. function:: element.unview()
+
+  Remove non-ephemeral view from element, executing any view
+  cleanup. If no view exists on this element, nothing happens.
 
 View options
 ++++++++++++
