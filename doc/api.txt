@@ -49,6 +49,11 @@ Obviel core
   :param obj: Any JavaScript object
   :returns: a list of ifaces that the obj provides.
 
+.. function:: obviel.clear_template_cache()
+
+  Clear the template cache from any cached templates. Useful to do as
+  cleanup between unit test.
+
 .. class:: obviel.View(settings)
  
   :param settings: an object of which the properties will become
