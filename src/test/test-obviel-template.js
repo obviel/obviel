@@ -2200,13 +2200,13 @@ test("data-each should not break finders with second section", function() {
         '<li data-each="entries">' +
         '<span></span>' +
         '</li>' +
-        '<li data-if="var">' +
-        '<a>{var}</a>' +
+        '<li data-if="v">' +
+        '<a>{v}</a>' +
         '</li>' +
         '</ul>');
     
     htmlEqual(render(complex,
-                      { 'entries': [{}, {}], var: 'bar'}),
+                      { 'entries': [{}, {}], v: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></ul>');
 });
 
@@ -2217,12 +2217,12 @@ test("data-each should not break finders without second section", function() {
         '<span></span>' +
         '</li>' +
         '<li>' +
-        '<a>{var}</a>' +
+        '<a>{v}</a>' +
         '</li>' +
         '</ul>');
     
     htmlEqual(render(complex,
-                      { 'entries': [{}, {}], var: 'bar'}),
+                      { 'entries': [{}, {}], v: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></li></ul>');
 });
 

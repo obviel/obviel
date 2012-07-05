@@ -1,5 +1,5 @@
 /*global jQuery:true, obviel:true, jsontemplate:false
-  alert:true , browser:true, document:true,
+  alert:true , browser:true, document:true, console: true,
   window:true
 */
 
@@ -513,7 +513,7 @@ if (typeof obviel === "undefined") {
     module.View.prototype.location = function() {
         var result = this.iface;
         if (this.name !== 'default') {
-            result += '|' + name;
+            result += '|' + this.name;
         }
         return result;
     };
@@ -697,8 +697,8 @@ if (typeof obviel === "undefined") {
 
     module.InlineSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compilerIdentifier + '_'
-                + this.source);
+                this.compilerIdentifier + '_' + 
+                this.source);
     };
 
     module.InlineSourceLoader.prototype.location = function() {
@@ -928,7 +928,7 @@ if (typeof obviel === "undefined") {
             var text = exceptionInfo(this.location, e);
             console.log("obvt render error: " + text);
             throw new obviel.template.RenderError(e.el, text);
-        };
+        }
     };
     
     module.JsontCompiler = function() {

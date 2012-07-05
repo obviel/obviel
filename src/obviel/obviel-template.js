@@ -72,7 +72,7 @@ obviel.template = {};
     var cachedTokenize, morphElement;
     var splitNameFormatter, splitNameFormatters;
     var parseTextForPlural, parseTvar, getImplicitCountVariable;
-    var checkMessageId;
+    var checkMessageId, getIndexInParent;
     
     module.NAME_TOKEN = 0;
     module.TEXT_TOKEN = 1;
