@@ -310,6 +310,12 @@ test('non-dynamic data-src', function() {
               '<img src="fixtures/destroy.png" />');
 });
 
+test('data-src and data-id case', function() {
+    htmlEqual(render('<img data-id="{id}" data-src="fixtures/{id}.png">',
+                     {id: 'destroy'}),
+              '<img src="fixtures/destroy.png" id="destroy">');
+});
+
 test("data-with", function() {
     htmlEqual(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
           '<p>Hello</p>');
@@ -2219,22 +2225,6 @@ test("data-each should not break finders without second section", function() {
                       { 'entries': [{}, {}], var: 'bar'}),
                '<ul><li><span/></li><li><span/></li><li><a>bar</a></li></ul>');
 });
-
-// XXX img issue
-// test('img src should not be loaded', function() {
-//     // we test whether it tries to load {test}.jpg when the template is
-//     // compiled. that shouldn't happen; we shouldn't get any network request
-//     // for the image at all
-//     // var template = new obtemp.Template('<img src="bar.jpg" data-attr="src" data-value="{test}.jpg" />');
-//     // var el = $('#viewdiv');
-
-//     htmlEqual(render('<div data-el="img"><div data-attr="src" data-value="fixtures/{test}.png" /></div>',
-//                       {test: 'destroy'}),
-//                '<img data-blah="foo.jpg" />');
-    
-//     // template.render(el, {test: 'foo'});
-//     // htmlEqual($('#viewdiv').html(), '<img src="foo.jpg" />');
-// });
 
 test('getXpath for top element', function() {
     var el = $('<html></html>');
