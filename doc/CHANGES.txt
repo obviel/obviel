@@ -126,6 +126,14 @@ CHANGES
 * Remove pyobviel, obviel-datatables and obvielts. These were unfinished
   and can always be resurrected at some point in the future.
 
+* the ``src`` attribute is like the ``id`` attribute special in that
+  it may not be directly used with variables in a template. This is
+  because an image ``src`` for instance is directly loaded as soon as
+  the template is parsed, and this does not work with variables and
+  will result in a network error. Instead we force the developer to
+  use ``data-src`` to set the ``src`` attribute, just like we force
+  the developer to set ``data-id``.
+
 1.0b (2012-05-31)
 =================
 

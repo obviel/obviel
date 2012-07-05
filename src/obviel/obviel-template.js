@@ -74,11 +74,13 @@ obviel.template = {};
     var parseTextForPlural, parseTvar, getImplicitCountVariable;
     var checkMessageId;
     
-    var OBVIELTEMPLATEIDPREFIX = 'obviel-template-';
-
     module.NAME_TOKEN = 0;
     module.TEXT_TOKEN = 1;
 
+    // these attributes may not be dynamic, you can only
+    // set them dynamically thorugh data-<attrName>
+    var SPECIAL_ATTR = {'id': true,  'src': true};
+    
     module.Error = function(el, message) {
         this.el = el;
         this.message = message;
@@ -158,12 +160,20 @@ obviel.template = {};
         // indexed based access to elements
         $('.obviel-template-removal', el).remove();
 
-        // data-id becomes id
-        $('.obviel-template-data-id', el).each(function() {
-            var dataId = getDirective(this, 'data-id');
-            this.setAttribute('id', dataId);
+        // setting attributes with data (data-id, data-src) become
+        // that attribute (id, src)
+        $('.obviel-template-special-attr', el).each(function() {
+            var name, value;
+
+            for (name in SPECIAL_ATTR) {
+                value = getDirective(this, 'data-' + name);
+                if (value !== null) {
+                    this.setAttribute(name, value);
+                }
+            }
+            
             var el = $(this);
-            el.removeClass('obviel-template-data-id');
+            el.removeClass('obviel-template-special-attr');
             if (el.attr('class') === '') {
                 el.removeAttr('class');
             }
@@ -564,7 +574,7 @@ obviel.template = {};
         this.compileContentTexts(el);
         this.compileDataHandler(el);
         this.compileFunc(el);
-        this.compileDataId(el);
+        this.compileSpecialAttr(el);
         this.compileDataEl(el);
         this.compileDataAttr(el);
         this.compileDataUnwrap(el);
@@ -647,19 +657,20 @@ obviel.template = {};
         this._dynamic = true;
     };
 
-    module.DynamicElement.prototype.compileDataId = function(el) {
-        if (!el.hasAttribute('data-id')) {
-            return;
+    module.DynamicElement.prototype.compileSpecialAttr = function(el) {
+        var name, value;
+
+        for (name in SPECIAL_ATTR) {
+            if (!el.hasAttribute('data-' + name)) {
+                continue;
+            }
+            value = el.getAttribute('data-' + name);
+            if (!value) {
+                throw new module.CompilationError(
+                    el, "data-" + name + " cannot be empty");
+            }
+            $(el).addClass('obviel-template-special-attr');
         }
-        // non-destructively read data-id attribute, leave it in place
-        // so variables can be used in it
-        var dataId = el.getAttribute('data-id');
-        if (!dataId) {
-            throw new module.CompilationError(
-                el, "data-id cannot be empty");
-        }
-        
-        $(el).addClass('obviel-template-data-id');
     };
     
     module.DynamicElement.prototype.compileDataEl = function(el) {
@@ -943,13 +954,13 @@ obviel.template = {};
         if (!dynamicText.isDynamic() && this.transInfo === null) {
             return;
         }
-        if (this.name === 'id') {
+        if (SPECIAL_ATTR[this.name] !== undefined) {
             throw new module.CompilationError(
                 el, ("not allowed to use variables (or translation) " +
-                     "in id attribute. use data-id instead"));
+                     "in " + this.name + " attribute. " +
+                     "Use data-" + this.name + " instead"));
         }
         this.dynamicText = dynamicText;
-        
         this._dynamic = true;
     };
     

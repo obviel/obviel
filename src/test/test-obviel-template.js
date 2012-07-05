@@ -291,6 +291,25 @@ test('non-dynamic data-id', function() {
           '<p id="foo"></p>');
 });
 
+
+test("disallow dynamic src in template", function() {
+    raises(function() {
+        render('<img src="{dynamic}" />',
+               {dynamic: 'fixtures/destroy.png'});
+    }, obtemp.CompilationError);
+});
+
+test("data-src", function() {
+    htmlEqual(render('<img data-src="{foo}" />',
+                     {foo: 'fixtures/destroy.png'}),
+              '<img src="fixtures/destroy.png"/>');
+});
+
+test('non-dynamic data-src', function() {
+    htmlEqual(render('<img data-src="fixtures/destroy.png" />', {}),
+              '<img src="fixtures/destroy.png" />');
+});
+
 test("data-with", function() {
     htmlEqual(render('<p data-with="alpha">{beta}</p>', {alpha: { beta: "Hello"}}),
           '<p>Hello</p>');

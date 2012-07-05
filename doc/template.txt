@@ -991,31 +991,56 @@ moving or removing elements or text modes are unsafe: it can break
 Obviel Template in unexpected ways, as it relies on the order of child
 nodes to stay the same.
 
-id support
-----------
+special attributes (``id``, ``src``)
+------------------------------------
 
-Obviel templates should be valid HTML fragments. In valid HTML, a id
-should be unique. You can just use ids like for any other HTML::
+Since Obviel templates use HTML and the HTML compiler internally,
+Obviel templates should be valid HTML fragments.
+
+In valid HTML, an ``id`` attribute should be unique. If the ``id`` attribute is
+hardcoded there is no problem; you can just use them::
  
   <div id="foo"></div>
 
 But variables in ids are not allowed, because it would be too easy to
-have a HTML fragment with the same id (such ``{myId}``) in multiple
+have a HTML fragment with the same id (such as ``{myId}``) in multiple
 ``id`` attributes. So this is **illegal**::
 
-  <div id="{notAllowed}"></div>
+  <div id="{myId}"></div>
 
-To generate an id, you can instead use the ``data-id`` directive::
+If you try this, you'll get an compilation error.
 
-  <div data-id="{someId}"></div>
+To generate an id dynamically, you can instead use the ``data-id``
+directive::
+
+  <div data-id="{myId}"></div>
 
 This works just like any other attribute, so you can put things before
 and after the variable::
 
-  <div data-id="prefix{someId}postfix"></div>
+  <div data-id="prefix{something}postfix"></div>
 
 This will generate HTML with proper ``id`` attributes.
  
+A similar story applies to the ``src`` attribute. In practice this
+will occur in the ``img`` element. When the template is being parsed,
+the ``src`` is loaded by the browser immediately. So this in your
+template would be okay::
+
+  <img src="myimage.png" />
+
+But this is **illegal**::
+
+  <img src="{myImage}" />
+
+because we wouldn't want the browser to look for a URL ``{myImage}``
+literally. So Obviel template prevents this by giving you a compilation
+error when you try this.
+
+Instead, we use ``data-src`` to set the ``src`` attribute::
+
+  <img data-src="{myImage}" />
+
 ``data-trans`` for i18n
 ------------------------
 
