@@ -259,14 +259,35 @@ test('attribute in sub-element', function() {
           '<p><em class="silly">foo</em></p>');
 });
 
+var extraNormalize = function(text) {
+    text = obtemp.normalizeSpace(text);
+    // wipe out all whitespace too, as IE and FF won't be consistent otherwise
+    text = text.replace(/\s/g, '');
+    return text;
+};
+
 test('json output for objects', function() {
-    htmlEqual(render('{@.}', {'a': 'silly'}),
-          '{\n    "a": "silly"\n}');
+    var template = new obtemp.Template('{@.}');
+    var el = $("<div></div>");
+    
+    template.render(el, {'a': 'silly'});
+
+    // wish I could do a simple htmlEqual but IE 8 is too helpful
+    // with whitespace
+    equal(extraNormalize(el.text()),
+          extraNormalize('{\n    "a": "silly"\n}'));
 });
 
 test('json output for arrays', function() {
-    htmlEqual(render('{@.}', ['a', 'b']),
-          "[\n    \"a\",\n    \"b\"\n]");
+    var template = new obtemp.Template('{@.}');
+    var el = $("<div></div>");
+    
+    template.render(el, ['a', 'b']);
+
+    // wish I could do a simple htmlEqual but IE 8 is too helpful
+    // with whitespace
+    equal(extraNormalize(el.text()),
+          extraNormalize("[\n    \"a\",\n    \"b\"\n]"));
 });
 
 
