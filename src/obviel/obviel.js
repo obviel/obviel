@@ -1,10 +1,16 @@
 /*global jQuery:true, obviel:true, jsontemplate:false
-  alert:true , browser:true, document:true, console: true,
-  window:true
+  alert:true , browser:true, document:true, window:true
 */
 
 if (typeof obviel === "undefined") {
     var obviel = {};
+}
+
+if (typeof console === "undefined") {
+    var console = {
+        log: function(text) {
+        }
+    };
 }
 
 (function($) {
