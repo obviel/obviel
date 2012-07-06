@@ -849,8 +849,13 @@ test('data-trans with whitespace in element content, translation found', functio
 });
 
 test('data-tvar with whitespace, translation found', function() {
-    htmlEqual(render('<p data-trans=""><em data-tvar="something">  This has \n  whitespace.  </em> is there</p>', {}),
-               '<p><em>Dit heeft witruimte.</em> is there</p>');
+    // IE 8 and earlier "helpfully" collapse whitespace in text nodes.
+    // this is why there is no space between </em> and "is there" in this
+    // test; this whitespace is eliminated in IE. since it's not what
+    // we're testing (we're testing a tvar) we leave it out so the test
+    // passes in IE too
+    htmlEqual(render('<p data-trans=""><em data-tvar="something">  This has \n  whitespace.  </em>is there</p>', {}),
+               '<p><em>Dit heeft witruimte.</em>is there</p>');
 });
 
 test('attribute with whitespace, translation not found', function() {
