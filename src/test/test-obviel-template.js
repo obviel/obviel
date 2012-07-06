@@ -1659,7 +1659,7 @@ test('data-attr in section where data-if is false', function() {
 
 
 test('data-attr in data-each', function() {
-    htmlEqual(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul',
+    htmlEqual(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul>',
                       {list: ['a', 'b']}),
                '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
 });
