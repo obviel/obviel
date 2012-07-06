@@ -2,13 +2,17 @@
   equal:false deepEqual:false expect:false raises:false
   asyncTest:false start:false */
 
+var trim = function(s) {
+    return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+};
+
 var htmlLower = function(html) {
     // some nasty normalization for browser compatibility
     // Firefox & IE give different cases for html, and
     // also sometimes Firefox includes a \n where IE does not.
     // I would use trimRight instead of a regular expression but
     // IE 7 at least doesn't support it yet
-    return html.toLowerCase().replace(/\s+$/, '');
+    return trim(html.toLowerCase().replace(/\s+$/, ''));
 };
 
 // ifaces
