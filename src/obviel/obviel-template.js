@@ -65,7 +65,7 @@ obviel.template = {};
 (function($, module) {
 
     // will define these later, is to please jshint
-    var isHtmlText, trim, normalizeSpace;
+    var isHtmlText, trim;
     var formatters, funcs;
     var defaultViewName = null;
     var resolveInObj, getDirective, validateDottedName;
@@ -1436,7 +1436,7 @@ obviel.template = {};
 
     module.ContentTrans.prototype.finalizeCompile = function(el) {
         var messageId = this.parts.join('');
-        messageId = normalizeSpace(trim(messageId));
+        messageId = module.normalizeSpace(trim(messageId));
         this.validateMessageId(el, messageId);
         this.messageId = messageId;
         if (this.explicitMessageId !== null) {
@@ -2109,8 +2109,9 @@ obviel.template = {};
         return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
 
-    normalizeSpace = function(s) {
-        return s.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
+    module.normalizeSpace = function(s) {
+        return s.replace(/^\s+|\s+$/g, '').replace(
+                /\s{2,}/g, ' ').replace(/\s/g, ' ');
     };
     
     isHtmlText = function(text) {
