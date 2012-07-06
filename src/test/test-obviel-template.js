@@ -2236,10 +2236,21 @@ test('getXpath for lower element', function() {
     equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span');
 });
 
-test('getXpath for second element', function() {
+test('getXpath for second element of same', function() {
     var doc = $('<div><span></span><span class="the_span"></span></html>');
     equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span[2]');
 });
+
+test('getXpath for second element but different', function() {
+    var doc = $('<div><div></div><span class="the_span"></span></html>');
+    equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span');
+});
+
+test('getXpath for first element but second is same', function() {
+    var doc = $('<div><span class="the_span"></span><span></span></html>');
+    equal(obtemp.getXpath($('.the_span', doc).get(0)), '/div/span[1]');
+});
+
 
 test('tokenize single variable', function() {
     deepEqual(obtemp.tokenize("{foo}"), [{type: obtemp.NAME_TOKEN,

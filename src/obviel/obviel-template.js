@@ -2067,12 +2067,23 @@ obviel.template = {};
         if (parent === null || parent.nodeType !== 1) {
             return null;
         }
+        var c = 0,
+            found = null,
+            node;
         for (var i = 0; i < parent.childNodes.length; i++) {
-            if (parent.childNodes[i] === el) {
-                return i;
+            node = parent.childNodes[i];
+            if (node.nodeName !== el.nodeName) {
+                continue;
             }
+            if (parent.childNodes[i] === el) {
+                found = c;
+            }
+            c++;
         }
-        return null;
+        if (c <= 1) {
+            return null;
+        }
+        return found + 1;
     };
     
     module.getXpath = function(el) {
@@ -2080,8 +2091,8 @@ obviel.template = {};
         while (el !== null && el.nodeType === 1) {
             name = el.tagName.toLowerCase();
             index = getIndexInParent(el);
-            if (index !== null && index !== 0) {
-                name += '[' + (index + 1) + ']';
+            if (index !== null) {
+                name += '[' + index + ']';
             }
             path.push(name);
             el = el.parentNode;
