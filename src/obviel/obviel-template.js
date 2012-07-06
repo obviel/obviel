@@ -681,8 +681,7 @@ obviel.template = {};
         // so variables can be used in it
         var dataEl = el.getAttribute('data-el');
         if (!dataEl) {
-            throw new module.CompilationError(
-                el, "data-el cannot be empty");
+            throw new module.CompilationError(el, "data-el cannot be empty");
         }
         $(el).addClass('obviel-template-data-el');
     };
