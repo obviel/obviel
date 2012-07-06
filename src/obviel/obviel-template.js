@@ -505,7 +505,7 @@ obviel.template = {};
             scope.push(dataWith);
         }
 
-        if (this.frag.childNodes.length > 0) {
+        if (this.frag.hasChildNodes()) {
             el.appendChild(this.frag.cloneNode(true));
         }
         this.renderDynamicElements(el, scope, context);
