@@ -101,6 +101,11 @@
         objectEvents: {
             update: 'rerender'
         },
+        checked: function(el, variable) {
+            if (variable('done')) {
+                el.get(0).checked = true;
+            }
+        },
         render: function() {
             if (this.obj.done) {
                 this.el.addClass('done');

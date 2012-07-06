@@ -58,9 +58,7 @@
 
     <script type="text/template" id="obvt-todo">
       <div data-handler="dblclick|edit" class="view">
-        <div data-el="input" data-handler="click|toggle" class="toggle" type="checkbox">
-          <div data-if="done" data-attr="checked" data-value="checked" />
-        </div>
+        <input data-handler="click|toggle" data-func="checked" class="toggle" type="checkbox" />
         <label>{title}</label>
         <a data-handler="click|clear" class="destroy"></a>
       </div>
