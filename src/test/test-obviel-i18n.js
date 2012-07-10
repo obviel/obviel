@@ -182,7 +182,7 @@ test('switch domain, non-translating en_US locale', function() {
     equal(_('Bye world!'), 'Bye world!');
 });
 
-test('switch domain, translating frFr locale', function() {
+test('switch domain, translating fr_Fr locale', function() {
     setupTranslationsMultiDomains();
 
     i18n.setLocale('fr_FR');
@@ -198,6 +198,21 @@ test('switch domain, translating frFr locale', function() {
     equal(_('Hello world!'), 'Hello world!');
 
     equal(_('Bye world!'), 'Au revoir monde!');
+});
+
+test("default domain should not pick up from non-default", function() {
+    var nl_NL = i18n.translationSource({'This is foo.':
+                                        'Dit is foo.'});
+    
+    i18n.registerTranslation('nl_NL', nl_NL, 'other');
+
+    var _ = obviel.i18n.translate();
+
+    obviel.i18n.setLocale('nl_NL');
+
+    var t = _("This is foo.");
+    
+    equal(t, 'This is foo.');
 });
 
 test("default domain", function() {

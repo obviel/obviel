@@ -124,7 +124,12 @@ obviel.i18n = {};
             });
             promises.push(promise);
         }
-        
+        // set up default domain if it's not set up otherwise
+        // this is to avoid the situation where Gettext cannot find
+        // the domain and therefore will look in all domains
+        if (domains['default'] === undefined) {
+            localeData['default'] = makeEmptyTranslation();
+        }
         var subviewsDefer = $.when.apply(null, promises);
         subviewsDefer.done(function() {
             // XXX really convince Gettext to forget about previous data

@@ -2,7 +2,7 @@
     // enter key
     var KEYCODE = 13;
     
-    var _ = obviel.i18n.translate();
+    var _ = obviel.i18n.translate('todos');
     
     // the application model
     var todos = {

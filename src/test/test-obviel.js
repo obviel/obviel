@@ -1661,12 +1661,12 @@ test('obviel i18n default domain used by template, no translations', function() 
 });
 
 test('obviel i18n default domain used by template, translation', function() {
-    var nlNL = obviel.i18n.translationSource({'This is {name}.':
+    var nl_NL = obviel.i18n.translationSource({'This is {name}.':
                                                 'Dit is {name}.'});
 
-    obviel.i18n.registerTranslation('nlNL', nlNL);
+    obviel.i18n.registerTranslation('nl_NL', nl_NL);
 
-    obviel.i18n.setLocale('nlNL');
+    obviel.i18n.setLocale('nl_NL');
     
     obviel.view({
         iface: 'person',
@@ -1681,10 +1681,10 @@ test('obviel i18n default domain used by template, translation', function() {
 });
 
 test("obviel i18n non-default domain, no locale set", function() {
-    var nlNL = obviel.i18n.translationSource({'This is {name}.':
-                                                'Dit is {name}.'});
+    var nl_NL = obviel.i18n.translationSource({'This is {name}.':
+                                               'Dit is {name}.'});
     
-    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
+    obviel.i18n.registerTranslation('nl_NL', nl_NL, 'other');
         
     obviel.i18n.translate('other');
     
@@ -1702,14 +1702,14 @@ test("obviel i18n non-default domain, no locale set", function() {
 
 
 test("obviel i18n non-default domain, locale set", function() {
-    var nlNL = obviel.i18n.translationSource({'This is {name}.':
+    var nl_NL = obviel.i18n.translationSource({'This is {name}.':
                                                 'Dit is {name}.'});
     
-    obviel.i18n.registerTranslation('nlNL', nlNL, 'other');
+    obviel.i18n.registerTranslation('nl_NL', nl_NL, 'other');
         
     obviel.i18n.translate('other');
 
-    obviel.i18n.setLocale('nlNL');
+    obviel.i18n.setLocale('nl_NL');
     
     obviel.view({
         iface: 'person',
@@ -1720,6 +1720,31 @@ test("obviel i18n non-default domain, locale set", function() {
     el.render({iface: 'person', name: 'foo'});
 
     equal($('#result').text(), 'Dit is foo.');
+});
+
+
+test("obviel i18n default domain, try to look up in non-default", function() {
+    // register some translations in 'other' domain
+    var nl_NL = obviel.i18n.translationSource({'This is {name}.':
+                                                'Dit is {name}.'});
+    
+    obviel.i18n.registerTranslation('nl_NL', nl_NL, 'other');
+
+    // now translation is in default domain
+    obviel.i18n.translate();
+
+    obviel.i18n.setLocale('nl_NL');
+    
+    obviel.view({
+        iface: 'person',
+        obvt: '<p id="result" data-trans="">This is {name}.</p>'
+    });
+
+    // now we expect no translation to take place
+    var el = $('#viewdiv');
+    el.render({iface: 'person', name: 'foo'});
+    
+    equal($('#result').text(), 'This is foo.');
 });
 
 test('obviel i18n with pluralization, Dutch translation', function() {
