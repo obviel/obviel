@@ -369,8 +369,3 @@ time. You can do this using the ``pattern`` method::
   patterns.pattern('department', 'departments/$departmentName', 
                    getDepartment, getDepartmentVariables);
 
-
-
-
-
-
