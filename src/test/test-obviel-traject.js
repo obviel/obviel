@@ -13,6 +13,7 @@ module("traject", {
     }
 });
 
+var traject = obviel.traject;
 
 // Tests
 test("simple steps", function () {

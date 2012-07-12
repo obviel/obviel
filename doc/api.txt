@@ -986,9 +986,9 @@ provide some methods. This is the typical pattern::
 Traject
 =======
 
-Everything is in the ``traject`` namespace.
+Everything is in the ``obviel.traject`` namespace.
 
-.. class:: traject.ParseError
+.. class:: obviel.traject.ParseError
 
   A parse error when parsing a path.
 
@@ -996,7 +996,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: traject.ResolutionError
+.. class:: obviel.traject.ResolutionError
 
   Error resolving a path to an object: object cannot be found.
 
@@ -1004,7 +1004,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: traject.LocationError
+.. class:: obviel.traject.LocationError
 
   Error constructing a location (or path) for an object.
 
@@ -1012,7 +1012,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: traject.RegistrationError
+.. class:: obviel.traject.RegistrationError
 
   Error during registration.
 
@@ -1020,7 +1020,7 @@ Everything is in the ``traject`` namespace.
 
     The error message.
 
-.. class:: traject.Patterns
+.. class:: obviel.traject.Patterns
 
   .. function:: registerConverter(converterName, converterFunc)
 

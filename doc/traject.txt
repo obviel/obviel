@@ -114,10 +114,10 @@ do for you exactly. Let's look at this now.
 A Patterns Registry
 -------------------
 
-The main object defined by traject is ``traject.Patterns``. If you include
-traject in the page you can create one like this::
+The main object defined by traject is :class:`obviel.traject.Patterns`. If
+you include traject in the page you can create one like this::
 
-  var patterns = new traject.Patterns();
+  var patterns = new obviel.traject.Patterns();
 
 Now let's look at a simple scenario where we use the simplest form
 of a path pattern: a single name. We define a bunch of objects::

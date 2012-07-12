@@ -134,6 +134,10 @@ CHANGES
   use ``data-src`` to set the ``src`` attribute, just like we force
   the developer to set ``data-id``.
 
+* ``traject`` is now placed in the ``obviel`` namespace for
+  consistency with the other modules. It can still be used
+  stand-alone, however.
+
 1.0b (2012-05-31)
 =================
 

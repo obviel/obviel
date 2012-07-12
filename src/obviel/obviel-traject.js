@@ -2,25 +2,28 @@
 /*jshint white: false, browser: true, onevar: false, undef: true,
 eqeqeq: true, plusplus: false, bitwise: true, regexp: true, newcap: true,
 immed: true, strict: false, maxlen: 80, maxerr: 9999 */
+if (typeof obviel === "undefined") {
+    var obviel = {};
+}
 
-var traject = {};
+obviel.traject = {};
 
 (function($, module) {
     var UNCONVERTED = {};
     
-    traject.ParseError = function (message) {
+    module.ParseError = function (message) {
         this.message = message;
     };
     
-    traject.ResolutionError = function (message) {
+    module.ResolutionError = function (message) {
         this.message = message;
     };
 
-    traject.LocationError = function (message) {
+    module.LocationError = function (message) {
         this.message = message;
     };
 
-    traject.RegistrationError = function (message) {
+    module.RegistrationError = function (message) {
         this.message = message;
     };
     
@@ -31,7 +34,7 @@ var traject = {};
         return patternStr;
     };
 
-    var parse = traject.parse = function (patternStr) {
+    var parse = module.parse = function (patternStr) {
         patternStr = normalize(patternStr);
         var pattern = patternStr.split('/');
         var knownVariables = {};
@@ -39,7 +42,7 @@ var traject = {};
             var step = pattern[i];
             if (step.charAt(0) === '$') {
                 if (knownVariables[step] !== undefined) {
-                    throw new traject.ParseError(
+                    throw new module.ParseError(
                         "URL pattern contains multiple variables with name: " +
                             step.slice(1));
                 }
@@ -49,7 +52,7 @@ var traject = {};
         return pattern;
     };
 
-    var subpatterns = traject.subpatterns = function (pattern) {
+    var subpatterns = module.subpatterns = function (pattern) {
         var subpattern = [];
         var result = [];
         for (var i in pattern) {
@@ -89,7 +92,7 @@ var traject = {};
         return result;
     };
 
-    traject.Patterns = function () {
+    module.Patterns = function () {
         this._stepRegistry = {};
         this._lookupRegistry = {};
         // XXX interface inheritance isn't done
@@ -103,14 +106,14 @@ var traject = {};
         };
     };
     
-    traject.Patterns.prototype.registerConverter = function (converterName,
+    module.Patterns.prototype.registerConverter = function (converterName,
                                                               converterFunc) {
         this._converters[converterName] = converterFunc;
     };
 
     var _dummy = {};
     
-    traject.Patterns.prototype.register = function (
+    module.Patterns.prototype.register = function (
         patternStr, lookup) {
         var pattern = parse(patternStr);
         var sp = subpatterns(pattern);
@@ -126,7 +129,7 @@ var traject = {};
                     var valueParts = value.split(':');
                     var converterName = valueParts[1];
                     if (this._converters[converterName] === undefined) {
-                        throw new traject.RegistrationError(
+                        throw new module.RegistrationError(
                             "Could not register " + pattern.join('/') +
                             " because no converter can be found for " +
                             "variable " + value);
@@ -137,7 +140,7 @@ var traject = {};
                     continue;
                 }
                 if (prevValue !== undefined) {
-                    throw new traject.RegistrationError(
+                    throw new module.RegistrationError(
                         "Could not register " + pattern.join('/') +
                         "because of a conflict between variable " +
                         value + " and already registered " + prevValue);
@@ -153,7 +156,7 @@ var traject = {};
         this._lookupRegistry[name] = lookup;
     };
 
-    traject.Patterns.prototype.registerInverse = function (
+    module.Patterns.prototype.registerInverse = function (
         iface, patternStr, inverse) {
         this._inverseRegistry[iface] = {
             pattern: parse(patternStr),
@@ -161,35 +164,35 @@ var traject = {};
         };
     };
 
-    traject.Patterns.prototype.pattern = function (
+    module.Patterns.prototype.pattern = function (
         iface, patternStr, lookup, inverse) {
         this.register(patternStr, lookup);
         this.registerInverse(iface, patternStr, inverse);
     };
     
-    traject.Patterns.prototype.setDefaultLookup = function (f) {
+    module.Patterns.prototype.setDefaultLookup = function (f) {
         this._defaultLookup = f;
     };
 
-    traject.Patterns.prototype.resolve = function (root, path) {
+    module.Patterns.prototype.resolve = function (root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
         return this.resolveStack(root, names);
     };
 
-    traject.Patterns.prototype.resolveStack = function (root, stack) {
+    module.Patterns.prototype.resolveStack = function (root, stack) {
         var r = this.consumeStack(root, stack);
         if (r.unconsumed.length) {
             var stackCopy = stack.slice(0);
             stackCopy.reverse();
-            throw new traject.ResolutionError("Could not resolve path: " +
+            throw new module.ResolutionError("Could not resolve path: " +
                                               stackCopy.join('/'));
         }
         return r.obj;
     };
 
-    traject.Patterns.prototype.consume = function (root, path) {
+    module.Patterns.prototype.consume = function (root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
@@ -203,7 +206,7 @@ var traject = {};
         return obj.iface;
     };
     
-    traject.Patterns.prototype.consumeStack = function (root, stack) {
+    module.Patterns.prototype.consumeStack = function (root, stack) {
         var variables = {};
         var obj = root;
         var pattern = [];
@@ -265,7 +268,7 @@ var traject = {};
         return {unconsumed: stack, consumed: consumed, obj: obj};
     };
 
-    traject.Patterns.prototype.locate = function (root, obj) {
+    module.Patterns.prototype.locate = function (root, obj) {
         if (obj.trajectParent !== undefined &&
             obj.trajectParent !== null) {
             return;
@@ -275,7 +278,7 @@ var traject = {};
 
         var v = this._inverseRegistry[iface];
         if (v === undefined) {
-            throw new traject.LocationError(
+            throw new module.LocationError(
                 "Cannot reconstruct parameters of: " +
                 providedBy(obj));
         }
@@ -288,7 +291,7 @@ var traject = {};
         var variables = inverse(obj);
 
         if (variables === null || variables === undefined) {
-            throw new traject.LocationError(
+            throw new module.LocationError(
                 "Inverse returned null or undefined, not variables");
         }
         
@@ -334,7 +337,7 @@ var traject = {};
     
     };
 
-    traject.Patterns.prototype.path = function(root, obj) {
+    module.Patterns.prototype.path = function(root, obj) {
         this.locate(root, obj);
         var stack = [];
         while (obj !== root) {
@@ -345,4 +348,4 @@ var traject = {};
         stack.reverse();
         return stack.join('/');
     };
-}(jQuery, traject));
+}(jQuery, obviel.traject));
