@@ -1731,6 +1731,8 @@ obviel.template = {};
             return '{';
         } else if (dottedName === '@close') {
             return '}';
+        } else if (dottedName === '@doublepipe') {
+            return '||';
         }
         var names = dottedName.split('.');
         for (var i = this.stack.length - 1; i >= 0; i--) {
@@ -1763,6 +1765,8 @@ obviel.template = {};
             c.push('return "{";');
         } else if (dottedName === '@close') {
             c.push('return "}";');
+        } else if (dottedName === '@doublepipe') {
+            c.push('return "||";');
         }
         
         c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');

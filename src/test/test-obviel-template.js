@@ -37,7 +37,9 @@ var Translations = function() {
         'explicit': 'explicit translated',
         'explicitWho': 'grote {who}',
         // note that the string in the HTML has whitespace in it, but not here
-        'This has whitespace.': 'Dit heeft witruimte.'
+        'This has whitespace.': 'Dit heeft witruimte.',
+        'Open {@open} and close {@close}': 'Openen {@open} en sluiten {@close}',
+        'Open {@open}': 'Openen {'
     };
 };
 
@@ -2212,6 +2214,29 @@ test("pluralize in text with tvar with translation", function() {
                       { 'count': 2}),
                '<div><em>2</em> koeien</div>');
 });
+
+test("escape || in data-trans", function() {
+    htmlEqual(render('<div data-trans="">We use {@doublepipe} to mark pluralization</div>', {}),
+              '<div>We use || to mark pluralization</div>');
+});
+
+test('escape || outside translation', function() {
+    htmlEqual(render('<div>We use {@doublepipe} to mark pluralization</div>', {}),
+              '<div>We use || to mark pluralization</div>');
+});
+
+test("data-trans and {@open}, {@close} should translate translation contains {@open}", function() {
+    htmlEqual(render('<div data-trans="">Open {@open} and close {@close}</div>', {}),
+              '<div>Openen { en sluiten }</div>');
+});
+
+
+test("data-trans and {@open}, {@close} should translate translation contains {", function() {
+    htmlEqual(render('<div data-trans="">Open {@open}</div>', {}),
+              '<div>Openen {</div>');
+});
+
+
 
 test("data-each should not break finders with second section", function() {
     // there was a bug where data-each broke finders referring to

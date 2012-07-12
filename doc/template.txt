@@ -1128,6 +1128,10 @@ markup::
 
   {@close}
 
+You can also inject ``||``, the pluralization marker literally like this::
+
+  {@doublepipe}
+
 Unsupported XML constructs
 --------------------------
 
