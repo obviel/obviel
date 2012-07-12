@@ -59,6 +59,10 @@ CHANGES
 
     $(el).render(obj).done(function(view) { view.el });
 
+
+  A view is only considered done rendering (its promise will be
+  resolved) when all its ``data-view`` sub-views have been resolved too.
+
 * Backwards compatibility: previously when you implemented ``render`` in
   a view, it could optionally receive a number of arguments ``(el, obj, name,
   callback, errback)``. ``callback`` and ``errback`` have been removed. 

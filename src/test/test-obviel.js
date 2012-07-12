@@ -1860,6 +1860,71 @@ test('render only completes when render method promise completes', function() {
     equal(called, true);
 });
 
+test('render only completes when data-view has been rendered', function() {
+    var defer = $.Deferred();
+    obviel.view({
+        iface: 'subview',
+        render: function() {
+            // don't resolve defer here, but later
+            return defer.promise();
+        }
+    });
+    obviel.view({
+        iface: 'main',
+        obvt: '<div><p data-view="sub"></p></div>'
+    });
+
+    var called = false;
+    
+    $('#viewdiv').render({iface: 'main', sub: {iface: 'subview'}}).done(
+        function() {
+            called = true;
+        });
+    equal(called, false);
+    // now resolve subview
+    defer.resolve();
+    equal(called, true);
+});
+
+test('render only completes when data-views have been rendered', function() {
+    var defer0 = $.Deferred(),
+        defer1 = $.Deferred();
+    obviel.view({
+        iface: 'subview0',
+        render: function() {
+            // don't resolve defer here, but later
+            return defer0.promise();
+        }
+    });
+    obviel.view({
+        iface: 'subview1',
+        render: function() {
+            // don't resolve defer here, but later
+            return defer1.promise();
+        }
+    });
+    
+    obviel.view({
+        iface: 'main',
+        obvt: '<div><p data-each="l" data-view="@."></p></div>'
+    });
+
+    var called = false;
+    
+    $('#viewdiv').render({iface: 'main', l: [{iface: 'subview0'},
+                                             {iface: 'subview1'}]}).done(
+        function() {
+            called = true;
+        });
+    equal(called, false);
+    // now resolve subview0
+    defer0.resolve();
+    equal(called, false);
+    // now resolve subview1, thereby resolving all in list
+    defer1.resolve();
+    equal(called, true);
+});
+
 asyncTest('render returns a promise', function() {
     obviel.view({
         iface: 'foo'

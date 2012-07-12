@@ -142,6 +142,8 @@ obviel.template = {};
         if (!context.getFunc) {
             context.getFunc = module.getFunc;
         }
+
+        context.subviewPromises = [];
         
         var frag = document.createDocumentFragment();
         
@@ -196,10 +198,8 @@ obviel.template = {};
             this.parentNode.removeChild(this);
         });
 
-        // XXX needs to wait until data-view triggered views are done
-        var defer = $.Deferred();
-        defer.resolve();
-        return defer.promise();
+        // need to wait until data-view triggered views are done
+        return $.when.apply(null, context.subviewPromises);
     };
     
     module.Section = function(el, rootSection) {
@@ -1102,7 +1102,7 @@ obviel.template = {};
             el.removeChild(el.firstChild);
         }
         try {
-            $(el).render(obj, this.viewName);
+            context.subviewPromises.push($(el).render(obj, this.viewName));
         } catch(e) {
             if (e instanceof obviel.LookupError) {
                 throw new module.RenderError(el, e.toString());
