@@ -133,7 +133,6 @@ obviel.template = {};
         var scope = new module.Scope(obj);
         if (!context) {
             context = { getTranslation: null, getHandler: null };
-        
         }
         // use global getFormatter if nothing more specific was registered
         if (!context.getFormatter) {
@@ -143,7 +142,6 @@ obviel.template = {};
         if (!context.getFunc) {
             context.getFunc = module.getFunc;
         }
-        
         
         var frag = document.createDocumentFragment();
         
@@ -198,6 +196,10 @@ obviel.template = {};
             this.parentNode.removeChild(this);
         });
 
+        // XXX needs to wait until data-view triggered views are done
+        var defer = $.Deferred();
+        defer.resolve();
+        return defer.promise();
     };
     
     module.Section = function(el, rootSection) {

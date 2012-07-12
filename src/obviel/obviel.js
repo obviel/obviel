@@ -798,12 +798,12 @@ if (typeof console === "undefined") {
 
     module.Compilers.prototype.render = function(view) {
         var template;
-        var defer = $.Deferred();
         
         // get template loader
         var loader = this.getLoader(view);
         // no template to load, so nothing to do
         if (loader === null) {
+            var defer = $.Deferred();
             defer.resolve();
             return defer.promise();
         }
@@ -812,25 +812,19 @@ if (typeof console === "undefined") {
             loader.type === 'inline') {
             template = new module.HtmlTemplate(loader.location(),
                                                loader.source);
-            template.render(view);
-            defer.resolve();
-            return defer.promise();
+            return template.render(view);
         }
         var key = loader.key();
         // see whether we have a cached template for loader, use it if so
         template = module.cachedTemplates.get(key);
         if (template !== null) {
-            template.render(view);
-            defer.resolve();
-            return defer.promise();
+            return template.render(view);
         }
         // otherwise compile source indicated by loader, and render
-        this.compile(loader, view).done(function(template) {
+        return this.compile(loader, view).pipe(function(template) {
             module.cachedTemplates.register(key, template);
-            template.render(view);
-            defer.resolve();
+            return template.render(view);
         });
-        return defer.promise();
     };
     
     module.HtmlCompiler = function() {
@@ -846,7 +840,10 @@ if (typeof console === "undefined") {
     };
 
     module.HtmlTemplate.prototype.render = function(view) {
+        var defer = $.Deferred();
         view.el.html(this.source);
+        defer.resolve();
+        return defer.promise();
     };
     
     module.ObvielTemplateCompiler = function() {
@@ -896,7 +893,7 @@ if (typeof console === "undefined") {
                 view.domain)
         };
         try {
-            this.compiled.render(view.el, view.obj, context);
+            return this.compiled.render(view.el, view.obj, context);
         } catch (e) {
             var text = exceptionInfo(this.location, e);
             console.log("obvt render error: " + text);
@@ -917,7 +914,10 @@ if (typeof console === "undefined") {
     };
 
     module.JsontTemplate.prototype.render = function(view) {
+        var defer = $.Deferred();
         view.el.html(this.compiled.expand(view.obj));
+        defer.resolve();
+        return defer.promise();
     };
     
     module.FailingCompiler = function(name) {

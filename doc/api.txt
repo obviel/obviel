@@ -497,6 +497,8 @@ Everything is in the ``obviel.template`` namespace.
         globally registred funcs (using
         ``obviel.template.registerFunc``). See also
         :func:`obviel.template.registerFunc`.
+    :returns: A promise, so you can hook in ``.done(function()) { }``
+      that will be called when the template is done rendering.
 
 .. function:: obviel.template.variables(translation, variables)
 
