@@ -2507,8 +2507,8 @@ test("repeating field error not seen until submit", function() {
 obviel.iface('successIface');
 obviel.view({
     iface: 'successIface',
-    render: function(el, obj, name) {
-        el.text("success!");
+    render: function() {
+        this.el.text("success!");
     }
 });
 

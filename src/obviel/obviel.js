@@ -271,11 +271,10 @@ if (typeof console === "undefined") {
         return clone;
     };
     
-    module.View.prototype.cleanup = function(el, obj, name) {
+    module.View.prototype.cleanup = function() {
     };
 
-    module.View.prototype.render = function(el, obj, name,
-                                            callback, errback) {
+    module.View.prototype.render = function() {
     };
 
     module.View.prototype.doCleanup = function() {
@@ -285,10 +284,8 @@ if (typeof console === "undefined") {
         
         self.unbindEvents();
         self.unbindObjectEvents();
-        
-        // BBB arguments for backwards compatibility
-        self.cleanup(self.el, self.obj, self.name);
-    
+
+        self.cleanup();
     };
 
     module.View.prototype.before = function() {
@@ -308,10 +305,7 @@ if (typeof console === "undefined") {
         self.before();
 
         module.compilers.render(self).done(function() {
-            // BBB passing the arguments is really for backwards compatibility
-            // only: all these are accessible on the view object itself too
-            var renderPromise = self.render(self.el, self.obj, self.name,
-                                            self.callback, self.errback);
+            var renderPromise = self.render();
             // pretend we have a resolved render promise if we don't
             // get one from render
             if (renderPromise === undefined) {
@@ -327,12 +321,6 @@ if (typeof console === "undefined") {
                     self.bindObjectEvents();
                     
                     self.finalize();
-                    // the callback needs to be the last thing called
-                    // BBB this is now better done with defer
-                    if (self.callback) {
-                        /// BBB arguments are for backwards compatibility only
-                        self.callback(self.el, self, self.obj);
-                    }
                     self.defer.resolve(self);
                 });
             });
@@ -463,21 +451,12 @@ if (typeof console === "undefined") {
             if ((obj === undefined) || !obj) {
                 return;
             }
-            var promise = self.renderSubview(el, obj, name);
+            var promise = self.registry.render(el, obj, name);
             promises.push(promise);
         });
 
         // this is how to pass an array to $.when!
         return $.when.apply(null, promises);
-    };
-
-    module.View.prototype.renderSubview = function(el, obj, name) {
-        var self = this;
-        var defer = $.Deferred();
-        self.registry.render(el, obj, name, function() {
-            defer.resolve();
-        });
-        return defer.promise();
     };
 
     module.View.prototype.rerender = function() {
@@ -560,8 +539,7 @@ if (typeof console === "undefined") {
         return null;
     };
 
-    module.Registry.prototype.cloneView = function(el, obj, name,
-                                                   callback, errback, defer) {
+    module.Registry.prototype.cloneView = function(el, obj, name, defer) {
         name = name || 'default';
         var viewPrototype = this.lookup(obj, name);
         if (viewPrototype === null) {
@@ -570,8 +548,6 @@ if (typeof console === "undefined") {
         return viewPrototype.clone({
             el: el,
             obj: obj,
-            callback: callback,
-            errback: errback,
             registry: this,
             defer: defer
         });
@@ -595,8 +571,7 @@ if (typeof console === "undefined") {
         }
     };
 
-    module.Registry.prototype.render = function(el, obj, name,
-                                                callback, errback) {
+    module.Registry.prototype.render = function(el, obj, name) {
         var self = this;
         var url = null;
         if (typeof obj == 'string') {
@@ -605,11 +580,9 @@ if (typeof console === "undefined") {
         var promise;
         var defer = $.Deferred();
         if (url !== null) {
-            promise = self.viewForUrl(el, url, name, callback, errback,
-                                        defer);
+            promise = self.viewForUrl(el, url, name, defer);
         } else {
-            promise = self.viewForObj(el, obj, name, callback, errback,
-                                        defer);
+            promise = self.viewForObj(el, obj, name, defer);
         }
         
         promise.done(function(view) {
@@ -618,19 +591,14 @@ if (typeof console === "undefined") {
         return defer.promise();
     };
     
-    module.Registry.prototype.viewForObj = function(el, obj, name,
-                                                      callback, errback,
-                                                      viewDefer) {
+    module.Registry.prototype.viewForObj = function(el, obj, name, viewDefer) {
         var defer = $.Deferred();
-        var view = this.cloneView(el, obj, name, callback, errback,
-                                   viewDefer);
+        var view = this.cloneView(el, obj, name, viewDefer);
         defer.resolve(view);
         return defer.promise();
     };
     
-    module.Registry.prototype.viewForUrl = function(el, url, name,
-                                                      callback, errback,
-                                                      defer) {
+    module.Registry.prototype.viewForUrl = function(el, url, name, defer) {
         var self = this;
         return $.ajax({
             type: 'GET',
@@ -638,8 +606,7 @@ if (typeof console === "undefined") {
             dataType: 'json'
         }).pipe(function(obj) {
             obj = self.transformerHook(obj, url, name);
-            var view = self.cloneView(el, obj, name, callback, errback,
-                                       defer);
+            var view = self.cloneView(el, obj, name, defer);
             view.fromUrl = url;
             return view;
         });
@@ -985,27 +952,23 @@ if (typeof console === "undefined") {
         module.registry.registerTransformer(transformer);
     };
     
-    $.fn.render = function(obj, name, callback, errback) {
-        // reshuffle arguments if possible
-        if ($.isFunction(name)) {
-            errback = callback;
-            callback = name;
-            name = undefined;
-        }
+    $.fn.render = function(obj, name) {
         // if we have no name argument, we set it to default
         if (name === undefined) {
             name = 'default';
         }
         var el = $(this);
-
-        return module.registry.render(el, obj, name, callback, errback);
+        return module.registry.render(el, obj, name);
     };
 
-    $.fn.rerender = function(callback, errback) {
-        var el = $(this);
-        var previousView = el.view();
+    $.fn.rerender = function() {
+        var el = $(this),
+            previousView = el.view(),
+            defer;
         if (!previousView) {
-            return;
+            defer = $.Deferred();
+            defer.resolve(null);
+            return defer.promise();
         }
 
         var obj = null;
@@ -1015,8 +978,7 @@ if (typeof console === "undefined") {
             obj = previousView.obj;
         }
         
-        previousView.registry.render(el, obj, previousView.name,
-                                      callback, errback);
+        return previousView.registry.render(el, obj, previousView.name);
     };
     
     $.fn.view = function() {

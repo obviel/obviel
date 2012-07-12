@@ -196,8 +196,7 @@ obviel.forms = {};
             widget.disabled = true;
         }
 
-        fieldEl.render(widget, function() {
-            var view = this;
+        fieldEl.render(widget).done(function(view) {
             view.renderLabel();
             view.renderErrorArea();
             // now link everything up
@@ -725,7 +724,7 @@ obviel.forms = {};
             $.each(subWidget.ifaces, function(i, value) {
                 subEl.addClass(value);
             });
-            subEl.render(subWidget, function(el, view, widget, name) {
+            subEl.render(subWidget).done(function(view) {
                 view.renderErrorArea();
             });
             self.widgetViews.push(subEl.view());
@@ -829,7 +828,7 @@ obviel.forms = {};
             if (subWidget['class']) {
                 subEl.addClass(subWidget['class']);
             }
-            subEl.render(subWidget, function(el, view, widget, name) {
+            subEl.render(subWidget).done(function(view) {
                 view.renderLabel();
                 view.renderErrorArea();
             });
@@ -1488,12 +1487,13 @@ obviel.forms = {};
 
     module.ChoiceWidget.prototype = new module.Widget();
 
-    module.ChoiceWidget.prototype.render = function(el, widget, name) {
+    module.ChoiceWidget.prototype.render = function() {
+        var widget = this.obj;
         widget.validate = widget.validate || {};
         if (!widget.validate.required &&
             (widget.emptyOption === undefined) &&
             (widget.choices.length && widget.choices[0].value)) {
-            $('select', el).prepend('<option></option>');
+            $('select', this.el).prepend('<option></option>');
         }
     };
     

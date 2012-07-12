@@ -329,12 +329,11 @@ test('cleanup', function() {
         ifaces: 'another',
         render: renderText
     });
-    $('#viewdiv').render(
-        {text: 'bar', ifaces: ['cleanup']},
-        function() {
-            equal(this.el.text(), 'bar');
+    $('#viewdiv').render({text: 'bar', ifaces: ['cleanup']}).done(
+        function(view) {
+            equal(view.el.text(), 'bar');
             $('#viewdiv').render({text: 'foo', ifaces: ['another']});
-            equal(this.el.text(), 'foo');
+            equal(view.el.text(), 'foo');
             ok(cleanupCalled);
         });
 });
@@ -343,11 +342,10 @@ asyncTest('render url, default name', function() {
     obviel.view({
         render: renderText
     });
-    $('#viewdiv').render(
-        'fixtures/default.json', function() {
-            equal($('#viewdiv').text(), 'foo');
-            start();
-        });
+    $('#viewdiv').render('fixtures/default.json').done(function() {
+        equal($('#viewdiv').text(), 'foo');
+        start();
+    });
 });
 
 asyncTest('render url with name', function() {
@@ -356,11 +354,10 @@ asyncTest('render url with name', function() {
         name: 'foo'
     });
 
-    $('#viewdiv').render(
-        'fixtures/named.json', 'foo', function() {
-            equal($('#viewdiv').text(), 'bar');
-            start();
-        });
+    $('#viewdiv').render('fixtures/named.json', 'foo').done(function() {
+        equal($('#viewdiv').text(), 'bar');
+        start();
+    });
 });
 
 asyncTest('render url with iface', function() {
@@ -369,11 +366,10 @@ asyncTest('render url with iface', function() {
         iface: 'ifoo'
     });
 
-    $('#viewdiv').render(
-        'fixtures/interfaced.json',  function() {
-            equal($('#viewdiv').text(), 'baz');
-            start();
-        });
+    $('#viewdiv').render('fixtures/interfaced.json').done(function() {
+        equal($('#viewdiv').text(), 'baz');
+        start();
+    });
 });
 
 asyncTest('render url with name and iface', function() {
@@ -383,12 +379,11 @@ asyncTest('render url with name and iface', function() {
         name: 'foo'
     });
 
-    $('#viewdiv').render(
-        'fixtures/named_interfaced.json',  'foo',
-        function() {
-            equal($('#viewdiv').text(), 'qux');
-            start();
-        });
+    $('#viewdiv').render('fixtures/named_interfaced.json',
+                         'foo').done(function() {
+                             equal($('#viewdiv').text(), 'qux');
+                             start();
+                         });
 });
 
 asyncTest('rerender url', function() {
@@ -413,7 +408,7 @@ asyncTest('rerender url', function() {
     var el = $('#viewdiv');
     el.render('testUrl').done(function(view) {
         equal(view.el.text(), '1');
-        el.rerender(function() {
+        el.rerender().done(function(view) {
             // this should call the URL again
             equal(view.el.text(), '2');
             start();
@@ -517,7 +512,7 @@ asyncTest('render subviews', function() {
         subUrl: 'fixtures/default.json', // url
         subHtml: {text: 'bar'}, //  obj
         subNamed: {} // is registered by name foo
-    }, function() {
+    }).done(function() {
         equal($('#sub1', el).text(), 'foo');
         equal($('#sub2', el).text(), 'bar');
         equal($('#sub3', el).text(), 'named');
@@ -569,8 +564,7 @@ test('view with html', function() {
     });
 
     $('#viewdiv').render(
-        {ifaces: ['html']},
-        function() {
+        {ifaces: ['html']}).done(function() {
             equal(htmlLower($('#viewdiv').html()), '<div>foo!</div>');
             equal(renderCalled, 1);
         });
@@ -587,8 +581,7 @@ test('view with htmlScript', function() {
     });
 
     $('#viewdiv').render(
-        {ifaces: ['html']},
-        function() {
+        {ifaces: ['html']}).done(function() {
             equal(htmlLower($('#viewdiv').html()), '<div>foo!</div>');
             equal(renderCalled, 1);
         });
@@ -606,8 +599,7 @@ asyncTest('view with htmlUrl', function() {
     });
 
     $('#viewdiv').render(
-        {ifaces: ['html']},
-        function() {
+        {ifaces: ['html']}).done(function() {
             equal(htmlLower($('#viewdiv').html()), '<div>foo</div>');
             equal(renderCalled, 1);
             start();
@@ -626,12 +618,11 @@ asyncTest('html context attribute overrides htmlUrl view one', function() {
 
     $('#viewdiv').render(
         {ifaces: ['html'],
-         html: '<span>spam!</span>'},
-        function() {
-            equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
-            equal(renderCalled, 1);
-            start();
-        });
+         html: '<span>spam!</span>'}).done(function() {
+             equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+             equal(renderCalled, 1);
+             start();
+         });
 });
 
 asyncTest('html context attribute overrides html view one', function() {
@@ -646,12 +637,11 @@ asyncTest('html context attribute overrides html view one', function() {
 
     $('#viewdiv').render(
         {ifaces: ['html'],
-         html: '<span>spam!</span>'},
-        function() {
-            equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
-            equal(renderCalled, 1);
-            start();
-        });
+         html: '<span>spam!</span>'}).done(function() {
+             equal(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+             equal(renderCalled, 1);
+             start();
+         });
 });
 
 asyncTest('htmlUrl context attr overrides html view one', function() {
@@ -666,11 +656,10 @@ asyncTest('htmlUrl context attr overrides html view one', function() {
     $('#viewdiv').render(
         {ifaces: ['inlineHtml'],
          htmlUrl: 'fixtures/test1.html',
-         text: 'spam'},
-        function() {
-            equal(htmlLower($('#viewdiv').html()), '<div>foo</div>');
-            start();
-        });
+         text: 'spam'}).done(function() {
+             equal(htmlLower($('#viewdiv').html()), '<div>foo</div>');
+             start();
+         });
 });
 
 test('jsonScript view', function() {
@@ -685,8 +674,7 @@ test('jsonScript view', function() {
     equal(cache.get(cacheKey), null);
     
     $('#viewdiv').render(
-        {foo: 'the value', ifaces: ['jt']},
-        function(element, view, context) {
+        {foo: 'the value', ifaces: ['jt']}).done(function() {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
             ok(cache.get(cacheKey));
@@ -709,14 +697,12 @@ test('html inline view is not cached', function() {
     equal(cache.get(cacheKey), null);
     
     $('#viewdiv').render(
-        {foo: 'the value', ifaces: ['foo']},
-        function(element, view, context) {
+        {foo: 'the value', ifaces: ['foo']}).done(function() {
             equal($.trim($('#viewdiv .foo').text()), 'the value');
             // we can find it in the cache now
             equal(cache.get(cacheKey), null);
             start();
         });
-
 });
 
 asyncTest('jsont view', function() {
@@ -732,8 +718,7 @@ asyncTest('jsont view', function() {
 
           
     $('#viewdiv').render(
-        {foo: 'the value', ifaces: ['jt']},
-        function(element, view, context) {
+        {foo: 'the value', ifaces: ['jt']}).done(function() {
             equal($.trim($('#viewdiv').text()), 'the value');
             // we can find it in the cache now
             ok(cache.get(cacheKey));
@@ -1865,7 +1850,7 @@ test('render only completes when render method promise completes', function() {
         }
     });
     var called = false;
-    $('#viewdiv').render({iface: 'foo'}, function() {
+    $('#viewdiv').render({iface: 'foo'}).done(function() {
         called = true;
     });
 

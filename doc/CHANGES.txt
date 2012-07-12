@@ -47,6 +47,27 @@ CHANGES
     Replace regexp: \(\w\)_\(\w\)
     with:           \1\,(upcase \2)
 
+* Backwards compatibility: ``$(el).render(obj)`` now returns a jQuery
+  promise. This is a more modern alternative for the ``callback``
+  argument. To track whether a view is done rendering you can hook in
+  with ``.done``. The ``callback`` argument has been removed, breaking
+  backwards compatibility. You can rewrite::
+
+    $(el).render(obj, function() { this.el });
+
+  to this::
+
+    $(el).render(obj).done(function(view) { view.el });
+
+* Backwards compatibility: previously when you implemented ``render`` in
+  a view, it could optionally receive a number of arguments ``(el, obj, name,
+  callback, errback)``. ``callback`` and ``errback`` have been removed. 
+  ``el``, ``obj`` and ``name`` have been available already on ``this``,
+  and these are the preferred way to access them.
+
+  This change also affects the ``cleanup`` method; if you implement it, it
+  will not receive the ``el, obj, name`` arguments anymore.
+
 * Unfortunately ``<element>``, ``<attribute>`` and ``<block>`` did not
   work well in IE. Instead you can now use ``data-el``, ``data-attr``
   and ``data-unwrap`` on any DOM element.
@@ -109,10 +130,6 @@ CHANGES
   method.  If you do, subview rendering and view rendering completion
   waits until that promise is resolved.
   
-* ``$(el).render(obj)`` now returns a jQuery promise. This is a more
-  modern alternative for the ``callback`` argument. To track whether a
-  view is done rendering you can hook in with ``.done``.
-
 * When there is a CompilationError or RenderError in an Obviel
   template, log error on console detailing iface, template and xpath
   in template where error occurred.

@@ -109,7 +109,7 @@ Obviel core
 
   You can disable the transformer function by passing in ``null``.
 
-.. function:: element.render(obj[, name, callback, errback])
+.. function:: element.render(obj[, name])
 
   Render a view for an object on a jQuery element. This instantiates a
   view by cloning it from the registered view and then calls its
@@ -121,10 +121,9 @@ Obviel core
      the object to render.
   :param name: The name of the view to render for the object. If
      not supplied the name ``default`` will be used.
-  :param callback: A callback function to call when the rendering
-     has been completed. ``this`` will be the view instance
-     that was used for the rendering.
-  :param errback: currently not supported.
+  :returns: A promise. You can hook in a function to be called when
+     rendering has completed, such as 
+     ``$(el).render(obj).done(function(view) { });``
 
   All methods of the :class:`View` object will have access to the
   following properties on ``this`` during rendering:
@@ -133,16 +132,17 @@ Obviel core
 
   * ``obj``: the object being rendered.
 
-  * ``callback``: the callback function, if supplied.
-  
-  * ``errback``: the errback function, if supplied.
-
   * ``registry``: the :class:`Registry` in which the view was
      looked up.
 
-.. function:: element.rerender([callback, errback])
+.. function:: element.rerender()
 
   Re-render (non-ephemeral) view on element. 
+
+  :returns: A promise. You can hook in a function to be called when
+     rendering has completed, such as 
+     ``$(el).render(obj).done(function(view) { });``. ``view`` will
+     be ``null`` in case there was no view on this element to rerender.
 
   If there is a previous view on the element, and the view was rendered
   from an object, the object is re-rendered on the element.
