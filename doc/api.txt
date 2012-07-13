@@ -1258,7 +1258,7 @@ Everything is in the ``obviel.i18n`` namespace.
 
 .. function:: obviel.i18n.getLocale()
 
-  Returns the current locale.
+  Returns the current locale. This is ``null`` if no locale has been set.
 
 .. function:: obviel.i18n.getTranslation(msgid, domain)
 
