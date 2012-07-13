@@ -9,8 +9,12 @@ module("i18n", {
     teardown: function() {
         obviel.i18n.clearTranslations();
         obviel.i18n.clearLocale();
+        $.mockjaxClear();
     }
 });
+
+$.mockjaxSettings.responseTime = 0;
+$.mockjaxSettings.dataType = 'json';
 
 var i18n = obviel.i18n;
 
@@ -335,6 +339,36 @@ asyncTest("load i18n", function() {
         i18n.setLocale('nl_NL').done(function() {
             var _ = i18n.translate('i18ntest');
             equal(_('greetings human!'), 'gegroet mens!');
+            start();
+        });
+    });
+});
+
+asyncTest("load multiple domains from url", function() {
+    $.mockjax({
+        url: 'a.json',
+        dataType: 'json',
+        responseText: {'a': [null, 'A']}
+    });
+    $.mockjax({
+        url: 'b.json',
+        dataType: 'json',
+        responseText: {'b': [null, 'B']}
+    });
+    $.mockjax({
+        url: 'test.i18n',
+        dataType: 'json',
+        responseText: {'first': [{'locale': "en_US", url: 'a.json'}],
+                       'second': [{'locale': "en_US", url: 'b.json'}]}
+    });
+    i18n.loadI18nFromUrl('test.i18n').done(function() {
+        i18n.setLocale('en_US').done(function() {
+            var _ = i18n.translate('first');
+            equal(_('a'), 'A');
+            equal(_('b'), 'b');
+            _ = i18n.translate('second');
+            equal(_('a'), 'a');
+            equal(_('b'), 'B');
             start();
         });
     });

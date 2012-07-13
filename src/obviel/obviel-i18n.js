@@ -39,16 +39,11 @@ obviel.i18n = {};
     
     module.translationSourceFromJsonUrl = function(url) {
         return function() {
-            var defer = $.Deferred();
-            $.ajax({
+            return $.ajax({
                 type: 'GET',
                 url: url,
-                dataType: 'json',
-                success: function(obj) {
-                    defer.resolve(obj);
-                }
+                dataType: 'json'
             });
-            return defer.promise();
         };
     };
     
@@ -96,6 +91,13 @@ obviel.i18n = {};
         currentLocale = null;
         templateDomain = 'default';
     };
+
+    // needs to be separate function to make closure over domain work
+    var loadDomain = function(source, localeData, domain) {
+        return source().done(function(translationData) {
+            localeData[domain] = translationData;
+        });
+    };
     
     module.setLocale = function(locale) {
         var defer;
@@ -108,8 +110,6 @@ obviel.i18n = {};
         currentLocale = locale;
         
         var localeData = {};
-
-        var promise;
         var promises = [];
         for (d in domains) {
             var translations = domains[d];
@@ -117,12 +117,7 @@ obviel.i18n = {};
             if (translationSource === undefined) {
                 throw new module.I18nError("Unknown locale: " + locale);
             }
-            // XXX use deferred for async loading?
-            promise = translationSource();
-            promise.done(function(translationData) {
-                localeData[d] = translationData;
-            });
-            promises.push(promise);
+            promises.push(loadDomain(translationSource, localeData, d));
         }
         // set up default domain if it's not set up otherwise
         // this is to avoid the situation where Gettext cannot find
@@ -130,16 +125,14 @@ obviel.i18n = {};
         if (domains['default'] === undefined) {
             localeData['default'] = makeEmptyTranslation();
         }
-        var subviewsDefer = $.when.apply(null, promises);
-        subviewsDefer.done(function() {
+        return $.when.apply(null, promises).done(function() {
             // XXX really convince Gettext to forget about previous data
             Gettext._locale_data = undefined;
             // just pick a random domain to pass into gettext; we don't
             /// use this feature anyway
             currentGt = new Gettext({domain: d,
-                                      locale_data: localeData});
+                                     locale_data: localeData});
         });
-        return subviewsDefer.promise();
     };
 
     module.getLocale = function() {
@@ -180,15 +173,13 @@ obviel.i18n = {};
         };
     };
     
-
     module.pluralize = function(domain) {
         if (domain === undefined) {
             domain = 'default';
         }
         return module.getPluralTranslationFunc(domain);
     };
-
-
+    
     // this won't work for urls ending in /, but luckily we
     // shouldn't get those because we refer to a .i18n file with baseUrl
     var joinRelativeUrl = function(baseUrl, relUrl) {
@@ -200,14 +191,13 @@ obviel.i18n = {};
         baseUrl = baseUrl.slice(0, i);
         return baseUrl + '/' + relUrl;
     };
-
-    module.loadI18n = function(url) {
-        var defer = $.ajax({
+    
+    module.loadI18nFromUrl = function(url) {
+        return $.ajax({
             type: 'GET',
             url: url,
             dataType: 'json'
-        });
-        defer.done(function(domains) {
+        }).done(function(domains) {
             var sourceUrl, source;
             for (var domain in domains) {
                 var entries = domains[domain];
@@ -223,21 +213,18 @@ obviel.i18n = {};
                     module.registerTranslation(entry.locale, source, domain);
                 }
             }
-        });
-        defer.fail(function(jqXHR, textStatus) {
+        }).fail(function(jqXHR, textStatus) {
             console.log("Request failed: " + textStatus);
         });
-        return defer.promise();
     };
     
     module.load = function() {
         var promises = [];
         $('head link[rel="i18n"]').each(function() {
             var url = $(this).attr('href');
-            promises.push(module.loadI18n(url));
+            promises.push(module.loadI18nFromUrl(url));
         });
-        var defer = $.when.apply(null, promises);
-        return defer.promise();
+        return $.when.apply(null, promises);
     };
     
     // alias
