@@ -128,9 +128,7 @@ obviel.i18n = {};
         return $.when.apply(null, promises).done(function() {
             // XXX really convince Gettext to forget about previous data
             Gettext._locale_data = undefined;
-            // just pick a random domain to pass into gettext; we don't
-            /// use this feature anyway
-            currentGt = new Gettext({domain: d,
+            currentGt = new Gettext({domain: 'default',
                                      locale_data: localeData});
         });
     };
