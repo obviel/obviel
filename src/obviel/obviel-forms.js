@@ -1060,11 +1060,7 @@ obviel.forms = {};
             iface: 'inputField',
             obvt:
                 '<div class="obviel-field-input">' +
-                '<div data-el="input" type="text" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
-                '<div data-if="width" data-attr="style" data-value="width: {width}em;" />' +
-                '<div data-if="validate.maxLength" data-attr="maxLength" data-value="validate.maxLength" />' +
-                '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
-                '</div>' +
+                '<input type="text" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
                 '</div>'
         };
         $.extend(d, settings);
@@ -1073,6 +1069,18 @@ obviel.forms = {};
 
     module.InputWidget.prototype = new module.Widget();
 
+    module.InputWidget.prototype.attributes = function(el, variable) {
+        if (variable('width')) {
+            el.css('width', variable('width') + 'em');
+        }
+        if (variable('validate.maxLength')) {
+            el.attr('maxlength', variable('validate.maxLength'));
+        }
+        if (variable('disabled')) {
+            el.attr('disabled', variable('disabled'));
+        }
+    };
+    
     module.InputWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
@@ -1164,11 +1172,7 @@ obviel.forms = {};
             iface: 'textField',
             obvt:
             '<div class="obviel-field-input">' +
-            '<div data-el="textarea" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
-            '<div data-if="width" data-attr="style" data-value="width: {width}em;" />' +
-            '<div data-if="height" data-attr="style" data-value="height: {height}em;" />' +
-            '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
-            '</div>' +
+            '<textarea data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '</div>'
         };
         $.extend(d, settings);
@@ -1178,6 +1182,13 @@ obviel.forms = {};
     module.TextWidget.prototype = new module.TextLineWidget();
     obviel.view(new module.TextWidget());
     
+    module.TextWidget.prototype.attributes = function(el, variable) {
+        module.TextLineWidget.prototype.attributes.call(this, el, variable);
+        if (variable('height')) {
+            el.css('height', variable('height') + 'em');
+        }        
+    };
+
     obviel.iface('integerField', 'inputField');
     module.IntegerWidget = function(settings) {
         settings = settings || {};
@@ -1189,7 +1200,7 @@ obviel.forms = {};
     };
 
     module.IntegerWidget.prototype = new module.InputWidget();
-
+    
     module.IntegerWidget.prototype.convert = function(value) {
         if (value === '') {
             return {value: null};
@@ -1440,9 +1451,7 @@ obviel.forms = {};
             iface: 'booleanField',
             obvt:
             '<div class="obviel-field-input"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="labelBeforeInput">{label}</div></div>' +
-            '<div data-el="input" type="checkbox" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
-            '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +    
-            '</div>' +
+            '<input type="checkbox" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '<div data-unwrap="" data-if="label"><div unwrap="" data-if="!labelBeforeInput">{label}</div></div>' +
             '</div>'
         };
@@ -1451,6 +1460,12 @@ obviel.forms = {};
     };
 
     module.BooleanWidget.prototype = new module.Widget();
+    
+    module.BooleanWidget.prototype.attributes = function(el, variable) {
+        if (variable('disabled')) {
+            el.attr('disabled', variable('disabled'));
+        }
+    };
 
     module.BooleanWidget.prototype.convert = function(value, source, target) {
         return {value:$(source).is(':checked')};
@@ -1474,9 +1489,7 @@ obviel.forms = {};
             // and value rendering
             obvt:
             '<div class="obviel-field-input">' +
-            '<select name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
-            '<div data-if="width" data-attr="style" data-name="style" data-value="width: {width}em;" />' +
-            '<div data-if="disabled" data-attr="disabled" data-value="disabled" />' +
+            '<select data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<option data-if="emptyOption" value="">{emptyOption}</option>' +
             '<option data-each="choices" value="{value}">{label}</option>' +
             '</select>'
@@ -1486,6 +1499,15 @@ obviel.forms = {};
     };
 
     module.ChoiceWidget.prototype = new module.Widget();
+
+    module.ChoiceWidget.prototype.attributes = function(el, variable) {
+        if (variable('width')) {
+            el.css('width', variable('width') + 'em');
+        }
+        if (variable('disabled')) {
+            el.attr('disabled', variable('disabled'));
+        }
+    };
 
     module.ChoiceWidget.prototype.render = function() {
         var widget = this.obj;

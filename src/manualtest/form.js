@@ -25,6 +25,13 @@
                         title: 'B'
                     },
                     {
+                        ifaces: ['textField'],
+                        name: 'txt',
+                        title: 'TXT',
+                        height: 10,
+                        width: 20
+                    },
+                    {
                         ifaces: ['choiceField'],
                         name: 'c',
                         title: 'C',
