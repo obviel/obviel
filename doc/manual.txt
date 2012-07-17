@@ -96,6 +96,8 @@ We'll go into what you can put in for ``someSelector`` and
 
 .. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
 
+.. _unobtrusive:
+
 Rendering a view
 ----------------
 
@@ -194,6 +196,8 @@ The steps taken are:
   manipulating the DOM using jQuery, as we do here to set the text of
   the div.
 
+.. _loose_coupling:
+
 View lookup
 -----------
 
@@ -218,11 +222,11 @@ View lookup
   It is an error however to supply a model object with both an ``iface`` *and*
   an ``ifaces`` property.
 
-Dynamic view lookup is what allows loose coupling between client and
-server. The primary mechanism of lookup is by the ``iface`` marker on
-the model. A model can declare with an iface what kind of model it is,
-and this way a view can declare what kind of model it is associated
-with.
+Dynamic view lookup is what allows loose coupling in Obviel
+applications.  The primary mechanism of lookup is by the ``iface``
+marker on the model. A model can declare with an iface what kind of
+model it is, and this way a view can declare what kind of model it is
+associated with.
 
 An ``iface`` is in essence just a string marker::
 
@@ -694,6 +698,8 @@ it again, but using Obviel Template instead of JavaScript code::
 
 As you can see, that has cleaned up the code a lot!
  
+.. _hyperlinks:
+
 Obviel and hyperlinks
 ---------------------
 

@@ -1,0 +1,77 @@
+{% extends "basic/layout.html" %}
+{% set script_files = script_files + ['_static/bootstrap-css-tweaks.js'] %}
+{% set css_files = ['_static/css/bootstrap.css', '_static/bootstrap-sphinx.css'] + css_files %}
+
+
+{%- block extrahead %}
+{% endblock %}
+
+{% block header %}
+  <div class="navbar navbar-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        {% if theme_logo_icon %}
+        <a class="logo-icon pull-left" href="{{ pathto(master_doc) }}"><img src="{{theme_logo_icon}}" alt="{{ project|e }}" /></a>
+        {% endif %}
+        <a class="brand" href="{{ pathto(master_doc) }}">{{ project|e }}{% if theme_show_version %}<span class="version"> v{{release}}</span>{% endif %}</a>
+        {% include "navbar-nav.html" ignore missing %}
+        {% block sidebarsearch %}
+          {% include "searchbox.html" %}
+        {% endblock %}
+
+       <ul class="nav">
+         <li><a href="documentation.html">Documentation</a></li>
+         <li><a href="api.html">API</a></li>
+         <li><a href="community.html">Community</a></li>
+         <li><a href="development.html">Contribute</a></li>
+         <li><a href="https://bitbucket.org/obviel/obviel/downloads">Download</a></li>
+       </ul>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{# Silence the sidebar's, relbar's #}
+{% block sidebar1 %}{% endblock %}
+{% block relbar1 %}{% endblock %}
+{% block relbar2 %}{% endblock %}
+
+{%- block content %}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span12">
+      <div class="content">
+       {% block body %} {% endblock %}
+      </div>
+    </div>
+  </div> <!-- / row -->
+</div>
+{%- endblock %}
+
+{%- block footer %}
+
+<footer>
+  <div class="inner">
+    <div class="container-fluid">
+      {% include "footer.html" %}
+    </div>
+  </div>
+</footer>
+
+
+{% if theme_google_analytics_id %}
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '{{ theme_google_analytics_id }}']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+{% endif %}
+{%- endblock %}
+

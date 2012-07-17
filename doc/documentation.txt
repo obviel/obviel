@@ -1,0 +1,35 @@
+Obviel Documentation
+====================
+
+Want to learn Obviel or just look something up? Obviel has extensive
+documentation:
+
+* :doc:`Obviel core manual <manual>`. Learn about how to create views and
+  render them.
+
+* :doc:`Obviel Templates <template>`. Some things are verbose in JavaScript and
+  for that we want to use templates. Obviel's template language integrates
+  with Obviel core.
+
+* :doc:`i18n support <i18n>`. Obviel offers an extensive i18n system
+  for client-side JavaScript applications.
+
+* :doc:`i18n in Obviel Templates <template_i18n>`. How to mark up
+  your templates so that they play nice with the i18n system.
+
+* :doc:`Obviel Forms <form>`. Obviel's form library constructs forms for
+  you and also does client-side validation. The form loads and submits
+  data as JSON.
+
+* :doc:`the Traject routing library <traject>`. Route to objects and construct
+  paths for objects using this routing library. This lets you integrate
+  browser bookmarking and history into your single-page web application.
+
+* :doc:`Fanstatic integration <integration>`. If you use Fanstatic_ to 
+  publish your JavaScript resources to the web, we have support.
+
+* :doc:`API documentation <api>`.
+
+* :doc:`demo code <demo>` will help!
+
+.. _Fanstatic: http://fanstatic.org

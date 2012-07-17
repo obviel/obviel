@@ -1,107 +1,115 @@
-Obviel: Object/View/Element for JavaScript
-==========================================
+.. raw:: html
 
-Obviel is a model/view abstraction for JavaScript that helps you
-improve the structure of your jQuery-based JavaScript applications.
+  <div class="hero-unit">
+     <div class="center"><h1>Obviel</h1></div>
+     <div class="center"><p>Object/View/Element for jQuery</p></div>
+     <div class="center">
+       <a class="btn btn-primary btn-large" href="documentation.html">Learn more</a>
+       <span class="spacer"></span>
+       <a class="btn btn-primary btn-large" href="https://bitbucket.org/obviel/obviel/downloads">Download</a>
+     </div>
+  </div>
 
-What is Obviel all about?
+What is Obviel?
+===============
 
-JSON-centric
-------------
+Obviel is a client-side web framework for jQuery. For a JavaScript
+*object* you render a *view* on an *element*: **Ob-vi-el**. Obviel
+supports the construction of dynamic, rich client-side web
+applications.
 
-Obviel builds on JSON. Could be plain JavaScript objects on the
-client. The objects could also be coming from a server. Without
-insanely nested callback functions everywhere!
-
-Versatile but unobtrustive
---------------------------
-
-Obviel is powerful. Obviel is also small. If you already know jQuery,
-you just have to learn about Obviel's ``render`` method and you will
-be almost there already!
-
-Supports true REST development patterns
----------------------------------------
-
-We don't just say that REST is cool and go through the motions. An
-Obviel-based app can start with a single URL and find out about the
-rest of your application's URLs by following hyperlinks in JSON. And
-that's RESTful.
-
-Loose coupling between client code and server code
---------------------------------------------------
-
-Because of REST, your server and client code become loosely
-coupled. Imagine changing your server code and having your client UI
-adjust itself without changing a line on the client? With a
-well-designed Obviel app, this is often possible!
+Obviel's :doc:`core <manual>` is a model/view abstraction that helps
+you improve the structure of your jQuery-based JavaScript
+applications. On top of that Obviel adds a lot of features, such as
+templating, i18n support, form generation and validation, and
+routing. Obviel stays close to HTML but lets you build sophisticated
+components when you need it.
 
 Client-side templating
 ----------------------
 
-If you're going to build a rich client-side application, why not use a
-client-side templating engine? Obviel has an integrated (but optional)
-template language that features sub-view rendering and i18n support.
+Obviel has a :doc:`client-side templating language <template>`
+built-in. This template language has easy-to-use but extensive
+:doc:`i18n support <template_i18n>` so you can offer your web
+application in multiple languages. It also integrates well with Obviel
+core, supporting sub-view rendering and easy event handlers.
 
-Internationalization support
-----------------------------
+Internationalization support (i18n)
+-----------------------------------
 
-It should be possible to create a single Web UI for multiple
-languages. Obviel has powerful gettext-based internationalization
-(i18n) support for both JavaScript (using jsgettext) and templates.
+Obviel lets you create a web UI that supports more than one
+language. It uses :doc:`a standard gettext-based approach for i18n
+<i18n>`. Obviel comes with a server-side toolchain that can be used to
+extract translatable text from both JavaScript code as well as
+templates, and to prepare translations for publication on the web.
 
 Form library
 ------------
 
-Besides Obviel core, we also include a powerful client-side form
-library based on Obviel core. Describe your form using JSON
-structures. Get your form data as JSON. Use composite and repeating
-fields with ease!
+Obviel comes with a powerful client-side :doc:`form library
+<form>`. Describe your form using JSON structures, either on the
+client or on the server. Get and post your form data as JSON. Use
+composite and repeating fields with ease!
 
 Routing with Traject
 --------------------
 
-Obviel also contains an easy to use but powerful routing library
-called Traject, which can be used to resolve paths to objects and the
-inverse: construct paths for objects. With Traject you can make
-dynamic single-page user interfaces that work with hyperlinks and the
-browser back button.
+Obviel contains an easy to use but powerful :doc:`routing library
+<traject>` called Traject, which can be used both to resolve paths to
+objects as well as construct paths for objects. With Traject you can
+construct dynamic single-page user interfaces that work with
+hyperlinks and the browser back button.
+
+Versatile but unobtrustive
+--------------------------
+
+Obviel is powerful. Obviel is also :ref:`unobtrusive
+<unobtrusive>`. You only need to learn a small, powerful core API to
+unlock the power of Obviel. Obviel puts minimal demands on your
+JavaScript objects. They can be plain JavaScript objects on the
+client. The objects could also be coming from a web server.
+
+RESTful
+-------
+
+Obviel doesn't just say REST is cool and then go through the motions.
+An Obviel-based app can start with a single URL and find out about the
+rest of your application's URLs by following :ref:`hyperlinks
+<hyperlinks>` in objects. You can also swap between hyperlink and
+sub-object transparently. And that's RESTful.
+
+Loose coupling
+--------------
+
+Obviel lets you build dynamic, :ref:`loosely coupled <loose_coupling>`
+web applications. Your JavaScript code will be partitioned into small,
+loosely coupled cooperating components. Obviel also supports loose
+coupling between the web server and the client application. You can
+change your server code and your client UI will adjust itself without
+changing a line of JavaScript. You can also modify JavaScript code
+without worrying too much about the server.
 
 Learning more
 -------------
 
-Obviel has extensive documentation.
+Look at :doc:`demo code <demo>`.
 
-Look at a quick overview of :doc:`Obviel features <features>`
+Read the :doc:`Obviel documentation <documentation>`.
 
-Read the :doc:`Obviel core manual <manual>`.
-
-Read about :doc:`Obviel Templates <template>`.
-
-Read about :doc:`Obviel Forms <form>`.
-
-Read about :doc:`the Traject routing library <traject>`.
-
-You have a project and now you want to internationalize it (i18n). Obviel
-has extensive :doc:`i18n support <i18n>`.
-
-We also have :doc:`API documentation <api>`.
-
-Confused? Maybe :doc:`demo code <demo>` will help!
-
-We offer some :doc:`integration <integration>` with external systems.
+Check out the :doc:`Obviel API <api>`.
 
 Questions? Comments? Join the :doc:`Obviel community <community>`!
 
-Want to hack on Obviel? Here are some useful :doc:`notes on
-development <development>`.
+Want to contribute to Obviel? Read our :doc:`notes on development
+<development>`.
 
-Review the :doc:`table of contents <toc>`.
+Review the :doc:`table of contents <toc>` of this site.
 
 Download Obviel
 ---------------
 
-`Download`_ Obviel! See also the :doc:`changelog <CHANGES>`.
+`Download`_ Obviel. See the :doc:`changelog <CHANGES>` for what's new!
 
 .. _`Download`: http://bitbucket.org/obviel/obviel/downloads
+
 
