@@ -1091,10 +1091,10 @@ obviel.template = {};
                     "could not be found");
         }
         var type = $.type(obj);
-        if (type !== 'object') {
+        if (type !== 'object' && type !== 'string') {
             throw new module.RenderError(
                 el,
-                "data-view must point to an object, not to " + type);
+                "data-view must point to an object or string (URL), not to " + type);
         }
         
         // empty element

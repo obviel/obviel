@@ -11,8 +11,12 @@ module("Template", {
         obviel.template.clearFuncs();
         obviel.clearRegistry();
         obviel.template.setDefaultViewName('default');
+        $.mockjaxClear();
     }
 });
+
+$.mockjaxSettings.responseTime = 0;
+$.mockjaxSettings.dataType = 'json';
 
 var obtemp = obviel.template;
 
@@ -1344,6 +1348,29 @@ test('data-view by itself', function() {
           '<div><p>Bob</p></div>');
 });
 
+asyncTest('data-view to url instead of obj', function() {
+    obviel.view({
+        iface: 'person',
+        render: function() {
+            this.el.append('<p>' + this.obj.name + '</p>');
+        }
+    });
+
+    $.mockjax({
+        url: 'bob_url',
+        responseText: {iface: 'person', name: 'Bob'}
+    });
+
+    var template = new obtemp.Template('<div data-view="bob"></div>');
+    var el = $("<div></div>");
+    
+    template.render(el,  {bob: 'bob_url'}).done(function() {
+        htmlEqual(el.html(), '<div><p>Bob</p></div>');
+        start();
+    });
+    
+});
+
 test('data-view with named view', function() {
     obviel.view({
         iface: 'person',
@@ -1391,7 +1418,7 @@ test('data-view empties element', function() {
 
 });
 
-test('data-view must point to object', function() {
+test('data-view must point to object or string', function() {
     obviel.view({
         iface: 'person',
         render: function() {
@@ -1400,7 +1427,7 @@ test('data-view must point to object', function() {
     });
 
     raises(function() {
-        render('<div data-view="bob"></div>', {bob: 'notAnObject'});
+        render('<div data-view="bob"></div>', {bob: 1});
     }, obtemp.RenderError); 
 });
 

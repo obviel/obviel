@@ -159,6 +159,8 @@ CHANGES
   consistency with the other modules. It can still be used
   stand-alone, however.
 
+* Fixed a bug where data-view could not be used with URLs.
+
 1.0b (2012-05-31)
 =================
 
