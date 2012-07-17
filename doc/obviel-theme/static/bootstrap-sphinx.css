@@ -88,6 +88,10 @@ pre {
     width: 6em;
 }
 
+.navbar {
+   margin-bottom: 0px;
+}
+
 /* hero unit stand-out */
 .hero-unit .btn-large {
     font-family: Helvetica;
@@ -107,16 +111,3 @@ pre {
     font-size: 30px;
 }
 
-/* make links to anchors scroll into the header properly 
-
-http://dustinfarris.com/2012/2/in-page-links-and-fixed-header-overlap/
-
-http://nicolasgallagher.com/jump-links-and-viewport-positioning/
-
-*/
-/* a.headerlink { */
-/*     display: block; */
-/*     height: 200px; */
-/*     margin-top: -200px; */
-/*   /\*  visibility: hidden; *\/ */
-/* } */
