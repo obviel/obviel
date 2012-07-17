@@ -103,8 +103,6 @@ Questions? Comments? Join the :doc:`Obviel community <community>`!
 Want to contribute to Obviel? Read our :doc:`notes on development
 <development>`.
 
-Review the :doc:`table of contents <toc>` of this site.
-
 Download Obviel
 ---------------
 
