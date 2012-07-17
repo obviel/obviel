@@ -567,8 +567,9 @@ rendering takes place, for instance when the page has just been loaded. Note
 that this does *not* alter the default view name of Obviel itself when
 you use ``el.render(obj)``; this will remain ``default``.
 
-``data-view`` must point to an object. It cannot point to an array or
-other value.
+``data-view`` must point to an object or a string. A string is
+interpreted as a URL and is loaded as JSON. It cannot point to an
+array or other value.
 
 Formatters
 ----------
