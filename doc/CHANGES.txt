@@ -9,7 +9,7 @@ CHANGES
   follow JavaScript conventions. This means your previous Obviel code
   will break. In particular:
 
-  * ``html_url, ``jsont_url`` and ``obvt_url`` are now ``htmlUrl``,
+  * ``html_url``, ``jsont_url`` and ``obvt_url`` are now ``htmlUrl``,
     ``jsontUrl`` and ``obvtUrl``.
 
   * ``object_events`` becomes ``objectEvents``.
