@@ -33,3 +33,22 @@ documentation:
 * :doc:`demo code <demo>` will help!
 
 .. _Fanstatic: http://fanstatic.org
+
+Here is a full table of contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   features
+   manual
+   template
+   template_i18n
+   i18n
+   form
+   traject
+   api
+   demo
+   community
+   integration
+   development
+   CHANGES
