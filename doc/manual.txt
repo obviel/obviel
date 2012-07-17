@@ -1,5 +1,7 @@
-Obviel: Object/View/Element for jQuery
-======================================
+Obviel core: Object/View/Element for jQuery
+===========================================
+
+.. contents:: Table of Contents
 
 Introduction
 ------------
@@ -8,40 +10,37 @@ So Obviel promises a better structure for your JavaScript
 applications.
 
 What does Obviel really *do*? Obviel lets you associate *views* with
-JavaScript objects and DOM elements. You are the one who creates the
-views, and you will find that you can decompose much of your
-JavaScript application into views.
+JavaScript objects and DOM elements. You decompose your application
+into loosely coupled views. The view's task is to render the object on
+an element into the browser DOM. To do this, a view will contain a
+template or some JavaScript code, or both. This interplay of *object*,
+*view* and *element* is central to Obviel. It also inspires its name,
+*Ob*-*vi*-*el*.
 
-In the view definition, you write JavaScript code that can render the
-information in the JSON object into the browser DOM. This interplay of
-*object*, *view* and *element* is central to Obviel. It also inspires
-its name, *Ob*-*vi*-*el*.
+To write an application that uses Obviel you have to do the
+following:
 
-What does Obviel ask you to do?
+* you add simple type information to the JSON *objects* that you want
+  to render with views on the client. This is done using the *iface*
+  property. We also call such JSON objects *model*. You can add the
+  iface to JSON objects being sent from the server, or you can add it
+  on the client.
 
-* you must, typically on the server side, add simple type information
-  to the JSON *objects* that you want to render with views on the
-  client.  This is done using the *ifaces* property. We also call such
-  JSON objects *model*.
-
-* you must, on the client side, define *views* that know how to render
-  the different JSON objects your server can send back.
-
-* you hook up the views to the JSON objects using the iface.
+* you define *views* that know how to render objects of each type of
+  object. You do this by hooking the view to an iface as well.
 
 * you can then render a view for an object on a DOM *element* by using
-  a special ``render`` extension Obviel adds to jQuery.
+  a special ``render`` function that Obviel adds to jQuery.
 
-All this is pretty dense, so we'll go into much more detail about this
-now.
+All this is pretty abstract, so let's go into some more detail to try
+to make it more clear.
 
 How to include Obviel on your web page
 --------------------------------------
 
 First you need to know how to include Obviel on a web page. You need
 to make sure that ``src/obviel.js`` is published somewhere on your web
-server. You also need jQuery_, and optionally (but recommended!)
-``src/obviel-template.js``.
+server. You also need jQuery_, and ``src/obviel-template.js``.
 
 .. _jQuery: http://jquery.com/
 
@@ -62,8 +61,8 @@ you need to include it:
 
   Obviel Template is only supported on IE 8 and above. To use Obviel Template,
   you need to tell it to use the JavaScript version of IE 8 or above, otherwise
-  some features are not supported. You do this by including this on your
-  web page:
+  some features are not supported. You do this by including this in the HTML
+  of your web page:
   
   .. code-block:: html
 
@@ -80,46 +79,49 @@ Finally, you need to include Obviel core itself:
 
 Obviel is now available as ``obviel`` in your JavaScript code.
 
-Here is a suggestion on how to structure your code, using the
-`JavaScript module pattern`_ (global import)::
+Now that you have Obviel, you can write a `JavaScript module`_ that
+uses it::
 
   (function($, obviel) {
      // .. views are defined here ..
 
      $(document).ready(function() {
-       $(someSelector).render(someObjectOrUrl);
+       $(<some_selector>).render(<some_object_or_url>);
      });
   })(jQuery, obviel);
 
-We'll go into what you can put in for ``someSelector`` and
-``someObjectOrUrl`` below.
+How do you define views? What does that ``render`` call mean? We'll
+describe that next.
 
-.. _`JavaScript module pattern`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
+.. _`JavaScript module`: http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
 
 .. _unobtrusive:
 
 Rendering a view
 ----------------
 
-Now that we have Obviel available, we'll start with the last bit
-first: how do we actually render a *view* for an *object* on an
-*element*?
+Now that we have Obviel available, how do we actually render a *view*
+for an *object* on an *element*?
 
-A view is a JavaScript component that can *render* an object into an
-element in the browser DOM tree. This is done using by calling the
-function render on the result of a JQuery selector::
+A view is a component that can *render* an object into an element in
+the browser DOM tree. This is done using by calling the function
+render on the result of a JQuery selector::
 
   $('#foo').render(model);
 
 If you have Obviel installed, this ``render`` function will be
 available. Since the DOM needs to be available when you start
-rendering your views, you need to do your view rendering in the
-``$(document).ready`` callback, or in code that gets called as a
-result of the first view rendering.
+rendering your views, you need to bootstrap rendering in the
+``$(document).ready`` callback. Most of the view rendering will be
+done by other views: your application view will render some views
+which render other views, etc.
 
-So what does this ``render`` call do? It will look up a view for the
-JavaScript object ``model`` and then ask that view to render the model
-on the element indicated by the jQuery selector ``#foo``.
+So what does this ``render`` call do? Two things:
+
+* It will look up a view for the object ``model``
+
+* It will ask that view to render the model on the element indicated
+  by the jQuery selector ``#foo``.
 
 Typically you would use selectors that only match a single element,
 but if you use a selector that matches more than one element, view
@@ -127,25 +129,30 @@ lookup is performed multiple times, once for each matching element.
 
 Now let's look at the pieces in more detail.
 
-What is model? It's just a JavaScript object with one special
-property: ``ifaces``::
+What is model?
+~~~~~~~~~~~~~~
+
+A model is just a JavaScript object with one special property:
+``iface`` (or ``ifaces``)::
 
   var model = {
-    ifaces: ['example'],
+    iface: 'example',
     name: 'World'
   };
 
-Typically with Obviel models are JavaScript objects generated as JSON
-on the server, but you could basically use any JavaScript object, as
-long as it provides an *ifaces* property. The ``ifaces`` property lets
-models declare what type they have.
+What creates these model objects? You could create them in JavaScript on
+the client, or you could create them in the server and send them to the
+client as JSON. The only thing that matters is that it has an ``iface``
+property so it can declare its type.
 
-As you can see, ``ifaces`` is a list of strings; each string
-identifies an iface that this object declares -- typically only one is
-enough. 
+As you can see, the ``iface`` property just a string. The string
+identifies the iface of this object.
 
-What is a view? It's a special JavaScript object registered with
-Obviel that at minimum says how to render a model on an element::
+What is a view?
+~~~~~~~~~~~~~~~
+
+A view is a special JavaScript object that says how to render a model
+on an element::
 
   obviel.view({
      iface: 'example',
@@ -157,94 +164,100 @@ Obviel that at minimum says how to render a model on an element::
 You see how ``iface`` comes in again: this view knows how to render
 objects of iface ``example``.
 
-So imagine we have the following HTML in the browser DOM:
+So if we have the following HTML:
 
 .. code-block:: html
 
   <div id="foo"></div>
 
-What happens when you invoke the following?
+We can invoke the following:
 
 .. code-block:: javascript
 
   $('#foo').render(model);
 
-The DOM will be changed so it reads this:
+And the DOM will be changed to this:
 
 .. code-block:: html
 
   <div id="foo">Hello World!</div>
 
-So, it has rendered ``"Hello World!"``, where ``World`` comes from the
-``name`` property of the model object being rendered.
+The view has rendered ``"Hello World!"`` on element ``#foo``, where
+``World`` comes from the ``name`` property of the model object being
+rendered.
 
-The steps taken are:
+What just happened?
+~~~~~~~~~~~~~~~~~~~
 
-* Obviel looks at the ``ifaces`` property of the model being
-  rendered, in this case ``[`example`]``.
+The steps taken by Obviel are:
 
-* Obviel looks up the view registered for the iface ``example`` in its
-  view registry.
+* Obviel looks at the ``iface`` property of the model being rendered,
+  in this case `example``.
 
-* Obviel creates a clone of the registered view object from this view
-  that has as its ``el`` property the element being rendered on, and
-  ``obj`` property the object being rendered.
+* Obviel looks up the view registered for the iface ``example``.
 
-* call the ``render`` method on the view.
+* Obviel sets the `el`` property of the view to the element that the
+  view is being rendered on, and ``obj`` property to the object being
+  rendered.
 
-* the ``render`` method then does whatever it wants, in particular
-  manipulating the DOM using jQuery, as we do here to set the text of
-  the div.
+* Obviel call the ``render`` method on the view.
+
+What the ``render`` object does is up to you, but typically you'd
+manipulate the DOM in some way using jQuery like in the example above.
+
+Why is view lookup useful? Loose coupling.
 
 .. _loose_coupling:
 
-View lookup
------------
+Loose coupling
+--------------
 
-.. sidebar:: ifaces versus iface on the model
+.. sidebar:: iface versus ifaces on the model
 
-  In our examples, the model property name is ``ifaces`` and an array,
-  while the view property name is ``iface`` and a string. The idea is that a model
-  may have more descriptions of what the data is, but a view only
-  knows how to render one type of data. 
+  In our examples, the model property name is ``iface`` and a
+  string. It is possible however for a model to declare multiple
+  ifaces. You can do this by using the ``ifaces`` instead and setting
+  it to an array of strings.
 
-  In most cases however your models will only have a single iface. It
-  can be cumbersome or error prone to always have to remember to use
-  ``ifaces`` and an array for models. So Obviel understands a few
-  alternatives:
-
-  * give your model object a single ``iface`` property with the iface
-    as a string.
-
-  * continue to use ``ifaces`` as the property name but use a string,
-    not an array, to assign a single iface.
-
-  It is an error however to supply a model object with both an ``iface`` *and*
+  It is an error to supply a model object with both an ``iface`` *and*
   an ``ifaces`` property.
 
-Dynamic view lookup is what allows loose coupling in Obviel
-applications.  The primary mechanism of lookup is by the ``iface``
-marker on the model. A model can declare with an iface what kind of
-model it is, and this way a view can declare what kind of model it is
-associated with.
+Dynamic view lookup based on iface is what allows loose coupling in
+Obviel applications.
 
-An ``iface`` is in essence just a string marker::
+You can see an iface as an informal promise that a model object will
+have certain properties (and methods).
+
+A model does not need to know about what code is used to render it, it
+only needs to have an ``iface`` property to describe what type of the
+object has.
+
+Because a view is bound to an iface, it can render *any* object that
+declares that iface.
+
+Most importantly, the code that renders the model on an element does
+not need to know about the specifics of the model *or* the view. It
+can render *any* model on an element, as long as a view has been
+declared earlier.
+
+Let's look at an example of the power of this.
+
+An example
+~~~~~~~~~~
+
+Here are two models that both declare they are of iface ``animal``::
 
   var elephant = {
-    ifaces: ['animal'],
+    iface: 'animal',
     color: 'grey'
   };
 
   var lion = {
-    ifaces: ['animal'],
+    iface: 'animal',
     color: 'golden'
   };
 
-Each model can declare what kind of model it is using these iface
-markers.
-
-When a view is registered, the iface it is associated with should be
-provided::
+We also define a view that knows how to render an ``animal`` on an element::
 
   obviel.view({
      iface: 'animal',
@@ -253,8 +266,7 @@ provided::
      };
   });
 
-If you now render a model that declares iface ``animal``, the view
-will be used::
+So now this::
 
   $('#animal').render(elephant);
 
@@ -270,100 +282,78 @@ will render like this::
 
   The animal is golden
 
-What if we want to make an exception for elephants, though? We can do
-that too, by registering another view for the ``elephant`` iface and
-using that instead::
+We can make a ``zoo`` object that contains a bunch of animals::
+
+  var zoo = {
+    iface: 'zoo',
+    animals: [elephant, lion]
+  };
+
+Let's create a view for ``zoo`` next that renders the animals in a series of
+``<p>`` elements::
+
+  obviel.view({
+     iface: 'zoo',
+     render: function() {
+        for (animal in this.obj.animals) {
+           var sub = $('<p></p>');
+           this.el.append(sub);
+           sub.render(animal);
+        }
+     }
+  });
+
+As you can see, here we have a view that uses ``render`` to render
+more views.
+
+Now the fun starts. What if we want to treat all animals the same,
+*except* elephants?  To do this we must give the elephant model a
+special iface ``elephant`` first::
 
   var elephant = {
-    ifaces: ['elephant'],
+    iface: 'elephant',
     color: 'grey'
   };
+
+We register a special view for the ``elephant`` iface::
 
   obviel.view({
      iface: 'elephant',
      render: function() {
-       this.el.text('This very big animal is ' + this.obj.color);
+       this.el.text('This elephant is ' + this.obj.color);
      };
   });
 
-Now if we were to render a list of animals, and one of them happened to
-be an elephant, we'll see that the exception for elephant will be used.
+If we render ``zoo`` now each ``animal`` will be rendered as before
+(``This animal is golden``), but the ``elephant`` will be rendered as
+``This elephant is grey``. And because of the loose coupling Obviel
+provides, we haven't had to change the view for ``zoo`` at all to
+accomplish this!
 
-In some cases an iface is not enough, and you can further distinguish
-views by name. The name is really only needed when you want to
-have different ways of rendering the same object (or URL), perhaps
-depending on where a user clicks, or what tab is open, etc. Here's an
-example::
+Now you can write abstract views that can show information without
+knowing in detail what these models are about or how to render
+them. And if your client application pulls in an object from the
+server using AJAX, it can render it without knowing what it is. This
+lets you change the behavior of the client-side application by
+modifying the server code.
 
-  obviel.view({
-    iface: 'animal',
-    name: 'alternate',
-    render: function() {
-      this.el.text("Color of animal is: " + this.obj.color);
-    };
-  });
+``html``, ``htmlUrl`` and ``htmlScript``
+----------------------------------------
 
-This named view can be explicitly invoked by passing its name as
-a second argument to the ``render`` function::
+In JavaScript applications you tend to write JavaScript code that
+works of a specific piece of HTML; you render content into it or bind
+event handlers, etc. You can insert this HTML in a view's ``render``
+method using jQuery with ``.html()``, but Obviel offers a nicer way.
 
-  $('#animal').render(lion, 'alternate');
-
-will result in::
-  
-  Color of animal is: golden
-
-As said before, names are optional, and aren't used very often. By
-default the name is ``default``.
-
-The iface declaration for a view is optional too, though you should
-usually provide it. If you leave out an iface in a view registration
-you register a fallback view for all objects.
-
-Properties available on views
------------------------------
-
-When you render a view, a view instance is created that has several
-properties which you can access through ``this`` in the
-``render`` function of a view. We've seen some of them before, but
-we'll go through them systematically now.
-
-``el``
-++++++
-
-The element that this view is being rendered on. This is a jQuery
-object, so all the usual jQuery functionality will work. The element
-is where the view expresses itself during rendering: it adds
-sub-elements to this element, or changes its ``text()`` value, hooks
-up event handlers, etc.
-
-``obj``
-+++++++
-
-This is the model that the view is supposed to render. You access
-properties of this object to determine what to render.
-
-``name``
-++++++++
-
-This is the name of the current view. By default it is ``default``.
-
-
-``html`` and ``htmlUrl``
-------------------------
-
-A view can be configured so that it renders a piece of static HTML
+You can configure a view so that it renders a piece of HTML
 into the element (using the jQuery ``.html`` function) before the
 ``render`` function is called. You do this by adding a ``html``
 property to the view.
 
-This is useful when you have a view that wants to insert a HTML
-structure into the DOM; this way you can avoid manual DOM
-manipulation. Doing this can also add to the clarity of the code.
-
 Here's an example::
 
   obviel.view({
-     ifaces: ['foo'],
+     iface: 'foo',
      html: '<div class="aClass">Some HTML</div>',
      render: function() {
         var el = $('.aClass', this.el);
@@ -374,36 +364,55 @@ Here's an example::
 This will add the structure ``<div class="aClass">Some HTML</div>``
 into the element the view is rendered on, and then calls the
 ``render`` function, which can now make some assumptions about what is
-in the element.
+in the DOM under the element.
 
-If the HTML fragment to insert has multiple lines, it is nicer to
-maintain it in a separate file instead of in an embedded string. The
-view can also refer to a static HTML resource on the server using the
-``htmlUrl`` property::
+For small snippets inline HTML like above is fine, but for longer
+fragments of HTML it is nicer to maintain this information in a
+separate file instead of in a string embedded in the JavaScript
+code. Using the ``htmlUrl`` property you can make your view can refer
+to a static HTML resource on the server::
 
   obviel.view({
-     ifaces: ['foo'],
-     htmlUrl: 'http://www.example.com/some.html',
+     iface: 'foo',
+     htmlUrl: 'some.html',
      render: function() {
         // ...
      }
   });
 
-The HTML referred to by ``htmlUrl`` will be cached by the system, so
-when you render the view next time no more request will be made to the
-server to retrieve the HTML fragment.
+Before rendering the view, Obviel will look up the url ``some.html``
+(which should be a static resource) and insert the contents into the
+DOM under the element. The HTML referred to by ``htmlUrl`` will be
+cached by the system, so when you render the view a second time no
+more request will be made to the server to retrieve the HTML fragment.
+
+An alternative way to write longer templates is to include them on the
+web page that the view is being rendered on in a ``script`` tag identified
+by an ``id``:
+
+.. code-block:: html
+
+  <script type="text/template" id="myId">Hello <em>world</em>!</script>
+
+Script tags of type ``text/template`` will be inert on the web page
+itself, but the HTML snippets defined there are available to Obviel,
+by using ``htmlScript``::
+
+  obviel.view(
+     iface: 'foo',
+     htmlScript: 'myId'
+  );
 
 In some cases you may want to let the server supply the HTML in the
 model instead of using it from the view. If the object to be rendered
-has a ``html`` or ``htmlUrl`` property those will be interpreted as
-if they were on the view.
+has a ``html``, ``htmlUrl`` or ``htmlScript`` property those will be
+interpreted as if they were on the view.
 
-If both ``html`` and ``htmlUrl`` are found on a view or a model, the
-``html`` property has precedence. The ``html`` and ``htmlUrl``
-properties of the model have precedence over any defined on the view.
+The properties of the model have precedence over any defined on the
+view.
 
-``obvt`` and ``obvtUrl``: Obviel Template
-------------------------------------------
+``obvt``, ``obvtUrl``, ``obvtScript``: Obviel Template
+------------------------------------------------------
 
 .. sidebar:: Alternative template languages for Obviel
 
@@ -419,23 +428,24 @@ properties of the model have precedence over any defined on the view.
   .. code-block:: html
 
     <script type="text/javascript" src="/path/to/json-template.js"></script>
+
+  You can now refer to JSON Template templates using ``jsont``, ``jsontUrl``
+  and ``jsontScript``.
  
   .. _`JSON template`: https://json-template.googlecode.com/svn/trunk/doc/Introducing-JSON-Template.html
 
-A combination of static HTML and jQuery scripting is certainly dynamic
-enough, but you can write a lot more compact and readable code by
-using a template language. Obviel includes a template language
-custom-written for Obviel called :doc:`Obviel Template <template>`.
-Obviel also provides an API to extend it to support other template
-languages.
+A combination of static HTML and jQuery scripting is certainly pretty
+dynamic already, but you can write a lot more compact and readable
+code by using a template language. Obviel includes a template language
+custom-designed for Obviel called :doc:`Obviel Template <template>`.
 
-How do you use Obviel Template? The properties ``obvt`` and
-``obvtUrl`` work like ``html`` and ``htmlUrl`` and can be provided
-both by the view and the model. Let's look at an example::
+How do you use Obviel Template? The properties ``obvt``, ``obvtUrl``
+and ``obvtScript`` work like ``html``, ``htmlUrl`` and
+``htmlScript``. Let's look at an example::
 
   obviel.view({
     iface: 'person',
-    jsont: '<div>{name}</div>'
+    obvt: '<div>{name}</div>'
   });
 
   $('#somediv').render({
@@ -448,40 +458,92 @@ This will result in:
 
   <div>John</div>
 
-When rendering an Obviel Template, the object being rendered is
-combined with the template and the resulting DOM elements are added to
-the element on which ``render`` was invoked.
+When rendering an Obviel Template, the object being rendered
+((``view.obj``) is combined with the template and the result is added
+to the element on which ``render`` was invoked (``view.el``).
 
-Obviel Template has many features, including the ability to directly
-render sub-objects within the template language. Read the
-:doc:`template documentation <template>` for much more information.
+Obviel Template has the usual features like variable interpolation,
+conditionals and looping, but also special Obviel-related features
+such as i18n, hooking up event handlers, and the direct rendering of
+subviews. Read the :doc:`template documentation <template>` for much
+more information.
 
-Loading templates from the page (``Script`` postfix)
-----------------------------------------------------
+View lookup by name
+-------------------
 
-Besides loading up html or obvt templates directly
-(``<compilerName>``) or from a separate url
-(``<compilerName>Url``), you can also load up templates from the web
-page itself, using ``<compilerName>Script``.
+Sometimes you want to have more than one view for the same object. For
+instance, we may want to have a view for an ``animal`` as it appears
+in an overview, and a detailed view for ``animal`` when it appears by
+itself.
 
-``<compilerName>Script`` loads up the template from a ``script`` tag
-on the web page. If you have a web page that includes the following:
+Here's an example of a view for ``animal`` with the name ``alternate``::
 
-.. code-block:: html
+  obviel.view({
+    iface: 'animal',
+    name: 'alternate',
+    render: function() {
+      this.el.text("Color of animal is: " + this.obj.color);
+    };
+  });
 
-  <script type="text/template" id="myId">Hello <em>world</em>!</script>
+You need to explictly pass the view name as a second argument to to
+``render`` to look it up::
 
-you can refer to this by id, as follows::
+  $('#animal').render(lion, 'alternate');
 
-  obviel.view(
-     iface: 'foo',
-     htmlScript: 'myId'
-  );
+This will result in::
+  
+  Color of animal is: golden
 
-This also works for ``obvtScript`` and ``jsontScript``.
+The default name used if you don't specify it is appropriately called
+``default``.
 
-Rendering Sub-Objects
----------------------
+Properties available on views
+-----------------------------
+
+When you render a view, a view instance is created that has several
+properties which you can access through ``this`` in the ``render``
+function of a view (and in other methods of the view). We've seen some
+of them before, but we'll go through them systematically now.
+
+``el``
+~~~~~~
+
+The element that this view is being rendered on. This is a
+jQuery-wrapped element, so all the usual jQuery functionality will
+work. The element is where the view expresses itself during rendering:
+it adds sub-elements to this element, or changes its ``text()`` value,
+hooks up event handlers, etc.
+
+``obj``
+~~~~~~~
+
+This is the model that the view is supposed to render. You access
+properties of this object to determine what to render.
+
+``name``
+~~~~~~~~
+
+This is the name of the current view. By default it is ``default``.
+
+Rendering subobjects
+--------------------
+
+.. sidebar:: Better living with Obviel templates!
+
+  For didactic purposes we've spelled out everything in this section
+  using jQuery and the most low-level Obviel concepts. What you really
+  should be doing is use Obviel Template. The section below
+  explains how.
+
+When building a complicated web page, it is often useful to partition
+the web page into separate components: views. You split up a complex view
+that tries to do everything into multiple smaller, simpler views,
+and along with this you separate a complex model into several smaller
+ones too.
+
+For example, here we have a model that abstracts various web page
+components such as pieces of text and lists.
 
 .. sidebar:: How Partitioning into Views Helps
 
@@ -505,36 +567,70 @@ Rendering Sub-Objects
 
   And all these are Good Things.
 
-When presenting a complicated web page, it makes sense to split the underlying
-objects that this web page represents into individual sub objects. So,
-you might for instance have a JSON structure like this::
+For instance::
 
   { 
-    ifaces: ['page'],
+    iface: 'page',
     parts: [
        { 
-         ifaces: ['text'],
+         iface: 'text',
          text: "Hello world"
        },
        { 
-         ifaces: ['list'],
+         iface: 'list',
          entries: ['foo', 'bar', 'baz']
        }
     ]
   }
 
-This has an outer JSON object with the iface ``page``, and in there there
-are two parts, one of iface ``text`` and one of iface ``list``.
+This model is almost too abstract for many applications; you'd
+typically would create more application specific ifaces than this, but
+it will make a good example.
 
-How would you set out to render such a thing with Obviel views?
-Instead of creating one big view that does everything, we can
-decompose this into a number of subviews. Let's first create a view
-for the ``text`` iface::
+So, here we have an outer object with the iface ``page``, and in there
+there are two parts, one with iface ``text`` and one with iface
+``list``.
+
+How would you set out to render such a thing with Obviel views? We could
+write a single view that tries to do everything for a ``page``::
+
+  obviel.view({
+    iface: 'page',
+    render: function() {
+       var part, entry, divEl, pEl, ulEl, liEl;
+       for (part in this.obj.parts) {
+          divEl = $('<div></div>');
+          this.el.append(divEl);
+          if (part.iface === 'text') {
+            pEl = $('<p></p>');
+            divEl.append(pEl);
+            pEl.text(part.text);
+          } else if (part.iface === 'list') {
+            ulEl = $('<ul></ul>');
+            divEl.append('<ul>');
+            for (entry in part.entries) {
+              liEl = $('<li></li>');
+              ulEl.append(liEl);
+              liEl.text(entry);
+            } 
+          } 
+       }
+    }
+  });
+
+Besides this being a rather big blob of code, it is also not very
+flexible. What if we suddenly include another kind part in the
+``parts`` list with a different ``iface``? We'd need to modify the
+code above by adding another ``else if`` statement.
+
+Let's decompose this code into a number of subviews. First we create a
+view for the ``text`` iface::
 
   obviel.view({
      iface: 'text'
      render: function() {
-        var pEl = this.el.append('<p>');
+        var pEl = $('<p></p>');
+        this.el.append(pEl);
         pEl.text(this.obj.text);
      }
   });
@@ -547,113 +643,49 @@ We'll also create a view for ``list``::
   obviel.view({
      iface: 'list'
      render: function() {
-        var self = this;
-        var ulEl = self.el.append('<ul>');
-        $.each(self.obj.entries, function(index, entry) {
-           var liEl = ulEl.append('<li>');
+        var ulEl = $('<ul></ul>'), 
+            entry, liEl; 
+        this.el.append(ulEl);
+        for (entry in this.obj.entries) {
+           liEl = $('<li></li>');
+           ulEl.append(liEl);
            liEl.text(entry);
-        });
+        };
      }
   });
 
-.. sidebar:: the ``subviews`` property
-
-  Obviel also offers a declarative way to define subviews using
-  selectors. Now that Obviel Template can render subviews directly we
-  recommend you use, as it's easier to understand and less
-  verbose. For completeness however we will discuss the selector-based
-  approach here.
-
-  For example::
-
-    obviel.view({
-      html: '<div class="foo"></div>',
-      subviews: {
-        '.foo': 'attr'
-      }
-    });
-
-  This does the same thing as the examples in the main text.
-
-  The ``subviews`` property, if available, should define a mapping
-  from jQuery selector to model property name. If the view has a
-  ``render`` function, subviews are rendered after the ``render``
-  function of the view has been executed.
-
-  So, if you have this view::
-
-    obviel.view({
-       subviews: {
-          '#alpha': 'alpha',
-          '#beta': 'betaUrl'
-    });
-
-  And render it with the following context object::
-
-    {
-     alpha: {text: 'foo'},
-     betaUrl: '/beta.json'
-    }
-
-  the system will, in effect, call::
-
-    $('#alpha', this.el).render({text: 'foo'})
-
-  and::
-
-    $('#beta', this.el).render('/beta.json') 
-
-  If you want to invoke a subview with a specific name, you can provide
-  a name for subviews by passing an array instead of a string as the 
-  value of the subviews mapping::
-
-    obviel.view({
-      subviews: {
-          '#selector': ['foo', 'name']
-      }
-    });
-
-  Here, a subview is registered for the selector ``#selector``, the
-  data is looked up on the context object using property name ``foo``,
-  and the view is looked up using ``name``.
-
-  Note that the promise returned from ``render()`` will be done after
-  the main view and all its subviews are done rendering.
-
 This creates a ``ul`` element in the DOM and renders each entry in the
-``entries`` list as a ``li`` element with text in it. Note the use of
-the common JavaScript technique of assigning ``this`` to another local
-variable, ``self`` by convention in Obviel code, so we have an easy
-reference to it in the nested functions we define inside.
+``entries`` list as a ``li`` element with text in it.
 
-Now let's create a view that renders all the ``page`` iface::
+Now let's look at what happens to our view for ``page``::
 
   obviel.view({
      iface: 'page',
      render: function() {
-        var self = this;
-        $.each(self.obj.parts, function(index, part) {
-           var divEl = self.el.append($('<div>');
+        var part, divEl;
+        for (part in this.obj.parts) {
+           divEl = $('<div></div>');
+           this.el.append($(divEl);
            divEl.render(part);
-        });
+        }
      }
   });
 
-This view creates a ``div`` for each part in the ``parts``
-property. You can see how delegation to subviews comes in: we render
-each part individually. You can also see something else: the ``page``
-view has no knowledge of what these sub views are, and could render
-any list of them -- it's entirely dependent on the object it is asked
-to render.
+You can see how delegation to subviews comes in: we render each part
+individually. You can also see something else: the ``page`` view has
+no knowledge of what these sub views are, and could render any list of
+them -- it's entirely dependent on the object it is asked to
+render. So now if we insert a different kind of model into ``parts``
+the ``page`` view can render it as long as it can find a view for it.
 
 Partitioning code into views is useful: it's the Obviel way. You'll
 find it makes your code a lot easier to manage.
 
-You can write the sub-view rendering code manually like we did above,
-but Obviel Template offers a shorter and simpler way.
+Better subviews with Obviel Template
+------------------------------------
 
-First, let's look again at how we invoke a sub-view by hand in a
-render method::
+Obviel Templates offer a nicer way to render views. But let's first
+review subview rendering the manual way::
 
   obviel.view({
     html: '<div class="foo"></div>',
@@ -667,7 +699,7 @@ the model indicated by ``this.obj.attr``. ``this.obj.attr`` may be a
 sub-object or a URL referring to another object.
 
 Doing this by hand is not too bad, but Obviel also allows you to do this
-from templates::
+using a template using ``data-view``::
 
   obviel.view({
     obvt: '<div data-view="attr"></div>
@@ -675,10 +707,8 @@ from templates::
 
 Wow, that's a lot shorter! 
 
-For clarity we've spelled out everything before using the most
-low-level Obviel concepts. What you really should be doing is use
-Obviel Template. Here is the example of pages with lists and texts on
-it again, but using Obviel Template instead of JavaScript code::
+Now let's examine the application from the section above again, using
+templates and ``data-view``::
 
     obviel.view({
        iface: 'text',
@@ -697,6 +727,68 @@ it again, but using Obviel Template instead of JavaScript code::
     });
 
 As you can see, that has cleaned up the code a lot!
+
+``subviews`` property
+---------------------
+
+Obviel also offers a declarative way to define subviews using
+selectors. Now that Obviel Template can render subviews directly we
+recommend you use, as it's easier to understand and less verbose. For
+completeness however we will discuss the selector-based approach here.
+
+For example::
+
+  obviel.view({
+    html: '<div class="foo"></div>',
+    subviews: {
+      '.foo': 'attr'
+    }
+  });
+
+The ``subviews`` property, if available, should define a mapping from
+jQuery selector to model property name. If the view has a ``render``
+function, subviews are rendered after the ``render`` function of the
+view has been executed.
+
+So, if you have this view::
+
+  obviel.view({
+     subviews: {
+        '#alpha': 'alpha',
+        '#beta': 'betaUrl'
+  });
+
+And render it with the following context object::
+
+  {
+   alpha: {text: 'foo'},
+   betaUrl: '/beta.json'
+  }
+
+the system will, in effect, call::
+
+  $('#alpha', this.el).render({text: 'foo'})
+
+and::
+
+  $('#beta', this.el).render('/beta.json') 
+
+If you want to invoke a subview with a specific name, you can provide
+a name for subviews by passing an array instead of a string as the 
+value of the subviews mapping::
+
+  obviel.view({
+    subviews: {
+        '#selector': ['foo', 'name']
+    }
+  });
+
+Here, a subview is registered for the selector ``#selector``, the
+data is looked up on the context object using property name ``foo``,
+and the view is looked up using ``name``.
+
+Note that the promise returned from ``render()`` will be done after
+the main view and all its subviews are done rendering.
  
 .. _hyperlinks:
 
@@ -750,7 +842,7 @@ the client is just too costly. Obviel has a way out: you can hyperlink
 objects together using URLs, much like how web pages are hyperlinked
 together.
 
-Obviel can render URLs just like it can render ojbects. When you pass
+Obviel can render URLs just like it can render objects. When you pass
 a string to the ``render`` method instead of an object, Obviel will
 interpret it as a URL. It will send a GET request to the server to
 fetch a JSON object from that URL, and then render that object. For
@@ -759,24 +851,24 @@ example::
   $('#foo').render('http://example.com/somejson');
 
 will fetch the JSON from ``http://example.com/somejson``, and then
-call ``render`` on that object::
+call ``render`` on that object. It's the equivalent of this jQuery
+code::
 
-  $('#foo').render(retrievedObj)
+  $.ajax({
+    url: 'http://example.com/somejson',
+    dataType: 'json'
+  }).done(function (obj) {
+    $('#foo').render(obj)
+  });
 
 This behavior of Obviel allows you to create a hyperlinked structure
 of JavaScript objects. We can demonstrate that using the ``page`` view
-we created before. We'll show it here again, unchanged::
+we created before. Here it is, using Obviel Template::
 
-  obviel.view({
-     iface: 'page',
-     render: function() {
-        var self = this;
-        $.each(self.obj.parts, function(index, part) {
-           var divEl = self.el.append($('<div>');
-           divEl.render(part);
-        });
-     }
-  });
+    obviel.view({
+       iface: 'page',
+       obvt: '<div data-each="parts" data-view="@."></div>'
+    });
 
 We also leave the other views to render ``text`` and ``list`` ifaces
 unchanged.
@@ -785,7 +877,7 @@ Instead of putting full-fledged objects in the ``parts`` array, you can
 also put hyperlinks in there. Consider the following object::
 
   { 
-    ifaces: ['page'],
+    iface: 'page',
     parts: [
        'http://example.com/hello',
        'http://example.com/some_list'
@@ -795,14 +887,14 @@ also put hyperlinks in there. Consider the following object::
 and then under the ``http://example.com/hello`` URL we return this::
 
   { 
-    ifaces: ['text'],
+    iface: 'text',
     text: "Hello world"
   }
 
 and under the ``http://example.com/some_list`` URL we return this::
 
   { 
-    ifaces: ['list'],
+    iface: 'list',
     entries: ['foo', 'bar', 'baz']
   }
 
@@ -821,6 +913,263 @@ So Obviel's understanding of hyperlinks gives us more cool things:
 
 * easier to create truly RESTful applications - see the sidebar for
   more info on why that's good.
+
+Additional methods
+------------------
+
+A view is just a JavaScript object, and you may therefore supply extra
+methods that it calls from the ``render`` method to assist in the
+rendering of the view and setting up of event handlers::
+
+  obviel.view({
+    render: function() {
+      this.foo();
+    },
+    foo: function() {
+      // ...extra work...
+    }
+  });
+
+You can also add extra properties::
+
+  obviel.view({
+    render: function() {
+      this.foo();
+    },
+    extra: "An extra property"
+  });
+
+Declarative event handlers
+--------------------------
+
+.. sidebar:: ``events`` property
+
+  Instead of hooking up the event handler directly in the template,
+  it's also possible to declaratively hook up event handlers in
+  Obviel, using jQuery selectors. This approach is template-language
+  agnostic and thus will work with alternative template languages for
+  Obviel as well.
+
+  For the example given in this section, here's what it looks like with 
+  declarative event handlers::
+
+    obviel.view({
+      iface: 'foo',
+      events: {
+          click: {
+             '#someId': function(ev) {
+               $('#clickResult', ev.view.el).text('clicked!');
+             }
+          }
+      }
+    });
+
+  The event handler gets a jQuery event object, but this object will
+  have a special property ``view`` which is the view that this event
+  is associated with.
+
+  You can also express this with a view method as the handler::
+
+    obviel.view({
+      iface: 'foo',
+      render: function() {},
+      events: {
+         click: {
+           '#someId': 'handleClick'
+         }
+      },
+      handleClick: function(ev) {
+         this.el.text('clicked!');
+      }
+    });
+
+  All declaratively defined events are registered after the view has
+  been rendered.
+
+In many views you will need to bind event handlers to elements
+rendered by the view. You can do this by hand using jQuery::
+
+  obviel.view({ 
+     iface: 'foo',
+     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
+     render: function() {
+        var self = this;
+        $('#press', this.el).click(function(ev) {
+           $('#clickResult', self.el).text('clicked!');
+        });
+     }
+  });
+
+Before we show how to do this with Obviel Template, let's refactor
+this first to use a method on the view for the event handler::
+
+  obviel.view({ 
+     iface: 'foo',
+     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
+     render: function() {
+        $('#press', this.el).click(this.clickHandler);
+     },
+     clickHandler: function(ev) {
+        $('#clickResult', this.el).text('clicked!');
+     }
+  });
+
+We can now hook up the event handler using Obviel Template instead, using
+the ``data-handler`` directive::
+
+  obviel.view({ 
+     iface: 'foo',
+     obvt: '<div data-handler="click|clickHandler">Click me!</div><div id="clickResult"></div>', 
+     clickHandler: function(ev) {
+        $('#clickResult', this.el).text('clicked!');
+     }
+  });
+
+Now it's immediately clear by reading the template which events are
+being handled.
+
+Note that the event handling function gets a jQuery event object as its
+first argument (just like any normal jQuery event handler).
+
+You can hook in multiple event handlers on an object by separating them
+by a space::
+
+  click|clickHandler blur|blurHandler
+
+Per view formatters and funcs
+-----------------------------
+
+Consider the following view with a template that uses a formatter::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '{myVariable|someFormatter}'
+  });
+
+When you render this view, ``someFormatter`` will be looked up in the
+global formatter registry. You can use Obviel Templates's
+:func:`obviel.template.registerFormatter` to fill it when the
+application starts.
+
+You can however also define this formatter on the view itself::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '{myVariable|someFormatter}',
+     someFormatter: function(value) {
+        return value + " formatted";
+     }
+  });
+
+Now ``someFormatter`` will be called on the view to render ``myVariable``.
+
+The same approach works for ``data-func``::
+
+  obviel.view({
+     iface: 'foo',
+     obvt: '<div data-func="someFunc"></div>',
+     someFunc: function(el, variable, context) {
+        if (variable('flag')) {
+           el.addClass('foo');
+        }
+     }
+  });
+
+when you now render the view with this object::
+
+  {
+    flag: true,
+  }
+
+the class ``foo`` will be added to the ``div`` in the template.
+
+``before``: intervening before rendering starts
+-----------------------------------------------
+
+You can supply an optional ``before`` function to the view that will
+be called just before rendering starts. This can be useful to do
+additional client-side set up in the object being rendered just before
+the template renders it, so that the template can access extra
+information. Here is a simple example::
+
+  obviel.view({
+    iface: 'text',
+    before: function() {
+        this.obj.length = this.obj.data.length;
+    },
+    jsont: 'The text "{data}" has {length} characters.'
+  });
+
+  el.render({
+    iface: 'text',
+    data: 'Hello world'
+  });
+
+Declarative object events
+-------------------------
+
+Before we've seen how to bind event handlers to elements. You can also
+declaratively bind event handlers (for custom application-specific
+events) to the object that is being rendered by the view. When you
+trigger an event on the object, the event handler will be called.
+
+Here is an example::
+
+  obviel.view({ 
+    iface: 'foo',
+    render: function() {},
+    objectEvents: {
+       'update': 'rerender'
+    },
+    rerender: function() {
+       self.el.render(self.obj);
+    }
+  });
+
+This registers a handler that gets triggered when the custom
+``update`` event is sent to the object. Let's first render an object::
+
+  var myObj = {iface: 'ifoo'};
+  some_el.render(myObj);
+
+and now let's trigger the ``update`` event on ``myObj``. This is done by
+wrapping the object in ``$`` first::
+
+  $(myObj).trigger('custom');
+
+This will cause ``rerender`` to be called, which will redraw the
+view. If ``myObj`` has changed in the mean time, the view will be
+redrawn to reflect this.
+
+Because ``rerender`` happens so often we've predefined ``rerender`` on
+the standard Obviel view, so you don't have to define it like we did
+above. This is sufficient::
+
+  obviel.view({ 
+    iface: 'foo',
+    render: function() {},
+    objectEvents: {
+       'update': 'rerender'
+    }
+  });
+
+Render done
+-----------
+
+In some cases you need to know when a view has finished rendering;
+this is particularly useful when you are writing automated tests that
+involve Obviel. The Obviel test suite itself is a good example of
+this. Obviel's ``render`` returns a jQuery promise_. What this means is that
+you can hook a ``done`` function to be called when rendering is completed::
+
+  el.render(obj).done(function() { alert("Promise completed!") });
+
+The ``done`` function gets a single argument, the view that was used
+to render the object::
+
+  el.render(obj).done(function(view) { ... });
+
+.. _promise: http://api.jquery.com/promise/
 
 Transformers
 ------------
@@ -878,72 +1227,7 @@ Of course setting the ``iface`` is just one of the transformations you
 can apply; you can add any arbitrary property to objects or even
 return completely different objects altogether.
 
-``before``: intervening before rendering starts
------------------------------------------------
-
-You can supply an optional ``before`` function to the view that will
-be called just before rendering starts. This can be useful to do
-additional client-side set up in the object being rendered just before
-the template renders it, so that the template can access extra
-information. Here is a simple example::
-
-  obviel.view({
-    iface: 'text',
-    before: function() {
-        this.obj.length = this.obj.data.length;
-    },
-    jsont: 'The text "{data}" has {length} characters.'
-  });
-
-  el.render({
-    iface: 'text',
-    data: 'Hello world'
-  });
-
-Render done
------------
-
-In some cases you need to know when a view has finished rendering;
-this is particularly useful when you are writing automated tests that
-involve Obviel. The Obviel test suite itself is a good example of
-this. Obviel's ``render`` returns a jQuery promise_. What this means is that
-you can hook a ``done`` function to be called when rendering is completed::
-
-  el.render(obj).done(function() { alert("Promise completed!") });
-
-The ``done`` function gets a single argument, the view that was used
-to render the object::
-
-  el.render(obj).done(function(view) { ... });
-
-.. _promise: http://api.jquery.com/promise/
-
-Additional methods
-------------------
-
-A view is just a JavaScript object, and you may therefore supply extra methods that
-it calls from the ``render`` method to assist in the rendering of the
-view and setting up of event handlers::
-
-  obviel.view({
-    render: function() {
-      this.foo();
-    },
-    foo: function() {
-      // ...extra work...
-    }
-  });
-
-You can also add extra properties::
-
-  obviel.view({
-    render: function() {
-      this.foo();
-    },
-    extra: "An extra property"
-  });
-
-View Inheritance
+View inheritance
 ----------------
 
 While in many cases the additional methods strategy as described
@@ -988,193 +1272,6 @@ Now the new view can be registered like this::
 
 You can also create your own base classes that derive from ``View``
 that provide extra functionality, and inherit from them.
-
-Declarative Event Registration
-------------------------------
-
-.. sidebar:: Declarative event handler hookup
-
-  Instead of hooking up the event handler directly in the template,
-  it's also possible to declaratively hook up event handlers in
-  Obviel, using jQuery selectors. This approach is template-language
-  agnostic and thus will work with alternative template languages for
-  Obviel as well.
-
-  For the example given in this section, here's what it looks like with 
-  declarative event handlers::
-
-    obviel.view({
-      iface: 'foo',
-      events: {
-          click: {
-             '#someId': function(ev) {
-               $('#clickResult', ev.view.el).text('clicked!');
-             }
-          }
-      }
-    });
-
-  The event handler gets a jQuery event object, but this object will
-  have a special property ``view`` which is the view that this event
-  is associated with.
-
-  You can also express this with a view method as the handler::
-
-    obviel.view({
-      iface: 'foo',
-      render: function() {},
-      events: {
-         click: {
-           '#someId': 'handleClick'
-         }
-      },
-      handleClick: function(ev) {
-         this.el.text('clicked!');
-      }
-    });
-
-  All declaratively defined events are registered after the view has
-  been rendered.
-
-Often a view will need to attach event handlers to elements rendered
-by the view. You can do this by hand using jQuery::
-
-  obviel.view({ 
-     iface: 'foo',
-     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
-     render: function() {
-        var self = this;
-        $('#press', this.el).click(function(ev) {
-           $('#clickResult', self.el).text('clicked!');
-        });
-     }
-  });
-
-Let's refactor this first to use a method on the view for the event
-handler::
-
-  obviel.view({ 
-     iface: 'foo',
-     obvt: '<div id="press">Click me!</div><div id="clickResult"></div>', 
-     render: function() {
-        $('#press', this.el).click(this.clickHandler);
-     },
-     clickHandler: function(ev) {
-        $('#clickResult', this.el).text('clicked!');
-     }
-  });
-
-We can now hook up the event handler using Obviel Template instead, using
-the ``data-handler`` directive::
-
-  obviel.view({ 
-     iface: 'foo',
-     obvt: '<div data-handler="click|clickHandler">Click me!</div><div id="clickResult"></div>', 
-     clickHandler: function(ev) {
-        $('#clickResult', this.el).text('clicked!');
-     }
-  });
-
-Now it's immediately clear by reading the template which events are
-being handled. In addition, Obviel will automatically clean up these
-event handlers if this view is ever cleaned up.
-
-Note that the event handling function gets a jQuery event object as its
-first argument (just like any normal jQuery event handler).
-
-Per view formatters and funcs
------------------------------
-
-Consider the following view with a template that uses a formatter::
-
-  obviel.view({
-     iface: 'foo',
-     obvt: '{myVariable|someFormatter}'
-  });
-
-When you render this view, ``someFormatter`` will be looked up in the
-global formatter registry. You can use Obviel Templates's
-:func:`obviel.template.registerFormatter` to fill it when the application starts. 
-
-You can however also define this formatter on the view itself::
-
-  obviel.view({
-     iface: 'foo',
-     obvt: '{myVariable|someFormatter}',
-     someFormatter: function(value) {
-        return value + " formatted";
-     }
-  });
-
-Now ``someFormatter`` will be called on the view to render ``myVariable``.
-
-The same approach works for ``data-func``::
-
-  obviel.view({
-     iface: 'foo',
-     obvt: '<div data-func="someFunc"></div>',
-     someFunc: function(el, variable, context) {
-        if (variable('flag')) {
-           el.addClass('foo');
-        }
-     }
-  });
-
-when you now render the view with this object::
-
-  {
-    flag: true,
-  }
-
-the class ``foo`` will be added to the ``div`` in the template.
-
-Declarative Object Events
--------------------------
-
-You can also declaratively bind event handlers to the object when it
-is being rendered by the view. In your application you can then define
-custom events and trigger them on objects. The handlers are registered
-just like for normal events, either with a function or with a string
-indicating a method on the view.
-
-Here is an example::
-
-  obviel.view({ 
-    iface: 'foo',
-    render: function() {},
-    objectEvents: {
-       'update': 'rerender'
-    },
-    rerender: function() {
-       self.el.render(self.obj);
-    }
-  });
-
-This registers a handler that gets triggered when the custom
-``update`` event is sent to the object. Let's first render an object::
-
-  var myObj = {iface: 'ifoo'};
-  some_el.render(myObj);
-
-and now let's trigger the ``update`` event on ``myObj``. This is done by
-wrapping the object in ``$`` first::
-
-  $(myObj).trigger('custom');
-
-This will cause ``rerender`` to be called, which will redraw the
-view. If ``myObj`` has changed in the mean time, the view will be
-redrawn to reflect this.
-
-As a convenience, ``rerender`` has been predefined on views, so you
-don't have to define it like we did above. This is sufficient::
-
-  obviel.view({ 
-    iface: 'foo',
-    render: function() {},
-    objectEvents: {
-       'update': 'rerender'
-    }
-  });
 
 Bootstrapping Obviel
 --------------------
@@ -1248,10 +1345,10 @@ that includes your code that registers views. For example:
 
 .. _element-association:
 
-Element Association
+Element association
 -------------------
 
-.. sidebar:: Element Association Background
+.. sidebar:: Element association background
 
   Let's consider form submission. In most cases when a form gets
   submitted, the server sends back data to fill the space formerly
@@ -1326,7 +1423,7 @@ Obviel calls the ``cleanup`` method on the view. You can put in a
 special cleanup method on the view that gets called to perform the
 cleanup.
 
-Events Sent by Obviel
+Events sent by Obviel
 ---------------------
 
 Obviel triggers two kinds of events:
@@ -1365,7 +1462,7 @@ latter.
 Let's consider the following object describing a person::
 
   >>> bob = {name: 'Bob', location: 'US', occupation: 'skeptic', 
-  ...        ifaces: ['person']}
+  ...        iface: 'person'}
 
   >>> obviel.ifaces(bob)
   ['person', 'base', 'object']
@@ -1388,7 +1485,7 @@ relationships are not allowed. The ``obviel.ifaces`` function knows
 about extensions. So, let's say that we have an ``employee`` object::
 
   >>> employee = {name: 'Bob', location: 'US', occupation: 'skeptic',
-  ...             wage: 0, ifaces: ['employee']}
+  ...             wage: 0, iface: 'employee'}
 
 Since we said before that any ``employee`` is also a ``person``, the
 following is true::
