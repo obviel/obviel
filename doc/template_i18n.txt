@@ -6,14 +6,14 @@ Obviel Template i18n
 Introduction
 ------------
 
-Obviel Template supports an i18n strategy for templates which allows
-the template developer to mark up those bits of the template that are
-translatable. This way you can easily construct user interfaces can
-switch to different languages.
+Obviel Template has extensive internationalization (i18n) support. It
+lets you mark up those bits of the template that are translatable to
+another language. This way you can easily construct user interfaces
+can switch between different languages.
 
 This document describes how to mark up translatable content in a
-template. To read about how to actually integrate such a template with
-a larger Obviel application and translations, read the :doc:`i18n
+template. To read about how to actually integrate in a translation
+workflow, and how to use i18n in JavaScript, read the :doc:`i18n
 manual <i18n>`.
 
 Basic i18n

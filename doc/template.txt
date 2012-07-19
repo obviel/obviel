@@ -6,31 +6,43 @@ Obviel Template
 Introduction
 ------------
 
+Obviel Template is a template language for Obviel. Obviel Template is
+deliberately a very minimal template language. The idea is that more
+complicated logic should be kept in JavaScript code, not templates,
+because it is much clearer to express it in JavaScript. You can do
+this by preprocessing the object that goes into the template, or by
+using ``data-func`` in the template.
+
+Obviel Template is different from many template languages you might
+have encountered in that it is element-based and HTML aware, not
+text-based. Templates must be valid HTML fragments. If you try to
+construct a template with elements in places where they are not valid
+HTML, you will find that the browser will not produce that HTML. The
+advantage of being element-based is that the template language can
+directly operate on the DOM. You can for instance directly bind event
+handlers in the template language.
+
 Obviel Template integrates with Obviel in an important way: sub-views
 can be rendered directly from the template. This allows these views to
-respond to events in the standard Obviel way, including responding to
-object events. Obviel Template can do this because it's DOM-based, not
-text-based. Doing this with a text-based template language (such as
-JSON Template) isn't possible, as it isn't aware of DOM elements at
-all.
+work in the standard Obviel way. They can for instance respond to
+events on the objects that they are representing, and rerender
+themselves. This is another benefit of Obviel Template being
+element-based.
 
 Another powerful feature of Obviel Template is that it supports i18n
 markers directly in the template for the purpose of
-internationalization (i18n) of template texts. This way automatic
+internationalization (i18n) of template texts. This is based on
+standard gettext, and supports pluralization. This way automatic
 extraction tools can be used to maintain translations of strings in
-the template. This feature is inspired by some server-side template
+the template. This feature exists in some server-side template
 languages (such as Zope Page Templates), but this is not commonly
 supported by client-side template languages.
-
-Obviel Template is deliberately a very minimal template
-language. Logic should be kept in code, not templates. If you need
-logic, preprocess the object that goes into the template instead.
 
 Variables
 ---------
 
 Obviel-Template supports variable interpolation using ``{}`` markers
-in text. It looks like this::
+in any element or attribute text. It looks like this::
 
   <p>{content}</p>
 
@@ -77,8 +89,9 @@ If you refer to a dotted name that does not exist in the data, this is
 an error and the template won't render; you get a ``RenderError``
 exception.
 
-Dotted names also work in directives like ``data-with``, ``data-if``
-and ``data-each``, which we'll see next.
+Dotted names work whenever a variable can be used, so also works in
+other directives such as ``data-with``, ``data-if`` and ``data-each``,
+which we will discuss later.
 
 Interpolating the current object: ``@.``
 ----------------------------------------
@@ -140,7 +153,6 @@ Rendering the template with the object will result in this::
 will be performed in the ``b`` object primarily (that is the *scope*
 of that element).
 
-
 ``data-with`` must point to an object; it cannot point to strings or
 arrays or other values, and cannot point to a missing value either:
 these are ``RenderError`` errors.
@@ -148,10 +160,10 @@ these are ``RenderError`` errors.
 ``data-if`` for conditionals
 ----------------------------
 
-Sometimes you want to include an element only if a given value is true
-or not. For the purposes of ``data-if``, a value is *false* if:
+Sometimes you want to include an element only if a given value is
+``true``. For the purposes of ``data-if``, a value is *false* if:
 
-* it is the ``false``
+* it is ``false``
 
 * it is ``null``
 
@@ -233,9 +245,9 @@ the result will be this::
     <li>Steven</li>
   </ul>
  
-Note that ``data-each`` changes the scope (like
-``data-with``). ``data-each`` changes the object in which the
-variables are looked up to each entry in the array, one by one.
+Note that ``data-each`` changes the scope to each entry in the
+array. So, ``data-each`` changes the object in which the variables are
+looked up to each entry in the array, one by one.
 
 If the array is empty, nothing will be rendered at all. So, this
 data:
@@ -395,11 +407,11 @@ you will get this as a result::
 So to address ``something.persons`` in a loop, you use
 ``something_persons``, with the ``.`` replaced by ``_``.
 
-Sometimes, to support various user interface designs, you want to add
-a special ``class`` into the DOM depending on some ``@each`` value,
-for instance when the index is even or odd. Obviel Template supports
-such special use cases with ``data-func``, about which we'll talk in a
-later section.
+To support various user interface you want to add a class into the DOM
+depending on a some ``@each`` value, such as ``even`` or
+``odd``. While you can do this with ``data-attr`` (which we'll see
+later), we recommend you use ``data-func`` for this (which we'll also
+see later), as your code will generally be clearer.
 
 Nested scoping
 --------------
@@ -475,8 +487,8 @@ it will render like this::
 This works. But we could also arrange our code so that we have a view
 for the ``person`` iface and use that instead. The advantage of that
 is that we could reuse this view in other places, and in addition we
-can use an Obviel view to hook up to events and so on. Let's consider
-a view:
+can use Obviel view features, such as binding its methods to DOM
+events (which we'll see later). Let's consider a view:
 
 .. code-block:: javascript
 
@@ -496,10 +508,11 @@ The result is still the same::
 
   <p>Hello <span><a href="http://www.example.com/pat_pending">Pat Pending</a></span></p>
 
-By using ``data-view``, you have made the outer template more generic.
-If the object indicated by the name ``who`` has another ``iface``, the
-template will still work unchanged. For example, here is a data
-structure where ``who`` is a robot:
+Another advantage of using ``data-view`` in this case is that you have
+made the outer template more generic. If the object indicated by the
+name ``who`` has another ``iface``, the template will still work
+unchanged. For example, here is a data structure where ``who`` is a
+robot:
 
 .. code-block:: javascript
 
@@ -520,7 +533,7 @@ and this is a view for the iface ``robot``:
      obvt: '{designation}'
   });
 
-and here is our template again::
+and here is our outer template again, unchanged::
 
   <p>{greeting} <span data-view="who"></span></p>
 
@@ -560,23 +573,28 @@ views to use another view globally you can do so in JavaScript:
 
   obviel.template.setDefaultViewName('summary');
 
-from now on if you don't specify the view name explicitly, Obviel will
+From now on if you don't specify the view name explicitly, Obviel will
 look up views by the name of ``summary`` by default. If you decide to
 do this, you would want to do this once per web page before template
-rendering takes place, for instance when the page has just been loaded. Note
-that this does *not* alter the default view name of Obviel itself when
-you use ``el.render(obj)``; this will remain ``default``.
+rendering takes place, for instance when the page has just been
+loaded. Note that this does *not* alter the default view name of
+Obviel itself when you use ``el.render(obj)``; this will remain
+``default``.
 
-``data-view`` must point to an object or a string. A string is
-interpreted as a URL and is loaded as JSON. It cannot point to an
+``data-view`` can also point to a variable that is a string, not an
+object.  In this case the variable is treated as a URL, and this is
+loaded as a JSON object. The view is then rendered for that object.
+
+``data-view`` must point to an object or a string. It cannot point to an
 array or other value.
 
 Formatters
 ----------
 
-Besides views to insert HTML, for text manipulation Obviel Template also
-supports formatters. Formatters can be registered globally with 
-Obviel Template like this:
+If you need to insert HTML snippets, use ``data-view``. If you must
+manipulate text in some consistent way, you can use
+formatters. Formatters can be registered globally with Obviel Template
+like this:
 
 .. code-block:: javascript
 
@@ -599,46 +617,64 @@ we'd get the following output::
 
   <p>HELLO</p>
 
+We've seen a way to register formatters globally. Formatters can also
+be defined as methods on the view that uses the template::
+
+  obviel.view({
+    iface: 'foo',
+    obvt: '<p>{foo|upper}</p>',
+    upper: function(value) {
+       return value.toUpperCase();
+    }
+  });
+
 Again, formatters cannot be used to include HTML, only text; for
 including HTML you can use views. To do some special DOM manipulation,
-you can also consider ``data-func``.
+you can also consider using ``data-func``.
 
-You would register formatters only once per web page before template
-rendering takes place, for instance when the page has just been loaded.
+If you are registering global formatters, you should register
+formatters only once per web page, before template rendering starts.
 
-``data-handler``: registering event handlers
+``data-handler``: binding DOM event handlers
 --------------------------------------------
 
-You can register handlers for various DOM events on particular
-elements using ``data-handler``.  If you use Obviel Template with
-an Obviel view, methods on the view will handle the events.
+Often in a view you want to handle particular DOM events for elements
+in the view. You can bind DOM events to methods of the view using the
+``data-handler`` directive.
 
-For instance, if you want to register a handler for the ``click``
-event on a ``div``, you can do it like this::
+For instance, if you want to bind a handler for the ``click`` event on
+a ``div``, you can do it like this::
 
   <div data-handler="click|someFunction">Click here!</click>
 
 When the user now clicks on the ``div`` element, the function
-indicated by ``someFunction`` will be executed. Obviel Template will
-try to lookup ``someFunction`` in the ``handlers`` property that can
-be passed with the ``context`` argument to render. In case Obviel
-views are in use, this will be the view.
+indicated by ``someFunction`` will be executed. ``someFunction`` is
+a method on the view that uses this template. Let's look the example
+in a view::
+
+  obviel.view({
+    iface: 'foo',
+    obvt: '<div data-handler="click|someFunction">Click here!</click>', 
+    someFunction: function(ev) {
+      alert("You clicked!");
+    }
+  });
 
 To bind more than one event handler on an element at the same time, 
 separate them by a space character::
 
   <div data-handler="click|onClick dblclick|onDblclick">Click here!</div>
 
-It is a ``RenderError`` if the function is not availabe on the view
-during render time.
+It is a ``RenderError`` if the handler function is not available on
+the view during render time.
 
 ``data-unwrap``: element that disappears
 ----------------------------------------
 
 Obviel Template has element-based directives (``data-if``,
 ``data-each``, etc). But sometimes you just want to conditionally or
-repeatedly include a piece of text, not an element. You can do this
-by using a special ``data-unwrap`` element. During templte rendering all
+repeatedly include a piece of text, not an element. You can do this by
+using a special ``data-unwrap`` element. During template rendering all
 elements marked by ``data-unwrap`` disappear.
 
 So::
@@ -668,14 +704,14 @@ will render like this::
 ``data-el``: dynamically generating elements
 --------------------------------------------
 
-Normally you'd generate an element by simply including it in the
+Normally you would generate an element by simply including it in the
 template, for instance a ``p`` element like this::
 
   <p>Hello world</p>
 
-In some cases however you want to be able to dynamically decide the
-name of the element based on the data. ``data-el`` lets you do
-this. This is the equivalent of the above template using ``data-el``::
+In some cases you want to be able to dynamically decide the name of
+the element based on the data. ``data-el`` lets you do this. This is
+the equivalent of the above template using ``data-el``::
 
   <div data-el="p">Hello world</div>
 
@@ -694,19 +730,31 @@ You could also use ``data-repeat`` to generate a whole series of elements::
 ``data-attr``: dynamically generating attributes
 ------------------------------------------------
 
-.. sidebar:: ``data-attr`` with void elements
+.. sidebar:: consider using ``data-func`` instead
+
+  In the case where you need to use ``data-attr``, always consider
+  using ``data-func`` instead. Your code will often be a lot more
+  clear and easier to write with a small custom method on the view
+  that adds attributes using jQuery than it is using ``data-attr``.
+
+.. sidebar:: ``data-attr`` with special HTML elements
 
   In HTML, the following elements are **void**, meaning they may not
   contain any element or text content: ``area``, ``base``, ``br``,
   ``col``, ``command``, ``embed``, ``hr``, ``img``, ``input``,
   ``keygen``, ``link``, ``meta``, ``param``, ``source``, ``track``,
   ``wbr``. In addition, there are two elements that may only contain
-  text content (``title`` and ``textarea``).
+  text content (``title`` and ``textarea``). Other elements have other
+  restrictions; they may for instance only contain text content
+  (``textarea`` is an example), or only sub-elements of a certain type
+  (``ul`` is an example).
 
-  This also means you cannot put an element with ``data-attr`` inside
-  of such an element. What then if you dynamically want to generate
-  attributes for a void element such as ``input``? This, after all, is
-  then **illegal**::
+  For void elements you cannot put an element with ``data-attr``
+  inside of such an element to generate an attribute on the outer void
+  elements. For an element with a text-only restriction or content
+  restritions you may also have trouble. What then if you want to
+  generate attributes dynamically for a void element such as ``input``?
+  This, after all, is then **illegal**::
 
     <input>
       <span data-if="flag" data-attr="type" data-value="{type}" />
@@ -719,6 +767,9 @@ You could also use ``data-repeat`` to generate a whole series of elements::
     <div data-el="input">
       <div data-if="flag" data-attr="type" data-name="type" data-value="{type}" />
     </div>
+
+  This is all rather cumbersome however, and we recommend you use
+  ``data-func`` in these situations instead.
 
 Normally you'd generate a dynamic attribute like this::
 
@@ -738,7 +789,8 @@ first example::
   <a href="/some/url">Some Title</a>
 
 ``data-attr`` will always apply to the element it is directly
-contained in.
+contained in. Note that the element that has the ``data-attr`` on it
+itself is never inserted in the result.
 
 This construct is helpful because you can use ``data-if`` for conditional
 attributes now::
@@ -793,7 +845,6 @@ will result in this output::
 
 but with this data:
 
-
 .. code-block:: javascript
 
   { 
@@ -805,6 +856,9 @@ but with this data:
 you'd get this output::
 
   <div class="first"></div>
+
+But as we say in the sidebar, consider using ``data-func`` instead in
+these cases.
 
 ``data-func``
 -------------
@@ -846,17 +900,70 @@ you'd get this output::
   * replace a child element with another that does not have the
     same structure (text and sub-elements recursively).
 
-In some cases it is more convenient to use JavaScript to manipulate
-the DOM directly (using jQuery) than it would be to use Obviel
-Template constructions to do the job. For these cases Obviel Template
-offers a special directive to plug custom functions into the template
-rendering process directly, called ``data-func``. ``data-func`` should
-be used as a facility of last resort: if in doubt, use the normal
-Obviel Template functionality, because the template will probably be
-easier to understand.
+In many cases it is more convenient to use JavaScript and jQuery to
+manipulate the DOM directly than it would be to use Obviel Template
+constructions such as ``data-attr``. Obviel Template offers a special
+directive called ``data-func`` that lets you plug custom functions
+into the template rendering process directly.
 
-To see what ``data-func`` does, let's consider a simple (but pretty
-useless) case first. We register the func ``magic``:
+To see what ``data-func`` does, let's consider a simple case first. Let's
+imagine these two individuals::
+
+  { 
+     iface: 'person',
+     name: "Jane"
+     wild: false
+  }
+       
+  {
+     iface: 'person',
+     name: "Tarzan",
+     wild: true 
+  }
+
+We now want to render a ``person`` but want to add a ``wild`` class to an
+element in the view only if that person is wild. We could do this
+in a relatively cumbersome way, with ``data-attr`` and ``data-el``::
+
+  obviel.view({
+    iface: 'person',
+    obvt: '<div><span data-if="wild" data-attr="class" data-value="wild" />{name}</div>'
+  });
+
+Let's rewrite this to use ``data-func`` and a method on the view instead::
+
+  obviel.view({
+    iface: 'person',
+    obvt: '<div data-func="attributes">{name}</div>',
+    attributes: function(el) {
+      if (this.obj.wild) {
+         el.addClass('wild');
+      }
+    } 
+  });
+
+Especially for more complicated logic, this is often a lot more easy
+to understand.
+
+The method called by ``data-func`` gets an optional second argument,
+``variable``.  This is a function you can use to get to variables in
+the same scope as the template does where ``data-func`` was
+defined. Let's rewrite the view to use ``variable``::
+
+  obviel.view({
+    iface: 'person',
+    obvt: '<div data-func="attributes">{name}</div>',
+    attributes: function(el, variable) {
+      if (variable('wild')) {
+         el.addClass('wild');
+      }
+    } 
+  });
+
+
+It's also possible to register a ``data-func`` function globally. It
+will look for these if it cannot find it on the view itself. Here is a
+silly example that adds a ``magic`` attribute::
 
 .. code-block:: javascript
 
@@ -864,24 +971,19 @@ useless) case first. We register the func ``magic``:
      el.attr('magic', 'Magic!');
   });
 
-Once this registration has been made, we can use it within a template,
+Once this registration has been made, we can use it within any template,
 for instance this one::
 
   <p data-func="magic">Hello world!</p>
 
-Once the template is rendered, we'll see this::
+And once the template is rendered, we'll see this::
 
   <p magic="Magic!">Hello world!</p>
 
-Of course, this functionality is pretty useless, as we could just have
-written a template like this::
-
-  <p magic="Magic!">Hello world!</p>
-
-``data-func`` really starts to be useful in complex cases in
-combination with ``data-each``. Let's consider the case where we want
-to add an ``even`` and ``odd`` class to each iteration. We could write
-a template like this::
+``data-func`` is especially useful in combination with
+``data-each``. Let's consider the case where we want to add an
+``even`` and ``odd`` class to each iteration. We could write a
+template like this::
 
   <ul>
     <li data-each="list">
@@ -890,13 +992,14 @@ a template like this::
     </li>
   </ul>
 
-This template has various problems:
+But this template has various problems:
 
 * we have to write the ``p`` bit twice
 
 * what if we wanted to place the ``class`` on ``li`` instead of on ``p``?
 
-We could also use dynamically generated attributes to solve this case::
+We could also use dynamically generated attributes to solve this
+case::
 
   <ul>
     <li data-each="list">
@@ -931,9 +1034,9 @@ just so easy to express a rule like this in JavaScript with jQuery:
      }
   };
 
-With ``data-func`` you can plug this functionality into template
-rendering.  First we need to register the useful function globally for
-our application:
+You could have this ``evenodd`` function on the view that needs
+it. But in case of a generally useful functionality like this you can
+plug it in globally for the application::
 
 .. code-block:: javascript
 
@@ -979,18 +1082,19 @@ and then use it::
 ``everythird`` cannot be expressed using Obviel Template alone, but is
 easy to express using a custom fuction.
 
-Using ``data-func`` you can supplement Obviel Template with
-functionality particular to your application. This is especially
-useful for generic functionalities that extend the template language,
-such as adding classes in ``data-each``, where we can rely on the
-existence of a special variable ``@each`` to exist.
+So using ``data-func`` you can supplement Obviel Template with
+functionality particular to your views or application. This is useful
+for particular functionality your view needs, or for general
+functionality your whole application needs.
 
-Note that you should *only* use ``data-func`` to *change* the element,
-for instance by manipulating its attributes, *not* to add or remove
-child elements (or text-nodes). Most DOM manipulations by adding,
-moving or removing elements or text modes are unsafe: it can break
-Obviel Template in unexpected ways, as it relies on the order of child
-nodes to stay the same.
+There are some restrictions on ``data-func``. You should *only* use
+``data-func`` to *change* the element, for instance by manipulating
+its attributes, *not* to add or remove child elements (or
+text-nodes). Most DOM manipulations by adding, moving or removing
+elements or text modes are unsafe: it can break Obviel Template in
+unexpected ways, as it relies on the order of child nodes to stay the
+same. But if you want to insert a whole bunch of elements you should
+consider using ``data-view`` instead.
 
 special attributes (``id``, ``src``)
 ------------------------------------
@@ -998,8 +1102,8 @@ special attributes (``id``, ``src``)
 Since Obviel templates use HTML and the HTML compiler internally,
 Obviel templates should be valid HTML fragments.
 
-In valid HTML, an ``id`` attribute should be unique. If the ``id`` attribute is
-hardcoded there is no problem; you can just use them::
+In valid HTML, an ``id`` attribute should be unique. If the ``id``
+attribute is hardcoded there is no problem; you can just use them::
  
   <div id="foo"></div>
 
@@ -1023,9 +1127,9 @@ and after the variable::
 
 This will generate HTML with proper ``id`` attributes.
  
-A similar story applies to the ``src`` attribute. In practice this
-will occur in the ``img`` element. When the template is being parsed,
-the ``src`` is loaded by the browser immediately. So this in your
+A similar story applies to the ``src`` attribute. Let's consider the
+``img`` element. When the template is being parsed, the image referred
+to by ``src`` is loaded by the browser immediately. So this in your
 template would be okay::
 
   <img src="myimage.png" />
@@ -1035,10 +1139,10 @@ But this is **illegal**::
   <img src="{myImage}" />
 
 because we wouldn't want the browser to look for a URL ``{myImage}``
-literally. So Obviel template prevents this by giving you a compilation
+literally. Obviel Template prevents this by giving you a compilation
 error when you try this.
 
-Instead, we use ``data-src`` to set the ``src`` attribute::
+Instead, you can use ``data-src`` to set the ``src`` attribute::
 
   <img data-src="{myImage}" />
 
@@ -1047,28 +1151,29 @@ Instead, we use ``data-src`` to set the ``src`` attribute::
 
 Obviel Template offers the ability to write a template that can be
 shown in other languages as well: you can *internationalize* a
-template. We will discuss the basics of marking up a template so it
-can be translated here, but much more detail is in a :doc:`separate document
-about template i18n <template_i18n>`.
+template. Here we will discuss the basics of marking up a template so
+it can be translated, but much more detail is in a :doc:`separate
+document about template i18n <template_i18n>`.
 
 If we have a template like this::
 
  <p data-trans="">Hello world!</p>
 
-we can also show this template in the Dutch language if the appropriate
-translation is available::
+we can also show this template in another language, such as Dutch, if
+the appropriate translation is available::
 
  <p>Hallo wereld!</p>
 
 ``data-trans`` is used to mark up those parts of the template that
-should be translatable, such as attributes and texts. These
-translatable values can contain variables as well::
+should be translatable, such as attributes and texts. 
+
+A translatable text can contain variables as well::
 
   <p data-trans="">Hello {who}!</p>
 
-By default, ``data-trans`` is used to mark the textual content of a
-tag for translation. If you want to mark an attribute as translatable
-you can do it like this::
+The ``data-trans`` attribute without content is used to mark the
+textual content of a tag for translation. If you want to mark an
+attribute as translatable you can do it like this::
 
   <div data-trans="title" title="Hello" />
 
@@ -1129,19 +1234,19 @@ markup::
 
   {@close}
 
-You can also inject ``||``, the pluralization marker literally like this::
+You can also inject the pluralization marker ``||`` literally like
+this::
 
   {@doublepipe}
 
 Unsupported XML constructs
 --------------------------
 
-The HTML CDATA section implementation in browsers is so inconsistent
-we didn't think it was worth spending time supporting this in
-templates, given its limited utility. Obviel Template therefore has
-undefined behavior in the presence of a CDATA section in your
-template: we recommend you don't use it. If you want to insert
-extended sequences of text in an element you can already do so with a
-simple variable.
+The HTML CDATA section support in browsers is so inconsistent we
+didn't think it was worth spending time supporting this in templates,
+given its limited utility. Obviel Template therefore has undefined
+behavior in the presence of CDATA sections in your template: we
+recommend you don't use them. If you want to insert extended sequences
+of text in an element you can already do so with a simple variable.
 
 Processing instructions are also not supported.
