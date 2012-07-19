@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0b2 (unreleased)
+1.0b2 (2012-07-19)
 ==================
 
 * **GREAT RENAMING**: this one breaks backwards compatibility! Any

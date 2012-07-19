@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.12'
+version = '1.0b2'
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
@@ -18,8 +18,8 @@ setup(
     long_description=long_description,
     classifiers=[],
     keywords='',
-    author='Fanstatic Developers',
-    author_email='fanstatic@googlegroups.com',
+    author='Obviel Developers',
+    author_email='obviel-dev@googlegroups.com',
     license='BSD',
     packages=find_packages(),
     namespace_packages=['js'],
@@ -35,7 +35,6 @@ setup(
         'setuptools',
         'js.jquery >= 1.6',
         'js.jquery_datalink >= 1.0.0-1',
-        'js.jquery_datatables >= 1.8.2',
         'js.jquery_jgrowl',
         'js.jqueryui',
         'js.jsgettext',
