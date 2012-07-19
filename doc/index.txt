@@ -23,7 +23,7 @@ you improve the structure of your jQuery-based JavaScript
 applications. On top of that Obviel adds a lot of features, such as
 templating, i18n support, form generation and validation, and
 routing. Obviel stays close to HTML but lets you build sophisticated
-components when you need it.
+components when you need to.
 
 Client-side templating
 ----------------------
