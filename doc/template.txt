@@ -963,7 +963,7 @@ defined. Let's rewrite the view to use ``variable``::
 
 It's also possible to register a ``data-func`` function globally. It
 will look for these if it cannot find it on the view itself. Here is a
-silly example that adds a ``magic`` attribute::
+silly example that adds a ``magic`` attribute:
 
 .. code-block:: javascript
 
