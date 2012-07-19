@@ -46,19 +46,19 @@ templates, and to prepare translations for publication on the web.
 Form library
 ------------
 
-Obviel comes with a powerful client-side :doc:`form library
-<form>`. Describe your form using JSON structures, either on the
-client or on the server. Get and post your form data as JSON. Use
-composite and repeating fields with ease!
+Obviel comes with a client-side :doc:`form library <form>`. Describe
+your form using JSON structures, either on the client or on the
+server. Get and post your form data as JSON. Use composite and
+repeating fields with ease!
 
 Routing with Traject
 --------------------
 
-Obviel contains an easy to use but powerful :doc:`routing library
-<traject>` called Traject, which can be used both to resolve paths to
-objects as well as construct paths for objects. With Traject you can
-construct dynamic single-page user interfaces that work with
-hyperlinks and the browser back button.
+Obviel contains an easy to use :doc:`routing library <traject>` called
+Traject, which can be used both to resolve paths to objects as well as
+construct paths for objects. With Traject you can construct dynamic
+single-page user interfaces that work with hyperlinks and the browser
+back button.
 
 Versatile but unobtrustive
 --------------------------
