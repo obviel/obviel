@@ -111,3 +111,12 @@ pre {
     font-size: 30px;
 }
 
+/* used hyperlinks */
+
+a:visited {
+    color: #551A8B;
+}
+
+footer a:visited {
+    color: #B0E2FF;
+}
