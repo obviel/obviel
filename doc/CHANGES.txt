@@ -161,6 +161,10 @@ CHANGES
 
 * Fixed a bug where data-view could not be used with URLs.
 
+* Changed documentation theme.
+
+* Updated documentation for clarity in various areas.
+
 1.0b (2012-05-31)
 =================
 
