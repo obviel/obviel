@@ -103,17 +103,17 @@ if (typeof console === "undefined") {
         return this.message;
     };
     
-    module.LookupError = function(obj, name) {
+    module.LookupError = function(obj, view_name) {
+        this.name = 'LookupError';
         this.obj = obj;
-        this.name = name;
+        this.view_name = view_name;
     };
     
     module.LookupError.prototype.toString = function() {
         var ifaces = module.ifaces(this.obj);
         return ("view lookup error for ifaces [" + ifaces.join(', ') +
-                "] and name '" + this.name + "'");
+                "] and name '" + this.view_name + "'");
     };
-
     
     module.CompilerError = function(message) {
         this.message = message;
