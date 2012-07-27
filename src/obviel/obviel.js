@@ -84,16 +84,23 @@ if (typeof console === "undefined") {
 })(jQuery);
 
 (function($, module) {
-    module._ifaces = {
+    var _ifaces = {
         'base': []
     };
 
-    module.IfaceError = function(obj) {
-        this.obj = obj;
+    module.clearIface = function() {
+        _ifaces = {
+            'base': []
+        };
+    };
+    
+    module.IfaceError = function(message) {
+        this.name = 'IfaceError';
+        this.message = message;
     };
 
     module.IfaceError.prototype.toString = function() {
-        return ("object has both ifaces as well as iface property");
+        return this.message;
     };
     
     module.LookupError = function(obj, name) {
@@ -130,8 +137,8 @@ if (typeof console === "undefined") {
      * extend the iface 'base'
      */
     module.iface = function(name) {
-        if (module._ifaces[name]) {
-            throw((new module.DuplicateInterfaces(name)));
+        if (_ifaces[name]) {
+            throw new module.IfaceError("duplicate iface: " + name);
         }
         var bases = [];
         var i;
@@ -144,15 +151,16 @@ if (typeof console === "undefined") {
         }
 
         for (i=0; i < bases.length; i++) {
-            var basebases = module._ifaces[bases[i]];
+            var basebases = _ifaces[bases[i]];
             if (basebases === undefined) {
-                throw(
-                    'while registering iface ' + name + ': ' +
-                    'base iface ' + bases[i] + ' not found!');
+                throw new module.IfaceError('while registering iface ' +
+                                            name + ': ' +
+                                            'base iface ' + bases[i] +
+                                            ' not found!');
             }
         }
 
-        module._ifaces[name] = bases;
+        _ifaces[name] = bases;
     };
     
     /**
@@ -174,16 +182,20 @@ if (typeof console === "undefined") {
      * @param base: base iface (string)
      */
     module.extendsIface = function(name, base) {
-        var basebases = module._ifaces[base];
+        var basebases = _ifaces[base];
         if (basebases === undefined) {
-            throw((new module.UnknownIface(base)));
+            throw new module.IfaceError('unknown iface: ' + base);
+        }
+        if (_ifaces[name] === undefined) {
+            throw new module.IfaceError('unknown iface: ' + name);
         }
         for (var i=0; i < basebases.length; i++) {
-            if (basebases[i] == name) {
-                throw((new module.RecursionError(name, basebases[i])));
+            if (basebases[i] === name) {
+                throw new module.IfaceError('iface ' + name + 
+                                            ' cannot depend on itself');
             }
         }
-        module._ifaces[name].push(base);
+        _ifaces[name].push(base);
     };
 
     /**
@@ -204,7 +216,8 @@ if (typeof console === "undefined") {
         if (obj.ifaces !== undefined) {
             // if we already have ifaces, report error
             if (ifaces.length !== 0) {
-                throw new module.IfaceError(obj);
+                throw new module.IfaceError(
+                    "object has both ifaces as well as iface property");
             }
             // a string instead of an array for ifaces will also work,
             // as it's added by concat too
@@ -231,7 +244,7 @@ if (typeof console === "undefined") {
                 continue;
             }
             ret.push(base);
-            var basebases = module._ifaces[base];
+            var basebases = _ifaces[base];
             if (basebases) {
                 // XXX should we warn/error on unknown interfaces?
                 bases = bases.concat(basebases);
