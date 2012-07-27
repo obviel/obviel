@@ -16,5 +16,8 @@ config["Obviel Tests"] = {
     ],
     tests: [
         "src/btest/test-*.js"
+    ],
+    resources: [
+        {path: '/', file: 'src/btest/body.html'}
     ]
 }
