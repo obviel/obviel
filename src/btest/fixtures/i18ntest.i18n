@@ -1,0 +1,12 @@
+{
+    "i18ntest": [
+        {
+            "locale": "en_US",
+            "url": null
+        },
+        {
+            "locale": "nl_NL",
+            "url": "i18n-nl.json"
+        }
+    ]
+}

@@ -2,6 +2,9 @@
 var assert = buster.assert;
 var refuse = buster.refute;
 
+// XXX this is a bit ugly
+var fixturePath = buster.env.contextPath + '/src/btest/fixtures/';
+
 var testel = function() {
     return $(document.createElement('div'));
 };
@@ -145,6 +148,50 @@ var coreTestCase = buster.testCase("core tests", {
         var el = testel();
         el.render({text: 'qux', ifaces: ['ifoo']});
         assert.equals(el.text(), 'qux');
+    },
+
+    'init': function() {
+        obviel.view({
+            iface: 'ifoo',
+            init: function() {
+            this.whatever = true;
+            }
+        });
+        var el = testel();
+        el.render({ifaces: ['ifoo']});
+        assert.equals(el.view().whatever, true);
+    },
+    
+    'cleanup': function() {
+        var cleanupCalled = false;
+        obviel.view({
+            iface: 'cleanup',
+            render: renderText,
+            cleanup: function() { cleanupCalled = true; }
+        });
+        obviel.view({
+            ifaces: 'another',
+            render: renderText
+        });
+        var el = testel();
+        el.render({text: 'bar', ifaces: ['cleanup']}).done(
+            function(view) {
+                assert.equals(view.el.text(), 'bar');
+                el.render({text: 'foo', ifaces: ['another']});
+                assert.equals(view.el.text(), 'foo');
+                assert(cleanupCalled);
+            });
+    },
+    
+    'render url, default name': function(done) {
+        obviel.view({
+            render: renderText
+        });
+        var el = testel();
+        el.render(fixturePath + 'default.json').done(function() {
+            assert.equals(el.text(), 'foo');
+            done();
+        });
     }
 
 });
