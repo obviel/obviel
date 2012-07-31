@@ -5,7 +5,6 @@ config["Obviel Tests"] = {
     environment: "browser",
     libs: [
         'src/dependencies/jquery.js',
-        'src/dependencies/jquery.mockjax.js',
         'src/dependencies/Gettext.js'
     ],
     
