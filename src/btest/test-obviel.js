@@ -329,9 +329,9 @@ var coreTestCase = buster.testCase("core tests", {
     // XXX is this correct?
     'rerender without viewstack': function() {
             var newel = $('div');
-        // no checking, should just not throw an exception
-        $(newel).rerender();
-        assert(true);
+        refute.exception(function() {
+            $(newel).rerender();
+        });
     }
 
 });
