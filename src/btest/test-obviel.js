@@ -11,6 +11,19 @@ var testel = function() {
 
 var renderText = function() { this.el.text(this.obj.text); };
 
+var trim = function(s) {
+    return s.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+};
+
+var htmlLower = function(html) {
+    // some nasty normalization for browser compatibility
+    // Firefox & IE give different cases for html, and
+    // also sometimes Firefox includes a \n where IE does not.
+    // I would use trimRight instead of a regular expression but
+    // IE 7 at least doesn't support it yet
+    return trim(html.toLowerCase().replace(/\s+$/, ''));
+};
+
 var coreTestCase = buster.testCase("core tests", {
     setUp: function() {
         this.server = sinon.fakeServer.create();
@@ -332,6 +345,151 @@ var coreTestCase = buster.testCase("core tests", {
         refute.exception(function() {
             $(newel).rerender();
         });
+    },
+
+    'rerender ephemeral': function() {
+        obviel.view({
+            render: renderText
+        });
+        obviel.view({
+            name: 'ephemeral',
+            ephemeral: true,
+            render: renderText
+        });
+        var el = testel();
+        el.render({text: 'foo'});
+        assert.equals(el.text(), 'foo');
+        el.render({text: 'bar'}, 'ephemeral');
+        assert.equals(el.text(), 'bar');
+        el.rerender();
+        assert.equals(el.text(), 'foo');
+    },
+
+    'render subviews': function(done) {
+        obviel.view({
+            iface: 'subviews',
+            render: function() {
+                this.el.html('<div id="sub1"></div><div id="sub2"></div>' +
+                             '<div id="sub3"></div>');
+            },
+            subviews: {
+                '#sub1': 'subUrl',
+                '#sub2': 'subHtml',
+                '#sub3': ['subNamed', 'foo']
+            }
+        });
+        
+        obviel.view({
+            render: renderText
+        });
+
+        obviel.view({
+            name: 'foo',
+            render: function() {
+                this.el.text('named');
+            }
+        });
+
+        var el = testel();
+
+        this.server.restore();
+        el.render({
+            ifaces: ['subviews'],
+            subUrl: fixturePath + 'default.json', // url
+            subHtml: {text: 'bar'}, //  obj
+            subNamed: {} // is registered by name foo
+        }).done(function() {
+            assert.equals($('#sub1', el).text(), 'foo');
+            assert.equals($('#sub2', el).text(), 'bar');
+            assert.equals($('#sub3', el).text(), 'named');
+            done();
+        });
+    },
+
+    'render subview false argument': function() {
+        obviel.view({
+            render: function() {
+                this.el.html('<div id="sub1"></div>');
+            },
+            subviews: {
+                '#sub1': 'subContent'
+            }
+        });
+        // should just not render the sub view
+        var el = testel();
+        el.render({
+            subContent: false
+        });
+        assert.equals($('#sub1', el).text(), '');
+    },
+
+    'render subview undefined argument': function() {
+        obviel.view({
+            render: function() {
+                this.el.html('<div id="sub1"></div>');
+            },
+            subviews: {
+                '#sub1': 'subContent'
+            }
+        });
+        
+        // should also not render the sub view
+        var el = testel();
+        el.render({});
+        assert.equals($('#sub1', el).text(), '');
+    },
+
+    'view with html': function() {
+        var renderCalled = 0;
+        obviel.view({
+            iface: 'html',
+            html: '<div>foo!</div>',
+            render: function() {
+                renderCalled++;
+            }
+        });
+
+        var el = testel();
+        el.render(
+            {ifaces: ['html']}).done(function() {
+                assert.equals(htmlLower(el.html()), '<div>foo!</div>');
+                assert.equals(renderCalled, 1);
+            });
+    },
+
+    'view with htmlScript pointing to missing id': function() {
+        obviel.view({
+            iface: 'html',
+            htmlScript: 'nonexistent_id'
+        });
+
+        var el = testel();
+        assert.exception(function() {
+            el.render({ifaces: ['html']});
+        }, 'SourceLoaderError');
+    },
+    
+    'view with htmlScript pointing to existing id': function() {
+        var renderCalled = 0;
+        obviel.view({
+            iface: 'html',
+            htmlScript: 'html_script_id',
+            render: function() {
+                renderCalled++;
+            }
+        });
+
+        var el = testel();
+
+        // make sure that the script tag is available
+        $('body').append(
+            '<script type="text/template" id="html_script_id"><div>foo!</div></script>');
+
+        el.render({ifaces: ['html']}).done(
+            function() {
+                assert.equals(htmlLower(el.html()), '<div>foo!</div>');
+                assert.equals(renderCalled, 1);
+            });
     }
 
 });

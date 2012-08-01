@@ -668,7 +668,9 @@ if (typeof console === "undefined") {
     };
     
     module.SourceLoaderError = function(text) {
+        this.name = 'SourceLoaderError';
         this.text = text;
+        this.message = this.toString();
     };
 
     module.SourceLoaderError.toString = function() {
