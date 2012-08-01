@@ -702,7 +702,7 @@ Doing this by hand is not too bad, but Obviel also allows you to do this
 using a template using ``data-view``::
 
   obviel.view({
-    obvt: '<div data-view="attr"></div>
+    obvt: '<div data-view="attr"></div>'
   });
 
 Wow, that's a lot shorter! 
