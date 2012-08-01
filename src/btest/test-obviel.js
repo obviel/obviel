@@ -490,6 +490,172 @@ var coreTestCase = buster.testCase("core tests", {
                 assert.equals(htmlLower(el.html()), '<div>foo!</div>');
                 assert.equals(renderCalled, 1);
             });
+    },
+
+    'view with htmlUrl': function(done) {
+        var renderCalled = 0;
+        obviel.view({
+            iface: 'html',
+            htmlUrl: fixturePath + 'test1.html',
+            render: function() {
+                renderCalled++;
+            }
+        });
+
+        this.server.restore();
+        
+        $('#viewdiv').render(
+            {ifaces: ['html']}).done(function() {
+                assert.equals(htmlLower($('#viewdiv').html()), '<div>foo</div>');
+                assert.equals(renderCalled, 1);
+                done();
+            });
+    },
+                                   
+    'html context attribute overrides htmlUrl view one': function(done) {
+        var renderCalled = 0;
+        obviel.view({
+            iface: 'html',
+            htmlUrl: fixturePath + 'test1.html',
+            render: function() {
+                renderCalled++;
+            }
+        });
+
+        this.server.restore();
+        
+        $('#viewdiv').render(
+            {ifaces: ['html'],
+             html: '<span>spam!</span>'}).done(function() {
+                 assert.equals(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+                 assert.equals(renderCalled, 1);
+                 done();
+             });
+    },
+    
+    'html context attribute overrides html view one': function(done) {
+        var renderCalled = 0;
+        obviel.view({
+            iface: 'html',
+            html: '<span>overridden</span>',
+            render: function() {
+                renderCalled++;
+            }
+        });
+                    
+        $('#viewdiv').render(
+            {ifaces: ['html'],
+             html: '<span>spam!</span>'}).done(function() {
+                 assert.equals(htmlLower($('#viewdiv').html()), '<span>spam!</span>');
+                 assert.equals(renderCalled, 1);
+                 done();
+             });
+    },
+    
+    'htmlUrl context attr overrides html view one': function(done) {
+        obviel.view({
+            iface: 'inlineHtml',
+            html: '<span></span>',
+            render: function() {
+                // this will not work as there is no span
+                $('span', this.el).text(this.obj.text);
+            }
+        });
+        this.server.restore();
+        $('#viewdiv').render(
+            {ifaces: ['inlineHtml'],
+             htmlUrl: fixturePath + 'test1.html',
+             text: 'spam'}).done(function() {
+                 assert.equals(htmlLower($('#viewdiv').html()), '<div>foo</div>');
+                 done();
+             });
+    },
+
+    'jsonScript view': function(done) {
+        obviel.view({
+            iface: 'jt',
+            jsontScript: 'jsont_script_id'
+        });
+        
+        var cache = obviel.cachedTemplates;
+        // some implementation detail knowledge about cache keys is here
+        var cacheKey = 'script_jsont_jsont_script_id';
+        assert.equals(cache.get(cacheKey), null);
+
+        $('body').append('<script type="text/template" id="jsont_script_id"><div>{foo}</div></script>');
+        
+        $('#viewdiv').render(
+            {foo: 'the value', ifaces: ['jt']}).done(function() {
+                assert.equals($.trim($('#viewdiv').text()), 'the value');
+                // we can find it in the cache now
+                assert(cache.get(cacheKey));
+                done();
+            });
+    },
+
+    'html inline view is not cached': function(done) {
+        obviel.view({
+            iface: 'foo',
+            html: '<p class="foo"></p>',
+            render: function() {
+                $('.foo', this.el).text(this.obj.foo);
+                }
+        });
+        
+        var cache = obviel.cachedTemplates;
+        // some implementation detail knowledge about cache keys is here
+        var cacheKey = 'inline_html_<p class="foo"></p>';
+        assert.equals(cache.get(cacheKey), null);
+        
+        $('#viewdiv').render(
+            {foo: 'the value', ifaces: ['foo']}).done(function() {
+                assert.equals($.trim($('#viewdiv .foo').text()), 'the value');
+                // we can find it in the cache now
+                assert.equals(cache.get(cacheKey), null);
+                done();
+            });
+    },
+    
+    'jsont view': function(done) {
+
+        this.server.restore();
+
+        obviel.view({
+            iface: 'jt',
+            jsontUrl: fixturePath + 'test1.jsont'
+        });
+        
+        var cache = obviel.cachedTemplates;
+        // some implementation detail knowledge about cache keys is here
+        var cacheKey = 'url_jsont_' + fixturePath + 'test1.jsont';
+        assert.equals(cache.get(cacheKey), null);
+        
+        $('#viewdiv').render(
+            {foo: 'the value', ifaces: ['jt']}).done(function() {
+                assert.equals($.trim($('#viewdiv').text()), 'the value');
+                // we can find it in the cache now
+                assert(cache.get(cacheKey));
+                done();
+            });
+    },
+
+    'view override on iface': function() {
+        var el = $('#viewdiv');
+        obviel.view({
+            iface: 'ifoo',
+            render: renderText
+        });
+        obviel.view({
+            iface: 'ifoo',
+            render: function() {
+                this.el.text('spam: ' + this.obj.text);
+            }
+        });
+        el.render({
+            ifaces: ['ifoo'],
+            text: 'eggs'});
+        assert.equals(el.text(), 'spam: eggs');
     }
+
 
 });

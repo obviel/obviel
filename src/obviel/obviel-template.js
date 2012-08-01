@@ -91,6 +91,7 @@ obviel.template = {};
     };
     
     module.CompilationError = function(el, message) {
+        this.name = 'CompilationError';
         this.el = el;
         this.message = message;
     };
@@ -98,6 +99,7 @@ obviel.template = {};
     module.CompilationError.prototype = new module.Error();
     
     module.RenderError = function(el, message) {
+        this.name = 'RenderError';
         this.el = el;
         this.message = message;
     };
