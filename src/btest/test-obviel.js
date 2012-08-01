@@ -655,6 +655,264 @@ var coreTestCase = buster.testCase("core tests", {
             ifaces: ['ifoo'],
             text: 'eggs'});
         assert.equals(el.text(), 'spam: eggs');
+    },
+
+    'render on ancestor': function() {
+        var called = 0;
+        
+        obviel.view({
+            iface: 'ifoo',
+            render: function() {
+                this.el.append('<div>' + this.obj.text + '</div>');
+                called++;
+            }
+        });
+        
+        // first render on ancestor
+        $('#jsview-area').render({
+            ifaces: ['ifoo'],
+            text: 'eggs'
+        });
+        // we now have a div appended
+        assert.equals($('#jsview-area').children().last().text(), 'eggs');
+        assert.equals(called, 1);
+        
+        // then render on viewdiv, descendant of ancestor. but because
+        // we have rendered this iface on ancestor, it will bubble up
+        $('#viewdiv').render({
+            ifaces: ['ifoo'],
+            text: 'ham'
+        });
+        assert.equals(called, 2);
+        // nothing added to viewdiv
+        assert.equals($('#viewdiv').children().length, 0);
+        // instead it got added to jsview-area
+        assert.equals($('#jsview-area').children().last().text(), 'ham');
+        // this does apply directly to viewdiv
+        obviel.view({
+            iface: 'ibar',
+            render: renderText
+        });
+        $('#viewdiv').render({
+            ifaces: ['ibar'],
+            text: 'spam'
+        });
+        assert.equals($('#viewdiv').text(), 'spam');
+        assert.equals(called, 2);
+        // but rendering an ifoo again brings us back to jsview-area
+        $('#viewdiv').render({
+            ifaces: ['ifoo'],
+            text: 'breakfast'
+        });
+        assert.equals(called, 3);
+        assert.equals($('#jsview-area').children().last().text(), 'breakfast');
+    },
+
+    'render-done.obviel event without subviews': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: 'something'
+        });
+        var el = $('#viewdiv');
+        var called = 0;
+        el.bind('render-done.obviel', function(ev) {
+            called++;
+            // this is called only once
+            assert.equals(called, 1);
+            assert.equals(el.text(), 'something');
+            done();
+        });
+        el.render({ifaces: ['ifoo']});
+    },
+                                   
+    'render-done.obviel event with subviews': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="sub1"></div><div id="sub2"></div>',
+            subviews: {
+                '#sub1': 'sub1',
+                '#sub2': 'sub2'
+            }
+        });
+        obviel.view({
+            render: renderText
+        });
+        // hook in event handler
+        var el = $('#viewdiv');
+        var called = 0;
+        el.bind('render-done.obviel', function(ev) {
+            called++;
+            if (ev.view.iface == 'ifoo') {
+                assert.equals(called, 3);
+                assert.equals($('#sub1').text(), 'foo');
+                assert.equals($('#sub2').text(), 'sub2 text');
+                done();
+            }
+        });
+
+        this.server.restore();
+        
+        el.render({
+            ifaces: ['ifoo'],
+            sub1: fixturePath + 'default.json',
+            sub2: {'text': 'sub2 text'}
+        });
+        
+    },
+
+    'view events': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            events: {
+                'custom': {
+                    '#id1': function(ev) {
+                        assert.equals(ev.view.iface, 'ifoo');
+                        assert(true, "event triggered");
+                        done();
+                    }
+                }
+            }
+        });
+        var el = $('#viewdiv');
+        el.render({ifaces: ['ifoo']});
+        $('#id1').trigger('custom');
+    },
+
+    'view events handler string': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            custom: function(ev) {
+                var self = this;
+                assert.equals(self.iface, 'ifoo');
+                assert(ev.view === self);
+                assert(true, "event triggered");
+                done();
+            },
+            events: {
+                'custom': {
+                    '#id1': 'custom'
+                }
+            }
+        });
+        var el = $('#viewdiv');
+        el.render({ifaces: ['ifoo']});
+        $('#id1').trigger('custom');
+    },
+
+    'view events cleanup': function() {
+        var called = 0;
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            events: {
+                'custom': {
+                    '#id1': function(ev) {
+                        called++;
+                    }
+                }
+            }
+        });
+        obviel.view({
+            iface: 'ibar'
+        });
+        var el = $('#viewdiv');
+        el.render({ifaces: ['ifoo']});
+        // rendering ibar will clean up the events for ifoo, so the
+        // event shouldn't have been triggered
+        el.render({ifaces: ['ibar']});
+        $('#id1').trigger('custom');
+        assert.equals(called, 0);
+    },
+
+    'view events cleanup handler string': function() {
+        var called = 0;
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            custom: function(ev) {
+                called++;
+            },
+            events: {
+                'custom': {
+                    '#id1': 'custom'
+                }
+        }
+        });
+        obviel.view({
+            iface: 'ibar'
+        });
+        var el = $('#viewdiv');
+        el.render({ifaces: ['ifoo']});
+        // rendering ibar will clean up the events for ifoo, so the
+        // event shouldn't have been triggered
+        el.render({ifaces: ['ibar']});
+        $('#id1').trigger('custom');
+        assert.equals(called, 0);
+    },
+
+    // object events
+    'object events': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            objectEvents: {
+                'custom': function(ev) {
+                    assert.equals(ev.view.iface, 'ifoo');
+                    assert(true, "event triggered");
+                    done();
+                    }
+            }
+        });
+        var el = $('#viewdiv');
+        var obj = {ifaces: ['ifoo']};
+        el.render(obj);
+        $(obj).trigger('custom');
+    },
+
+    'object events handler string': function(done) {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="id1"></div>',
+            custom: function(ev) {
+                var self = this;
+                assert.equals(self.iface, 'ifoo');
+                assert(ev.view === self);
+                assert(true, "event triggered");
+                done();
+            },
+            objectEvents: {
+                'custom': 'custom'
+            }
+        });
+        var el = $('#viewdiv');
+        var obj = {ifaces: ['ifoo']};
+        el.render(obj);
+        $(obj).trigger('custom');
+    },
+
+    'object event triggers rerender': function() {
+        obviel.view({
+            iface: 'ifoo',
+            html: '<div id="theId"></div>',
+            render: function() {
+                $('#theId', this.el).text(this.obj.title);
+            },
+            objectEvents: {
+            'custom': 'rerender'
+            }
+        });
+        var el = $('#viewdiv');
+        var obj = {ifaces: ['ifoo'], title: 'Hello'};
+        el.render(obj);
+
+        assert.equals($('#theId').text(), 'Hello');
+        
+        obj.title = 'Bye';
+        $(obj).trigger('custom');
+        
+        assert.equals($('#theId').text(), 'Bye');    
     }
 
 
