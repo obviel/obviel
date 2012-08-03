@@ -29,18 +29,23 @@ obviel.sync = {};
     };
     
     module.HttpRequest = function(d) {
+        if (!(this instanceof module.HttpRequest)) {
+            return new module.HttpRequest(d);
+        }
         this.method = d.method || 'POST';
         this.getUrl = d.url;
+        return this;
     };
 
-    module.HttpRequest.prototype.process = function(m) {
-        // XXX at this stage we cannot distinguish between container and obj
-        // anymore. we need to do it earlier
-        var url = this.getUrl(m);
+    module.HttpRequest.prototype.process = function(d) {
+        var url = this.getUrl(d);
         return $.ajax({
-            method: this.method,
-            url: url
-            // content type, payload
+            type: this.method,
+            url: url,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: d
         });
     };
     
@@ -53,7 +58,7 @@ obviel.sync = {};
     
     module.mapping = function(m) {
         // XXX should use cleverer iface storage aware of inheritance?
-        mappings[iface] = m;
+        mappings[m.iface] = m;
     };
     
     var ObjectMutator = function(session, obj) {
@@ -95,30 +100,33 @@ obviel.sync = {};
     };
 
     Session.prototype.add = function(container, propertyName, obj) {
-        this.actions.push({action: 'add',
+        this.actions.push({name: 'add',
                            container: container,
                            propertyName: propertyName,
                            obj: obj});
     };
 
     Session.prototype.update = function(obj) {
-        this.actions.push({action: 'update',
+        this.actions.push({name: 'update',
                            obj: obj});
     };
     
     Session.prototype.commit = function() {
         var i, action,
-            conn = this.connection;
+            conn = this.connection,
+            promises = [];
+        
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.name === 'add') {
-                conn.add(action);
+                promises.push(conn.add(action));
             } else if (action.name === 'update') {
-                conn.update(action.obj);
+                promises.push(conn.update(action.obj));
             }
         }
         
         this.connection.complete();
+        return $.when.apply(null, promises);
     };
 
     Session.prototype.mutator = function(obj) {
@@ -138,35 +146,44 @@ obviel.sync = {};
         if (target === undefined) {
             // XXX should we complain we try to send something to nonexistent
             // target?
-            return;
+            return null;
         }
         var add = target.add;
         if (add === undefined) {
             // XXX again should we complain?
-            return;
+            return null;
         }
-        add.process(m);
+        return add.process(m);
     };
 
     
     module.Connection.prototype.update = function(obj) {
-        var target = mappings[m.obj.iface].target;
+        var target = mappings[obj.iface].target;
         if (target === undefined) {
             // XXX should we complain we try to send something to nonexistent
             // target?
-            return;
+            return null;
         }
         var update = target.update;
         if (update === undefined) {
             // XXX again should we complain?
-            return;
+            return null;
         }
-        update.process(obj);
-    
+        return update.process(obj);
+    };
+
+    module.Connection.prototype.complete = function() {
+        
     };
     
     module.Connection.prototype.session = function() {
         return new Session(this);
+    };
+
+    module.modelProperty = function(name) {
+        return function(model) {
+            return model[name];
+        };
     };
     
     // module.WebSocketConnection = function() {
