@@ -92,12 +92,16 @@ obviel.sync = {};
 
     Session.prototype.processSource = function(obj) {
         var entries=obj.obvielsync,
-            source, i, entry;
+            source, i, entry, info;
         for (i = 0; i < entries.length; i++) {
             entry = entries[i];
             if (entry.action === 'update') {
                 source = this.connection.getSource(entry);
                 objectUpdater(source.update.finder(entry.obj), entry.obj);
+            } else if (entry.action === 'add') {
+                source = this.connection.getSource(entry);
+                info = source.add.finder(entry.obj);
+                info.container[info.propertyName].push(entry.obj);
             }
         }
     };

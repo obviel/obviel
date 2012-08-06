@@ -2,7 +2,7 @@
 var assert = buster.assert;
 var refuse = buster.refute;
 
-var syncTestCase = buster.testCase("sync tests", {
+var syncTestCase = buster.testCase("sync tests:", {
     setUp: function() {
         this.server = sinon.fakeServer.create();
         this.server.autoRespond = true;
@@ -134,7 +134,6 @@ var syncTestCase = buster.testCase("sync tests", {
             value: 1.0
         };
 
-
         obviel.sync.mapping({
             iface: 'test',
             source: {
@@ -179,7 +178,67 @@ var syncTestCase = buster.testCase("sync tests", {
             assert.equals(obj.value, 2.0);
             done();
         });
+    },
+    "source add from HTTP response": function(done) {
+        var container = {
+            iface: 'container',
+            entries: []
+        };
+        
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                add: {
+                    finder: function(serverObj) {
+                        return {
+                            container: container,
+                            propertyName: 'entries'
+                        };
+                    }
+                }
+            }
+        });
+        
+        this.server.respondWith('POST', 'getUpdates', function(request) {
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    obvielsync: [
+                        {
+                            'action': 'add',
+                            'obj': {
+                                iface: 'test',
+                                id: 'testid',
+                                value: 2.0
+                            }
+                        }
+                    ]
+                }));
+        });
+        
+        
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+        
+        $.ajax({
+            type: 'POST',
+            url: 'getUpdates',
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: {}
+        }).done(function(entries) {
+            session.processSource(entries);
+            assert.equals(container.entries.length, 1);
+            assert.equals(container.entries[0], {
+                iface: 'test',
+                id: 'testid',
+                value: 2.0
+            });
+            done();
+        });
     }
+
 
     
 });
