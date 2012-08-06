@@ -128,10 +128,20 @@ var syncTestCase = buster.testCase("sync tests", {
         });
     },
     "source update from HTTP response": function(done) {
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+
         obviel.sync.mapping({
             iface: 'test',
             source: {
-                update: {                    
+                update: {
+                    finder: function(serverObj) {
+                        return obj;
+                    }
                 }
             }
         });
@@ -142,23 +152,17 @@ var syncTestCase = buster.testCase("sync tests", {
                 JSON.stringify({
                     obvielsync: [
                         {
-                            iface: 'test',
-                            id: 'testid',
-                            value: 2.0
+                            'action': 'update',
+                            'obj': {
+                                iface: 'test',
+                                id: 'testid',
+                                value: 2.0
+                            }
                         }
                     ]
                 }));
         });
         
-        var obj = {
-            iface: 'test',
-            id: 'testid',
-            value: 1.0
-        };
-
-        var getById = function(id) {
-            return obj;
-        };
         
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
@@ -171,7 +175,7 @@ var syncTestCase = buster.testCase("sync tests", {
             dataType: 'json',
             data: {}
         }).done(function(entries) {
-            session.processSource(entries, getById);
+            session.processSource(entries);
             assert.equals(obj.value, 2.0);
             done();
         });

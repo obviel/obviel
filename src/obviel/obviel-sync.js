@@ -90,12 +90,15 @@ obviel.sync = {};
         return $.when.apply(null, promises);
     };
 
-    Session.prototype.processSource = function(obj, getById) {
+    Session.prototype.processSource = function(obj) {
         var entries=obj.obvielsync,
-            i, entry;
+            source, i, entry;
         for (i = 0; i < entries.length; i++) {
             entry = entries[i];
-            objectUpdater(getById(entry.id), entry);
+            if (entry.action === 'update') {
+                source = this.connection.getSource(entry);
+                objectUpdater(source.update.finder(entry.obj), entry.obj);
+            }
         }
     };
     
@@ -117,6 +120,15 @@ obviel.sync = {};
             throw new module.ConnectionError("No target defined");
         }
         return target;
+    };
+
+    
+    module.Connection.prototype.getSource = function(m) {
+        var source = mappings[m.obj.iface].source;
+        if (source === undefined) {
+            throw new module.ConnectionError("No source defined");
+        }
+        return source;
     };
 
     module.Connection.prototype.getPropertiesFunc = function(context) {
