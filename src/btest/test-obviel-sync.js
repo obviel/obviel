@@ -94,39 +94,38 @@ var syncTestCase = buster.testCase("sync tests", {
                                     value: 1.0});
             done();
         });
-    }// ,
-    // "update to websocket": function(done) {
-    //     obviel.sync.mapping({
-    //         iface: 'test',
-    //         target: {
-    //             update: {
-    //                 connection: obviel.sync.webSocketConnection,
-    //                 properties: function(obj) { 
-    //                     return { type: 'updateTest'};
-    //                 }
-    //             }
-    //         }
-    //     });
-    //     var updateData = null;
+    },
+    "update to socket io": function(done) {
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                    socketIoProperties: function(m) {
+                        return {
+                            type: 'updateTest'
+                        };
+                    }
+                }
+            }
+        });
+        // mock a socket io
+        var io = {
+            emit: sinon.spy()
+        };
+        
+        var conn = new obviel.sync.SocketIoConnection(io);
+        var session = conn.session();
 
-    //     var fakeWebSocket = function() {
-            
-    //     };
-    //     var conn = new obviel.sync.Connection();
-    //     var session = conn.session();
-
-    //     var obj = {
-    //         iface: 'test',
-    //         id: 'testid',
-    //         value: 1.0,
-    //         updateUrl: testUrl
-    //     };
-    //     session.update(obj);
-    //     session.commit().done(function() {
-    //         assert.equals(updateData.value, 1.0);
-    //         done();
-    //     });
-    // },
-
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+        session.update(obj);
+        session.commit().done(function() {
+            assert(io.emit.calledWith('updateTest', obj));
+            done();
+        });
+    }
     
 });

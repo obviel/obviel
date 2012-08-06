@@ -160,59 +160,20 @@ obviel.sync = {};
         });
     };
 
-    
-    // module.WebSocketConnection = function() {
 
-    // };
-    
-    // module.WebSocketConnection.prototype = new module.Connection;
-    
-    // module.HttpConnection = function() {
+    module.SocketIoConnection = function(io) {
+        this.io = io;
+    };
 
-    // };
+    module.SocketIoConnection.prototype = new module.Connection();
 
-    // module.HttpConnection.prototype = new module.Connection;
+    module.SocketIoConnection.prototype.getPropertiesFunc = function(m) {
+        return m.socketIoProperties;
+    };
     
-    
-            
-    // mapping({
-    //     iface: 'animal',
-    //     // or container defined here
-        
-    //     updatedBy: {
-    //         event: 'updateAnimal',
-    //         // transformer could do this automatically if needed
-    //         transformer: function(obj) {
-    //             obj.iface = 'animal';
-    //         },
-    //         // finder could be a standard id based one with identity map
-    //         finder: function(obj) {
-    //             return app.animals[obj.id];
-    //         }
-    //     },
-    //     // could interpret a list of events too
-    //     addedBy: {
-    //         event: 'addAnimal',
-    //         containerFinder: function(obj) {
-    //             return app.animals;
-    //         },
-    //         // or directly
-    //         container: model('app.animals')
-    //     },
-    //     onUpdate: {
-    //         event: 'updateAnimal',
-    //         // revert back to server model
-    //         transformer: function(obj) {
-    //             // or do we make a copy of it here or outside?
-    //             delete obj.iface;
-    //             return obj;
-    //         },
-    //         // could be automated using id
-    //         id: function(obj) {
-    //             return obj.id;
-    //         }
-    //     }
-    // });
+    module.SocketIoConnection.prototype.processTarget = function(properties, obj) {
+        this.io.emit(properties.type, obj);
+    };
     
     var rules = {};
 
