@@ -14,12 +14,14 @@ var syncTestCase = buster.testCase("sync tests", {
         obviel.sync.mapping({
             iface: 'test',
             target: {
-                update: obviel.sync.HttpRequest(),
-                properties: function(obj) {
-                    return {
-                        method: 'POST',
-                        url: obj['updateUrl']
-                    };
+                update: {
+                    connection: obviel.sync.httpConnection,
+                    properties: function(obj) {
+                        return {
+                            method: 'POST',
+                            url: obj['updateUrl']
+                        };
+                    }
                 }
             }
         });
@@ -52,12 +54,14 @@ var syncTestCase = buster.testCase("sync tests", {
         obviel.sync.mapping({
             iface: 'test',
             target: {
-                add: obviel.sync.HttpRequest(),
-                properties: function(container, propertyName, obj) {
-                    return {
-                        method: 'POST',
-                        url: container['addUrl']
-                    };
+                add: {
+                    connection: obviel.sync.httpConnection,
+                    properties: function(container, propertyName, obj) {
+                        return {
+                            method: 'POST',
+                            url: container['addUrl']
+                        };
+                    }
                 }
             }
         });

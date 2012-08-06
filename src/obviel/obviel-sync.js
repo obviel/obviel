@@ -10,48 +10,12 @@ if (typeof obviel === "undefined") {
 obviel.sync = {};
 
 (function($, module) {
-
+    module.ConnectionError = function(message) {
+        this.name = 'ConnectionError';
+        this.message = message;
+    };
+    
     var mappings = {};
-
-    // "events" or actions or interactions with the outside world
-
-    // XXX need to distinguish between incoming, outgoing
-    module.WebSocket = function(name) {
-
-    };
-
-    // an incoming http response, from source. or is this really
-    // an incoming http response as a result target action? I guess
-    // with HTTP target and source are the same due to request/response
-    // pattern
-    module.HttpResponse = function(d) {
-
-    };
-    
-    module.HttpRequest = function() {
-        if (!(this instanceof module.HttpRequest)) {
-            return new module.HttpRequest();
-        }
-        return this;
-    };
-
-    module.HttpRequest.prototype.process = function(d, obj) {
-        return $.ajax({
-            type: d.method,
-            url: d.url,
-            processData: false,
-            contentType: 'application/json',
-            dataType: 'json',
-            data: obj
-        });
-    };
-    
-    module.Memory = function() {
-
-    };
-    module.LocalStorage = function() {
-
-    };
     
     module.mapping = function(m) {
         // XXX should use cleverer iface storage aware of inheritance?
@@ -118,7 +82,7 @@ obviel.sync = {};
             if (action.name === 'add') {
                 promises.push(conn.add(action));
             } else if (action.name === 'update') {
-                promises.push(conn.update(action.obj));
+                promises.push(conn.update(action));
             }
         }
         
@@ -135,39 +99,36 @@ obviel.sync = {};
     // };
     
     module.Connection = function() {
-
+        return this;
     };
 
-    module.Connection.prototype.add = function(m) {
+    module.Connection.prototype.getTarget = function(m) {
         var target = mappings[m.obj.iface].target;
         if (target === undefined) {
-            // XXX should we complain we try to send something to nonexistent
-            // target?
-            return null;
+            throw new module.ConnectionError("No target defined");
         }
-        var add = target.add;
+        return target;
+    };
+    
+    module.Connection.prototype.add = function(m) {
+        var target = this.getTarget(m),
+            add = target.add;
         if (add === undefined) {
-            // XXX again should we complain?
-            return null;
+            throw new module.ConnectionError("No add defined for target");
         }
-        return add.process(target.properties(
+        return add.connection.processTarget(add.properties(
             m.container, m.propertyName, m.obj), m.obj);
     };
-
     
-    module.Connection.prototype.update = function(obj) {
-        var target = mappings[obj.iface].target;
-        if (target === undefined) {
-            // XXX should we complain we try to send something to nonexistent
-            // target?
-            return null;
-        }
-        var update = target.update;
+    module.Connection.prototype.update = function(m) {
+        var target = this.getTarget(m),
+            update = target.update;
         if (update === undefined) {
-            // XXX again should we complain?
-            return null;
+            throw new module.ConnectionError("No update defined for target");
         }
-        return update.process(target.properties(obj), obj);
+        // XXX more error handling
+        return update.connection.processTarget(update.properties(
+            m.obj), m.obj);
     };
 
     module.Connection.prototype.complete = function() {
@@ -178,18 +139,23 @@ obviel.sync = {};
         return new Session(this);
     };
 
-    module.modelProperty = function(name) {
-        return function(model) {
-            return model[name];
-        };
+    module.HttpConnection = function() {
     };
 
-    module.containerProperty = function(name) {
-        return function(container, propertyName, model) {
-            return container[name];
-        };
-    };
+    module.HttpConnection.prototype = new module.Connection();
     
+    module.HttpConnection.prototype.processTarget = function(properties, obj) {
+        return $.ajax({
+            type: properties.method,
+            url: properties.url,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: obj
+        });
+    };
+
+    module.httpConnection = new module.HttpConnection();
     
     // module.WebSocketConnection = function() {
 
