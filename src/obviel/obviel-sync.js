@@ -109,6 +109,10 @@ obviel.sync = {};
         }
         return target;
     };
+
+    module.Connection.prototype.getPropertiesFunc = function(context) {
+        throw new module.ConnectionError("Not implemented");
+    };
     
     module.Connection.prototype.add = function(m) {
         var target = this.getTarget(m),
@@ -116,8 +120,7 @@ obviel.sync = {};
         if (add === undefined) {
             throw new module.ConnectionError("No add defined for target");
         }
-        return add.connection.processTarget(add.properties(
-            m.container, m.propertyName, m.obj), m.obj);
+        return this.processTarget(this.getPropertiesFunc(add)(m), m.obj);
     };
     
     module.Connection.prototype.update = function(m) {
@@ -126,9 +129,7 @@ obviel.sync = {};
         if (update === undefined) {
             throw new module.ConnectionError("No update defined for target");
         }
-        // XXX more error handling
-        return update.connection.processTarget(update.properties(
-            m.obj), m.obj);
+        return this.processTarget(this.getPropertiesFunc(update)(m), m.obj);
     };
 
     module.Connection.prototype.complete = function() {
@@ -141,8 +142,12 @@ obviel.sync = {};
 
     module.HttpConnection = function() {
     };
-
+    
     module.HttpConnection.prototype = new module.Connection();
+
+    module.HttpConnection.prototype.getPropertiesFunc = function(m) {
+        return m.httpProperties;
+    };
     
     module.HttpConnection.prototype.processTarget = function(properties, obj) {
         return $.ajax({
@@ -155,7 +160,6 @@ obviel.sync = {};
         });
     };
 
-    module.httpConnection = new module.HttpConnection();
     
     // module.WebSocketConnection = function() {
 

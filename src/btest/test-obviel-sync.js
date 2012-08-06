@@ -15,11 +15,10 @@ var syncTestCase = buster.testCase("sync tests", {
             iface: 'test',
             target: {
                 update: {
-                    connection: obviel.sync.httpConnection,
-                    properties: function(obj) {
+                    httpProperties: function(m) {
                         return {
                             method: 'POST',
-                            url: obj['updateUrl']
+                            url: m.obj['updateUrl']
                         };
                     }
                 }
@@ -35,7 +34,7 @@ var syncTestCase = buster.testCase("sync tests", {
                             JSON.stringify({}));
         });
 
-        var conn = new obviel.sync.Connection();
+        var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
 
         var obj = {
@@ -55,11 +54,10 @@ var syncTestCase = buster.testCase("sync tests", {
             iface: 'test',
             target: {
                 add: {
-                    connection: obviel.sync.httpConnection,
-                    properties: function(container, propertyName, obj) {
+                    httpProperties: function(m) {
                         return {
                             method: 'POST',
-                            url: container['addUrl']
+                            url: m.container['addUrl']
                         };
                     }
                 }
@@ -76,7 +74,7 @@ var syncTestCase = buster.testCase("sync tests", {
                             JSON.stringify({}));
         });
 
-        var conn = new obviel.sync.Connection();
+        var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
 
         var obj = {
@@ -96,7 +94,39 @@ var syncTestCase = buster.testCase("sync tests", {
                                     value: 1.0});
             done();
         });
-    }
+    }// ,
+    // "update to websocket": function(done) {
+    //     obviel.sync.mapping({
+    //         iface: 'test',
+    //         target: {
+    //             update: {
+    //                 connection: obviel.sync.webSocketConnection,
+    //                 properties: function(obj) { 
+    //                     return { type: 'updateTest'};
+    //                 }
+    //             }
+    //         }
+    //     });
+    //     var updateData = null;
+
+    //     var fakeWebSocket = function() {
+            
+    //     };
+    //     var conn = new obviel.sync.Connection();
+    //     var session = conn.session();
+
+    //     var obj = {
+    //         iface: 'test',
+    //         id: 'testid',
+    //         value: 1.0,
+    //         updateUrl: testUrl
+    //     };
+    //     session.update(obj);
+    //     session.commit().done(function() {
+    //         assert.equals(updateData.value, 1.0);
+    //         done();
+    //     });
+    // },
 
     
 });
