@@ -90,6 +90,15 @@ obviel.sync = {};
         return $.when.apply(null, promises);
     };
 
+    Session.prototype.processSource = function(obj, getById) {
+        var entries=obj.obvielsync,
+            i, entry;
+        for (i = 0; i < entries.length; i++) {
+            entry = entries[i];
+            objectUpdater(getById(entry.id), entry);
+        }
+    };
+    
     Session.prototype.mutator = function(obj) {
         return new Mutator(obj);
     };
@@ -151,7 +160,7 @@ obviel.sync = {};
     
     module.HttpConnection.prototype.processTarget = function(properties, obj) {
         return $.ajax({
-            type: properties.method,
+            type: properties.method || 'POST',
             url: properties.url,
             processData: false,
             contentType: 'application/json',
