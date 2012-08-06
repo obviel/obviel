@@ -28,24 +28,21 @@ obviel.sync = {};
 
     };
     
-    module.HttpRequest = function(d) {
+    module.HttpRequest = function() {
         if (!(this instanceof module.HttpRequest)) {
-            return new module.HttpRequest(d);
+            return new module.HttpRequest();
         }
-        this.method = d.method || 'POST';
-        this.getUrl = d.url;
         return this;
     };
 
-    module.HttpRequest.prototype.process = function(d) {
-        var url = this.getUrl(d);
+    module.HttpRequest.prototype.process = function(d, obj) {
         return $.ajax({
-            type: this.method,
-            url: url,
+            type: d.method,
+            url: d.url,
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
-            data: d
+            data: obj
         });
     };
     
@@ -153,7 +150,8 @@ obviel.sync = {};
             // XXX again should we complain?
             return null;
         }
-        return add.process(m);
+        return add.process(target.properties(
+            m.container, m.propertyName, m.obj), m.obj);
     };
 
     
@@ -169,7 +167,7 @@ obviel.sync = {};
             // XXX again should we complain?
             return null;
         }
-        return update.process(obj);
+        return update.process(target.properties(obj), obj);
     };
 
     module.Connection.prototype.complete = function() {
@@ -185,6 +183,13 @@ obviel.sync = {};
             return model[name];
         };
     };
+
+    module.containerProperty = function(name) {
+        return function(container, propertyName, model) {
+            return container[name];
+        };
+    };
+    
     
     // module.WebSocketConnection = function() {
 
