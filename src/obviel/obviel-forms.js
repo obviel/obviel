@@ -40,7 +40,7 @@ obviel.forms = {};
                 'method="POST"> ' +
                 '<div class="obviel-fields"></div>' +
                 '<div class="obviel-formerror"></div>' +
-                '<div class="obviel-controls"></div>' +
+                '<div class="obviel-controls form-actions"></div>' +
                 '</form>'
         };
         $.extend(d, settings);
