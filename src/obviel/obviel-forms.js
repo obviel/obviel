@@ -232,7 +232,8 @@ obviel.forms = {};
 
     module.Form.prototype.renderControl = function(control) {
         var self = this;
-        var controlEl = $('<button class="obviel-control" type="button" />');
+        var controlEl = $(
+                '<button class="obviel-control btn" type="button" />');
         controlEl.text(control.label || '');
         if (control['class']) {
             controlEl.addClass(control['class']);
