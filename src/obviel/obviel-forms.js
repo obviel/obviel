@@ -204,7 +204,15 @@ obviel.forms = {};
         });
 
         self.widgetViews.push(fieldEl.view());
-        
+
+        fieldEl.bind('field-error.obviel-forms', function(ev) {
+            fieldEl.addClass('error')
+        });
+
+        fieldEl.bind('field-error-clear.obviel-forms', function(ev) {
+            fieldEl.removeClass('error')
+        });
+
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
