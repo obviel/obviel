@@ -488,18 +488,19 @@ obviel.forms = {};
         iface: 'obvielFormsErrorArea',
         render: function() {
             // add in field validation or conversion failing error area
-            this.el.append('<div id="' +
+            this.el.append('<span id="' +
                            this.obj.fieldErrorId +
-                           '" class="obviel-field-error"></div>');
+                           '" class="obviel-field-error"></span>');
             // add in global level validation failure error area
-            this.el.append('<div id="' +
+            this.el.append('<span id="' +
                            this.obj.globalErrorId +
-                           '" class="obviel-global-error"></div>');
+                           '" class="obviel-global-error"></span>');
         }
     });
     
     module.Widget.prototype.renderErrorArea = function() {
-        this.el.append('<div class="obviel-error-area"></div>');
+        $('.obviel-field-input', this.el).append(
+            '<span class="obviel-error-area help-inline"></div>');
         
         $('.obviel-error-area', this.el).render(
             {iface: 'obvielFormsErrorArea',
