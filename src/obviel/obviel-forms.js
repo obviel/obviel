@@ -123,9 +123,11 @@ obviel.forms = {};
                     "{count} field did not validate",
                     "{count} fields did not validate",
                     count), {count: count});
-                $('.obviel-formerror', el).text(msg);
+                $('.obviel-formerror', el).text(msg).addClass(
+                                                        'alert alert-error');
             } else {
-                $('.obviel-formerror', el).text('');
+                $('.obviel-formerror', el).text('').removeClass(
+                                                        'alert alert-error');
             }
             if (count) {
                 $('button.obviel-control', el).each(function(
