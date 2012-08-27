@@ -81,22 +81,18 @@ obviel.template = {};
     // set them dynamically thorugh data-<attrName>
     var SPECIAL_ATTR = {'id': true,  'src': true};
     
-    module.Error = function(el, message) {
-        this.el = el;
-        this.message = message;
-    };
-    
-    module.Error.prototype.toString = function() {
-        return this.message;
-    };
-    
     module.CompilationError = function(el, message) {
         this.name = 'CompilationError';
         this.el = el;
         this.message = message;
     };
 
-    module.CompilationError.prototype = new module.Error();
+    module.CompilationError.prototype = new Error();
+    module.CompilationError.prototype.constructor = module.CompilationError;
+    
+    module.CompilationError.prototype.toString = function() {
+        return this.message;
+    };
     
     module.RenderError = function(el, message) {
         this.name = 'RenderError';
@@ -104,8 +100,15 @@ obviel.template = {};
         this.message = message;
     };
 
-    module.RenderError.prototype = new module.Error();
+    module.RenderError.prototype = new Error();
 
+    module.RenderError.prototype = new Error();
+    module.RenderError.prototype.constructor = module.RenderError;
+    
+    module.RenderError.prototype.toString = function() {
+        return this.message;
+    };
+    
     module.Template = function(text) {
         var parsed;
 

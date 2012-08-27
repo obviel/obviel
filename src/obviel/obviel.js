@@ -99,6 +99,9 @@ if (typeof console === "undefined") {
         this.message = message;
     };
 
+    module.IfaceError.prototype = new Error();
+    module.IfaceError.prototype.constructor = module.IfaceError;
+    
     module.IfaceError.prototype.toString = function() {
         return this.message;
     };
@@ -108,6 +111,9 @@ if (typeof console === "undefined") {
         this.obj = obj;
         this.viewName = viewName;
     };
+
+    module.LookupError.prototype = new Error();
+    module.LookupError.prototype.constructor = module.LookupError;
     
     module.LookupError.prototype.toString = function() {
         var ifaces = module.ifaces(this.obj);
@@ -119,6 +125,9 @@ if (typeof console === "undefined") {
         this.message = message;
     };
 
+    module.CompilerError.prototype = new Error();
+    module.CompilerError.prototype.constructor = module.CompilerError;
+    
     module.CompilerError.prototype.toString = function() {
         return "CompilerError: " + this.message;
     };

@@ -31,6 +31,18 @@ obviel.iface('mess', 'eggs', 'qux');
 $.mockjaxSettings.responseTime = 0;
 $.mockjaxSettings.dataType = 'json';
 
+test("raises", function() {
+    var FooError = function() {
+    };
+    var BarError = function() {
+
+    };
+    
+    raises(function() {
+        throw new BarError();
+    }, FooError);
+});
+
 test('object implements object', function() {
     ok(obviel.provides({}, 'object'));
 });

@@ -25,6 +25,23 @@ config["Obviel Core"] = {
 };
 
 
+config["Obviel Template"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/json2.js'
+    ],
+    sources: [
+        "src/obviel/obviel.js",
+        "src/obviel/obviel-template.js"
+    ],
+    tests: [
+        "src/btest/test-obviel-template.js"
+    ]
+};
+
+
 config["Obviel Traject"] = {
     rootPath: ".",
     environment: "browser",
