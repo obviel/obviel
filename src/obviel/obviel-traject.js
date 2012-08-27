@@ -13,18 +13,22 @@ obviel.traject = {};
     
     module.ParseError = function (message) {
         this.message = message;
+        this.name = 'ParseError';
     };
     
     module.ResolutionError = function (message) {
         this.message = message;
+        this.name = 'ResolutionError';
     };
 
     module.LocationError = function (message) {
         this.message = message;
+        this.name = 'LocationError';
     };
 
     module.RegistrationError = function (message) {
         this.message = message;
+        this.name = 'RegistrationError';
     };
     
     var normalize = function (patternStr) {

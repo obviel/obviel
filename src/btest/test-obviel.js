@@ -1,6 +1,6 @@
 /* */
 var assert = buster.assert;
-var refuse = buster.refute;
+var refute = buster.refute;
 
 // XXX this is a bit ugly
 var fixturePath = buster.env.contextPath + '/src/btest/fixtures/';

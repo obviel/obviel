@@ -1,6 +1,6 @@
 var config = module.exports;
 
-config["Obviel Tests"] = {
+config["Obviel Core"] = {
     rootPath: ".",
     environment: "browser",
     libs: [
@@ -15,10 +15,28 @@ config["Obviel Tests"] = {
         'src/obviel/obviel.js'
     ],
     tests: [
-        "src/btest/test-*.js"
+        "src/btest/test-obviel-iface.js",
+        "src/btest/test-obviel.js"
     ],
     resources: [
         {path: '/', file: 'src/btest/body.html'},
         'src/btest/fixtures/**.**'
     ]
-}
+};
+
+
+config["Obviel Traject"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js'
+    ],
+    sources: [
+        'src/obviel/obviel-traject.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-traject.js"
+    ]
+};
+
+
