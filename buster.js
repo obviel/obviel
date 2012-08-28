@@ -96,3 +96,19 @@ config["Obviel Forms"] = {
 };
 
 
+config["Obviel Patterns"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js'
+    ],
+    sources: [
+        'src/obviel/obviel.js',
+        'src/obviel/obviel-patterns.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-patterns.js"
+    ]
+};
+
+
