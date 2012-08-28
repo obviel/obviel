@@ -957,7 +957,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(errors.composite.a, '');
         assert.equals(errors.composite.b, 'not a number');
         assert.equals(data.composite.a, 'foo');
-        assert.equals(data.composite.b, undefined); // conversion failed so undefined
+        assert.equals(data.composite.b, null); // conversion failed so null
 
         // now put in the right value
         fieldB_el.val('3');
@@ -1207,7 +1207,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(errors.repeating[0].a, '');
         assert.equals(errors.repeating[0].b, 'not a number');
         assert.equals(data.repeating[0].a, 'foo');
-        assert.equals(data.repeating[0].b, undefined); // conversion failed so undefined
+        assert.equals(data.repeating[0].b, null); // conversion failed so null
 
         // now put in the right value
         fieldB_el.val('3');
@@ -1678,8 +1678,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldEl.trigger('change');
         assert.equals(errors.a, 'not a number');
         assert.equals(fieldEl.parentView().error(), 'not a number');
-        // the value is undefined
-        assert.equals(data.a, undefined);
+        assert.equals(data.a, null);
     },
 
     "integer datalink without error": function() {
