@@ -57,3 +57,20 @@ config["Obviel Traject"] = {
 };
 
 
+config["Obviel i18n"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/Gettext.js'
+    ],
+    sources: [
+        'src/obviel/obviel-template.js', // for i18n.variables
+        'src/obviel/obviel-i18n.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-i18n.js"
+    ]
+};
+
+

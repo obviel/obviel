@@ -11,9 +11,13 @@ obviel.i18n = {};
 
 (function($, module) {
     module.I18nError = function(message) {
+        this.name = 'I18nError';
         this.message = message;
     };
 
+    module.I18nError.prototype = new Error();
+    module.I18nError.prototype.constructor = module.I18nError;
+    
     module.I18nError.prototype.toString = function() {
         return 'I18nError: ' + this.message;
     };
