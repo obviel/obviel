@@ -15,21 +15,33 @@ obviel.traject = {};
         this.message = message;
         this.name = 'ParseError';
     };
+
+    module.ParseError.prototype = Error();
+    module.ParseError.prototype.constructor = module.ParseError;
     
     module.ResolutionError = function (message) {
         this.message = message;
         this.name = 'ResolutionError';
     };
+    
+    module.ResolutionError.prototype = Error();
+    module.ResolutionError.prototype.constructor = module.ResolutionError;
 
     module.LocationError = function (message) {
         this.message = message;
         this.name = 'LocationError';
     };
-
+    
+    module.LocationError.prototype = Error();
+    module.LocationError.prototype.constructor = module.LocationError;
+    
     module.RegistrationError = function (message) {
         this.message = message;
         this.name = 'RegistrationError';
     };
+    
+    module.RegistrationError.prototype = Error();
+    module.RegistrationError.prototype.constructor = module.RegistrationError;
     
     var normalize = function (patternStr) {
         if (patternStr.charAt(0) === '/') {
