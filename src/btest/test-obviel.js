@@ -2,9 +2,6 @@
 var assert = buster.assert;
 var refute = buster.refute;
 
-// XXX this is a bit ugly
-var fixturePath = buster.env.contextPath + '/src/btest/fixtures/';
-
 var testel = function() {
     return $(document.createElement('div'));
 };
