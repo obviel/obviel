@@ -17,7 +17,9 @@ if (typeof console === "undefined") {
     // a fallback i18n module that doesn't do any translation.
     // this way we can use obviel with the obviel i18n API without
     // actually having to load obviel-i18n.js. of course it won't
-    // do any translations, but one can't have everything
+    // do any translations in that case either, but one can't have everything
+
+    // XXX fake Gettext.strargs in fake obviel i18n?
     
     if (typeof obviel.i18n !== 'undefined') {
         return;

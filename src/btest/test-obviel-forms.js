@@ -2164,7 +2164,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals($('option', fieldEl).length, 3);
     },
 
-    'choice global validation': function(done) {
+    'choice global validation': function() {
         var el = testel();
         var data = {};
         var errors = {};
@@ -2202,28 +2202,31 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             globalErrors: globalErrors
         });
 
+        this.server.autoRespond = false;
+        
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         
         fieldA_el.val('wrong');
+
         
         // submitting this should trigger a global error
         var view = el.view();
-        view.submit({}).done(function() {            
-            assert.equals(globalErrors.a, 'must not be wrong');
-            
-            // it also shows up in the element
-            var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
-            assert.equals(fieldGlobalA.text(), 'must not be wrong');
+        view.submit({});
+        this.server.respond();
 
-            // make the global validation problem go away again
-            fieldA_el.val('right');
-            view.submit({}).done(function() {    
-                assert.equals(globalErrors.a, '');
-                assert.equals(fieldGlobalA.text(), '');
-                done();
-            });
-        });
+        assert.equals(globalErrors.a, 'must not be wrong');
+            
+        // it also shows up in the element
+        var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
+        assert.equals(fieldGlobalA.text(), 'must not be wrong');
+        
+        // make the global validation problem go away again
+        fieldA_el.val('right');
+        view.submit({});
+        this.server.respond();
+        assert.equals(globalErrors.a, '');
+        assert.equals(fieldGlobalA.text(), '');
         
     },
 
@@ -2533,9 +2536,14 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
 
 
-    "actual submit": function() {
+    "actual submit": function(done) {
         var el = testel();
         var errors = {};
+        var controlInfo = {
+            'label': 'Submit!',
+            'action': 'testUrl'
+        };
+        
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2549,34 +2557,31 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                         minLength: 3
                     }
                 }],
-                controls: [{
-                    'label': 'Submit!',
-                    'action': 'http://localhost'
-                }]
+                controls: [controlInfo]
             },
             errors: errors
         });
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            ajaxOptions = options;
-            // to trigger successful result
-            options.success({ifaces: ['successIface']});
-        };
+
+        var requestBody = undefined;
+        this.mockJson('testUrl', function(request) {
+            requestBody = $.parseJSON(request.requestBody);
+            return {ifaces: ['successIface']};
+        });
+        
         
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-text', formEl);
             fieldEl.val('foo');
 
         var buttonEl = $('button', el);
-        buttonEl.trigger('click');
-
-        $.ajax = originalAjax;
-        assert.equals(ajaxOptions.data, '{"text":"foo"}');
-
-        // the successIface should be rendered
-        assert.equals(el.text(), 'success!');
+        var view = el.view();
+        view.submitControl(buttonEl, controlInfo).done(function() {
+            assert.equals(requestBody, {"text":"foo"});
+            // the successIface should be rendered
+            assert.equals(el.text(), 'success!');
+            done();
+        });
+        
     },
 
     "actual submit with disabled field": function() {
@@ -2604,19 +2609,20 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                              ],
                     controls: [{
                         'label': 'Submit!',
-                        'action': 'http://localhost'
+                        'action': 'testUrl'
                     }]
                 },
             errors: errors
         });
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            ajaxOptions = options;
-            // to trigger successful result
-            options.success({ifaces: ['successIface']});
-        };
+
+        var requestBody = undefined;
+        
+        this.mockJson('testUrl', function(request) {
+            requestBody = $.parseJSON(request.requestBody);
+            return {ifaces: ['successIface']};
+        });
+
+        this.server.autoRespond = false;
         
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-text', formEl);
@@ -2626,10 +2632,9 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
-
-        $.ajax = originalAjax;
-
-        assert.equals(ajaxOptions.data, '{"text":"foo","text2":"bar"}');
+        this.server.respond();
+        
+        assert.equals(requestBody, {"text":"foo","text2":"bar"});
 
         // the successIface should be rendered
         assert.equals(el.text(), 'success!');
@@ -2664,28 +2669,28 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                     }],
                     controls: [{
                         'label': 'Submit!',
-                        'action': 'http://localhost'
+                        'action': 'testUrl'
                     }]
                 },
             errors: errors
         });
 
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            ajaxOptions = options;
-            // to trigger successful result
-            options.success({ifaces: ['successIface']});
-        };
+        var requestBody = undefined;
 
+        this.mockJson('testUrl', function(request) {
+            requestBody = $.parseJSON(request.requestBody);
+            return {ifaces: ['successIface']};
+        });
+
+        this.server.autoRespond = false;
+        
         var formEl = $('form', el);
 
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
-
-        $.ajax = originalAjax;
-        assert.equals(ajaxOptions.data, '{"composite":{"a":null,"b":null}}');
+        this.server.respond();
+ 
+        assert.equals(requestBody, {"composite":{"a":null,"b":null}});
         // the successIface should be rendered
         assert.equals(el.text(), 'success!');
 
@@ -2717,21 +2722,21 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors
         });
 
-        
-        // monkey patch jquery's ajax(): but this shouldn't be called
-        // in the end
-        var originalAjax = $.ajax;
-        var called = 0;
-        $.ajax = function(options) {
-            called++;
-            };
 
+
+        var called = 0;
+        this.server.respondWith(function() {
+            called++;
+        });
+        this.server.autoRespond = false;
+        
         var formEl = $('form', el);
 
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
-
-        $.ajax = originalAjax;
+        this.server.respond();
+        
+        
         assert.equals(called, 0);
     },
 
@@ -2926,26 +2931,18 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var data = {};
         var errors = {};
         var globalErrors = {};
+
         
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            var defer = $.Deferred();      
-            ajaxOptions = options;
-            if (options.url == 'validate') {
-                var data = $.parseJSON(options.data);
-                if (data.a > data.b) {
-                    defer.resolve({
-                        'a': 'must be smaller than b',
-                        'b': 'must be greater than a'
-                    });
-                    return defer.promise();
-                }
+        this.mockJson('validate', function(request) {
+            var data = $.parseJSON(request.requestBody);
+            if (data.a > data.b) {
+                return {
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                };
             }
-            defer.resolve({});
-            return defer.promise();
-        };
+            return {};
+        });
 
         el.render({
             ifaces: ['viewform'],
@@ -2968,6 +2965,9 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors,
             globalErrors: globalErrors
         });
+
+        this.server.autoRespond = false;
+        
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
@@ -2979,7 +2979,8 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var view = el.view();
         // no action defined, so submit will succeed quietly
         view.submit({});
-
+        this.server.respond();
+        
         assert.equals(globalErrors.a, undefined);
         assert.equals(globalErrors.b, undefined);
         var formErrorEl = $('.obviel-formerror', el);
@@ -2988,7 +2989,8 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldA_el.val('10');
         fieldB_el.val('1');
         view.submit({});
-
+        this.server.respond();
+        
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
 
@@ -2997,48 +2999,37 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(fieldGlobalA.text(), 'must be smaller than b');
         assert.equals(formErrorEl.text(), '2 fields did not validate');
         // and in the widget
-            assert.equals(fieldGlobalA.parent().parent().parentView().globalError(),
-                  'must be smaller than b');
+        assert.equals(fieldGlobalA.parent().parent().parentView().globalError(),
+                      'must be smaller than b');
         
         // make the global validation problem go away again
         fieldB_el.val('100');
         view.submit({});
+        this.server.respond();
+        
         assert.equals(globalErrors.a, '');
         assert.equals(globalErrors.b, '');
         assert.equals(fieldGlobalA.text(), '');
         assert.equals(formErrorEl.text(), '');
-
-        $.ajax = originalAjax;
     },
 
-    'global errors revalidate upon possible correction': function(done) {
+    'global errors revalidate upon possible correction': function() {
         var el = testel();
         var data = {};
         var errors = {};
         var globalErrors = {};
-        
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            var defer = $.Deferred();      
-            ajaxOptions = options;
-            if (options.url == 'validate') {
-                var data = $.parseJSON(options.data);
-                if (data.a > data.b) {
-                    defer.resolve({
-                        'a': 'must be smaller than b',
-                        'b': 'must be greater than a'
-                    });
-                    done();
-                    return defer.promise();
-                }
-            }
-            done();
-            defer.resolve({});
-            return defer.promise();
-        };
 
+        this.mockJson('validate', function(request) {
+            var data = $.parseJSON(request.requestBody);
+            if (data.a > data.b) {
+                return {
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                };
+            }
+            return {};
+        });
+        
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3069,41 +3060,48 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldA_el.val('1');
         fieldB_el.val('10');
 
+        var server = this.server;
+        
+        server.autoRespond = false;
+
         // submitting this, everything should be fine
-            var view = el.view();
+        var view = el.view();
         // no action defined, so submit will succeed quietly
         view.submit({});
-
+        server.respond();
+            
         assert.equals(globalErrors.a, undefined);
         assert.equals(globalErrors.b, undefined);
         var formErrorEl = $('.obviel-formerror', el);
         assert.equals(formErrorEl.text(), '');
-        
+
+        // now create global validation error
         fieldA_el.val('10');
         fieldB_el.val('1');
+        
         view.submit({});
+        server.respond();
 
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
-
+        
         // it also shows up in the element
         var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
         assert.equals(fieldGlobalA.text(), 'must be smaller than b');
         assert.equals(formErrorEl.text(), '2 fields did not validate');
-
+        
         // possibly make the global validation problem go away (but not)
         // by modifying one of the affected fields
-        stop();
         fieldA_el.val('11');
         fieldA_el.parentView().change();
-        
+        server.respond();
+                
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
         
-        // make the global validation problem go away
-        stop();
         fieldB_el.val('100');
         fieldB_el.parentView().change();
+        server.respond();
         
         // this should've resubmitted for validation, so the problem should be
         // gone already
@@ -3111,42 +3109,28 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(globalErrors.b, '');
         assert.equals(fieldGlobalA.text(), '');
         assert.equals(formErrorEl.text(), '');
-
-        
-        $.ajax = originalAjax;
     },
 
-    'global errors do not revalidate upon non-correction': function(done) {
+    'global errors do not revalidate upon non-correction': function() {
         var el = testel();
         var data = {};
         var errors = {};
         var globalErrors = {};
-        
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
+
         var count = 0;
         
-        $.ajax = function(options) {
-            var defer = $.Deferred();      
-            ajaxOptions = options;
-            if (options.url == 'validate') {
-                count++;
-                var data = $.parseJSON(options.data);
-                if (data.a > data.b) {
-                    defer.resolve({
-                        'a': 'must be smaller than b',
+        this.mockJson('validate', function(request) {
+            count++;
+            var data = $.parseJSON(request.requestBody);
+            if (data.a > data.b) {
+                return {
+                    'a': 'must be smaller than b',
                         'b': 'must be greater than a'
-                    });
-                    done();
-                    return defer.promise();
-                }
+                };
             }
-            defer.resolve({});
-            done();
-                return defer.promise();
-        };
-
+            return {};
+        });
+        
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3175,72 +3159,61 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors,
             globalErrors: globalErrors
         });
-            var formEl = $('form', el);
+
+        var server = this.server;
+        server.autoRespond = false;
+        
+        var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
         var fieldC_el = $('#obviel-field-test-c', formEl);
         fieldA_el.val('1');
         fieldB_el.val('10');
         fieldC_el.val('5');
-            // submitting this, everything should be fine
+        // submitting this, everything should be fine
         var view = el.view();
         // no action defined, so submit will succeed quietly
         view.submit({});
+        server.respond();
         assert.equals(count, 1);
         
         // create error
         fieldA_el.val('10');
         fieldB_el.val('1');
-        stop();
         view.submit({});
+        server.respond();
         
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
-
         assert.equals(count, 2);
         
         // possibly make the global validation problem go away (but not)
         // by modifying unrelated field
-        stop();
         fieldC_el.val('55');
         fieldC_el.parentView().change();
+        server.respond();
         
         // we should not have done any global validation check, as this
         // field is unrelated to global validation errors
         assert.equals(count, 2);
-        
-        $.ajax = originalAjax;
-
-        done();
     },
 
-    "global errors with repeating": function(done) {
+    "global errors with repeating": function() {
         var el = testel();
         var data = {};
         var errors = {};
         var globalErrors = {};
         
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            var defer = $.Deferred();      
-            ajaxOptions = options;
-            if (options.url == 'validate') {
-                var data = $.parseJSON(options.data);
-                if (data.repeating[0].a == 'triggerError') {
-                    defer.resolve({
-                        'repeating': [{'a': 'error'}]
-                    });
-                    done();
-                    return defer.promise();
-                }
+        this.mockJson('validate', function(request) {
+            var data = $.parseJSON(request.requestBody);
+            if (data.repeating[0].a == 'triggerError') {
+                return {
+                    'repeating': [{'a': 'error'}]
+                };
             }
-            done();
-            defer.resolve({});
-            return defer.promise();
-        };
-
+            return {};
+        });
+        
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3272,8 +3245,12 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
         var formEl = $('form', el);
 
+        var server = this.server;
+        server.autoRespond = false;
+        
         var addButton = $('.obviel-repeat-add-button', formEl);
         addButton.trigger('click');
+        server.respond();
         
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
@@ -3284,27 +3261,27 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var view = el.view();
         // no action defined, so submit will succeed quietly
         view.submit({});
-
+        server.respond();
+        
         assert.equals(globalErrors.repeating[0].a, undefined);
         assert.equals(globalErrors.repeating[0].b, undefined);
         
         fieldA_el.val('triggerError');
         fieldB_el.val('1');
-        stop();
         view.submit({});
-
+        server.respond();
+        
         assert.equals(globalErrors.repeating[0].a, 'error');
         assert.equals(globalErrors.repeating[0].b, undefined);
         
         // make the global validation problem go away again
         fieldA_el.val('nothing');
-        stop();
         view.submit({});
-
+        server.respond();
+        
         assert.equals(globalErrors.repeating[0].a, '');
         assert.equals(globalErrors.repeating[0].b, undefined);
 
-        $.ajax = originalAjax;
     },
     
     'display value': function () {
@@ -3468,25 +3445,16 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var errors = {};
         var globalErrors = {};
         
-        // monkey patch jquery's ajax() so we can test
-        var originalAjax = $.ajax;
-        var ajaxOptions;
-        $.ajax = function(options) {
-            var defer = $.Deferred();      
-            ajaxOptions = options;
-            if (options.url == 'validate') {
-                var data = $.parseJSON(options.data);
-                if (data.a > data.b) {
-                    defer.resolve({
-                        'a': 'must be smaller than b',
-                        'b': 'must be greater than a'
-                    });
-                    return defer.promise();
-                }
+        this.mockJson('validate', function(request) {
+            var data = $.parseJSON(request.requestBody);
+            if (data.a > data.b) {
+                return {
+                    'a': 'must be smaller than b',
+                    'b': 'must be greater than a'
+                };
             }
-            defer.resolve({});
-            return defer.promise();
-        };
+            return {};
+        });
 
         el.render({
             ifaces: ['viewform'],
@@ -3509,13 +3477,16 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors,
             globalErrors: globalErrors
         });
+        
+        this.server.autoRespond = false;
+            
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
 
-            formEl.bind('global-error.obviel-forms', function(ev) {
-                $(ev.target).parents('.obviel-field').addClass('foo');
-            });
+        formEl.bind('global-error.obviel-forms', function(ev) {
+            $(ev.target).parents('.obviel-field').addClass('foo');
+        });
         formEl.bind('global-error-clear.obviel-forms', function(ev) {
             $(ev.target).parents('.obviel-field').removeClass('foo');
         });
@@ -3525,7 +3496,8 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldB_el.val('1');
         var view = el.view();
         view.submit({});
-
+        this.server.respond();
+        
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
 
@@ -3536,12 +3508,12 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // make the global validation problem go away again
         fieldB_el.val('100');
         view.submit({});
-
+        this.server.respond();
+        
         // the clear event has triggered for both fields
         refute(fieldA_el.parents('.obviel-field').hasClass('foo'));
         refute(fieldB_el.parents('.obviel-field').hasClass('foo'));
         
-        $.ajax = originalAjax;
     }
 
 });

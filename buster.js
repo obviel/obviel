@@ -79,7 +79,8 @@ config["Obviel Forms"] = {
     environment: "browser",
     libs: [
         'src/dependencies/jquery.js',
-        'src/dependencies/jquery.datalink.js'
+        'src/dependencies/jquery.datalink.js',
+        'src/dependencies/Gettext.js'
     ],
     sources: [
         'src/obviel/obviel-template.js',
