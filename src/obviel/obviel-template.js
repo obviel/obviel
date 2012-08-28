@@ -101,8 +101,6 @@ obviel.template = {};
     };
 
     module.RenderError.prototype = new Error();
-
-    module.RenderError.prototype = new Error();
     module.RenderError.prototype.constructor = module.RenderError;
     
     module.RenderError.prototype.toString = function() {
