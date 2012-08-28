@@ -219,8 +219,9 @@ var coreTestCase = buster.testCase("core tests", {
             render: renderText
         });
         var el = testel();
-        this.server.restore();
-        el.render(fixturePath + 'default.json').done(function() {
+        
+        this.mockJson('testUrl', {text: "foo"});
+        el.render('testUrl').done(function() {
             assert.equals(el.text(), 'foo');
             done();
         });
@@ -233,9 +234,9 @@ var coreTestCase = buster.testCase("core tests", {
         });
 
         var el = testel();
+        this.mockJson('testUrl', {text: "bar"});
 
-        this.server.restore();
-        el.render(fixturePath + 'named.json', 'foo').done(function() {
+        el.render('testUrl', 'foo').done(function() {
             assert.equals(el.text(), 'bar');
             done();
         });
@@ -249,8 +250,9 @@ var coreTestCase = buster.testCase("core tests", {
 
         var el = testel();
 
-        this.server.restore();
-        el.render(fixturePath + 'interfaced.json').done(function() {
+        this.mockJson('testUrl', {"ifaces": ["ifoo"], "text": "baz"});
+        
+        el.render('testUrl').done(function() {
             assert.equals(el.text(), 'baz');
             done();
         });
@@ -264,9 +266,8 @@ var coreTestCase = buster.testCase("core tests", {
         });
 
         var el = testel();
-
-        this.server.restore();
-        el.render(fixturePath + 'named_interfaced.json', 'foo').done(
+        this.mockJson('testUrl', {"ifaces": ["ifoo"], "text": "qux"});
+        el.render('testUrl', 'foo').done(
             function() {
                 assert.equals(el.text(), 'qux');
                 done();
@@ -392,10 +393,10 @@ var coreTestCase = buster.testCase("core tests", {
 
         var el = testel();
 
-        this.server.restore();
+        this.mockJson('testUrl', {"text": "foo"});
         el.render({
             ifaces: ['subviews'],
-            subUrl: fixturePath + 'default.json', // url
+            subUrl: 'testUrl', // url
             subHtml: {text: 'bar'}, //  obj
             subNamed: {} // is registered by name foo
         }).done(function() {
@@ -493,17 +494,20 @@ var coreTestCase = buster.testCase("core tests", {
     },
 
     'view with htmlUrl': function(done) {
+        this.server.respondWith('GET', 'testUrl',
+                                [200, {'Content-Type': 'text/html'},
+                                 '<div>foo</div>']);
+        
         var renderCalled = 0;
         obviel.view({
             iface: 'html',
-            htmlUrl: fixturePath + 'test1.html',
+            htmlUrl: 'testUrl',
             render: function() {
                 renderCalled++;
             }
         });
 
-        this.server.restore();
-
+        
         var el = testel();
         
         $(el).render(
@@ -515,16 +519,18 @@ var coreTestCase = buster.testCase("core tests", {
     },
                                    
     'html context attribute overrides htmlUrl view one': function(done) {
+        this.server.respondWith('GET', 'testUrl',
+                                [200, {'Content-Type': 'text/html'},
+                                 '<div>foo</div>']);
+        
         var renderCalled = 0;
         obviel.view({
             iface: 'html',
-            htmlUrl: fixturePath + 'test1.html',
+            htmlUrl: 'testUrl',
             render: function() {
                 renderCalled++;
             }
         });
-
-        this.server.restore();
 
         var el = testel();
         
@@ -559,6 +565,10 @@ var coreTestCase = buster.testCase("core tests", {
     },
     
     'htmlUrl context attr overrides html view one': function(done) {
+        this.server.respondWith('GET', 'testUrl',
+                                [200, {'Content-Type': 'text/html'},
+                                 '<div>foo</div>']);
+
         obviel.view({
             iface: 'inlineHtml',
             html: '<span></span>',
@@ -567,12 +577,11 @@ var coreTestCase = buster.testCase("core tests", {
                 $('span', this.el).text(this.obj.text);
             }
         });
-        this.server.restore();
-        var el = testel();
         
+        var el = testel();
         el.render(
             {ifaces: ['inlineHtml'],
-             htmlUrl: fixturePath + 'test1.html',
+             htmlUrl: 'testUrl',
              text: 'spam'}).done(function() {
                  assert.equals(htmlLower(el.html()), '<div>foo</div>');
                  done();
@@ -629,17 +638,19 @@ var coreTestCase = buster.testCase("core tests", {
     },
     
     'jsont view': function(done) {
+        this.server.respondWith('GET', 'testUrl',
+                                [200, {'Content-Type': 'text/html'},
+                                 '<div>{foo}</div>']);
 
-        this.server.restore();
 
         obviel.view({
             iface: 'jt',
-            jsontUrl: fixturePath + 'test1.jsont'
+            jsontUrl: 'testUrl'
         });
         
         var cache = obviel.cachedTemplates;
         // some implementation detail knowledge about cache keys is here
-        var cacheKey = 'url_jsont_' + fixturePath + 'test1.jsont';
+        var cacheKey = 'url_jsont_' + 'testUrl';
         assert.equals(cache.get(cacheKey), null);
 
         var el = testel();
@@ -770,11 +781,11 @@ var coreTestCase = buster.testCase("core tests", {
             }
         });
 
-        this.server.restore();
+        this.mockJson('testUrl', {text: "foo"});
         
         el.render({
             ifaces: ['ifoo'],
-            sub1: fixturePath + 'default.json',
+            sub1: 'testUrl',
             sub2: {'text': 'sub2 text'}
         });
         
@@ -1316,7 +1327,6 @@ var coreTestCase = buster.testCase("core tests", {
         var el = testel();
         el.render('testFooUrl').done(function(view) {
             assert.equals(view.el.text(), 'ifoo: Hello world foo');
-            done();
         });
 
         el.render('testBarUrl').done(function(view) {
