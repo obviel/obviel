@@ -96,6 +96,54 @@ config["Obviel Forms"] = {
 };
 
 
+config["Obviel Forms Datepicker"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/jquery-ui.js',
+        'src/dependencies/jquery.datalink.js',
+        'src/dependencies/Gettext.js'
+    ],
+    sources: [
+        'src/obviel/obviel-template.js',
+        'src/obviel/obviel.js',
+        'src/obviel/obviel-forms.js',
+        'src/obviel/obviel-forms-datepicker.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-forms-datepicker.js"
+    ],
+    resources: [
+        {path: '/', file: 'src/btest/body.html'}
+    ]
+};
+
+config["Obviel Forms Autocomplete"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/jquery-ui.js',
+        'src/dependencies/jquery.datalink.js',
+        'src/dependencies/Gettext.js',
+        'src/dependencies/jquery.ba-bbq.js'
+    ],
+    sources: [
+        'src/obviel/obviel-template.js',
+        'src/obviel/obviel.js',
+        'src/obviel/obviel-forms.js',
+        'src/obviel/obviel-forms-autocomplete.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-forms-autocomplete.js"
+    ],
+    resources: [
+        {path: '/', file: 'src/btest/body.html'}
+    ]
+};
+
+
 config["Obviel Patterns"] = {
     rootPath: ".",
     environment: "browser",
