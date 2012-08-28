@@ -74,3 +74,24 @@ config["Obviel i18n"] = {
 };
 
 
+config["Obviel Forms"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/jquery.datalink.js'
+    ],
+    sources: [
+        'src/obviel/obviel-template.js',
+        'src/obviel/obviel.js',
+        'src/obviel/obviel-forms.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-forms.js"
+    ],
+    resources: [
+        {path: '/', file: 'src/btest/body.html'}
+    ]
+};
+
+

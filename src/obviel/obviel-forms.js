@@ -379,32 +379,42 @@ obviel.forms = {};
     
     module.Form.prototype.submitControl = function(controlEl, control) {
         var self = this;
-
+        var defer = $.Deferred();
+        
         if (!control.noValidation) {
             self.updateErrors().done(function() {
                 // if there are  errors, disable submit
                 if (self.totalErrorCount() > 0) {
                     controlEl.attr('disabled', 'true').trigger(
                         'button-updated.obviel');
+                    defer.resolve();
                     return;
                 }
-                self.directSubmit(control);
+                self.directSubmit(control).done(function() {
+                    defer.resolve();
+                });
             });
+            return defer.promise();
         } else {
-            self.directSubmit(control);
+            return self.directSubmit(control);
         }
     };
     
     module.Form.prototype.submit = function(control) {
         var self = this;
-
+        var defer = $.Deferred();
+        
         self.updateErrors().done(function() {
             // don't submit if there are any errors
             if (self.totalErrorCount() > 0) {
+                defer.resolve();
                 return;
             }
-            self.directSubmit(control);
+            self.directSubmit(control).done(function() {
+                defer.resolve();
+            });
         });
+        return defer.promise();
     };
 
     module.Form.prototype.jsonData = function() {
@@ -413,13 +423,15 @@ obviel.forms = {};
     
     module.Form.prototype.directSubmit = function(control) {
         var self = this;
+        var defer = $.Deferred();
         
         // if there is no action, we just leave: we assume that
         // some event handler is hooked up to the control, for instance
         // using the class
         var action = control.action;
         if (action === undefined) {
-            return;
+            defer.resolve();
+            return defer.promise();
         }
 
         var data = null;
@@ -441,9 +453,12 @@ obviel.forms = {};
             contentType: contentType,
             dataType: 'json',
             success: function(data) {
-                self.el.render(data, viewName);
+                self.el.render(data, viewName).done(function() {
+                    defer.resolve();
+                });
             }
         });
+        return defer.promise();
     };
     
     module.Form.prototype.triggerChanges = function() {
