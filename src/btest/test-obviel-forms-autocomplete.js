@@ -1,10 +1,11 @@
+/*global buster:false, sinon:false */
+var assert = buster.assert;
 
 var testel = function() {
     return $("#viewdiv");
 };
 
 var autocompleteTestCase = buster.testCase('autocomplete tests', {
-                                           
     setUp: function() {
         this.server = sinon.fakeServer.create();
         $('#jsview-area').html('<div id="viewdiv"></div>');
@@ -20,7 +21,7 @@ var autocompleteTestCase = buster.testCase('autocomplete tests', {
                     return json;
                 };
             }
-            var response = function(request) { 
+            var response = function(request) {
                 request.respond(200, { 'Content-Type': 'application/json'},
                                 JSON.stringify(getResponse(request)));
             };
@@ -162,7 +163,7 @@ var autocompleteTestCase = buster.testCase('autocomplete tests', {
         this.server.respond();
         
         assert.equals(globalErrors.a, '');
-        assert.equals(fieldGlobalA.text(), '');        
+        assert.equals(fieldGlobalA.text(), '');
     },
 
     "autocomplete url set values": function () {

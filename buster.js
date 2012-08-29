@@ -190,7 +190,9 @@ config["Obviel Forms Autocomplete"] = {
     ],
     resources: [
         {path: '/', file: 'src/btest/body.html'}
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 
@@ -206,7 +208,9 @@ config["Obviel Patterns"] = {
     ],
     tests: [
         "src/btest/test-obviel-patterns.js"
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 

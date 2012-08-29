@@ -45,7 +45,7 @@
         var valueToLabel = null;
         var labels = null;
         var source = null;
-        if (typeof autocompleteData == 'string' || autocompleteData.url) {
+        if (typeof autocompleteData === 'string' || autocompleteData.url) {
             // obj.data is a string, meaning we get an url and possibly
             // a value to fill into the input, we provide a source
             // function for the autocomplete widget that retrieves
@@ -84,7 +84,7 @@
                 });
             };
         } else if (autocompleteData.length &&
-                   typeof autocompleteData[0] != 'string') {
+                   typeof autocompleteData[0] !== 'string') {
             labelToValue = {};
             valueToLabel = {};
             labels = [];
@@ -185,7 +185,7 @@
             this.source.call(this, {identifier: value}, setValue);
         } else {
             setValue();
-        } 
+        }
     };
     
     obviel.view(new module.AutocompleteWidget());

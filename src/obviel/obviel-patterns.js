@@ -1,7 +1,4 @@
-/*global jQuery:true, templateUrl:true,
-  alert:true , browser:true, document:true, appUrl:true,
-  window:true
-*/
+/*global obviel:false */
 (function($, obviel) {
     
     obviel.view({
@@ -32,4 +29,4 @@
         }
     });
     
-})(jQuery, obviel);
+}(jQuery, obviel));

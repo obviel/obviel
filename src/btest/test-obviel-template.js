@@ -182,9 +182,13 @@ var getPluralTranslation = function(singularMsgid, pluralMsgid,
     }
 };
 
+var testel = function() {
+    return $("<div></div>");
+};
+
 var render = function(text, obj) {
+    var el = testel();
     var template = new obtemp.Template(text);
-    var el = $("<div></div>");
     var translations = new Translations();
     var getTranslation = function(msgid) {
         return translations.gettext(msgid);
@@ -448,9 +452,12 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
     'data-src and data-id case': function() {
-        assert.htmlEquals(render('<img data-id="{id}" data-src="fixtures/{id}.png">',
-                                 {id: 'destroy'}),
-                          '<img src="fixtures/destroy.png" id="destroy">');
+        var template = new obtemp.Template(
+            '<img data-id="{id}" data-src="fixtures/{id}.png" />');
+        var el = testel();
+        template.render(el, {id: 'destroy'});
+        assert.equals($('#destroy', el).attr('id'), 'destroy');
+        assert.equals($('#destroy', el).attr('src'), 'fixtures/destroy.png');
     },
 
     "data-with": function() {

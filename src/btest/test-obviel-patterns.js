@@ -1,5 +1,4 @@
-/*global module:false obviel:false test:false ok:false same:false $:false
-  equal:false raises:false asyncTest:false start:false */
+/*global obviel:false, buster:false */
 
 var assert = buster.assert;
 
@@ -34,7 +33,7 @@ var patternsTestCase = buster.testCase('patterns tests', {
         
         var feedback = {
             iface: 'multi',
-            objects: feedbackMessages 
+            objects: feedbackMessages
         };
 
         var el = testel();
