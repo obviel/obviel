@@ -1,3 +1,7 @@
+/*global obviel:false, buster:false */
+
+var assert = buster.assert;
+
 var testel = function() {
     return $(document.createElement('div'));
 };
@@ -37,7 +41,7 @@ var datePickerTestCase = buster.testCase('datepicker tests', {
 
     "datepicker datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -62,7 +66,7 @@ var datePickerTestCase = buster.testCase('datepicker tests', {
 
     "datepicker back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {

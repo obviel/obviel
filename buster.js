@@ -164,7 +164,9 @@ config["Obviel Forms Datepicker"] = {
     ],
     resources: [
         {path: '/', file: 'src/btest/body.html'}
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 config["Obviel Forms Autocomplete"] = {
