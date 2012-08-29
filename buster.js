@@ -114,7 +114,9 @@ config["Obviel i18n"] = {
     ],
     tests: [
         "src/btest/test-obviel-i18n.js"
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 
@@ -136,7 +138,9 @@ config["Obviel Forms"] = {
     ],
     resources: [
         {path: '/', file: 'src/btest/body.html'}
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 

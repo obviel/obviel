@@ -1,6 +1,4 @@
-/*global module:false obviel:false test:false ok:false same:false $:false
-  equal:false raises:false asyncTest:false start:false deepEqual: false
-  stop:false strictEqual:false */
+/*global obviel:false buster:false sinon:false */
 
 var assert = buster.assert;
 
@@ -9,7 +7,7 @@ var i18n = obviel.i18n;
 var setupTranslations = function() {
     var en_US = i18n.emptyTranslationSource();
     var fr_FR = i18n.translationSource({'Hello world!':
-                                         'Bonjour monde!'});
+                                        'Bonjour monde!'});
     var nl_NL = i18n.translationSource({'Hello world!':
                                         'Hallo wereld!'});
     i18n.registerTranslation('en_US', en_US, 'i18ntest');
@@ -20,9 +18,9 @@ var setupTranslations = function() {
 var setupTranslationsDefaultDomain = function() {
     var en_US = i18n.emptyTranslationSource();
     var fr_FR = i18n.translationSource({'Hello world!':
-                                         'Bonjour monde!'});
+                                        'Bonjour monde!'});
     var nl_NL = i18n.translationSource({'Hello world!':
-                                         'Hallo wereld!'});
+                                        'Hallo wereld!'});
     i18n.registerTranslation('en_US', en_US);
     i18n.registerTranslation('fr_FR', fr_FR);
     i18n.registerTranslation('nl_NL', nl_NL);
@@ -31,9 +29,9 @@ var setupTranslationsDefaultDomain = function() {
 var setupTranslationsMultiDomains = function() {
     var en_US = i18n.emptyTranslationSource();
     var fr_FR = i18n.translationSource({'Hello world!':
-                                         'Bonjour monde!'});
+                                        'Bonjour monde!'});
     var nl_NL = i18n.translationSource({'Hello world!':
-                                         'Hallo wereld!'});
+                                        'Hallo wereld!'});
     i18n.registerTranslation('en_US', en_US, 'i18ntest');
     i18n.registerTranslation('fr_FR', fr_FR, 'i18ntest');
     i18n.registerTranslation('nl_NL', nl_NL, 'i18ntest');
@@ -41,9 +39,9 @@ var setupTranslationsMultiDomains = function() {
     // now register second domain called 'other'
     en_US = i18n.emptyTranslationSource();
     fr_FR = i18n.translationSource({'Bye world!':
-                                     'Au revoir monde!'});
+                                    'Au revoir monde!'});
     nl_NL = i18n.translationSource({'Bye world!':
-                                     'Tot ziens wereld!'});
+                                    'Tot ziens wereld!'});
     i18n.registerTranslation('en_US', en_US, 'other');
     i18n.registerTranslation('fr_FR', fr_FR, 'other');
     i18n.registerTranslation('nl_NL', nl_NL, 'other');
@@ -52,9 +50,9 @@ var setupTranslationsMultiDomains = function() {
 var setupPluralTranslations = function() {
     var en_US = i18n.emptyTranslationSource();
     var nl_NL = i18n.translationSource({'1 elephant.':
-                                         ['{count} elephants.',
-                                          '1 olifant.',
-                                          '{count} olifanten.']});
+                                        ['{count} elephants.',
+                                         '1 olifant.',
+                                         '{count} olifanten.']});
     i18n.registerTranslation('en_US', en_US, 'i18ntest');
     i18n.registerTranslation('nl_NL', nl_NL, 'i18ntest');
 };
@@ -74,7 +72,7 @@ var i18nTestCase = buster.testCase('i18n tests', {
                     return json;
                 };
             }
-            var response = function(request) { 
+            var response = function(request) {
                 request.respond(200, { 'Content-Type': 'application/json'},
                                 JSON.stringify(getResponse()));
             };
@@ -197,7 +195,7 @@ var i18nTestCase = buster.testCase('i18n tests', {
 
         assert.equals(_('Bye world!'), 'Bye world!');
 
-        var _ = i18n.translate('other');
+        _ = i18n.translate('other');
         
         assert.equals(_('Hello world!'), 'Hello world!');
 
@@ -215,7 +213,7 @@ var i18nTestCase = buster.testCase('i18n tests', {
 
         assert.equals(_('Bye world!'), 'Bye world!');
 
-        var _ = i18n.translate('other');
+        _ = i18n.translate('other');
         
         assert.equals(_('Hello world!'), 'Hello world!');
 
@@ -264,7 +262,7 @@ var i18nTestCase = buster.testCase('i18n tests', {
     'getLocale with locale set': function() {
         setupTranslationsMultiDomains();
 
-            i18n.setLocale('fr_FR', 'i18ntest');
+        i18n.setLocale('fr_FR', 'i18ntest');
 
         assert.equals(i18n.getLocale(), 'fr_FR');
     },
@@ -300,9 +298,9 @@ var i18nTestCase = buster.testCase('i18n tests', {
         var ngettext = i18n.pluralize('i18ntest');
 
         assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 1),
-                             {count: 1}), '1 elephant.');
-            assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
-                                 {count: 2}), '2 elephants.');
+                                     {count: 1}), '1 elephant.');
+        assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
+                                     {count: 2}), '2 elephants.');
     },
 
 
@@ -314,9 +312,9 @@ var i18nTestCase = buster.testCase('i18n tests', {
         i18n.setLocale('nl_NL');
         
         assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 1),
-                             {count: 1}), '1 olifant.');
-            assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
-                                 {count: 2}), '2 olifanten.');
+                                     {count: 1}), '1 olifant.');
+        assert.equals(i18n.variables(ngettext('1 elephant.', '{count} elephants.', 2),
+                                     {count: 2}), '2 olifanten.');
     },
 
     'complex pluralization rule': function() {
@@ -337,24 +335,24 @@ var i18nTestCase = buster.testCase('i18n tests', {
         
         i18n.setLocale('pl_PL');
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 1), {count: 1}),
-              '1 plik.');
+                      '1 plik.');
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 2), {count: 2}),
-              '2 pliki.');
+                      '2 pliki.');
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 3), {count: 3}),
-              '3 pliki.');
+                      '3 pliki.');
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 4), {count: 4}),
-              '4 pliki.');
+                      '4 pliki.');
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 5), {count: 5}),
-              "5 pliko'w.");
+                      "5 pliko'w.");
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 21), {count: 21}),
-              "21 pliko'w.");
+                      "21 pliko'w.");
         assert.equals(i18n.variables(ngettext('1 file.', '{count} files.', 22), {count: 22}),
-              "22 pliki.");
+                      "22 pliki.");
     },
 
     "load i18n": function(done) {
         $('head').append(
-                '<link type="application/json" rel="i18n" href="i18ntest.i18n" />');
+            '<link type="application/json" rel="i18n" href="i18ntest.i18n" />');
         this.mockJson('i18ntest.i18n', {
             "i18ntest": [
                 {
@@ -369,19 +367,19 @@ var i18nTestCase = buster.testCase('i18n tests', {
         });
         this.mockJson('i18n-nl.json', {
             "": {
-                "Content-Transfer-Encoding": "8bit", 
-                "Content-Type": "text/plain; charset=UTF-8", 
-                "Language": "nl", 
-                "Language-Team": "Dutch", 
-                "Last-Translator": "Martijn Faassen <faassen@startifact.com>", 
-                "MIME-Version": "1.0", 
-                "PO-Revision-Date": "2011-05-04 18:44+0200", 
-                "POT-Creation-Date": "2011-05-04 18:42+0200", 
-                "Plural-Forms": "nplurals=2; plural=(n != 1);", 
-                "Project-Id-Version": "obviel_forms 0.1", 
+                "Content-Transfer-Encoding": "8bit",
+                "Content-Type": "text/plain; charset=UTF-8",
+                "Language": "nl",
+                "Language-Team": "Dutch",
+                "Last-Translator": "Martijn Faassen <faassen@startifact.com>",
+                "MIME-Version": "1.0",
+                "PO-Revision-Date": "2011-05-04 18:44+0200",
+                "POT-Creation-Date": "2011-05-04 18:42+0200",
+                "Plural-Forms": "nplurals=2; plural=(n != 1);",
+                "Project-Id-Version": "obviel_forms 0.1",
                 "Report-Msgid-Bugs-To": ""
-            }, 
-            "{count} crow": ["{count} crows", "{count} kraai", "{count} kraaien"], 
+            },
+            "{count} crow": ["{count} crows", "{count} kraai", "{count} kraaien"],
             "greetings human!": [null, "gegroet mens!"]
         });
         i18n.load().done(function() {
@@ -397,9 +395,9 @@ var i18nTestCase = buster.testCase('i18n tests', {
         this.mockJson('a.json', {'a': [null, 'A']});
         this.mockJson('b.json', {'b': [null, 'B']});
         this.mockJson('test.i18n',
-                   {'first': [{'locale': "en_US", url: 'a.json'}],
-                    'second': [{'locale': "en_US", url: 'b.json'}]}
-        );
+                      {'first': [{'locale': "en_US", url: 'a.json'}],
+                       'second': [{'locale': "en_US", url: 'b.json'}]}
+                     );
         i18n.loadI18nFromUrl('test.i18n').done(function() {
             i18n.setLocale('en_US').done(function() {
                 var _ = i18n.translate('first');

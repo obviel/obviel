@@ -6,35 +6,35 @@ var refute = buster.refute;
 var traject = obviel.traject;
 
 var trajectTestCase = buster.testCase("traject tests", {
-    "simple steps": function () {
+    "simple steps": function() {
         assert.equals(traject.parse('a/b/c'), ['a', 'b', 'c']);
     },
 
-    "simple steps starting slash": function () {
+    "simple steps starting slash": function() {
         assert.equals(traject.parse('/a/b/c'), ['a', 'b', 'c']);
     },
     
-    "steps with variable": function () {
+    "steps with variable": function() {
         assert.equals(traject.parse('a/$B/c'), ['a', '$B', 'c']);
     },
     
-    "steps with double variable": function () {
-        assert.exception(function () {
+    "steps with double variable": function() {
+        assert.exception(function() {
             traject.parse('foo/$a/baz/$a');
         }, 'ParseError');
     },
     
-    "subpatterns": function () {
+    "subpatterns": function() {
         assert.equals(traject.subpatterns(['a', '$B', 'c']),
                   [['a'],
                    ['a', '$B'],
                    ['a', '$B', 'c']]);
     },
     
-    "patterns resolve full path": function () {
+    "patterns resolve full path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -65,13 +65,13 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.iface, 'root');
     },
 
-    "custom default lookup": function () {
+    "custom default lookup": function() {
         var patterns = new traject.Patterns();
-        patterns.setDefaultLookup(function () {
+        patterns.setDefaultLookup(function() {
             return {iface: 'customDefault'};
         });
         
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -103,10 +103,10 @@ var trajectTestCase = buster.testCase("traject tests", {
 
     },
 
-    "patterns resolve stack full path": function () {
+    "patterns resolve stack full path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -140,10 +140,10 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.iface, 'root');
     },
 
-    "patterns consume stack full path": function () {
+    "patterns consume stack full path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -182,10 +182,10 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.iface, 'root');
     },
 
-    "patterns resolve partial path": function () {
+    "patterns resolve partial path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -211,10 +211,10 @@ var trajectTestCase = buster.testCase("traject tests", {
     },
 
 
-    "patterns consume stack partial": function () {
+    "patterns consume stack partial": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -247,10 +247,10 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.iface, 'root');
     },
 
-    "patterns resolve impossible path": function () {
+    "patterns resolve impossible path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -258,15 +258,15 @@ var trajectTestCase = buster.testCase("traject tests", {
 
         var root = { iface: 'root'};
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolve(root, 'B/c/D');
         }, 'ResolutionError');
     },
 
-    "patterns resolve stack impossible path": function () {
+    "patterns resolve stack impossible path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -277,16 +277,16 @@ var trajectTestCase = buster.testCase("traject tests", {
         var l = ['B', 'c', 'D'];
         l.reverse();
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolveStack(root, l);
         }, 'ResolutionError');
         
     },
 
-    "patterns consume stack impossible path": function () {
+    "patterns consume stack impossible path": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
         };
 
@@ -304,10 +304,10 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(r.consumed, []);
     },
 
-    "resolve to lookup that returns null": function () {
+    "resolve to lookup that returns null": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             var result = parseInt(variables.id, 10);
             if (isNaN(result)) {
                 return null;
@@ -318,12 +318,12 @@ var trajectTestCase = buster.testCase("traject tests", {
         patterns.register('models/$id', lookup);
         var root = {iface: 'root'};
         
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolve(root, 'models/notAnInt');
         }, 'ResolutionError');
     },
 
-    "resolve to lookup that returns undefined": function () {
+    "resolve to lookup that returns undefined": function() {
         var patterns = new traject.Patterns();
 
         var data = {
@@ -331,7 +331,7 @@ var trajectTestCase = buster.testCase("traject tests", {
             'b': {iface: 'something'}
         };
         
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return data[variables.id]; // will return undefined if not found
         };
 
@@ -340,16 +340,16 @@ var trajectTestCase = buster.testCase("traject tests", {
 
         assert.same(patterns.resolve(root, 'models/a'), data.a);
         
-        assert.exception(function () {
+        assert.exception(function() {
                 patterns.resolve(root, 'models/unknown');
         }, 'ResolutionError');
 
     },
 
-    "consume to lookup that returns null": function () {
+    "consume to lookup that returns null": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             var result = parseInt(variables.id, 10);
             if (isNaN(result)) {
                 return null;
@@ -369,14 +369,14 @@ var trajectTestCase = buster.testCase("traject tests", {
         
     },
 
-    "multiple registrations resolve to child": function () {
+    "multiple registrations resolve to child": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -401,14 +401,14 @@ var trajectTestCase = buster.testCase("traject tests", {
     },
 
 
-    "multiple registrations consume to child with extra": function () {
+    "multiple registrations consume to child with extra": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -436,14 +436,14 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.employeeId, '10');
     },
 
-    "multiple registrations resolve to parent": function () {
+    "multiple registrations resolve to parent": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -467,14 +467,14 @@ var trajectTestCase = buster.testCase("traject tests", {
     },
 
 
-    "multiple registrations consume to parent with extra": function () {
+    "multiple registrations consume to parent with extra": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -502,14 +502,14 @@ var trajectTestCase = buster.testCase("traject tests", {
     },
 
 
-    "multiple registrations resolve to nonexistent": function () {
+    "multiple registrations resolve to nonexistent": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -526,21 +526,21 @@ var trajectTestCase = buster.testCase("traject tests", {
 
         var root = {iface: 'root'};
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolve(root, 'foo/1/bar');
         }, 'ResolutionError');
         
     },
 
 
-    "overlapping patterns": function () {
+    "overlapping patterns": function() {
         var patterns = new traject.Patterns();
 
-        var departmentLookup = function (variables) {
+        var departmentLookup = function(variables) {
             return {iface: 'department', departmentId: variables.departmentId};
         };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -548,13 +548,13 @@ var trajectTestCase = buster.testCase("traject tests", {
             };
         };
 
-        var specialDepartmentLookup = function (variables) {
+        var specialDepartmentLookup = function(variables) {
             return {
                 iface: 'specialDepartment'
             };
         };
 
-        var specialEmployeeLookup = function (variables) {
+        var specialEmployeeLookup = function(variables) {
                 return {
                     iface: 'specialEmployee',
                     employeeId: variables.employeeId
@@ -582,7 +582,7 @@ var trajectTestCase = buster.testCase("traject tests", {
         obj = patterns.resolve(root, 'departments/special');
         assert.equals(obj.iface, 'specialDepartment');
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolve(root, 'departments/special/employees/10');
         }, 'ResolutionError');
 
@@ -612,14 +612,14 @@ var trajectTestCase = buster.testCase("traject tests", {
    testRegisterPatternOnInterface
 */
 
-    "conflicting variable names": function () {
+    "conflicting variable names": function() {
         var patterns = new traject.Patterns();
         
-            var departmentLookup = function (variables) {
+            var departmentLookup = function(variables) {
                 return {iface: 'department', departmentId: variables.departmentId};
             };
         
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -630,24 +630,24 @@ var trajectTestCase = buster.testCase("traject tests", {
         patterns.register(
             'departments/$departmentId', departmentLookup);
         
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.register('departments/$otherId', departmentLookup);
         }, 'RegistrationError');
         
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.register('departments/$otherId/employees/employeeId',
                               employeeLookup);
         }, 'RegistrationError');
     },
 
-    "conflicting converters": function () {
+    "conflicting converters": function() {
             var patterns = new traject.Patterns();
 
-            var departmentLookup = function (variables) {
+            var departmentLookup = function(variables) {
                 return {iface: 'department', departmentId: variables.departmentId};
             };
 
-        var employeeLookup = function (variables) {
+        var employeeLookup = function(variables) {
             return {
                 iface: 'employee',
                 departmentId: variables.departmentId,
@@ -656,12 +656,12 @@ var trajectTestCase = buster.testCase("traject tests", {
         };
 
         patterns.register('departments/$departmentId', departmentLookup);
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.register('departments/$departmentId:int',
                               departmentLookup);
         }, 'RegistrationError');
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.register(
                 'departments/$departmentId:int/employees/$employeeId',
                     employeeLookup);
@@ -669,10 +669,10 @@ var trajectTestCase = buster.testCase("traject tests", {
         
     },
 
-    "match int": function () {
+    "match int": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', v: variables.v};
         };
 
@@ -684,16 +684,16 @@ var trajectTestCase = buster.testCase("traject tests", {
 
         assert.same(obj.v, 1);
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.resolve(root, 'a/notAnInt');
         }, 'ResolutionError');
         
     },
 
-    "consume mismatch int": function () {
+    "consume mismatch int": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', v: variables.v};
         };
 
@@ -710,22 +710,22 @@ var trajectTestCase = buster.testCase("traject tests", {
         
     },
 
-    "unknown converter": function () {
+    "unknown converter": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', v: variables.v};
         };
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.register('a/$v:foo', lookup);
         }, 'RegistrationError');
         
     },
 
-    "new converter": function () {
+    "new converter": function() {
         var patterns = new traject.Patterns();
-        patterns.registerConverter('float', function (v) {
+        patterns.registerConverter('float', function(v) {
             var result = parseFloat(v);
             if (isNaN(result)) {
                 return null;
@@ -733,7 +733,7 @@ var trajectTestCase = buster.testCase("traject tests", {
             return result;
         });
             
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', v: variables.v};
         };
 
@@ -745,16 +745,16 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.same(obj.v, 1.1);
     },
 
-    "converter locate": function () {
+    "converter locate": function() {
         var patterns = new traject.Patterns();
 
-        var lookup = function (variables) {
+        var lookup = function(variables) {
             return {iface: 'obj', v: variables.v};
             };
 
             patterns.register('a/$v:int', lookup);
 
-        var args = function (obj) {
+        var args = function(obj) {
             return {'v': obj.v };
         };
 
@@ -778,7 +778,7 @@ var _employees = null;
 var _employee = {};
 var _calls = [];
 
-var identityDepartments = function (variables) {
+var identityDepartments = function(variables) {
     _calls.push("departments");
     if (_departments !== null) {
         return _departments;
@@ -787,7 +787,7 @@ var identityDepartments = function (variables) {
     return _departments;
 };
 
-var identityDepartment = function (variables) {
+var identityDepartment = function(variables) {
     _calls.push('department ' + variables.departmentId);
     var department = _department[variables.departmentId];
     if (department === undefined) {
@@ -799,7 +799,7 @@ var identityDepartment = function (variables) {
     return department;
 };
 
-var identityEmployees = function (variables) {
+var identityEmployees = function(variables) {
     _calls.push("employees " + variables.departmentId);
     if (_employees !== null) {
         return _employees;
@@ -811,7 +811,7 @@ var identityEmployees = function (variables) {
     return _employees;
 };
 
-var identityEmployee = function (variables) {
+var identityEmployee = function(variables) {
     _calls.push('department ' + variables.departmentId +
                 ' employee ' + variables.employeeId);
     var employee = _employee[variables.employeeId];
@@ -825,23 +825,23 @@ var identityEmployee = function (variables) {
     return employee;
 };
 
-var departmentsArguments = function (departments) {
+var departmentsArguments = function(departments) {
     return {};
 };
 
-var departmentArguments = function (department) {
+var departmentArguments = function(department) {
     return {
         departmentId: department.departmentId
     };
 };
 
-var employeesArguments = function (employees) {
+var employeesArguments = function(employees) {
     return {
         departmentId: employees.departmentId
     };
 };
 
-var employeeArguments = function (employee) {
+var employeeArguments = function(employee) {
     return {
         departmentId: employee.departmentId,
         employeeId: employee.employeeId
@@ -849,7 +849,7 @@ var employeeArguments = function (employee) {
 };
 
 
-var getIdentityPatterns = function () {
+var getIdentityPatterns = function() {
     var patterns = new traject.Patterns();
     
 
@@ -884,17 +884,17 @@ var getIdentityPatterns = function () {
 };
 
 var trajectInverseTestCase = buster.testCase("traject inverse tests", {
-    setUp: function () {
+    setUp: function() {
         _departments = null;
         _department = {};
         _employees = null;
         _employee = {};
         _calls = [];
     },
-    tearDown: function () {
+    tearDown: function() {
     },
     
-    "inverse": function () {
+    "inverse": function() {
         var patterns = getIdentityPatterns();
             var root = { iface: 'root'};
             
@@ -912,7 +912,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
             assert.equals(departments.trajectParent, root);
     },
 
-    "identity": function () {
+    "identity": function() {
             var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
@@ -926,7 +926,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         refute.equals(employee1, employee3);
         },
 
-    "no recreation": function () {
+    "no recreation": function() {
         var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
@@ -944,19 +944,19 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.equals(_calls, []);
     },
 
-    "cannot locate": function () {
+    "cannot locate": function() {
         var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
         var foo = {iface: 'foo'};
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.locate(root, foo);
         }, 'LocationError');
 
     },
 
 
-    "no recreation of departments": function () {
+    "no recreation of departments": function() {
         var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
@@ -974,7 +974,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
                            'department 1']);
     },
 
-    "no recreation of department": function () {
+    "no recreation of department": function() {
         var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
@@ -990,7 +990,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.equals(_calls, ['department 1 employee 2', 'employees 1']);
     },
 
-    "no recreation of department after resolve": function () {
+    "no recreation of department after resolve": function() {
             var patterns = getIdentityPatterns();
         var root = {iface: 'root'};
 
@@ -1005,7 +1005,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.equals(_calls, ['department 1 employee 2', 'employees 1']);
     },
 
-    "inverse non string name": function () {
+    "inverse non string name": function() {
         var patterns = getIdentityPatterns();
 
         var root = {iface: 'root'};
@@ -1018,7 +1018,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.equals(employee.trajectName, '2');
     },
 
-    "inverse twice": function () {
+    "inverse twice": function() {
         var patterns = getIdentityPatterns();
 
         var root = {iface: 'root'};
@@ -1035,7 +1035,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
             assert.equals(otherEmployee.trajectName, '3');
     },
 
-    "generate path": function () {
+    "generate path": function() {
         var patterns = getIdentityPatterns();
 
         var root = {iface: 'root'};
@@ -1047,18 +1047,18 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.equals(path, 'departments/1/employees/2');
     },
 
-    "patterns method": function () {
+    "patterns method": function() {
         var departments = {
             alpha: { iface: 'department', title: 'Alpha'},
             beta: {iface: 'department', title: 'Beta'},
             gamma: {iface: 'department', title: 'Gamma'}
         };
         
-        var getDepartment = function (variables) {
+        var getDepartment = function(variables) {
             return departments[variables.departmentName];
         };
 
-        var getDepartmentVariables = function (department) {
+        var getDepartmentVariables = function(department) {
             for (var departmentName in departments) {
                 if (department === departments[departmentName]) {
                     return {departmentName: departmentName};
@@ -1087,14 +1087,14 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         
     },
 
-    "inverse not found": function () {
+    "inverse not found": function() {
         var departments = {
             alpha: { iface: 'department', title: 'Alpha'},
             beta: {iface: 'department', title: 'Beta'},
             gamma: {iface: 'department', title: 'Gamma'}
         };
         
-        var getDepartmentVariables = function (department) {
+        var getDepartmentVariables = function(department) {
             for (var departmentName in departments) {
                 if (department === departments[departmentName]) {
                     return {departmentName: departmentName};
@@ -1113,7 +1113,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
 
         var root = {iface: 'root'};
 
-        assert.exception(function () {
+        assert.exception(function() {
             patterns.path(root, {iface: 'department'});
         }, 'LocationError');
     

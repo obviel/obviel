@@ -1,6 +1,4 @@
-/*global module:false obviel:false test:false ok:false same:false $:false
-  equal:false raises:false asyncTest:false start:false deepEqual: false
-  stop:false  */
+/*global obviel:false, buster:false, sinon:false*/
 
 var assert = buster.assert;
 var refute = buster.refute;
@@ -48,7 +46,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                     return json;
                 };
             }
-            var response = function(request) { 
+            var response = function(request) {
                 request.respond(200, { 'Content-Type': 'application/json'},
                                 JSON.stringify(getResponse(request)));
             };
@@ -253,7 +251,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             ifaces: ['viewform'],
             form: {
                 name: 'test',
-                widgets: 
+                widgets:
                 [{
                     name: 'one',
                     ifaces: ['groupField'],
@@ -279,7 +277,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                           title: 'Alpha'
                          }
                      ]
-                 }   
+                 }
                 ]
             }
         });
@@ -294,7 +292,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             ifaces: ['viewform'],
             form: {
                 name: 'test',
-                widgets: 
+                widgets:
                 [{
                     name: 'one',
                     title: "One",
@@ -322,7 +320,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                               title: 'Alpha'
                              }
                          ]
-                     }   
+                     }
                 ]
             }
         });
@@ -409,7 +407,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             },
             errors: errors
         });
-        var requestBody = undefined;
+        var requestBody;
         this.mockJson('testUrl', function(request) {
             requestBody = request.requestBody;
             return {'ifaces': ['successIface']};
@@ -679,7 +677,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(widget.convert('1'), {value: 1});
         assert.equals(widget.convert('-1,2'), {value: -1.2});
         assert.equals(widget.convert(''), {value: null});
-        assert.equals(widget.convert('foo'), {error: 'not a float'});    
+        assert.equals(widget.convert('foo'), {error: 'not a float'});
         assert.equals(widget.convert('1.2'), {error: 'not a float'});
     },
 
@@ -747,7 +745,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(widget.convert('1'), {value: '1'});
         assert.equals(widget.convert('-1,2'), {value: '-1.2'});
         assert.equals(widget.convert(''), {value: null});
-        assert.equals(widget.convert('foo'), {error: 'not a decimal'});    
+        assert.equals(widget.convert('foo'), {error: 'not a decimal'});
         assert.equals(widget.convert('1.2'), {error: 'not a decimal'});
     },
 
@@ -854,7 +852,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "form starts out with empty data": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -891,7 +889,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "form disabled with data": function() {
         var el = testel();
-        var data = {'a': 'hello world'}; 
+        var data = {'a': 'hello world'};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -915,7 +913,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "composite datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -968,7 +966,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "composite back datalink": function() {
             var el = testel();
-        var data = {}; 
+        var data = {};
 
         el.render({
             ifaces: ['viewform'],
@@ -1013,7 +1011,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "composite empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
             var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1048,7 +1046,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "nested composite datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1085,7 +1083,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                         ]
                     }
                 ]
-            },           
+            },
             data: data,
             errors: errors
         });
@@ -1113,7 +1111,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating entries show up": function() {
         var el = testel();
-        var data = {repeating: [{a: 'foo', b: 1}, {a: 'bar', b: 2}]}; 
+        var data = {repeating: [{a: 'foo', b: 1}, {a: 'bar', b: 2}]};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1158,7 +1156,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1218,7 +1216,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating defaults": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1271,7 +1269,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating empty entries without defaults": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1319,7 +1317,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
 
         el.render({
             ifaces: ['viewform'],
@@ -1368,7 +1366,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "repeating remove item": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1489,7 +1487,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             {a: 'foo', b: 10},
             {a: 'bar', b: 20},
                 {a: 'baz', b: 30}
-            ]}; 
+            ]};
         var errors = {};
         el.render({
             ifaces: ['viewform'],
@@ -1602,7 +1600,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "textline datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1627,7 +1625,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "textline back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1683,7 +1681,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "integer datalink without error": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1709,7 +1707,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "integer back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1733,7 +1731,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "float datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1758,7 +1756,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "float back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1783,7 +1781,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "float back datalink different sep": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1809,7 +1807,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "decimal datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1834,7 +1832,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "decimal back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1859,7 +1857,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "decimal back datalink different sep": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1885,7 +1883,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "boolean datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1921,7 +1919,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "boolean back datalink": function() {
         var el = testel();
-            var data = {}; 
+            var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1949,7 +1947,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "choice datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -1968,7 +1966,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
         
             fieldEl.val('foo');
         fieldEl.trigger('change');
@@ -1977,7 +1975,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "choice datalink empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
                 ifaces: ['viewform'],
             form: {
@@ -1996,7 +1994,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
         assert.equals(fieldEl.length, 1);
         fieldEl.val('');
         fieldEl.trigger('change');
@@ -2005,7 +2003,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "choice back datalink": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2024,7 +2022,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
 
         $(data).setField('a', 'bar');
         assert.equals(fieldEl.val(), 'bar');
@@ -2033,7 +2031,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "choice back datalink empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2052,7 +2050,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
 
         $(data).setField('a', null);
         assert.equals(fieldEl.val(), '');
@@ -2060,7 +2058,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
     "choice empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2080,13 +2078,13 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
-        assert.equals($('option', fieldEl).length, 3);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
+        assert.equals($('option', fieldEl).length, 3);
     },
 
     'choice required no empty': function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2107,13 +2105,13 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
         assert.equals($('option', fieldEl).length, 2);
     },
 
     "choice no empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2132,13 +2130,13 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
         assert.equals($('option', fieldEl).length, 3);
     },
 
     "choice no empty but own empty": function() {
         var el = testel();
-        var data = {}; 
+        var data = {};
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2159,7 +2157,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data
         });
         var formEl = $('form', el);
-        var fieldEl = $('#obviel-field-test-a', formEl);    
+        var fieldEl = $('#obviel-field-test-a', formEl);
         assert.equals($('option', fieldEl).length, 3);
     },
 
@@ -2173,7 +2171,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             var data = $.parseJSON(request.requestBody);
             if (data.a === 'wrong') {
                 request.respond(200, {'Content-Type': 'application/json'},
-                                JSON.stringify({'a': 'must not be wrong'})); 
+                                JSON.stringify({'a': 'must not be wrong'}));
             } else {
                 request.respond(200, {'Content-Type': 'application/json'},
                                 JSON.stringify({}));
@@ -2561,7 +2559,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors
         });
 
-        var requestBody = undefined;
+        var requestBody;
         this.mockJson('testUrl', function(request) {
             requestBody = $.parseJSON(request.requestBody);
             return {ifaces: ['successIface']};
@@ -2614,7 +2612,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors
         });
 
-        var requestBody = undefined;
+        var requestBody;
         
         this.mockJson('testUrl', function(request) {
             requestBody = $.parseJSON(request.requestBody);
@@ -2674,7 +2672,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors
         });
 
-        var requestBody = undefined;
+        var requestBody;
 
         this.mockJson('testUrl', function(request) {
             requestBody = $.parseJSON(request.requestBody);
@@ -2688,7 +2686,6 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
         this.server.respond();
- 
         assert.equals(requestBody, {"composite":{"a":null,"b":null}});
         // the successIface should be rendered
         assert.equals(el.text(), 'success!');
@@ -3205,7 +3202,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         
         this.mockJson('validate', function(request) {
             var data = $.parseJSON(request.requestBody);
-            if (data.repeating[0].a == 'triggerError') {
+            if (data.repeating[0].a === 'triggerError') {
                 return {
                     'repeating': [{'a': 'error'}]
                 };
