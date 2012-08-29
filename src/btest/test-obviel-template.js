@@ -1,6 +1,4 @@
-/*global module:false obviel:false test:false ok:false same:false $:false
-  equal:false raises:false asyncTest:false start:false deepEqual: false
-  stop:false strictEqual:false */
+/*global obviel:false, buster:false sinon:false, console:false */
 
 var assert = buster.assert;
 var refute = buster.refute;
@@ -21,7 +19,7 @@ var extraNormalize = function(text) {
 
 buster.assertions.add('htmlEquals', {
     assert: function(actual, expected) {
-        return actual == normalizeHtml(expected);
+        return actual === normalizeHtml(expected);
     },
     assertMessage: "${2}${0} expected to be equal to ${1}",
     refuteMessage: "${2}${0} expected not to be equal to ${1}",
@@ -36,11 +34,11 @@ function assertEnoughArguments(name, args, num) {
     }
     
     return true;
-};
+}
 
 function interpolate(string, property, value) {
     return string.replace(new RegExp("\\$\\{" + property + "\\}", "g"), value);
-};
+}
 
 function interpolateProperties(msg, properties) {
     for (var prop in properties) {
@@ -48,7 +46,7 @@ function interpolateProperties(msg, properties) {
     }
     
     return msg || "";
-};
+}
 
 function interpolatePosArg(message, values) {
     var value;
@@ -59,7 +57,7 @@ function interpolatePosArg(message, values) {
     }
     
     return message;
-};
+}
 
 function fail(type, assertion, msg) {
     delete this.fail;
@@ -67,14 +65,15 @@ function fail(type, assertion, msg) {
         interpolatePosArg(buster.assertions[type][assertion][msg] || msg,
                           [].slice.call(arguments, 3)), this);
     buster.assertions.fail("[" + type + "." + assertion + "] " + message);
-};
+}
+
 function countAssertion() {
-    if (typeof buster.assertions.count != "number") {
+    if (typeof buster.assertions.count !== "number") {
         buster.assertions.count = 0;
     }
     
     buster.assertions.count += 1;
-};
+}
 
 function captureException(callback) {
         try {
@@ -87,6 +86,7 @@ function captureException(callback) {
 }
 
 assert.raises = function(callback, exception, message) {
+    /*jshint newcap:false */
     countAssertion();
     if (!assertEnoughArguments("assert.raises", arguments, 1)) {
         return undefined;
@@ -101,14 +101,14 @@ assert.raises = function(callback, exception, message) {
                              message, exception);
         } else {
             return fail.call({}, "assert", "raises", "message",
-                                 message, exception);   
+                                 message, exception);
         }
     }
     // XXX should add facility to handle with exception being undefined
     // when the wrong exception is thrown we want to see a stack trace
     // or string
     if (!(err instanceof exception)) {
-        if (typeof window != "undefined" && typeof console != "undefined") {
+        if (typeof window !== "undefined" && typeof console !== "undefined") {
             console.log(err);
         }
         if (err instanceof Error) {
@@ -210,7 +210,7 @@ var templateTestCase = buster.testCase('template tests', {
 
     'template with text, without variable': function() {
         assert.htmlEquals(render('<p>Hello world!</p>', {}),
-                          '<p>Hello world!</p>'); 
+                          '<p>Hello world!</p>');
     },
     
     'render template twice on same element': function() {
@@ -258,7 +258,7 @@ var templateTestCase = buster.testCase('template tests', {
     
     'element with text and variable': function() {
         assert.htmlEquals(render('<p>Hello {who}!</p>', {who: 'world'}),
-                          '<p>Hello world!</p>'); 
+                          '<p>Hello world!</p>');
     },
     
     'variable and sub element': function() {
@@ -1123,13 +1123,13 @@ var templateTestCase = buster.testCase('template tests', {
     'data-trans on empty attribute': function() {
         assert.raises(function() {
             render('<p data-trans="title" title=""></p>');
-        }, obtemp.CompilationError);     
+        }, obtemp.CompilationError);
     },
 
     'data-trans on attribute with just variable': function() {
         assert.raises(function() {
             render('<p data-trans="title" title="{foo}"></p>', {foo: 'Foo'});
-        }, obtemp.CompilationError);     
+        }, obtemp.CompilationError);
     },
 
 
@@ -1189,7 +1189,7 @@ var templateTestCase = buster.testCase('template tests', {
         template.render(el, {who: 'wereld'}, {});
         var html = el.html();
 
-        assert.htmlEquals(html, '<p>Greetings <em>wereld</em>!</p>'); 
+        assert.htmlEquals(html, '<p>Greetings <em>wereld</em>!</p>');
     },
 
     'implicit data-tvar for data-view': function() {
@@ -1537,7 +1537,7 @@ var templateTestCase = buster.testCase('template tests', {
 
         assert.raises(function() {
             render('<div data-view="bob"></div>', {bob: 1});
-        }, obtemp.RenderError); 
+        }, obtemp.RenderError);
     },
 
     'data-view cannot find view for object': function() {
@@ -1886,13 +1886,13 @@ var templateTestCase = buster.testCase('template tests', {
                           'Hello world!');
     },
 
-    'data-unwrap with data-if where if is true': function() { 
+    'data-unwrap with data-if where if is true': function() {
         assert.htmlEquals(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
                                  {flag: true}),
                           '<div>Hello world!Something</div>');
     },
 
-    'data-unwrap with data-if where if is false': function() { 
+    'data-unwrap with data-if where if is false': function() {
         assert.htmlEquals(render('<div><div data-unwrap="" data-if="flag">Hello world!</div>Something</div>',
                                  {flag: false}),
                           '<div>Something</div>');
@@ -2152,7 +2152,7 @@ var templateTestCase = buster.testCase('template tests', {
         template.render(el, {}, { getHandler: getHandler});
         $('#one', el).trigger('click');
         $('#one', el).trigger('blur');
-        assert.equals(firstHandlerCalled, true); 
+        assert.equals(firstHandlerCalled, true);
         assert.equals(secondHandlerCalled, true);
     },
 
@@ -2537,7 +2537,7 @@ var templateTestCase = buster.testCase('template tests', {
                           {"type": obtemp.NAME_TOKEN,
                            "value": "bar"},
                           {"type": obtemp.TEXT_TOKEN,
-                           "value": " after {foo"} 
+                           "value": " after {foo"}
                       ]);
     },
 

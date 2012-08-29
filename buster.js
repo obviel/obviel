@@ -1,30 +1,7 @@
 var config = module.exports;
 
-config["Obviel Core"] = {
-    rootPath: ".",
-    environment: "browser",
-    libs: [
-        'src/dependencies/jquery.js',
-        'src/dependencies/json-template.js',
-        'src/dependencies/Gettext.js'
-    ],
-    
-    sources: [
-        "src/obviel/obviel-i18n.js",
-        "src/obviel/obviel-template.js",
-        'src/obviel/obviel.js'
-    ],
-    tests: [
-        "src/btest/test-obviel-iface.js",
-        "src/btest/test-obviel.js"
-    ],
-    resources: [
-        {path: '/', file: 'src/btest/body.html'},
-        'src/btest/fixtures/**.**'
-    ],
-    extensions: [require('buster-lint')],
-    "buster-lint": {
-        linter: 'jshint',
+var linterConf = {
+    linter: 'jshint',
         linterOptions: {
             node: false,
             browser: true,
@@ -48,16 +25,40 @@ config["Obviel Core"] = {
             strict: false,
             forin: false,
             plusplus: false,
-            mootools: false,
-            maxerrs: 50
+            mootools: false
         },
-
         excludes: [
             "jquery",
             "json-template",
-            "Gettext.js"
+            "Gettext.js",
+            "json2"
        ]
-    }
+};
+
+config["Obviel Core"] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/dependencies/json-template.js',
+        'src/dependencies/Gettext.js'
+    ],
+    
+    sources: [
+        "src/obviel/obviel-i18n.js",
+        "src/obviel/obviel-template.js",
+        'src/obviel/obviel.js'
+    ],
+    tests: [
+        "src/btest/test-obviel-iface.js",
+        "src/btest/test-obviel.js"
+    ],
+    resources: [
+        {path: '/', file: 'src/btest/body.html'},
+        'src/btest/fixtures/**.**'
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 
@@ -74,7 +75,9 @@ config["Obviel Template"] = {
     ],
     tests: [
         "src/btest/test-obviel-template.js"
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 
