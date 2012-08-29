@@ -1696,19 +1696,21 @@ obviel.template = {};
     };
 
     module.IfExpression.prototype.resolve = function(el, scope) {
-        var result = this.dataIf(scope);
-        if (this.notEnabled) {
-            /* XXX jshint doesn't like the == false comparison */
-            return (result === undefined ||
-                    result === null ||
-                    result == false);
+        var result = this.dataIf(scope),
+            tf;
+        if ($.isArray(result) && result.length === 0) {
+            tf = false;
+        } else {
+            if (result) {
+                tf = true;
+            } else {
+                tf = false;
+            }
         }
-        // result != false is NOT equivalent to result == true in JS
-        // and it is the one we want
-        /* XXX jshint doesn't like the != false comparison */
-        return (result !== undefined &&
-                result !== null &&
-                result != false);
+        if (this.notEnabled) {
+            return (!tf);
+        }
+        return tf;
     };
     
     module.Scope = function(obj) {
@@ -2134,6 +2136,7 @@ obviel.template = {};
     };
 
     module.Codegen.prototype.getFunction = function() {
+        /*jshint evil:true*/
         var code = this.result.join('');
         return new Function(this.args, code);
     };
