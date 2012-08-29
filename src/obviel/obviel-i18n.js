@@ -1,3 +1,5 @@
+/*global Gettext:false, console:false */
+
 // Obviel i18n support.
 // uses jsgettext. some of the logic is more hairy than it should
 // be as jsgettext for some reason decided to globally share all state
@@ -26,8 +28,10 @@ obviel.i18n = {};
     
     module.translationSource = function(data) {
         return function() {
-            var defer = $.Deferred();
-            var massagedData = {};
+            var defer = $.Deferred(),
+                massagedData = {},
+                msgid;
+            
             for (msgid in data) {
                 var value = data[msgid];
                 if ($.type(value) === 'string') {
@@ -35,7 +39,7 @@ obviel.i18n = {};
                 } else {
                     massagedData[msgid] = value;
                 }
-            };
+            }
             defer.resolve(massagedData);
             return defer.promise();
         };
@@ -113,8 +117,10 @@ obviel.i18n = {};
         }
         currentLocale = locale;
         
-        var localeData = {};
-        var promises = [];
+        var localeData = {},
+            promises = [],
+            d;
+        
         for (d in domains) {
             var translations = domains[d];
             var translationSource = translations[locale];
@@ -232,6 +238,6 @@ obviel.i18n = {};
     // alias
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
-    };
+    }
 
 }(jQuery, obviel.i18n));

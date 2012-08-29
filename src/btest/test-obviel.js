@@ -1,4 +1,4 @@
-/* */
+/*global buster:false, sinon:false, obviel:false */
 var assert = buster.assert;
 var refute = buster.refute;
 
@@ -35,7 +35,7 @@ var coreTestCase = buster.testCase("core tests", {
                     return json;
                 };
             }
-            var response = function(request) { 
+            var response = function(request) {
                 request.respond(200, { 'Content-Type': 'application/json'},
                                 JSON.stringify(getResponse()));
             };
@@ -88,7 +88,7 @@ var coreTestCase = buster.testCase("core tests", {
         });
         assert.exception(function() {
             testel().render({text: 'bar'});
-        }, 'LookupError');    
+        }, 'LookupError');
     },
                                    
     'iface view with iface provided': function() {
@@ -150,7 +150,7 @@ var coreTestCase = buster.testCase("core tests", {
         });
         assert.exception(function() {
             testel().render({text: 'qux'}, 'foo');
-        }, 'LookupError'); 
+        }, 'LookupError');
     },
 
     'iface/named view, both iface and name provided': function() {
@@ -295,7 +295,7 @@ var coreTestCase = buster.testCase("core tests", {
                 assert.equals(view.el.text(), '2');
                 done();
             });
-        });        
+        });
     },
     
     'rerender context object': function() {
@@ -333,7 +333,7 @@ var coreTestCase = buster.testCase("core tests", {
         var el = testel();
         el.html('<span>foo</span>');
         el.render({});
-        assert.equals(el.text(), 'foo');   
+        assert.equals(el.text(), 'foo');
     },
 
 
@@ -770,7 +770,7 @@ var coreTestCase = buster.testCase("core tests", {
         var called = 0;
         el.bind('render-done.obviel', function(ev) {
             called++;
-            if (ev.view.iface == 'ifoo') {
+            if (ev.view.iface === 'ifoo') {
                 assert.equals(called, 3);
                 assert.equals($('.sub1', el).text(), 'foo');
                 assert.equals($('.sub2', el).text(), 'sub2 text');
@@ -940,7 +940,7 @@ var coreTestCase = buster.testCase("core tests", {
         obj.title = 'Bye';
         $(obj).trigger('custom');
         
-        assert.equals($('.theClass', el).text(), 'Bye');    
+        assert.equals($('.theClass', el).text(), 'Bye');
     },
     
     'object event triggers rerender with named view': function() {
@@ -964,7 +964,7 @@ var coreTestCase = buster.testCase("core tests", {
         obj.title = 'Bye';
         $(obj).trigger('custom');
         
-        assert.equals($('.theClass', el).text(), 'Bye');    
+        assert.equals($('.theClass', el).text(), 'Bye');
     },
     
     'object events cleanup': function() {
@@ -1913,8 +1913,6 @@ var coreTestCase = buster.testCase("core tests", {
             assert.equals(e.toString(),
                           "variable 'notfound' could not be found (foo obvt /p)");
         }
-        
-        expect(1);
     },
     
     
@@ -1936,7 +1934,6 @@ var coreTestCase = buster.testCase("core tests", {
                           "variable 'notfound' could not be found (foo obvtScript:obvt_notfound_id /)");
         }
         
-        expect(1);
     }
 
     // XXX problems testing this due to asynchronous nature of JS; exception

@@ -1,6 +1,4 @@
-/*global jQuery:true, obviel:true, jsontemplate:false
-  alert:true , browser:true, document:true, window:true
-*/
+/*global jsontemplate:false */
 
 if (typeof obviel === "undefined") {
     var obviel = {};
@@ -83,7 +81,7 @@ if (typeof console === "undefined") {
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
     }
-})(jQuery);
+}(jQuery));
 
 (function($, module) {
     var _ifaces = {
@@ -181,7 +179,7 @@ if (typeof console === "undefined") {
     module.provides = function(obj, base) {
         var ifaces = module.ifaces(obj);
         for (var i=0; i < ifaces.length; i++) {
-            if (ifaces[i] == base) {
+            if (ifaces[i] === base) {
                 return true;
             }
         }
@@ -202,7 +200,7 @@ if (typeof console === "undefined") {
         }
         for (var i=0; i < basebases.length; i++) {
             if (basebases[i] === name) {
-                throw new module.IfaceError('iface ' + name + 
+                throw new module.IfaceError('iface ' + name +
                                             ' cannot depend on itself');
             }
         }
@@ -241,12 +239,12 @@ if (typeof console === "undefined") {
         var bases = [].concat(ifaces);
         while (bases.length) {
             var base = bases.shift();
-            if (base == 'base') {
+            if (base === 'base') {
                 continue;
             }
             var duplicate = false;
             for (var i=0; i < ret.length; i++) {
-                if (base == ret[i]) {
+                if (base === ret[i]) {
                     duplicate = true;
                     break;
                 }
@@ -382,7 +380,7 @@ if (typeof console === "undefined") {
         var self = this;
         var wrappedHandler = null;
         
-        if (typeof handler == 'string') {
+        if (typeof handler === 'string') {
             wrappedHandler = function(ev) {
                 ev.view = self;
                 ev.args = Array.prototype.slice.call(arguments, 1);
@@ -503,8 +501,8 @@ if (typeof console === "undefined") {
                 // for that iface
                 var el = $(this);
                 var previousView = el.data('obviel.renderedView');
-                if ((view.iface != previousView.iface) ||
-                    (view.name != previousView.name)) {
+                if ((view.iface !== previousView.iface) ||
+                    (view.name !== previousView.name)) {
                     return;
                 }
                 // the el with which we get called gets replaced
@@ -598,7 +596,7 @@ if (typeof console === "undefined") {
     module.Registry.prototype.render = function(el, obj, name) {
         var self = this;
         var url = null;
-        if (typeof obj == 'string') {
+        if (typeof obj === 'string') {
             url = obj;
         }
         var promise;
@@ -696,7 +694,7 @@ if (typeof console === "undefined") {
 
     module.InlineSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compilerIdentifier + '_' + 
+                this.compilerIdentifier + '_' +
                 this.source);
     };
 
@@ -1042,4 +1040,4 @@ if (typeof console === "undefined") {
         }
     );
 
-})(jQuery, obviel);
+}(jQuery, obviel));

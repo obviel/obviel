@@ -1,6 +1,6 @@
-/* */
+/*global buster:false, obviel:false */
 var assert = buster.assert;
-var refuse = buster.refute;
+var refute = buster.refute;
 
 var ifaceTestCase = buster.testCase("iface tests", {
     setUp: function() {

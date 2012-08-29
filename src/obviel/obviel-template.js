@@ -1,11 +1,7 @@
-/*global obviel: true, jQuery: true, templateUrl: true
-  alert: true , browser: true, document: true, appUrl: true,
-  window: true, Gettext: true, jsonLocaleData: true
+/*jshint obviel:false
 */
-/*jshint evil: true */
 
 /*
-
 How does this work?
 
 There are two phases:
@@ -57,6 +53,7 @@ when rendering a section:
 */
 
 if (typeof obviel === "undefined") {
+    /*jshint shadow:false */
     var obviel = {};
 }
 
@@ -446,7 +443,7 @@ obviel.template = {};
         };
         var each = {};
         $.extend(each, info);
-        each[name] = info;      
+        each[name] = info;
         return {
             '@each': each
         };
@@ -975,7 +972,7 @@ obviel.template = {};
         }
         
         var parts = this.value.split('||');
-        if (parts.length == 1) {
+        if (parts.length === 1) {
             if (this.transInfo.countVariable !== null) {
                 throw new module.CompilationError(
                     el, "data-plural used for attribute content but no || " +

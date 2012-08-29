@@ -21,7 +21,43 @@ config["Obviel Core"] = {
     resources: [
         {path: '/', file: 'src/btest/body.html'},
         'src/btest/fixtures/**.**'
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": {
+        linter: 'jshint',
+        linterOptions: {
+            node: false,
+            browser: true,
+            jquery: true,
+            curly: true,
+            asi: false,
+            boss: false,
+            devel: false,
+            eqeqeq: true,
+            evil: false,
+            expr: false,
+            latedef: false,
+            newcap: true,
+            noempty: true,
+            nonew: true,
+            nomen: false,
+            onevar: false,
+            undef: true,
+            supernew: true,
+            white: false,
+            strict: false,
+            forin: false,
+            plusplus: false,
+            mootools: false,
+            maxerrs: 50
+        },
+
+        excludes: [
+            "jquery",
+            "json-template",
+            "Gettext.js"
+       ]
+    }
 };
 
 
