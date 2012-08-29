@@ -1,6 +1,3 @@
-/*jshint obviel:false
-*/
-
 /*
 How does this work?
 

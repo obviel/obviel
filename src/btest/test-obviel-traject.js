@@ -1,9 +1,4 @@
-/*global $: false, module: false, test: false, equal: false,
-  notEqual: false, obviel: false, deepEqual: false, raises: false,
-  start: false, asyncTest, strictEqual: false traject: false */
-/*jshint white: true, browser: true, onevar: false, undef: true,
-eqeqeq: true, plusplus: false, bitwise: true, regexp: true, newcap: true,
-immed: true, strict: false, maxlen: 80, maxerr: 9999 */
+/*global buster:false, obviel:false */
 
 var assert = buster.assert;
 var refute = buster.refute;
@@ -37,7 +32,7 @@ var trajectTestCase = buster.testCase("traject tests", {
     },
     
     "patterns resolve full path": function () {
-            var patterns = new traject.Patterns();
+        var patterns = new traject.Patterns();
 
         var lookup = function (variables) {
             return {iface: 'obj', 'b': variables.b, 'd': variables.d};
@@ -203,7 +198,7 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(obj.trajectName, 'c');
         assert.equals(obj.iface, 'default');
 
-            obj = obj.trajectParent;
+        obj = obj.trajectParent;
         assert.equals(obj.trajectName, 'B');
         assert.equals(obj.iface, 'default');
 
@@ -235,7 +230,7 @@ var trajectTestCase = buster.testCase("traject tests", {
         assert.equals(r.unconsumed, []);
         assert.equals(r.consumed, ['a', 'B', 'c']);
 
-            var obj = r.obj;
+        var obj = r.obj;
 
         assert.equals(obj.trajectName, 'c');
         assert.equals(obj.iface, 'default');
@@ -402,7 +397,7 @@ var trajectTestCase = buster.testCase("traject tests", {
 
         assert.equals(obj.iface, 'employee');
             assert.equals(obj.departmentId, '1');
-        assert.equals(obj.employeeId, '10'); 
+        assert.equals(obj.employeeId, '10');
     },
 
 
@@ -438,7 +433,7 @@ var trajectTestCase = buster.testCase("traject tests", {
         var obj = r.obj;
         assert.equals(obj.iface, 'employee');
         assert.equals(obj.departmentId, '1');
-        assert.equals(obj.employeeId, '10'); 
+        assert.equals(obj.employeeId, '10');
     },
 
     "multiple registrations resolve to parent": function () {
@@ -468,7 +463,7 @@ var trajectTestCase = buster.testCase("traject tests", {
         var obj = patterns.resolve(root, 'departments/1');
 
         assert.equals(obj.iface, 'department');
-        assert.equals(obj.departmentId, '1'); 
+        assert.equals(obj.departmentId, '1');
     },
 
 
@@ -928,7 +923,7 @@ var trajectInverseTestCase = buster.testCase("traject inverse tests", {
         assert.same(employee1, employee2);
         var employee3 = patterns.resolve(
             root, 'departments/1/employees/3');
-        refute.equals(employee1, employee3); 
+        refute.equals(employee1, employee3);
         },
 
     "no recreation": function () {

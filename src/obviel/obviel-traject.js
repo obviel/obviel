@@ -1,7 +1,5 @@
-/*global jQuery: false, alert: false, obviel: false, _: false */
-/*jshint white: false, browser: true, onevar: false, undef: true,
-eqeqeq: true, plusplus: false, bitwise: true, regexp: true, newcap: true,
-immed: true, strict: false, maxlen: 80, maxerr: 9999 */
+/*global*/
+
 if (typeof obviel === "undefined") {
     var obviel = {};
 }
@@ -11,46 +9,46 @@ obviel.traject = {};
 (function($, module) {
     var UNCONVERTED = {};
     
-    module.ParseError = function (message) {
+    module.ParseError = function(message) {
         this.message = message;
         this.name = 'ParseError';
     };
 
-    module.ParseError.prototype = Error();
+    module.ParseError.prototype = new Error();
     module.ParseError.prototype.constructor = module.ParseError;
     
-    module.ResolutionError = function (message) {
+    module.ResolutionError = function(message) {
         this.message = message;
         this.name = 'ResolutionError';
     };
     
-    module.ResolutionError.prototype = Error();
+    module.ResolutionError.prototype = new Error();
     module.ResolutionError.prototype.constructor = module.ResolutionError;
 
-    module.LocationError = function (message) {
+    module.LocationError = function(message) {
         this.message = message;
         this.name = 'LocationError';
     };
     
-    module.LocationError.prototype = Error();
+    module.LocationError.prototype = new Error();
     module.LocationError.prototype.constructor = module.LocationError;
     
-    module.RegistrationError = function (message) {
+    module.RegistrationError = function(message) {
         this.message = message;
         this.name = 'RegistrationError';
     };
     
-    module.RegistrationError.prototype = Error();
+    module.RegistrationError.prototype = new Error();
     module.RegistrationError.prototype.constructor = module.RegistrationError;
     
-    var normalize = function (patternStr) {
+    var normalize = function(patternStr) {
         if (patternStr.charAt(0) === '/') {
             return patternStr.slice(1);
         }
         return patternStr;
     };
 
-    var parse = module.parse = function (patternStr) {
+    var parse = module.parse = function(patternStr) {
         patternStr = normalize(patternStr);
         var pattern = patternStr.split('/');
         var knownVariables = {};
@@ -68,7 +66,7 @@ obviel.traject = {};
         return pattern;
     };
 
-    var subpatterns = module.subpatterns = function (pattern) {
+    var subpatterns = module.subpatterns = function(pattern) {
         var subpattern = [];
         var result = [];
         for (var i in pattern) {
@@ -79,7 +77,7 @@ obviel.traject = {};
         return result;
     };
     
-    var generalizePattern = function (pattern) {
+    var generalizePattern = function(pattern) {
         var result = [];
         for (var i in pattern) {
             var p = pattern[i];
@@ -92,15 +90,15 @@ obviel.traject = {};
         return result;
     };
 
-    var componentName = function (pattern) {
+    var componentName = function(pattern) {
         return generalizePattern(pattern).join('/');
     };
     
-    var convertString = function (s) {
+    var convertString = function(s) {
         return s.toString();
     };
 
-    var convertInteger = function (s) {
+    var convertInteger = function(s) {
         var result = parseInt(s, 10);
         if (isNaN(result)) {
             return UNCONVERTED;
@@ -108,7 +106,7 @@ obviel.traject = {};
         return result;
     };
 
-    module.Patterns = function () {
+    module.Patterns = function() {
         this._stepRegistry = {};
         this._lookupRegistry = {};
         // XXX interface inheritance isn't done
@@ -117,19 +115,19 @@ obviel.traject = {};
             'str': convertString,
             'int': convertInteger
         };
-        this._defaultLookup = function () {
+        this._defaultLookup = function() {
             return {iface: 'default'};
         };
     };
     
-    module.Patterns.prototype.registerConverter = function (converterName,
+    module.Patterns.prototype.registerConverter = function(converterName,
                                                               converterFunc) {
         this._converters[converterName] = converterFunc;
     };
 
     var _dummy = {};
     
-    module.Patterns.prototype.register = function (
+    module.Patterns.prototype.register = function(
         patternStr, lookup) {
         var pattern = parse(patternStr);
         var sp = subpatterns(pattern);
@@ -172,7 +170,7 @@ obviel.traject = {};
         this._lookupRegistry[name] = lookup;
     };
 
-    module.Patterns.prototype.registerInverse = function (
+    module.Patterns.prototype.registerInverse = function(
         iface, patternStr, inverse) {
         this._inverseRegistry[iface] = {
             pattern: parse(patternStr),
@@ -180,24 +178,24 @@ obviel.traject = {};
         };
     };
 
-    module.Patterns.prototype.pattern = function (
+    module.Patterns.prototype.pattern = function(
         iface, patternStr, lookup, inverse) {
         this.register(patternStr, lookup);
         this.registerInverse(iface, patternStr, inverse);
     };
     
-    module.Patterns.prototype.setDefaultLookup = function (f) {
+    module.Patterns.prototype.setDefaultLookup = function(f) {
         this._defaultLookup = f;
     };
 
-    module.Patterns.prototype.resolve = function (root, path) {
+    module.Patterns.prototype.resolve = function(root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
         return this.resolveStack(root, names);
     };
 
-    module.Patterns.prototype.resolveStack = function (root, stack) {
+    module.Patterns.prototype.resolveStack = function(root, stack) {
         var r = this.consumeStack(root, stack);
         if (r.unconsumed.length) {
             var stackCopy = stack.slice(0);
@@ -208,21 +206,21 @@ obviel.traject = {};
         return r.obj;
     };
 
-    module.Patterns.prototype.consume = function (root, path) {
+    module.Patterns.prototype.consume = function(root, path) {
         path = normalize(path);
         var names = path.split('/');
         names.reverse();
         return this.consumeStack(root, names);
     };
 
-    var providedBy = function (obj) {
+    var providedBy = function(obj) {
         if (obj.ifaces !== undefined) {
             return obj.ifaces[0]; // XXX this a hack
         }
         return obj.iface;
     };
     
-    module.Patterns.prototype.consumeStack = function (root, stack) {
+    module.Patterns.prototype.consumeStack = function(root, stack) {
         var variables = {};
         var obj = root;
         var pattern = [];
@@ -284,7 +282,7 @@ obviel.traject = {};
         return {unconsumed: stack, consumed: consumed, obj: obj};
     };
 
-    module.Patterns.prototype.locate = function (root, obj) {
+    module.Patterns.prototype.locate = function(root, obj) {
         if (obj.trajectParent !== undefined &&
             obj.trajectParent !== null) {
             return;

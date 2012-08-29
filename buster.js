@@ -3,29 +3,32 @@ var config = module.exports;
 var linterConf = {
     linter: 'jshint',
         linterOptions: {
-            node: false,
-            browser: true,
-            jquery: true,
-            curly: true,
             asi: false,
+            bitwise: true,
             boss: false,
+            browser: true,
+            curly: true,
             devel: false,
             eqeqeq: true,
             evil: false,
             expr: false,
-            latedef: false,
-            newcap: true,
-            noempty: true,
-            nonew: true,
-            nomen: false,
-            onevar: false,
-            undef: true,
-            supernew: true,
-            white: false,
-            strict: false,
             forin: false,
+            immed: true,
+            jquery: true,
+            latedef: false,
+            mootools: false,
+            newcap: true,
+            node: false,
+            noempty: true,
+            nomen: false,
+            nonew: true,
+            onevar: false,
             plusplus: false,
-            mootools: false
+            regexp: true,
+            strict: false,
+            supernew: true,
+            undef: true,
+            white: false
         },
         excludes: [
             "jquery",
@@ -92,7 +95,9 @@ config["Obviel Traject"] = {
     ],
     tests: [
         "src/btest/test-obviel-traject.js"
-    ]
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
 };
 
 
