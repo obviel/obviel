@@ -44,7 +44,8 @@ config["Obviel Core"] = {
     libs: [
         'src/dependencies/jquery.js',
         'src/dependencies/json-template.js',
-        'src/dependencies/Gettext.js'
+        'src/dependencies/Gettext.js',
+        'src/dependencies/json2.js'
     ],
     
     sources: [
