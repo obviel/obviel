@@ -193,7 +193,7 @@ obviel.sync = {};
     module.SocketIoConnection.prototype = new module.Connection();
 
     module.SocketIoConnection.prototype.getPropertiesFunc = function(m) {
-        return m.socketIoProperties;
+        return m.socketProperties;
     };
     
     module.SocketIoConnection.prototype.processTarget = function(properties, obj) {

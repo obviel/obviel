@@ -100,7 +100,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    socketIoProperties: function(m) {
+                    socketProperties: function(m) {
                         return {
                             type: 'updateTest'
                         };
