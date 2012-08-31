@@ -110,18 +110,20 @@ if (typeof console === "undefined") {
         this.name = 'LookupError';
         this.obj = obj;
         this.viewName = viewName;
+        var ifaces = module.ifaces(this.obj);
+        this.message = ("view lookup error for ifaces [" + ifaces.join(', ') +
+                        "] and name '" + this.viewName + "'");
     };
 
     module.LookupError.prototype = new Error();
     module.LookupError.prototype.constructor = module.LookupError;
     
     module.LookupError.prototype.toString = function() {
-        var ifaces = module.ifaces(this.obj);
-        return ("view lookup error for ifaces [" + ifaces.join(', ') +
-                "] and name '" + this.viewName + "'");
+        return "LookupError: " + this.message;
     };
     
     module.CompilerError = function(message) {
+        this.name = 'CompilerError';
         this.message = message;
     };
 
