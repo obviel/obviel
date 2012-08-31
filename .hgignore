@@ -10,3 +10,5 @@ doc/_build
 *.egg-info
 *.pyc
 *.jslex
+node_modules
+
