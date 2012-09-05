@@ -71,6 +71,11 @@ obviel.sync = {};
         this.actions.push({name: 'update',
                            obj: obj});
     };
+
+    Session.prototype.refresh = function(obj) {
+        this.actions.push({name: 'refresh',
+                           obj: obj});
+    };
     
     Session.prototype.commit = function() {
         var i, action,
@@ -83,6 +88,8 @@ obviel.sync = {};
                 promises.push(conn.add(action));
             } else if (action.name === 'update') {
                 promises.push(conn.update(action));
+            } else if (action.name === 'refresh') {
+                promises.push(conn.refresh(action));
             }
         }
         
@@ -90,16 +97,29 @@ obviel.sync = {};
         return $.when.apply(null, promises);
     };
 
+    module.multiUpdater = function(connection, entries) {
+        var i, finder, entry;
+        for (i = 0; i < entries.length; i++) {
+            entry = entries[i];
+            finder = connection.getSource(entry.iface).update.finder;
+            if (!finder) {
+                // XXX is this an error?
+                continue;
+            }
+            objectUpdater(finder(entry), entry); 
+        }
+    };
+    
     Session.prototype.processSource = function(obj) {
         var entries=obj.obvielsync,
             source, i, entry, info;
         for (i = 0; i < entries.length; i++) {
             entry = entries[i];
             if (entry.action === 'update') {
-                source = this.connection.getSource(entry);
+                source = this.connection.getSource(entry.obj.iface);
                 objectUpdater(source.update.finder(entry.obj), entry.obj);
             } else if (entry.action === 'add') {
-                source = this.connection.getSource(entry);
+                source = this.connection.getSource(entry.obj.iface);
                 info = source.add.finder(entry.obj);
                 info.container[info.propertyName].push(entry.obj);
             }
@@ -118,8 +138,8 @@ obviel.sync = {};
         return this;
     };
 
-    module.Connection.prototype.getTarget = function(m) {
-        var target = mappings[m.obj.iface].target;
+    module.Connection.prototype.getTarget = function(iface) {
+        var target = mappings[iface].target;
         if (target === undefined) {
             throw new module.ConnectionError("No target defined");
         }
@@ -127,8 +147,8 @@ obviel.sync = {};
     };
 
     
-    module.Connection.prototype.getSource = function(m) {
-        var source = mappings[m.obj.iface].source;
+    module.Connection.prototype.getSource = function(iface) {
+        var source = mappings[iface].source;
         if (source === undefined) {
             throw new module.ConnectionError("No source defined");
         }
@@ -140,7 +160,7 @@ obviel.sync = {};
     };
     
     module.Connection.prototype.add = function(m) {
-        var target = this.getTarget(m),
+        var target = this.getTarget(m.container.iface),
             add = target.add;
         if (add === undefined) {
             throw new module.ConnectionError("No add defined for target");
@@ -149,7 +169,7 @@ obviel.sync = {};
     };
     
     module.Connection.prototype.update = function(m) {
-        var target = this.getTarget(m),
+        var target = this.getTarget(m.obj.iface),
             update = target.update;
         if (update === undefined) {
             throw new module.ConnectionError("No update defined for target");
@@ -157,6 +177,15 @@ obviel.sync = {};
         return this.processTarget(this.getPropertiesFunc(update)(m), m.obj);
     };
 
+    module.Connection.prototype.refresh = function(m) {
+        var source = this.getSource(m.obj.iface),
+            refresh = source.refresh;
+        if (refresh === undefined) {
+            throw new module.ConnectionError("No refresh defined for source");
+        }
+        return this.processSource(this.getPropertiesFunc(refresh)(m), m.obj);
+    };
+    
     module.Connection.prototype.complete = function() {
         
     };
@@ -175,13 +204,32 @@ obviel.sync = {};
     };
     
     module.HttpConnection.prototype.processTarget = function(properties, obj) {
+        var self = this;
         return $.ajax({
             type: properties.method || 'POST',
             url: properties.url,
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
-            data: obj
+            data: JSON.stringify(obj)
+        }).done(function(responseObj) {
+            var response = properties.response;
+            if (!response) {
+                return;
+            }
+            response(self, responseObj);
+        });
+    };
+
+    module.HttpConnection.prototype.processSource = function(properties, obj) {
+        return $.ajax({
+            type: properties.method || 'GET',
+            url: properties.url,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json'
+        }).done(function(newObj) {
+            objectUpdater(obj, newObj);
         });
     };
 
@@ -222,9 +270,11 @@ obviel.sync = {};
                 continue;
             }
             var found = seen[key];
-            if (!found) {
-                delete target[key];
-            }
+            // XXX this is sometimes the right thing to do, but sometimes
+            // isn't. model deletions explicitly?
+            //if (!found) {
+            //    delete target[key];
+            //}
         }
     };
 

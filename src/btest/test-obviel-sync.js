@@ -29,7 +29,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         var testUrl = 'blah';
         
         this.server.respondWith('POST', testUrl, function(request) {
-            updateData = request.requestBody;
+            updateData = $.parseJSON(request.requestBody);
             request.respond(200, {'Content-Type': 'application/json'},
                             JSON.stringify({}));
         });
@@ -51,7 +51,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     },
     "add to container URL": function(done) {
         obviel.sync.mapping({
-            iface: 'test',
+            iface: 'container',
             target: {
                 add: {
                     httpProperties: function(m) {
@@ -69,7 +69,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         var addData = null;
         
         this.server.respondWith('POST', testUrl, function(request) {
-            addData = request.requestBody;
+            addData = $.parseJSON(request.requestBody);
             request.respond(200, {'Content-Type': 'application/json'},
                             JSON.stringify({}));
         });
@@ -127,13 +127,64 @@ var syncTestCase = buster.testCase("sync tests:", {
             done();
         });
     },
-    "source update from HTTP response": function(done) {
+    "source refresh from HTTP response, client-initiated": function(done) {
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0,
+            refreshUrl: 'refreshObj'
+        };
+
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                refresh: {
+                    httpProperties: function(m) {
+                        return {
+                            method: 'GET',
+                            url: m.obj['refreshUrl']
+                        };
+                    }
+                }
+            }
+        });
+        
+        this.server.respondWith('GET', 'refreshObj', function(request) {
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    iface: 'test',
+                    id: 'testid',
+                    value: 2.0,
+                    refreshUrl: 'refreshObj'
+                }));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+        session.refresh(obj);
+        session.commit().done(function() {
+            assert.equals(obj.value, 2.0);
+            done();
+        });
+    },
+    "source update from HTTP response, after POST": function(done) {
+        var testUrl = 'blah';
+
+        // client-side data
+        
         var obj = {
             iface: 'test',
             id: 'testid',
             value: 1.0
         };
+        var container = {
+            iface: 'container',
+            entries: [],
+            addUrl: testUrl
+        };
 
+        // mapping
         obviel.sync.mapping({
             iface: 'test',
             source: {
@@ -144,100 +195,125 @@ var syncTestCase = buster.testCase("sync tests:", {
                 }
             }
         });
-        
-        this.server.respondWith('POST', 'getUpdates', function(request) {
-            request.respond(
-                200, {'Content-Type': 'application/json'},
-                JSON.stringify({
-                    obvielsync: [
-                        {
-                            'action': 'update',
-                            'obj': {
-                                iface: 'test',
-                                id: 'testid',
-                                value: 2.0
-                            }
-                        }
-                    ]
-                }));
-        });
-        
-        
-        var conn = new obviel.sync.HttpConnection();
-        var session = conn.session();
-        
-        $.ajax({
-            type: 'POST',
-            url: 'getUpdates',
-            processData: false,
-            contentType: 'application/json',
-            dataType: 'json',
-            data: {}
-        }).done(function(entries) {
-            session.processSource(entries);
-            assert.equals(obj.value, 2.0);
-            done();
-        });
-    },
-    "source add from HTTP response": function(done) {
-        var container = {
-            iface: 'container',
-            entries: []
-        };
-        
+
         obviel.sync.mapping({
-            iface: 'test',
+            iface: 'container',
             source: {
-                add: {
+                update: {
                     finder: function(serverObj) {
+                        return container;
+                    }
+                }
+            },
+            target: {
+                add: {
+                    httpProperties: function(m) {
                         return {
-                            container: container,
-                            propertyName: 'entries'
+                            method: 'POST',
+                            url: m.container['addUrl'],
+                            response: obviel.sync.multiUpdater
                         };
                     }
                 }
             }
         });
+
+        // server-side data; a simple list
+        var serverData = [];
         
-        this.server.respondWith('POST', 'getUpdates', function(request) {
-            request.respond(
-                200, {'Content-Type': 'application/json'},
-                JSON.stringify({
-                    obvielsync: [
-                        {
-                            'action': 'add',
-                            'obj': {
-                                iface: 'test',
-                                id: 'testid',
-                                value: 2.0
-                            }
-                        }
-                    ]
-                }));
+        // when we get a new entry, add it to the list, touch value to
+        // see we had it, and respond with an array of things to update
+        this.server.respondWith('POST', testUrl, function(request) {
+            var addData = $.parseJSON(request.requestBody);
+            serverData.push(addData);
+
+            addData.value += 1;
+            
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify([
+                                addData,
+                                {
+                                    iface: 'container',
+                                    count: serverData.length
+                                }
+                            ]));
         });
-        
-        
+
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
-        
-        $.ajax({
-            type: 'POST',
-            url: 'getUpdates',
-            processData: false,
-            contentType: 'application/json',
-            dataType: 'json',
-            data: {}
-        }).done(function(entries) {
-            session.processSource(entries);
-            assert.equals(container.entries.length, 1);
-            assert.equals(container.entries[0], {
-                iface: 'test',
-                id: 'testid',
-                value: 2.0
-            });
+
+        container.entries.push(obj);
+        session.add(container, 'entries', obj);
+        session.commit().done(function() {
+            assert.equals(serverData,
+                          [{iface: 'test', id: 'testid', value: 2.0}]);
+            assert.equals(container.count, 1);
+            assert.equals(container.entries[0].value, 2.0);
             done();
         });
+        
     }
+
+    
+    // "source add from HTTP response": function(done) {
+    //     var container = {
+    //         iface: 'container',
+    //         entries: []
+    //     };
+        
+    //     obviel.sync.mapping({
+    //         iface: 'test',
+    //         source: {
+    //             add: {
+    //                 finder: function(serverObj) {
+    //                     return {
+    //                         container: container,
+    //                         propertyName: 'entries'
+    //                     };
+    //                 }
+    //             }
+    //         }
+    //     });
+        
+    //     this.server.respondWith('POST', 'getUpdates', function(request) {
+    //         request.respond(
+    //             200, {'Content-Type': 'application/json'},
+    //             JSON.stringify({
+    //                 obvielsync: [
+    //                     {
+    //                         'action': 'add',
+    //                         'obj': {
+    //                             iface: 'test',
+    //                             id: 'testid',
+    //                             value: 2.0
+    //                         }
+    //                     }
+    //                 ]
+    //             }));
+    //     });
+        
+        
+    //     var conn = new obviel.sync.HttpConnection();
+    //     var session = conn.session();
+        
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: 'getUpdates',
+    //         processData: false,
+    //         contentType: 'application/json',
+    //         dataType: 'json',
+    //         data: {}
+    //     }).done(function(entries) {
+    //         session.processSource(entries);
+    //         assert.equals(container.entries.length, 1);
+    //         assert.equals(container.entries[0], {
+    //             iface: 'test',
+    //             id: 'testid',
+    //             value: 2.0
+    //         });
+    //         done();
+    //     });
+    // }
 
 
     
