@@ -28,7 +28,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    httpProperties: function(m) {
+                    http: function(m) {
                         return {
                             method: 'POST',
                             url: m.obj['updateUrl']
@@ -67,7 +67,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'container',
             target: {
                 add: {
-                    httpProperties: function(m) {
+                    http: function(m) {
                         return {
                             method: 'POST',
                             url: m.container['addUrl']
@@ -113,7 +113,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    socketProperties: function(m) {
+                    socket: function(m) {
                         return {
                             type: 'updateTest'
                         };
@@ -159,7 +159,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             },
             target: {
                 refresh: {
-                    httpProperties: function(m) {
+                    http: function(m) {
                         return {
                             method: 'GET',
                             url: m.obj['refreshUrl'],
@@ -229,7 +229,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             },
             target: {
                 add: {
-                    httpProperties: function(m) {
+                    http: function(m) {
                         return {
                             method: 'POST',
                             url: m.container['addUrl'],

@@ -218,7 +218,7 @@ obviel.sync = {};
     module.HttpConnection.prototype = new module.Connection();
 
     module.HttpConnection.prototype.getPropertiesFunc = function(m) {
-        return m.httpProperties;
+        return m.http;
     };
     
     module.HttpConnection.prototype.processTarget = function(properties, obj) {
@@ -267,7 +267,7 @@ obviel.sync = {};
     module.SocketIoConnection.prototype = new module.Connection();
 
     module.SocketIoConnection.prototype.getPropertiesFunc = function(m) {
-        return m.socketProperties;
+        return m.socket;
     };
     
     module.SocketIoConnection.prototype.processTarget = function(properties, obj) {
