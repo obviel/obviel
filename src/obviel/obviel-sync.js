@@ -203,32 +203,6 @@ obviel.sync = {};
         return this.processTarget(this.getPropertiesFunc(config)(m), m.obj);
     };
     
-    module.Connection.prototype.add = function(m) {
-        var target = this.getTarget(m.container.iface),
-            add = target.add;
-        if (add === undefined) {
-            throw new module.ConnectionError("No add defined for target");
-        }
-        return this.processTarget(this.getPropertiesFunc(add)(m), m.obj);
-    };
-    
-    module.Connection.prototype.update = function(m) {
-        var target = this.getTarget(m.obj.iface),
-            update = target.update;
-        if (update === undefined) {
-            throw new module.ConnectionError("No update defined for target");
-        }
-        return this.processTarget(this.getPropertiesFunc(update)(m), m.obj);
-    };
-
-    module.Connection.prototype.refresh = function(m) {
-        var target = this.getTarget(m.obj.iface),
-            refresh = target.refresh;
-        if (refresh === undefined) {
-            throw new module.ConnectionError("No refresh defined for source");
-        }
-        return this.processTarget(this.getPropertiesFunc(refresh)(m), m.obj);
-    };
     
     module.Connection.prototype.complete = function() {
         
