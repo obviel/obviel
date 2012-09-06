@@ -15,6 +15,8 @@ var refuse = buster.refute;
 //   an object, but an object that may have function members
 // * if we can't find a property on m.obj we want to give a nice error?
 
+// * we shouldn't be adding 'add' implicitly to all mapping configs?
+
 var syncTestCase = buster.testCase("sync tests:", {
     setUp: function() {
         this.server = sinon.fakeServer.create();
@@ -23,6 +25,47 @@ var syncTestCase = buster.testCase("sync tests:", {
     tearDown: function() {
         this.server.restore();
     },
+    "explicit config": function() {
+        var urlFunc = function(action) {
+            return action.obj.updateUrl;
+        };
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                    http: {
+                        method: 'POST',
+                        url: urlFunc
+                    }
+                }
+            }
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').target.update.http.method,
+            'POST');
+        assert.equals(
+            obviel.sync.getMapping('test').target.update.http.url,
+            urlFunc);
+    },
+    "implicit config, empty update": function() {
+        var urlFunc = function(action) {
+            return action.obj.updateUrl;
+        };
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                }
+            }
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').target.update.http.method,
+            'POST');
+        assert.equals(
+            obviel.sync.getMapping('test').target.update.http.url(
+                {obj: { updateUrl: 'foo' }}), 'foo');
+    },
+
     "update to object URL": function(done) {
         obviel.sync.mapping({
             iface: 'test',
@@ -60,6 +103,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             done();
         });
     },
+    
     "add to container URL": function(done) {
         obviel.sync.mapping({
             iface: 'container',

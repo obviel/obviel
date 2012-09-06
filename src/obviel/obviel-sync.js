@@ -15,45 +15,37 @@ obviel.sync = {};
         this.message = message;
     };
     
-    var mappings = {};
-
-    // var defaults = {
-    //     source: {
-    //         update: {
-    //             finder: getById
-    //         }
-
-    //     },
-    //     target: {
-    //         update: {
-    //             http: {
-    //                 method: 'POST',
-    //                 url: function(m) { return m.obj.updateUrl; }
-    //             },
-    //             socket: {
-    //                 type: function(m) { return m.obj.updateType; }
-    //             }
-    //         },
-    //         refresh: {
-    //             http: {
-    //                 method: 'GET',
-    //                 url: function(m) { return m.obj['refreshUrl']; },
-    //                 response: obviel.sync.multiUpdater
-    //             }
-    //         },
-    //         add: {
-    //             http: {
-    //                 method: 'POST',
-    //                 url: function(m) { return m.container.addUrl; },
-    //                 response: obviel.sync.multiUpdater
-    //             }
-    //         }
-    //     }    
-    // };
-    
-    module.mapping = function(m) {
+    var mappings = {};    
+    module.mapping = function(config) {
         // XXX should use cleverer iface storage aware of inheritance?
-        mappings[m.iface] = m;
+        initDefaults(config);
+        mappings[config.iface] = config;
+    };
+
+    module.getMapping = function(iface) {
+        return mappings[iface];
+    };
+
+    var initDefaults = function(config) {
+        var defaults = getDefaults();
+        updater(config, defaults);
+        return config;
+    };
+
+    var updater = function(config, defaults) {
+        var key,
+            subdefaults, subconfig;
+        for (key in defaults) {
+            subdefaults = defaults[key];
+            subconfig = config[key];
+            if (subconfig === undefined) {
+                config[key] = subdefaults;
+                continue;
+            }
+            if ($.isPlainObject(subdefaults)) {
+                updater(subconfig, subdefaults);
+            }
+        }
     };
     
     var ObjectMutator = function(session, obj) {
@@ -130,6 +122,9 @@ obviel.sync = {};
 
     module.multiUpdater = function(connection, entries) {
         var i, finder, entry;
+        if ($.isEmptyObject(entries)) {
+            return;
+        }
         if (!$.isArray(entries)) {
             entries = [entries];
         }
@@ -278,6 +273,44 @@ obviel.sync = {};
     
     module.SocketIoConnection.prototype.processTarget = function(properties, action) {
         this.io.emit(properties.type, action.obj);
+    };
+
+    var getById = function() {
+    };
+    
+    var getDefaults = function() {
+        return {
+            source: {
+                update: {
+                    finder: getById
+                }
+            },
+            target: {
+                update: {
+                    http: {
+                        method: 'POST',
+                        url: function(action) { return action.obj.updateUrl; }
+                    },
+                    socket: {
+                        type: function(action) { return action.obj.updateType; }
+                    }
+                },
+                refresh: {
+                    http: {
+                        method: 'GET',
+                        url: function(action) { return action.obj['refreshUrl']; },
+                        response: obviel.sync.multiUpdater
+                    }
+                },
+                add: {
+                    http: {
+                        method: 'POST',
+                        url: function(action) { return m.container.addUrl; },
+                        response: obviel.sync.multiUpdater
+                    }
+                }
+            }    
+        };
     };
     
     var rules = {};
