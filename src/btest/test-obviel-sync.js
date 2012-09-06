@@ -138,14 +138,23 @@ var syncTestCase = buster.testCase("sync tests:", {
         obviel.sync.mapping({
             iface: 'test',
             source: {
+                update: {
+                    finder: function(serverObj) {
+                        return obj;
+                    }
+                }
+            },
+            target: {
                 refresh: {
                     httpProperties: function(m) {
                         return {
                             method: 'GET',
-                            url: m.obj['refreshUrl']
+                            url: m.obj['refreshUrl'],
+                            response: obviel.sync.multiUpdater 
                         };
                     }
                 }
+
             }
         });
         

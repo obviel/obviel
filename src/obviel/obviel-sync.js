@@ -99,6 +99,9 @@ obviel.sync = {};
 
     module.multiUpdater = function(connection, entries) {
         var i, finder, entry;
+        if (!$.isArray(entries)) {
+            entries = [entries];
+        }
         for (i = 0; i < entries.length; i++) {
             entry = entries[i];
             finder = connection.getSource(entry.iface).update.finder;
@@ -178,12 +181,12 @@ obviel.sync = {};
     };
 
     module.Connection.prototype.refresh = function(m) {
-        var source = this.getSource(m.obj.iface),
-            refresh = source.refresh;
+        var target = this.getTarget(m.obj.iface),
+            refresh = target.refresh;
         if (refresh === undefined) {
             throw new module.ConnectionError("No refresh defined for source");
         }
-        return this.processSource(this.getPropertiesFunc(refresh)(m), m.obj);
+        return this.processTarget(this.getPropertiesFunc(refresh)(m), m.obj);
     };
     
     module.Connection.prototype.complete = function() {
@@ -204,14 +207,22 @@ obviel.sync = {};
     };
     
     module.HttpConnection.prototype.processTarget = function(properties, obj) {
-        var self = this;
+        var self = this,
+            data,
+            method = properties.method || 'POST';
+        
+        if (method === 'POST') {
+            data = JSON.stringify(obj);
+        } else {
+            data = null;
+        }
         return $.ajax({
-            type: properties.method || 'POST',
+            type: method,
             url: properties.url,
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
-            data: JSON.stringify(obj)
+            data: data
         }).done(function(responseObj) {
             var response = properties.response;
             if (!response) {
@@ -221,17 +232,17 @@ obviel.sync = {};
         });
     };
 
-    module.HttpConnection.prototype.processSource = function(properties, obj) {
-        return $.ajax({
-            type: properties.method || 'GET',
-            url: properties.url,
-            processData: false,
-            contentType: 'application/json',
-            dataType: 'json'
-        }).done(function(newObj) {
-            objectUpdater(obj, newObj);
-        });
-    };
+    // module.HttpConnection.prototype.processSource = function(properties, obj) {
+    //     return $.ajax({
+    //         type: properties.method || 'GET',
+    //         url: properties.url,
+    //         processData: false,
+    //         contentType: 'application/json',
+    //         dataType: 'json'
+    //     }).done(function(newObj) {
+    //         objectUpdater(obj, newObj);
+    //     });
+    // };
 
 
     module.SocketIoConnection = function(io) {
