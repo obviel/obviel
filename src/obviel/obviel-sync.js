@@ -232,7 +232,7 @@ obviel.sync = {};
         } else {
             url = properties.url;
         }
-        if (method === 'POST') {
+        if (method === 'POST' || method === 'PUT') {
             data = JSON.stringify(action.obj);
         } else {
             data = null;
