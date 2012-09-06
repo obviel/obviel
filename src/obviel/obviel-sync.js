@@ -89,7 +89,7 @@ obviel.sync = {};
         this.session.add(this.obj, this.arrayName, value);
     };
 
-    module.registerSessionFunc = function(name, argNames, f) {
+    module.registerSessionFunc = function(name, argNames) {
         Session.prototype[name] = function() {
             var d = {},
                 i = 0,
@@ -99,50 +99,17 @@ obviel.sync = {};
                 d[argNames[i]] = arguments[i];
             }
             this.actions.push(d);
-            this.funcs[name] = f;
         };
     };
     
     var Session = function(connection) {
         this.connection = connection;
         this.actions = [];
-        this.funcs = {};
     };
 
-    module.registerSessionFunc('add', ['container', 'propertyName', 'obj'],
-                               function(conn, action) {
-                                   return conn.add(action);
-                               });
-    
-    module.registerSessionFunc('update', ['obj'],
-                               function(conn, action) {
-                                   return conn.update(action);
-                               });
-
-    
-    module.registerSessionFunc('refresh', ['obj'],
-                               function(conn, action) {
-                                   return conn.refresh(action);
-                               });
-
-    
-    
-    // Session.prototype.add = function(container, propertyName, obj) {
-    //     this.actions.push({name: 'add',
-    //                        container: container,
-    //                        propertyName: propertyName,
-    //                        obj: obj});
-    // };
-
-    // Session.prototype.update = function(obj) {
-    //     this.actions.push({name: 'update',
-    //                        obj: obj});
-    // };
-
-    // Session.prototype.refresh = function(obj) {
-    //     this.actions.push({name: 'refresh',
-    //                        obj: obj});
-    // };
+    module.registerSessionFunc('add', ['container', 'propertyName', 'obj']);
+    module.registerSessionFunc('update', ['obj']);
+    module.registerSessionFunc('refresh', ['obj']);
     
     Session.prototype.commit = function() {
         var i, action,
@@ -151,7 +118,8 @@ obviel.sync = {};
         
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            promises.push(this.funcs[action.name](conn, action)); 
+            promises.push(conn[action.name](action));
+            
             // if (action.name === 'add') {
             //     promises.push(conn.add(action));
             // } else if (action.name === 'update') {
