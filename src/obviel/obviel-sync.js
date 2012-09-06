@@ -89,15 +89,16 @@ obviel.sync = {};
         this.session.add(this.obj, this.arrayName, value);
     };
 
-    module.registerSessionFunc = function(name, argNames) {
+    module.registerSessionFunc = function(name, argNames, ifaceObj) {
         Session.prototype[name] = function() {
             var d = {},
                 i = 0,
                 argName;
-            d['name'] = name;
+            d.name = name;
             for (i = 0; i < argNames.length; i++) {
                 d[argNames[i]] = arguments[i];
             }
+            d.iface = d[ifaceObj].iface;
             this.actions.push(d);
         };
     };
@@ -107,26 +108,20 @@ obviel.sync = {};
         this.actions = [];
     };
 
-    module.registerSessionFunc('add', ['container', 'propertyName', 'obj']);
-    module.registerSessionFunc('update', ['obj']);
-    module.registerSessionFunc('refresh', ['obj']);
+    module.registerSessionFunc('add', ['container', 'propertyName', 'obj'],
+                              'container');
+    module.registerSessionFunc('update', ['obj'], 'obj');
+    module.registerSessionFunc('refresh', ['obj'], 'obj');
     
     Session.prototype.commit = function() {
         var i, action,
             conn = this.connection,
-            promises = [];
+            promises = [],
+            iface;
         
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            promises.push(conn[action.name](action));
-            
-            // if (action.name === 'add') {
-            //     promises.push(conn.add(action));
-            // } else if (action.name === 'update') {
-            //     promises.push(conn.update(action));
-            // } else if (action.name === 'refresh') {
-            //     promises.push(conn.refresh(action));
-            // }
+            promises.push(conn.processAction(action, action.iface));
         }
         
         this.connection.complete();
@@ -196,6 +191,16 @@ obviel.sync = {};
 
     module.Connection.prototype.getPropertiesFunc = function(context) {
         throw new module.ConnectionError("Not implemented");
+    };
+
+    module.Connection.prototype.processAction = function(m, iface) {
+        var target = this.getTarget(iface),
+            config = target[m.name];
+        if (config === undefined) {
+            throw new module.ConnectionError(
+                "No " + m.name + " defined for target");
+        }
+        return this.processTarget(this.getPropertiesFunc(config)(m), m.obj);
     };
     
     module.Connection.prototype.add = function(m) {
