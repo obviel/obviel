@@ -28,11 +28,9 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    http: function(m) {
-                        return {
-                            method: 'POST',
-                            url: m.obj['updateUrl']
-                        };
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.obj['updateUrl']; }
                     }
                 }
             }
@@ -67,11 +65,9 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'container',
             target: {
                 add: {
-                    http: function(m) {
-                        return {
-                            method: 'POST',
-                            url: m.container['addUrl']
-                        };
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['addUrl']; }
                     }
                 }
             }
@@ -113,10 +109,8 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    socket: function(m) {
-                        return {
-                            type: 'updateTest'
-                        };
+                    socket: {
+                        type: 'updateTest'
                     }
                 }
             }
@@ -159,12 +153,10 @@ var syncTestCase = buster.testCase("sync tests:", {
             },
             target: {
                 refresh: {
-                    http: function(m) {
-                        return {
-                            method: 'GET',
-                            url: m.obj['refreshUrl'],
-                            response: obviel.sync.multiUpdater 
-                        };
+                    http: {
+                        method: 'GET',
+                        url: function(m) { return m.obj['refreshUrl']; },
+                        response: obviel.sync.multiUpdater
                     }
                 }
 
@@ -229,12 +221,10 @@ var syncTestCase = buster.testCase("sync tests:", {
             },
             target: {
                 add: {
-                    http: function(m) {
-                        return {
-                            method: 'POST',
-                            url: m.container['addUrl'],
-                            response: obviel.sync.multiUpdater
-                        };
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['addUrl']; },
+                        response: obviel.sync.multiUpdater
                     }
                 }
             }

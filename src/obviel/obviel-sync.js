@@ -189,18 +189,18 @@ obviel.sync = {};
         return source;
     };
 
-    module.Connection.prototype.getPropertiesFunc = function(context) {
+    module.Connection.prototype.getProperties = function(context) {
         throw new module.ConnectionError("Not implemented");
     };
 
-    module.Connection.prototype.processAction = function(m, iface) {
+    module.Connection.prototype.processAction = function(action, iface) {
         var target = this.getTarget(iface),
-            config = target[m.name];
+            config = target[action.name];
         if (config === undefined) {
             throw new module.ConnectionError(
-                "No " + m.name + " defined for target");
+                "No " + action.name + " defined for target");
         }
-        return this.processTarget(this.getPropertiesFunc(config)(m), m.obj);
+        return this.processTarget(this.getProperties(config), action);
     };
     
     
@@ -217,23 +217,29 @@ obviel.sync = {};
     
     module.HttpConnection.prototype = new module.Connection();
 
-    module.HttpConnection.prototype.getPropertiesFunc = function(m) {
+    module.HttpConnection.prototype.getProperties = function(m) {
         return m.http;
     };
     
-    module.HttpConnection.prototype.processTarget = function(properties, obj) {
+    module.HttpConnection.prototype.processTarget = function(properties, action) {
         var self = this,
             data,
+            url,
             method = properties.method || 'POST';
-        
+
+        if ($.isFunction(properties.url)) {
+            url = properties.url(action);
+        } else {
+            url = properties.url;
+        }
         if (method === 'POST') {
-            data = JSON.stringify(obj);
+            data = JSON.stringify(action.obj);
         } else {
             data = null;
         }
         return $.ajax({
             type: method,
-            url: properties.url,
+            url: url,
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
@@ -266,12 +272,12 @@ obviel.sync = {};
 
     module.SocketIoConnection.prototype = new module.Connection();
 
-    module.SocketIoConnection.prototype.getPropertiesFunc = function(m) {
+    module.SocketIoConnection.prototype.getProperties = function(m) {
         return m.socket;
     };
     
-    module.SocketIoConnection.prototype.processTarget = function(properties, obj) {
-        this.io.emit(properties.type, obj);
+    module.SocketIoConnection.prototype.processTarget = function(properties, action) {
+        this.io.emit(properties.type, action.obj);
     };
     
     var rules = {};
