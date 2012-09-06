@@ -2,6 +2,19 @@
 var assert = buster.assert;
 var refuse = buster.refute;
 
+// TODO
+
+// * implement defaults and test
+// * localstorage implementation
+// * configure updater to remove properties or leave them be
+// * configure to interpret messages back as add, update, delete (I guess
+// the type of updater could also do this). how to determine where we
+// want to do the add?
+// * refresh httpproperties default are different than for, say, update
+// * properties alternative would be not to have a function that returns
+//   an object, but an object that may have function members
+// * if we can't find a property on m.obj we want to give a nice error?
+
 var syncTestCase = buster.testCase("sync tests:", {
     setUp: function() {
         this.server = sinon.fakeServer.create();

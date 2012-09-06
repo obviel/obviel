@@ -16,6 +16,40 @@ obviel.sync = {};
     };
     
     var mappings = {};
+
+    // var defaults = {
+    //     source: {
+    //         update: {
+    //             finder: getById
+    //         }
+
+    //     },
+    //     target: {
+    //         update: {
+    //             http: {
+    //                 method: 'POST',
+    //                 url: function(m) { return m.obj.updateUrl; }
+    //             },
+    //             socket: {
+    //                 type: function(m) { return m.obj.updateType; }
+    //             }
+    //         },
+    //         refresh: {
+    //             http: {
+    //                 method: 'GET',
+    //                 url: function(m) { return m.obj['refreshUrl']; },
+    //                 response: obviel.sync.multiUpdater
+    //             }
+    //         },
+    //         add: {
+    //             http: {
+    //                 method: 'POST',
+    //                 url: function(m) { return m.container.addUrl; },
+    //                 response: obviel.sync.multiUpdater
+    //             }
+    //         }
+    //     }    
+    // };
     
     module.mapping = function(m) {
         // XXX should use cleverer iface storage aware of inheritance?
@@ -54,28 +88,61 @@ obviel.sync = {};
         this.obj[this.arrayName].push(value);
         this.session.add(this.obj, this.arrayName, value);
     };
+
+    module.registerSessionFunc = function(name, argNames, f) {
+        Session.prototype[name] = function() {
+            var d = {},
+                i = 0,
+                argName;
+            d['name'] = name;
+            for (i = 0; i < argNames.length; i++) {
+                d[argNames[i]] = arguments[i];
+            }
+            this.actions.push(d);
+            this.funcs[name] = f;
+        };
+    };
     
     var Session = function(connection) {
         this.connection = connection;
         this.actions = [];
+        this.funcs = {};
     };
 
-    Session.prototype.add = function(container, propertyName, obj) {
-        this.actions.push({name: 'add',
-                           container: container,
-                           propertyName: propertyName,
-                           obj: obj});
-    };
+    module.registerSessionFunc('add', ['container', 'propertyName', 'obj'],
+                               function(conn, action) {
+                                   return conn.add(action);
+                               });
+    
+    module.registerSessionFunc('update', ['obj'],
+                               function(conn, action) {
+                                   return conn.update(action);
+                               });
 
-    Session.prototype.update = function(obj) {
-        this.actions.push({name: 'update',
-                           obj: obj});
-    };
+    
+    module.registerSessionFunc('refresh', ['obj'],
+                               function(conn, action) {
+                                   return conn.refresh(action);
+                               });
 
-    Session.prototype.refresh = function(obj) {
-        this.actions.push({name: 'refresh',
-                           obj: obj});
-    };
+    
+    
+    // Session.prototype.add = function(container, propertyName, obj) {
+    //     this.actions.push({name: 'add',
+    //                        container: container,
+    //                        propertyName: propertyName,
+    //                        obj: obj});
+    // };
+
+    // Session.prototype.update = function(obj) {
+    //     this.actions.push({name: 'update',
+    //                        obj: obj});
+    // };
+
+    // Session.prototype.refresh = function(obj) {
+    //     this.actions.push({name: 'refresh',
+    //                        obj: obj});
+    // };
     
     Session.prototype.commit = function() {
         var i, action,
@@ -84,13 +151,14 @@ obviel.sync = {};
         
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            if (action.name === 'add') {
-                promises.push(conn.add(action));
-            } else if (action.name === 'update') {
-                promises.push(conn.update(action));
-            } else if (action.name === 'refresh') {
-                promises.push(conn.refresh(action));
-            }
+            promises.push(this.funcs[action.name](conn, action)); 
+            // if (action.name === 'add') {
+            //     promises.push(conn.add(action));
+            // } else if (action.name === 'update') {
+            //     promises.push(conn.update(action));
+            // } else if (action.name === 'refresh') {
+            //     promises.push(conn.refresh(action));
+            // }
         }
         
         this.connection.complete();
