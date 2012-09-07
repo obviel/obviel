@@ -118,7 +118,7 @@ obviel.sync = {};
         this.connection = connection;
         this.actions = [];
     };
-
+    
     module.registerSessionFunc('add', ['container', 'propertyName', 'obj'],
                               'container');
     module.registerSessionFunc('update', ['obj'], 'obj');
@@ -129,16 +129,51 @@ obviel.sync = {};
             conn = this.connection,
             promises = [],
             iface;
-        
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            promises.push(conn.processAction(action, action.iface));
+            promises.push(conn.processTargetAction(action, action.iface));
         }
         
         this.connection.complete();
         return $.when.apply(null, promises);
     };
 
+
+    // Session.prototype.processSource = function(actions) {
+    //     var i, action, source, info, container;
+    //     for (i = 0; i < actions.length; i++) {
+    //         action = actions[i];
+    //         if (action.name === 'update') {
+    //             source = this.connection.getSource(action.obj.iface);
+    //             objectUpdater(source.update.finder(action), entry.obj);
+    //         } else if (entry.action === 'add') {
+    //             source = this.connection.getSource(entry.obj.iface);
+    //             info = source.add.finder(action);
+    //             info.container[info.propertyName].push(entry.obj);
+    //         }
+    //     }
+    // };
+
+    // how does a source based add inform the system about the container?
+    // the action could container containerId
+    // the container could be found on the basis of the obj added
+    // (trajectParent, or iface + id, or something else)
+    
+    
+    // XXX what we need is some code that can only perform the
+    // bit that involves the source bits. this way we can simulate
+    // session actions from the server
+    module.actionProcessor = function(connection, entries) {
+        var session = connection.session(),
+            i;
+        if (!$.isArray(entries)) {
+            entries = [entries];
+        }
+        for (i = 0; i < entries.length; i++) {
+            session.actions.push(entries[i]);
+        }
+    };
+    
     module.multiUpdater = function(connection, entries) {
         var i, finder, entry;
         if ($.isEmptyObject(entries)) {
@@ -154,25 +189,10 @@ obviel.sync = {};
                 // XXX is this an error?
                 continue;
             }
-            objectUpdater(finder(entry), entry); 
+            objectUpdater(finder({name: 'update', obj: entry}), entry); 
         }
     };
     
-    Session.prototype.processSource = function(obj) {
-        var entries=obj.obvielsync,
-            source, i, entry, info;
-        for (i = 0; i < entries.length; i++) {
-            entry = entries[i];
-            if (entry.action === 'update') {
-                source = this.connection.getSource(entry.obj.iface);
-                objectUpdater(source.update.finder(entry.obj), entry.obj);
-            } else if (entry.action === 'add') {
-                source = this.connection.getSource(entry.obj.iface);
-                info = source.add.finder(entry.obj);
-                info.container[info.propertyName].push(entry.obj);
-            }
-        }
-    };
     
     Session.prototype.mutator = function(obj) {
         return new Mutator(obj);
@@ -207,7 +227,7 @@ obviel.sync = {};
         throw new module.ConnectionError("Not implemented");
     };
 
-    module.Connection.prototype.processAction = function(action, iface) {
+    module.Connection.prototype.processTargetAction = function(action, iface) {
         var target = this.getTarget(iface),
             config = target[action.name];
         if (config === undefined) {
@@ -239,8 +259,7 @@ obviel.sync = {};
         var self = this,
             data,
             url,
-            method = properties.method || 'POST';
-
+            method = properties.method || 'POST';        
         if ($.isFunction(properties.url)) {
             url = properties.url(action);
         } else {
@@ -297,9 +316,9 @@ obviel.sync = {};
     // a global registry of objects by id
     var id2objects = {};
     
-    module.modelByObj = function(obj) {
-        // XXX assert obj.id exists
-        return id2objects[obj.id];
+    module.modelByObj = function(action) {
+        // XXX assert action.obj.id exists
+        return id2objects[action.obj.id];
     };
     
     module.registerObjById = function(obj) {
@@ -343,14 +362,14 @@ obviel.sync = {};
         };
     };
     
-    var rules = {};
+    // var rules = {};
 
-    var handlers = {};
+    // var handlers = {};
 
-    module.clear = function () {
-        rules = {};
-        handlers = {};
-    };
+    // module.clear = function () {
+    //     rules = {};
+    //     handlers = {};
+    // };
     
     var objectUpdater = function (target, source) {
         var seen = {};
@@ -374,93 +393,93 @@ obviel.sync = {};
     };
 
 
-    module.objectUpdateRule = function (eventName, transformer, finder) {
-        rules[eventName] = function (obj) {
-            var source = transformer(eventName, obj);
-            var target = finder(source);
-            objectUpdater(target, source);
-            $(target).triggerHandler(
-                'objectUpdate',
-                [{obj: target}]);
-        };
-    };
+    // module.objectUpdateRule = function (eventName, transformer, finder) {
+    //     rules[eventName] = function (obj) {
+    //         var source = transformer(eventName, obj);
+    //         var target = finder(source);
+    //         objectUpdater(target, source);
+    //         $(target).triggerHandler(
+    //             'objectUpdate',
+    //             [{obj: target}]);
+    //     };
+    // };
     
-    module.objectAddRule = function(eventName, transformer, finder, getName) {
-        rules[eventName] = function (obj) {
-            obj = transformer(eventName, obj);
-            var container = finder(obj);
-            var name = getName(container, obj);
-            container[name] = obj;
-            $(container).triggerHandler(
-                'objectAdd',
-                [{container: container,
-                  obj: obj,
-                  name: name}]);
-        };
-    };
+    // module.objectAddRule = function(eventName, transformer, finder, getName) {
+    //     rules[eventName] = function (obj) {
+    //         obj = transformer(eventName, obj);
+    //         var container = finder(obj);
+    //         var name = getName(container, obj);
+    //         container[name] = obj;
+    //         $(container).triggerHandler(
+    //             'objectAdd',
+    //             [{container: container,
+    //               obj: obj,
+    //               name: name}]);
+    //     };
+    // };
 
-    module.arrayAddRule = function(eventName, transformer, finder) {
-        rules[eventName] = function (obj) {
-            obj = transformer(eventName, obj);
-            var found = finder(obj);
-            var container = found.container;
-            var array = container[found.arrayName];
-            var index = array.length;
-            array.push(obj);
-            $(container).triggerHandler(
-                'arrayAdd',
-                [{container: container,
-                  obj: obj,
-                  arrayName: found.arrayName,
-                  array: array,
-                  index: index}]);
-        };
-    };
+    // module.arrayAddRule = function(eventName, transformer, finder) {
+    //     rules[eventName] = function (obj) {
+    //         obj = transformer(eventName, obj);
+    //         var found = finder(obj);
+    //         var container = found.container;
+    //         var array = container[found.arrayName];
+    //         var index = array.length;
+    //         array.push(obj);
+    //         $(container).triggerHandler(
+    //             'arrayAdd',
+    //             [{container: container,
+    //               obj: obj,
+    //               arrayName: found.arrayName,
+    //               array: array,
+    //               index: index}]);
+    //     };
+    // };
     
-    module.objectDeleteRule = function(eventName, transformer, finder,
-                                       getName) {
-        rules[eventName] = function (obj) {
-            obj = transformer(eventName, obj);
-            var container = finder(obj);
-            var name = getName(container, obj);
-            delete container[name];
-            $(container).triggerHandler(
-                'objectDelete',
-                {container: container,
-                 name: name,
-                 obj: obj});
-        };
-    };
+    // module.objectDeleteRule = function(eventName, transformer, finder,
+    //                                    getName) {
+    //     rules[eventName] = function (obj) {
+    //         obj = transformer(eventName, obj);
+    //         var container = finder(obj);
+    //         var name = getName(container, obj);
+    //         delete container[name];
+    //         $(container).triggerHandler(
+    //             'objectDelete',
+    //             {container: container,
+    //              name: name,
+    //              obj: obj});
+    //     };
+    // };
 
-    module.arrayDeleteRule = function(eventName, transformer, finder,
-                                      getIndex) {
-        rules[eventName] = function (obj) {
-            obj = transformer(eventName, obj);
-            var found = finder(obj);
-            var container = found.container;
-            var array = container[found.arrayName];
-            var index = getIndex(array, obj);
-            if (index === -1) {
-                return;
-            }
-            array.splice(index, 1);
-            $(container).triggerHandler(
-                'arrayDelete',
-                [{container: container,
-                  obj: obj,
-                  arrayName: found.arrayName,
-                  array: array,
-                  index: index}]);
-        };
-    };
+    // module.arrayDeleteRule = function(eventName, transformer, finder,
+    //                                   getIndex) {
+    //     rules[eventName] = function (obj) {
+    //         obj = transformer(eventName, obj);
+    //         var found = finder(obj);
+    //         var container = found.container;
+    //         var array = container[found.arrayName];
+    //         var index = getIndex(array, obj);
+    //         if (index === -1) {
+    //             return;
+    //         }
+    //         array.splice(index, 1);
+    //         $(container).triggerHandler(
+    //             'arrayDelete',
+    //             [{container: container,
+    //               obj: obj,
+    //               arrayName: found.arrayName,
+    //               array: array,
+    //               index: index}]);
+    //     };
+    // };
     
 
-    module.triggerRule = function (eventName, obj) {
-        var rule = rules[eventName];
-        if (rule === undefined) {
-            return;
-        }
-        rule(obj);
-    };
+    // module.triggerRule = function (eventName, obj) {
+    //     var rule = rules[eventName];
+    //     if (rule === undefined) {
+    //         return;
+    //     }
+    //     rule(obj);
+    // };
     
 }(jQuery, obviel.sync));

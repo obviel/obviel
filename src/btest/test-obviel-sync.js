@@ -100,18 +100,18 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             source: {
                 update: {
-                    finder: function(obj) {
-                        obj.found = true;
-                        return obj;
+                    finder: function(action) {
+                        action.obj.found = true;
+                        return action.obj;
                     }
                 }
             }
         });
         var obj = {};
         assert.equals(
-            obviel.sync.getMapping('test').source.update.finder(obj), obj);
+            obviel.sync.getMapping('test').source.update.finder({obj: obj}), obj);
         assert(
-            obviel.sync.getMapping('test').source.update.finder(obj).found);
+            obviel.sync.getMapping('test').source.update.finder({obj: obj}).found);
     },
     "config with empty source.update": function() {
         obviel.sync.mapping({
@@ -127,10 +127,10 @@ var syncTestCase = buster.testCase("sync tests:", {
         var backendObj = { id: 'foo', backend: true};
         
         assert.equals(
-            obviel.sync.getMapping('test').source.update.finder(backendObj),
+            obviel.sync.getMapping('test').source.update.finder({obj: backendObj}),
             obj);
         refute.equals(
-            obviel.sync.getMapping('test').source.update.finder(backendObj),
+            obviel.sync.getMapping('test').source.update.finder({obj: backendObj}),
             backendObj);
     },
     "config with empty source": function() {
@@ -273,7 +273,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             source: {
                 update: {
-                    finder: function(serverObj) {
+                    finder: function(action) {
                         return obj;
                     }
                 }
@@ -330,7 +330,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             source: {
                 update: {
-                    finder: function(serverObj) {
+                    finder: function(action) {
                         return obj;
                     }
                 }
@@ -341,7 +341,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'container',
             source: {
                 update: {
-                    finder: function(serverObj) {
+                    finder: function(action) {
                         return container;
                     }
                 }
@@ -392,23 +392,33 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
         
     }
-
-    
-    // "source add from HTTP response": function(done) {
+    // ,
+    // "source add from HTTP response after refresh": function(done) {
     //     var container = {
+    //         id: 'foo',
     //         iface: 'container',
-    //         entries: []
+    //         entries: [],
+    //         refreshUrl: 'getUpdates'
     //     };
         
     //     obviel.sync.mapping({
     //         iface: 'test',
     //         source: {
     //             add: {
-    //                 finder: function(serverObj) {
+    //                 finder: function(action) {
     //                     return {
     //                         container: container,
     //                         propertyName: 'entries'
     //                     };
+    //                 }
+    //             }
+    //         },
+    //         target: {
+    //             refresh: {
+    //                 http: {
+    //                     method: 'GET',
+    //                     url: function(m) { return m.obj['refreshUrl']; },
+    //                     response: obviel.sync.actionProcessor
     //                 }
     //             }
     //         }
@@ -418,32 +428,23 @@ var syncTestCase = buster.testCase("sync tests:", {
     //         request.respond(
     //             200, {'Content-Type': 'application/json'},
     //             JSON.stringify({
-    //                 obvielsync: [
-    //                     {
-    //                         'action': 'add',
-    //                         'obj': {
-    //                             iface: 'test',
-    //                             id: 'testid',
-    //                             value: 2.0
-    //                         }
-    //                     }
-    //                 ]
+    //                 action: 'addToContainerId',
+    //                 containerId: 'foo',
+    //                 obj: {
+    //                     iface: 'test',
+    //                     id: 'testid',
+    //                     value: 2.0
+    //                 }
     //             }));
     //     });
         
         
     //     var conn = new obviel.sync.HttpConnection();
     //     var session = conn.session();
+
+    //     session.refresh(container);
         
-    //     $.ajax({
-    //         type: 'POST',
-    //         url: 'getUpdates',
-    //         processData: false,
-    //         contentType: 'application/json',
-    //         dataType: 'json',
-    //         data: {}
-    //     }).done(function(entries) {
-    //         session.processSource(entries);
+    //     session.commit().done(function(entries) {
     //         assert.equals(container.entries.length, 1);
     //         assert.equals(container.entries[0], {
     //             iface: 'test',
