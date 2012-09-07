@@ -44,18 +44,18 @@ obviel.sync = {};
         // }
         
         
-        updater(config, defaults);
+        defaultsUpdater(config, defaults);
         return config;
     };
 
-    var updater = function(config, defaults) {
+    var defaultsUpdater = function(config, defaults) {
         var key, subdefaults, subconfig;
         for (key in defaults) {
             subdefaults = defaults[key];
             subconfig = config[key];
              if ($.isPlainObject(subdefaults)) {
                  if ($.isPlainObject(subconfig)) {
-                     updater(subconfig, subdefaults);
+                     defaultsUpdater(subconfig, subdefaults);
                  } else if (subconfig === undefined) {
                      config[key] = null;
                  }
