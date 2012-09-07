@@ -15,6 +15,10 @@ var refuse = buster.refute;
 //   an object, but an object that may have function members
 // * if we can't find a property on m.obj we want to give a nice error?
 
+
+// * in many cases we don't want to add an entry implicitly as a default;
+// we only want to add it if the outer object is there in the first place.
+// * we also want to make sure a default gets added in if we have update: {}
 // * we shouldn't be adding 'add' implicitly to all mapping configs?
 
 var syncTestCase = buster.testCase("sync tests:", {
@@ -25,17 +29,16 @@ var syncTestCase = buster.testCase("sync tests:", {
     tearDown: function() {
         this.server.restore();
     },
-    "explicit config": function() {
-        var urlFunc = function(action) {
-            return action.obj.updateUrl;
-        };
+    "config with explicit target.update.http": function() {
         obviel.sync.mapping({
             iface: 'test',
             target: {
                 update: {
                     http: {
                         method: 'POST',
-                        url: urlFunc
+                        url: function(action) {
+                            return action.obj.updateUrl + '_extra';
+                        }
                     }
                 }
             }
@@ -44,17 +47,16 @@ var syncTestCase = buster.testCase("sync tests:", {
             obviel.sync.getMapping('test').target.update.http.method,
             'POST');
         assert.equals(
-            obviel.sync.getMapping('test').target.update.http.url,
-            urlFunc);
+            obviel.sync.getMapping('test').target.update.http.url(
+                {obj: { updateUrl: 'foo' }}), 'foo_extra');
     },
-    "implicit config, empty update": function() {
-        var urlFunc = function(action) {
-            return action.obj.updateUrl;
-        };
+    "config with implicit target.update.http": function() {
         obviel.sync.mapping({
             iface: 'test',
             target: {
                 update: {
+                    http: {
+                    }
                 }
             }
         });
@@ -65,7 +67,88 @@ var syncTestCase = buster.testCase("sync tests:", {
             obviel.sync.getMapping('test').target.update.http.url(
                 {obj: { updateUrl: 'foo' }}), 'foo');
     },
+    "config with empty target.update": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                }
+            }
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').target.update.http, null);
+    },
+    "config empty target, without update": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+            }
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').target.update, null);
+    },
+    "config without target": function() {
+        obviel.sync.mapping({
+            iface: 'test'
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').target, null);
+    },
 
+    "config with explicit source.update": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                update: {
+                    finder: function(obj) {
+                        obj.found = true;
+                        return obj;
+                    }
+                }
+            }
+        });
+        var obj = {};
+        assert.equals(
+            obviel.sync.getMapping('test').source.update.finder(obj), obj);
+        assert(
+            obviel.sync.getMapping('test').source.update.finder(obj).found);
+    },
+    "config with empty source.update": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                update: {
+                }
+            }
+        });
+        var obj = { id: 'foo', model: true };
+        obviel.sync.registerObjById(obj);
+
+        var backendObj = { id: 'foo', backend: true};
+        
+        assert.equals(
+            obviel.sync.getMapping('test').source.update.finder(backendObj),
+            obj);
+        refute.equals(
+            obviel.sync.getMapping('test').source.update.finder(backendObj),
+            backendObj);
+    },
+    "config with empty source": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+            }
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').source.update, null);
+    },
+    "config without source": function() {
+        obviel.sync.mapping({
+            iface: 'test'
+        });
+        assert.equals(
+            obviel.sync.getMapping('test').source, null);
+    },
     "update to object URL": function(done) {
         obviel.sync.mapping({
             iface: 'test',

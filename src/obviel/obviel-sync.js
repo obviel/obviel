@@ -28,23 +28,42 @@ obviel.sync = {};
 
     var initDefaults = function(config) {
         var defaults = getDefaults();
+        // if (config.source === undefined) {
+        //     config.source = null;
+        // }
+        // if (config.target === undefined) {
+        //     config.target = null;
+        // } else {
+        //     if (config.target.update === undefined) {
+        //         config.target.update = null;
+        //     } else {
+        //         if (config.target.http === undefined) {
+        //             config.target.update.http = null;
+        //         }
+        //     }
+        // }
+        
+        
         updater(config, defaults);
         return config;
     };
 
     var updater = function(config, defaults) {
-        var key,
-            subdefaults, subconfig;
+        var key, subdefaults, subconfig;
         for (key in defaults) {
             subdefaults = defaults[key];
             subconfig = config[key];
-            if (subconfig === undefined) {
-                config[key] = subdefaults;
-                continue;
-            }
-            if ($.isPlainObject(subdefaults)) {
-                updater(subconfig, subdefaults);
-            }
+             if ($.isPlainObject(subdefaults)) {
+                 if ($.isPlainObject(subconfig)) {
+                     updater(subconfig, subdefaults);
+                 } else if (subconfig === undefined) {
+                     config[key] = null;
+                 }
+             } else {
+                 if (subconfig === undefined) {
+                     config[key] = subdefaults;
+                 }
+             }
         }
     };
     
@@ -275,14 +294,25 @@ obviel.sync = {};
         this.io.emit(properties.type, action.obj);
     };
 
-    var getById = function() {
+    // a global registry of objects by id
+    var id2objects = {};
+    
+    module.modelByObj = function(obj) {
+        // XXX assert obj.id exists
+        return id2objects[obj.id];
     };
+    
+    module.registerObjById = function(obj) {
+        // XXX assert obj.id exists
+        id2objects[obj.id] = obj;
+    };
+    
     
     var getDefaults = function() {
         return {
             source: {
                 update: {
-                    finder: getById
+                    finder: module.modelByObj
                 }
             },
             target: {
