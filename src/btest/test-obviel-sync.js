@@ -392,68 +392,68 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
         
     }
-    // ,
-    // "source add from HTTP response after refresh": function(done) {
-    //     var container = {
-    //         id: 'foo',
-    //         iface: 'container',
-    //         entries: [],
-    //         refreshUrl: 'getUpdates'
-    //     };
+    ,
+    "source add from HTTP response after refresh": function(done) {
+        var container = {
+            id: 'foo',
+            iface: 'container',
+            entries: [],
+            refreshUrl: 'getAdditions'
+        };
         
-    //     obviel.sync.mapping({
-    //         iface: 'test',
-    //         source: {
-    //             add: {
-    //                 finder: function(action) {
-    //                     return {
-    //                         container: container,
-    //                         propertyName: 'entries'
-    //                     };
-    //                 }
-    //             }
-    //         },
-    //         target: {
-    //             refresh: {
-    //                 http: {
-    //                     method: 'GET',
-    //                     url: function(m) { return m.obj['refreshUrl']; },
-    //                     response: obviel.sync.actionProcessor
-    //                 }
-    //             }
-    //         }
-    //     });
+        obviel.sync.mapping({
+            iface: 'container',
+            source: {
+                add: {
+                    finder: function(action) {
+                        return {
+                            container: container,
+                            propertyName: 'entries'
+                        };
+                    }
+                }
+            },
+            target: {
+                refresh: {
+                    http: {
+                        method: 'GET',
+                        url: function(m) { return m.obj['refreshUrl']; },
+                        response: obviel.sync.actionProcessor
+                    }
+                }
+            }
+        });
         
-    //     this.server.respondWith('POST', 'getUpdates', function(request) {
-    //         request.respond(
-    //             200, {'Content-Type': 'application/json'},
-    //             JSON.stringify({
-    //                 action: 'addToContainerId',
-    //                 containerId: 'foo',
-    //                 obj: {
-    //                     iface: 'test',
-    //                     id: 'testid',
-    //                     value: 2.0
-    //                 }
-    //             }));
-    //     });
+        this.server.respondWith('GET', 'getAdditions', function(request) {
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    name: 'add',
+                    containerIface: 'container',
+                    obj: {
+                        iface: 'test',
+                        id: 'testid',
+                        value: 2.0
+                    }
+                }));
+        });
         
         
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
 
-    //     session.refresh(container);
+        session.refresh(container);
         
-    //     session.commit().done(function(entries) {
-    //         assert.equals(container.entries.length, 1);
-    //         assert.equals(container.entries[0], {
-    //             iface: 'test',
-    //             id: 'testid',
-    //             value: 2.0
-    //         });
-    //         done();
-    //     });
-    // }
+        session.commit().done(function(entries) {
+            assert.equals(container.entries.length, 1);
+            assert.equals(container.entries[0], {
+                iface: 'test',
+                id: 'testid',
+                value: 2.0
+            });
+            done();
+        });
+    }
 
 
     

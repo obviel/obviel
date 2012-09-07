@@ -28,22 +28,6 @@ obviel.sync = {};
 
     var initDefaults = function(config) {
         var defaults = getDefaults();
-        // if (config.source === undefined) {
-        //     config.source = null;
-        // }
-        // if (config.target === undefined) {
-        //     config.target = null;
-        // } else {
-        //     if (config.target.update === undefined) {
-        //         config.target.update = null;
-        //     } else {
-        //         if (config.target.http === undefined) {
-        //             config.target.update.http = null;
-        //         }
-        //     }
-        // }
-        
-        
         defaultsUpdater(config, defaults);
         return config;
     };
@@ -137,22 +121,7 @@ obviel.sync = {};
         this.connection.complete();
         return $.when.apply(null, promises);
     };
-
-
-    // Session.prototype.processSource = function(actions) {
-    //     var i, action, source, info, container;
-    //     for (i = 0; i < actions.length; i++) {
-    //         action = actions[i];
-    //         if (action.name === 'update') {
-    //             source = this.connection.getSource(action.obj.iface);
-    //             objectUpdater(source.update.finder(action), entry.obj);
-    //         } else if (entry.action === 'add') {
-    //             source = this.connection.getSource(entry.obj.iface);
-    //             info = source.add.finder(action);
-    //             info.container[info.propertyName].push(entry.obj);
-    //         }
-    //     }
-    // };
+    
 
     // how does a source based add inform the system about the container?
     // the action could container containerId
@@ -164,13 +133,13 @@ obviel.sync = {};
     // bit that involves the source bits. this way we can simulate
     // session actions from the server
     module.actionProcessor = function(connection, entries) {
-        var session = connection.session(),
-            i;
+        var i;
         if (!$.isArray(entries)) {
             entries = [entries];
         }
+        
         for (i = 0; i < entries.length; i++) {
-            session.actions.push(entries[i]);
+            connection.processSourceAction(entries[i]);
         }
     };
     
@@ -237,7 +206,22 @@ obviel.sync = {};
         return this.processTarget(this.getProperties(config), action);
     };
     
-    
+
+    module.Connection.prototype.processSourceAction = function(action) {
+        var finder, obj, info;
+        if (action.name === 'update') {
+            finder = mappings[action.obj.iface].source.update.finder;
+            objectUpdater(finder(action), entry);
+        } else if (action.name === 'add') {
+            // action.containerIface is container iface..
+            // could also get container by containerId, though this
+            // assumes id-based lookup
+            finder = mappings[action.containerIface].source.add.finder;
+            info = finder(action);
+            info.container[info.propertyName].push(action.obj);
+        }
+    };
+
     module.Connection.prototype.complete = function() {
         
     };
