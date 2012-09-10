@@ -127,6 +127,99 @@ obviel.sync = {};
         this.actions = [];
         this.seen = new Seen();
     };
+
+    Session.prototype.update = function(obj) {
+        this.actions.push(new UpdateAction({obj: obj}));
+    };
+
+    Session.prototype.add = function(container, propertyName, obj) {
+        this.actions.add(new AddAction({container: container,
+                                        propertyName: propertyName,
+                                        obj: obj}));
+    };
+
+    Session.prototype.refresh = function(obj) {
+        this.actions.push(new RefreshAction({obj: obj}));
+
+    };
+
+    Session.prototype.remove = function(container, propertyName, obj) {
+        this.actions.add(new RemoveAction({container: container,
+                                           propertyName: propertyName,
+                                           obj: obj}));
+
+    };
+    
+
+    var Action = function(session, configName) {
+        this.session = session;
+        this.configName = configName;
+    };
+
+    Action.prototype.getIface = function() {
+        throw new Error("Do not know how to retrieve iface for action");
+    };
+
+    Action.prototype.getTarget = function() {
+        var target = mappings[this.getIface()].target;
+        if (target === undefined) {
+            throw new module.ConnectionError("No target defined");
+        }
+        return target;
+    };
+
+    Action.prototype.getConfig = function() {
+        var config = this.getTarget()[this.configName];
+        if (config === undefined) {
+            throw new module.ConnectionError(
+                "No " + this.configName + " defined for target");
+        }
+    };
+    
+    Action.prototype.getConnectionConfig = function(config) {
+        return this.session.connection.getProperties(config);
+    };
+
+
+    Action.prototype.process = function() {
+        throw new Error("Do not know how to process action");
+    };
+
+    var UpdateAction = function(session, obj) {
+        this.session = session;
+        this.configName = 'update';
+        this.obj = obj;
+    };
+    
+    UpdateAction.prototype = new Action();
+    UpdateAction.prototype.constructor = UpdateAction;
+    
+    // UpdateAction.prototype.getTarget = function() {
+    //     var target = mappings[this.getIface()].target;
+    //     if (target === undefined) {
+    //         throw new module.ConnectionError("No target defined");
+    //     }
+    //     return target;
+    // };
+
+    // UpdateAction.prototype.getConfig = function() {
+    //     var config = this.getTarget()['update'];
+    //     if (config === undefined) {
+    //         throw new module.ConnectionError(
+    //             "No " + "update" + " defined for target");
+    //     }
+    // };
+
+    // UpdateAction.prototype.getConnectionConfig = function(config) {
+    //     return this.session.connection.getProperties(config);
+    // };
+    
+    UpdateAction.prototype.process = function() {
+        var config = this.getConfig(),
+            connectionConfig = this.getConnectionConfig(config);
+        return this.session.connection.processTarget(
+            connectionConfig, this);
+    };
     
     module.registerActionType('add', ['container', 'propertyName', 'obj'],
                               'container');
