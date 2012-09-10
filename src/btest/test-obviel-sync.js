@@ -474,26 +474,26 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         assert.equals(obj.value, 2.0);
         assert.equals(session.updated(), [obj]);
-    }
+    },
     
-    // "mutator single object, multiple update": function() {
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
+    "mutator single object, multiple update": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
 
-    //     var obj = {
-    //         iface: 'test',
-    //         id: 'testid',
-    //         value: 1.0
-    //     };
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
 
-    //     var m = session.mutator(obj);
+        var m = session.mutator(obj);
 
-    //     m.set('value', 2.0);
-    //     m.set('value', 3.0);
+        m.set('value', 2.0);
+        m.set('value', 3.0);
         
-    //     assert.equals(obj.value, 3.0);
-    //     assert.equals(session.updated(), [obj]);
-    // }
+        assert.equals(obj.value, 3.0);
+        assert.equals(session.updated(), [obj]);
+    }
     
     
     // XXX obj that is inherited?

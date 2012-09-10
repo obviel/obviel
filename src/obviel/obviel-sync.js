@@ -76,6 +76,34 @@ obviel.sync = {};
         this.session.add(this.obj, this.arrayName, value);
     };
 
+    // a simple registry that checks whether we've seen an object
+    // already. seen() scales linearly by amount of objects, unless all objects
+    // have ids, in which case seen() will be constant time 
+    var Seen = function() {
+        this.ids = {};
+        this.objects = [];
+    };
+
+    Seen.prototype.add = function(obj) {
+        if (obj.id !== undefined) {
+            this.ids[obj.id] = true;
+        }
+        this.objects.push(obj);
+    };
+
+    Seen.prototype.seen = function(obj) {
+        var i;
+        if (obj.id !== undefined) {
+            return this.ids[obj.id] !== undefined;
+        }
+        for (i = 0; i < this.objects.length; i++) {
+            if (obj === this.objects[i]) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
     module.registerActionType = function(name, argNames, ifaceObj) {
         Session.prototype[name] = function() {
             var d = {},
@@ -85,14 +113,19 @@ obviel.sync = {};
             for (i = 0; i < argNames.length; i++) {
                 d[argNames[i]] = arguments[i];
             }
+            if (this.seen.seen(d.obj)) {
+                return;
+            }
             d.iface = d[ifaceObj].iface;
             this.actions.push(d);
+            this.seen.add(d.obj);
         };
     };
     
     var Session = function(connection) {
         this.connection = connection;
         this.actions = [];
+        this.seen = new Seen();
     };
     
     module.registerActionType('add', ['container', 'propertyName', 'obj'],
