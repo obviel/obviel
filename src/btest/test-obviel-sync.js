@@ -109,9 +109,12 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
         var obj = {};
         assert.equals(
-            obviel.sync.getMapping('test').source.update.finder({obj: obj}), obj);
+            obviel.sync.getMapping('test').source.update.finder(
+                {obj: obj}),
+            obj);
         assert(
-            obviel.sync.getMapping('test').source.update.finder({obj: obj}).found);
+            obviel.sync.getMapping('test').source.update.finder(
+                {obj: obj}).found);
     },
     "config with empty source.update": function() {
         obviel.sync.mapping({
@@ -127,10 +130,12 @@ var syncTestCase = buster.testCase("sync tests:", {
         var backendObj = { id: 'foo', backend: true};
         
         assert.equals(
-            obviel.sync.getMapping('test').source.update.finder({obj: backendObj}),
+            obviel.sync.getMapping('test').source.update.finder(
+                {obj: backendObj}),
             obj);
         refute.equals(
-            obviel.sync.getMapping('test').source.update.finder({obj: backendObj}),
+            obviel.sync.getMapping('test').source.update.finder(
+                {obj: backendObj}),
             backendObj);
     },
     "config with empty source": function() {
