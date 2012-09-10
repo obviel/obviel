@@ -57,15 +57,7 @@ obviel.sync = {};
     };
 
     ObjectMutator.prototype.get = function(name) {
-        var value = this.obj[name];
-        // XXX special case for non-obj attributes, and array attributes
-        if ($.isObject(value)) {
-            return ObjectMutator(this.session, value);
-        } else if ($.isArray(value)) {
-            return ArrayMutator(this.session, this.obj, name);
-        } else {
-            return value;
-        }
+        return this.session.createMutator(name);
     };
 
     ObjectMutator.prototype.set = function(name, value) {
@@ -84,7 +76,7 @@ obviel.sync = {};
         this.session.add(this.obj, this.arrayName, value);
     };
 
-    module.registerSessionFunc = function(name, argNames, ifaceObj) {
+    module.registerActionType = function(name, argNames, ifaceObj) {
         Session.prototype[name] = function() {
             var d = {},
                 i = 0,
@@ -103,10 +95,10 @@ obviel.sync = {};
         this.actions = [];
     };
     
-    module.registerSessionFunc('add', ['container', 'propertyName', 'obj'],
+    module.registerActionType('add', ['container', 'propertyName', 'obj'],
                               'container');
-    module.registerSessionFunc('update', ['obj'], 'obj');
-    module.registerSessionFunc('refresh', ['obj'], 'obj');
+    module.registerActionType('update', ['obj'], 'obj');
+    module.registerActionType('refresh', ['obj'], 'obj');
     
     Session.prototype.commit = function() {
         var i, action,
@@ -118,11 +110,39 @@ obviel.sync = {};
             promises.push(conn.processTargetAction(action, action.iface));
         }
         
-        this.connection.complete();
         return $.when.apply(null, promises);
     };
-    
 
+ 
+    Session.prototype.updated = function() {
+        var i, action, result = [];
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            if (action.name === 'update') {
+                result.push(action.obj);
+            }
+        }
+        return result;
+    };
+
+    
+    Session.prototype.createMutator = function(attrName) {
+        var value = this.obj[attrName];
+        // XXX special case for non-obj attributes, and array attributes
+        // XXX does $.isPlainObject deal with inheritance?
+        if ($.isPlainObject(value)) {
+            return new ObjectMutator(this, value);
+        } else if ($.isArray(value)) {
+            return new ArrayMutator(this, this.obj, attrName);
+        } else {
+            return value;
+        }
+    };
+
+    Session.prototype.mutator = function(obj) {
+        return new ObjectMutator(this, obj);
+    };
+    
     // how does a source based add inform the system about the container?
     // the action could container containerId
     // the container could be found on the basis of the obj added
@@ -163,9 +183,6 @@ obviel.sync = {};
     };
     
     
-    Session.prototype.mutator = function(obj) {
-        return new Mutator(obj);
-    };
     
     // Session.prototype.remove = function(container, propertyName, obj) {
 
@@ -220,10 +237,6 @@ obviel.sync = {};
             info = finder(action);
             info.container[info.propertyName].push(action.obj);
         }
-    };
-
-    module.Connection.prototype.complete = function() {
-        
     };
     
     module.Connection.prototype.session = function() {

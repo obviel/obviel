@@ -190,8 +190,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             assert.equals(updateData.value, 1.0);
             done();
         });
-    },
-    
+    },    
     "add to container URL": function(done) {
         obviel.sync.mapping({
             iface: 'container',
@@ -396,8 +395,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             done();
         });
         
-    }
-    ,
+    },
     "source add from HTTP response after refresh": function(done) {
         var container = {
             id: 'foo',
@@ -458,8 +456,47 @@ var syncTestCase = buster.testCase("sync tests:", {
             });
             done();
         });
-    }
+    },
+    
+    "mutator single object update": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
 
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.set('value', 2.0);
+
+        assert.equals(obj.value, 2.0);
+        assert.equals(session.updated(), [obj]);
+    }
+    
+    // "mutator single object, multiple update": function() {
+    //     var conn = new obviel.sync.HttpConnection();
+    //     var session = conn.session();
+
+    //     var obj = {
+    //         iface: 'test',
+    //         id: 'testid',
+    //         value: 1.0
+    //     };
+
+    //     var m = session.mutator(obj);
+
+    //     m.set('value', 2.0);
+    //     m.set('value', 3.0);
+        
+    //     assert.equals(obj.value, 3.0);
+    //     assert.equals(session.updated(), [obj]);
+    // }
+    
+    
+    // XXX obj that is inherited?
 
     
 });
