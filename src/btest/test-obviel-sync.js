@@ -476,7 +476,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(session.updated(), [obj]);
     },
     
-    "mutator single object, multiple update": function() {
+    "mutator single object, multiple updates, object with id": function() {
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
 
@@ -493,7 +493,54 @@ var syncTestCase = buster.testCase("sync tests:", {
         
         assert.equals(obj.value, 3.0);
         assert.equals(session.updated(), [obj]);
+    },
+    "mutator single object, multiple updates, object without id": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.set('value', 2.0);
+        m.set('value', 3.0);
+        
+        assert.equals(obj.value, 3.0);
+        assert.equals(session.updated(), [obj]);
+    },
+    
+    "mutator multiple objects, multiple updates": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj1 = {
+            iface: 'test',
+            id: '1',
+            value: 1.0
+        };
+
+        var obj2 = {
+            iface: 'test',
+            id: '2',
+            value: 1.0
+        };
+
+        
+        var m1 = session.mutator(obj1);        
+        var m2 = session.mutator(obj2);
+        
+        m1.set('value', 2.0);
+        m2.set('value', 3.0);
+        
+        assert.equals(obj1.value, 2.0);
+        assert.equals(obj2.value, 3.0);
+        
+        assert.equals(session.updated(), [obj1, obj2]);
     }
+
     
     
     // XXX obj that is inherited?
