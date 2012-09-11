@@ -235,6 +235,93 @@ var syncTestCase = buster.testCase("sync tests:", {
             done();
         });
     },
+    "remove from container URL with id, JSON post": function(done) {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['removeUrl']; }
+                    }
+                }
+            }
+        });
+
+        var testUrl = 'blah';
+
+        var removeIds;
+        
+        this.server.respondWith('POST', testUrl, function(request) {
+            removeIds = $.parseJSON(request.requestBody);
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+        var container = {
+            iface: 'container',
+            entries: [obj],
+            removeUrl: testUrl
+        };
+        container.entries.splice(0, 1);
+        session.remove(container, 'entries', obj);
+        session.commit().done(function() {
+            assert.equals(removeIds, ['testid']);
+            done();
+        });
+
+    },
+    // XXX remove with a list of URL parameters, a configuration option.
+    // also let user configure the name of the parameters
+    // XXX remove with multiple remove events, with a url without ids
+    // should also be an option. this mean we cannot consolidate remove actions
+    // into a single action in a backend independent manner, though what
+    // we could do is save up the remove URLs and consolidate the URLs if
+    // they all have the same parameters for consolidation purposes
+    
+    "remove from container URL without id fails": function() {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['removeUrl']; }
+                    }
+                }
+            }
+        });
+
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        // obj has no id, so we cannot remove it
+        var obj = {
+            iface: 'test',
+            value: 1.0
+        };
+        
+        var testUrl = 'blah';
+        var container = {
+            iface: 'container',
+            entries: [obj],
+            addUrl: testUrl
+        };
+        container.entries.splice(0, 1);
+        assert.exception(function() {
+            session.remove(container, 'entries', obj); 
+        }, 'IdError');
+    },
+
     "update to socket io": function(done) {
         obviel.sync.mapping({
             iface: 'test',
@@ -675,7 +762,11 @@ var syncTestCase = buster.testCase("sync tests:", {
         // the refresh will happen later
         assert.equals(session.refreshed(), [obj]);
     }
-
+    // update & remove
+    // add & remove
+    // refresh & remove
+    // remove & remove again
+    
     // XXX obj that is inherited?
 
     

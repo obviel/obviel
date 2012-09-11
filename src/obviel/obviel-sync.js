@@ -14,6 +14,11 @@ obviel.sync = {};
         this.name = 'ConnectionError';
         this.message = message;
     };
+
+    module.IdError = function(message) {
+        this.name = 'IdError';
+        this.message = message;
+    };
     
     var mappings = {};    
     module.mapping = function(config) {
@@ -80,6 +85,16 @@ obviel.sync = {};
         this.session.add(this.obj, this.arrayName, value);
     };
 
+    ArrayMutator.prototype.remove = function(value) {
+        var index = $.inArray(value);
+        if (index === -1) {
+            throw new Error(
+                "Cannot remove item from array as it doesn't exist: " + value);
+        }
+        this.obj[this.arrayName].splice(value, 1);
+        this.session.remove(this.obj, this.arrayName, value);
+    };
+ 
     // a simple registry that checks whether we've seen an object
     // already. seen() scales linearly by amount of objects, unless all objects
     // have ids, in which case seen() will be constant time 
@@ -161,6 +176,9 @@ obviel.sync = {};
                 refreshSeen.add(action.obj);
                 result.push(action);
             }
+            if (action.configName === 'remove') {
+                result.push(action);
+            }
         }
         this.actions = result;
     };
@@ -172,7 +190,7 @@ obviel.sync = {};
             iface;
         this.consolidate();
         for (i = 0; i < this.actions.length; i++) {
-            promises.push(this.actions[i].process()); // action.conn.processTargetAction(action, action.iface));
+            promises.push(this.actions[i].process());
         }
         
         return $.when.apply(null, promises);
@@ -186,7 +204,8 @@ obviel.sync = {};
             if (action.configName !== configName) {
                 continue;
             }
-            if (action.configName === 'add') {
+            if (action.configName === 'add' ||
+                action.configName === 'remove') {
                 result.push({obj: action.obj,
                              container: action.container,
                              propertyName: action.propertyName});
@@ -205,6 +224,10 @@ obviel.sync = {};
         return this.touched('add');
     };
 
+    Session.prototype.removed = function() {
+        return this.touched('removed');
+    };
+    
     Session.prototype.refreshed = function() {
         return this.touched('refresh');
     };
@@ -253,12 +276,14 @@ obviel.sync = {};
     };
     
     Action.prototype.getConnectionConfig = function(config) {
-        return this.session.connection.getProperties(config);
+        return this.session.connection.getConfig(config, this);
     };
 
-
     Action.prototype.process = function() {
-        throw new Error("Do not know how to process action");
+        var config = this.getConfig(),
+            connectionConfig = this.getConnectionConfig(config);
+        return this.session.connection.processTarget(
+            connectionConfig, this.obj);
     };
 
     var UpdateAction = function(session, obj) {
@@ -273,14 +298,6 @@ obviel.sync = {};
     UpdateAction.prototype.getIface = function() {
         return this.obj.iface;
     };
-
-    UpdateAction.prototype.process = function() {
-        var config = this.getConfig(),
-            connectionConfig = this.getConnectionConfig(config);
-        return this.session.connection.processTarget(
-            connectionConfig, this);
-    };
-
 
     var AddAction = function(session, container, propertyName, obj) {
         this.session = session;
@@ -297,11 +314,29 @@ obviel.sync = {};
         return this.container.iface;
     };
 
-    AddAction.prototype.process = function() {
+    var RemoveAction = function(session, container, propertyName, obj) {
+        this.session = session;
+        this.configName = 'remove';
+        this.container = container;
+        this.propertyName = propertyName;
+        this.obj = obj;
+        if (obj.id === undefined) {
+            throw new module.IdError("Need id for removal of obj: " + obj);
+        }
+    };
+
+    RemoveAction.prototype = new Action();
+    RemoveAction.prototype.constructor = RemoveAction;
+    
+    RemoveAction.prototype.getIface = function() {
+        return this.container.iface;
+    };
+
+    RemoveAction.prototype.process = function() {
         var config = this.getConfig(),
             connectionConfig = this.getConnectionConfig(config);
         return this.session.connection.processTarget(
-            connectionConfig, this);
+            connectionConfig, [this.obj.id]);
     };
 
     var RefreshAction = function(session, obj) {
@@ -317,14 +352,8 @@ obviel.sync = {};
         return this.obj.iface;
     };
 
-    RefreshAction.prototype.process = function() {
-        var config = this.getConfig(),
-            connectionConfig = this.getConnectionConfig(config);
-        return this.session.connection.processTarget(
-            connectionConfig, this);
-    };
-
-    
+    // XXX want a refresh action that does not POST previous contents but
+    // id to refresh or nothing at all to server.
     
     // how does a source based add inform the system about the container?
     // the action could container containerId
@@ -392,18 +421,8 @@ obviel.sync = {};
         return source;
     };
 
-    module.Connection.prototype.getProperties = function(context) {
+    module.Connection.prototype.getConfig = function(context, action) {
         throw new module.ConnectionError("Not implemented");
-    };
-
-    module.Connection.prototype.processTargetAction = function(action, iface) {
-        var target = this.getTarget(iface),
-            config = target[action.name];
-        if (config === undefined) {
-            throw new module.ConnectionError(
-                "No " + action.name + " defined for target");
-        }
-        return this.processTarget(this.getProperties(config), action);
     };
     
 
@@ -431,34 +450,41 @@ obviel.sync = {};
     
     module.HttpConnection.prototype = new module.Connection();
 
-    module.HttpConnection.prototype.getProperties = function(m) {
-        return m.http;
+    module.HttpConnection.prototype.getConfig = function(config, action) {
+        var http = config.http,
+            url;
+        
+        if ($.isFunction(http.url)) {
+            http.calculatedUrl = http.url(action);
+        } else {
+            http.calculatedUrl = http.url;
+        }
+
+        return http;
     };
     
-    module.HttpConnection.prototype.processTarget = function(properties, action) {
+    module.HttpConnection.prototype.processTarget = function(config, obj) {
         var self = this,
             data,
-            url,
-            method = properties.method || 'POST';        
-        if ($.isFunction(properties.url)) {
-            url = properties.url(action);
-        } else {
-            url = properties.url;
-        }
+            method = config.method || 'POST';
         if (method === 'POST' || method === 'PUT') {
-            data = JSON.stringify(action.obj);
+            if (obj !== undefined) {
+                data = JSON.stringify(obj);
+            } else {
+                data = null;
+            }
         } else {
             data = null;
         }
         return $.ajax({
             type: method,
-            url: url,
+            url: config.calculatedUrl,
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
             data: data
         }).done(function(responseObj) {
-            var response = properties.response;
+            var response = config.response;
             if (!response) {
                 return;
             }
@@ -485,12 +511,12 @@ obviel.sync = {};
 
     module.SocketIoConnection.prototype = new module.Connection();
 
-    module.SocketIoConnection.prototype.getProperties = function(m) {
-        return m.socket;
+    module.SocketIoConnection.prototype.getConfig = function(config, action) {
+        return config.socket;
     };
     
-    module.SocketIoConnection.prototype.processTarget = function(properties, action) {
-        this.io.emit(properties.type, action.obj);
+    module.SocketIoConnection.prototype.processTarget = function(config, obj) {
+        this.io.emit(config.type, obj);
     };
 
     // a global registry of objects by id
