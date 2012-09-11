@@ -591,12 +591,34 @@ var syncTestCase = buster.testCase("sync tests:", {
         // as an add so we don't need to care about the update
         assert.equals(session.updated(),
                       []);
+    },
+
+    "update, then add to array": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var addedObj = {name: 'alpha'};
+        
+        session.mutator(addedObj).set('name', 'alphaChanged');
+        session.mutator(obj).get('entries').push(addedObj);
+        
+        assert.equals(obj.entries, [{name: 'alphaChanged'}]);
+        
+        assert.equals(session.added(),
+                      [{container: obj, propertyName: 'entries',
+                        obj: addedObj}]);
+        // add trumps updating; we are already going to send it to backend
+        // as an add so we don't need to care about the earlier update
+        assert.equals(session.updated(),
+                      []);
+
     }
-    // ,
-
-    // "update, then add to array": function() {
-
-    // }
     
     // XXX obj that is inherited?
 
