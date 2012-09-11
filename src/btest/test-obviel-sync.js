@@ -476,6 +476,25 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(session.updated(), [obj]);
     },
     
+    "mutator single object refresh": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.refresh();
+        
+        assert.equals(obj.value, 1.0);
+        assert.equals(session.refreshed(), [obj]);
+    },
+
+    
     "mutator single object, multiple updates, object with id": function() {
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
@@ -510,6 +529,23 @@ var syncTestCase = buster.testCase("sync tests:", {
         
         assert.equals(obj.value, 3.0);
         assert.equals(session.updated(), [obj]);
+    },
+    "mutator single object, multiple refreshes": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.refresh();
+        m.refresh();
+        
+        assert.equals(session.refreshed(), [obj]);
     },
     
     "mutator multiple objects, multiple updates": function() {

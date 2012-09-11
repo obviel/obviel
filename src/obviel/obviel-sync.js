@@ -136,24 +136,29 @@ obviel.sync = {};
     Session.prototype.consolidate = function() {
         var i, action,
             result = [],
-        seen = new Seen();
+            updateSeen = new Seen(),
+            refreshSeen = new Seen();
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.configName === 'add') {
-                seen.add(action.obj);
+                updateSeen.add(action.obj);
                 result.push(action);
             }
         }
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.configName === 'update') {
-                if (seen.seen(action.obj)) {
+                if (updateSeen.seen(action.obj)) {
                     continue;
                 }
-                seen.add(action.obj);
+                updateSeen.add(action.obj);
                 result.push(action);
             }
             if (action.configName === 'refresh') {
+                if (refreshSeen.seen(action.obj)) {
+                    continue;
+                }
+                refreshSeen.add(action.obj);
                 result.push(action);
             }
         }
