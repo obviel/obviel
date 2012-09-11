@@ -104,24 +104,6 @@ obviel.sync = {};
         return false;
     };
     
-    // module.registerActionType = function(name, argNames, ifaceObj) {
-    //     Session.prototype[name] = function() {
-    //         var d = {},
-    //             i = 0,
-    //             argName;
-    //         d.name = name;
-    //         for (i = 0; i < argNames.length; i++) {
-    //             d[argNames[i]] = arguments[i];
-    //         }
-    //         if (this.seen.seen(d.obj)) {
-    //             return;
-    //         }
-    //         d.iface = d[ifaceObj].iface;
-    //         this.actions.push(d);
-    //         this.seen.add(d.obj);
-    //     };
-    // };
-    
     var Session = function(connection) {
         this.connection = connection;
         this.actions = [];
@@ -291,11 +273,6 @@ obviel.sync = {};
             connectionConfig, this);
     };
 
-    
-    //module.registerActionType('add', ['container', 'propertyName', 'obj'],
-    //                          'container');
-    // module.registerActionType('update', ['obj'], 'obj');
-    //module.registerActionType('refresh', ['obj'], 'obj');
     
     
     // how does a source based add inform the system about the container?
@@ -544,94 +521,5 @@ obviel.sync = {};
         }
     };
 
-
-    // module.objectUpdateRule = function (eventName, transformer, finder) {
-    //     rules[eventName] = function (obj) {
-    //         var source = transformer(eventName, obj);
-    //         var target = finder(source);
-    //         objectUpdater(target, source);
-    //         $(target).triggerHandler(
-    //             'objectUpdate',
-    //             [{obj: target}]);
-    //     };
-    // };
-    
-    // module.objectAddRule = function(eventName, transformer, finder, getName) {
-    //     rules[eventName] = function (obj) {
-    //         obj = transformer(eventName, obj);
-    //         var container = finder(obj);
-    //         var name = getName(container, obj);
-    //         container[name] = obj;
-    //         $(container).triggerHandler(
-    //             'objectAdd',
-    //             [{container: container,
-    //               obj: obj,
-    //               name: name}]);
-    //     };
-    // };
-
-    // module.arrayAddRule = function(eventName, transformer, finder) {
-    //     rules[eventName] = function (obj) {
-    //         obj = transformer(eventName, obj);
-    //         var found = finder(obj);
-    //         var container = found.container;
-    //         var array = container[found.arrayName];
-    //         var index = array.length;
-    //         array.push(obj);
-    //         $(container).triggerHandler(
-    //             'arrayAdd',
-    //             [{container: container,
-    //               obj: obj,
-    //               arrayName: found.arrayName,
-    //               array: array,
-    //               index: index}]);
-    //     };
-    // };
-    
-    // module.objectDeleteRule = function(eventName, transformer, finder,
-    //                                    getName) {
-    //     rules[eventName] = function (obj) {
-    //         obj = transformer(eventName, obj);
-    //         var container = finder(obj);
-    //         var name = getName(container, obj);
-    //         delete container[name];
-    //         $(container).triggerHandler(
-    //             'objectDelete',
-    //             {container: container,
-    //              name: name,
-    //              obj: obj});
-    //     };
-    // };
-
-    // module.arrayDeleteRule = function(eventName, transformer, finder,
-    //                                   getIndex) {
-    //     rules[eventName] = function (obj) {
-    //         obj = transformer(eventName, obj);
-    //         var found = finder(obj);
-    //         var container = found.container;
-    //         var array = container[found.arrayName];
-    //         var index = getIndex(array, obj);
-    //         if (index === -1) {
-    //             return;
-    //         }
-    //         array.splice(index, 1);
-    //         $(container).triggerHandler(
-    //             'arrayDelete',
-    //             [{container: container,
-    //               obj: obj,
-    //               arrayName: found.arrayName,
-    //               array: array,
-    //               index: index}]);
-    //     };
-    // };
-    
-
-    // module.triggerRule = function (eventName, obj) {
-    //     var rule = rules[eventName];
-    //     if (rule === undefined) {
-    //         return;
-    //     }
-    //     rule(obj);
-    // };
     
 }(jQuery, obviel.sync));
