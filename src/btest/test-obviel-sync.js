@@ -539,33 +539,64 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(obj2.value, 3.0);
         
         assert.equals(session.updated(), [obj1, obj2]);
+    },
+
+    "mutator add to array, single add": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var m = session.mutator(obj);
+
+        var addedObj = {name: 'alpha'};
+        
+        m.get('entries').push(addedObj);
+        
+        assert.equals(obj.entries, [{name: 'alpha'}]);
+        
+        assert.equals(session.added(),
+                      [{container: obj, propertyName: 'entries',
+                        obj: addedObj}]);
+    },
+
+
+    "add to array, then update": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var m = session.mutator(obj);
+
+        var addedObj = {name: 'alpha'};
+        
+        m.get('entries').push(addedObj);
+        session.mutator(addedObj).set('name', 'alphaChanged');
+        
+        assert.equals(obj.entries, [{name: 'alphaChanged'}]);
+        
+        assert.equals(session.added(),
+                      [{container: obj, propertyName: 'entries',
+                        obj: addedObj}]);
+        // add trumps updating; we are already going to send it to backend
+        // as an add so we don't need to care about the update
+        assert.equals(session.updated(),
+                      []);
     }
     // ,
 
-    // "mutator add to array, single add": function() {
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
+    // "update, then add to array": function() {
 
-    //     var obj = {
-    //         iface: 'test',
-    //         id: 'a',
-    //         entries: []
-    //     };
-        
-    //     var m = session.mutator(obj);
-
-    //     var addedObj = {name: 'alpha'};
-        
-    //     m.get('entries').push(addedObj);
-        
-    //     assert.equals(obj.entries, ['alpha']);
-        
-    //     assert.equals(session.added(),
-    //                   [{container: obj, propertyName: obj1, obj: addedObj}]);
     // }
-
-
-    
     
     // XXX obj that is inherited?
 

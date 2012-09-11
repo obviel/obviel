@@ -57,7 +57,7 @@ obviel.sync = {};
     };
 
     ObjectMutator.prototype.get = function(name) {
-        return this.session.createMutator(name);
+        return this.session.createMutator(this.obj, name);
     };
 
     ObjectMutator.prototype.set = function(name, value) {
@@ -107,15 +107,10 @@ obviel.sync = {};
     var Session = function(connection) {
         this.connection = connection;
         this.actions = [];
-        this.seen = new Seen();
     };
 
     Session.prototype.update = function(obj) {
-        if (this.seen.seen(obj)) {
-            return;
-        }
         this.actions.push(new UpdateAction(this, obj));
-        this.seen.add(obj);
     };
 
     Session.prototype.add = function(container, propertyName, obj) {
@@ -133,12 +128,40 @@ obviel.sync = {};
                                            obj));
 
     };
+
+    Session.prototype.consolidate = function() {
+        var i, action,
+            result = [],
+        seen = new Seen();
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            if (action.configName === 'add') {
+                seen.add(action.obj);
+                result.push(action);
+            }
+        }
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            if (action.configName === 'update') {
+                if (seen.seen(action.obj)) {
+                    continue;
+                }
+                seen.add(action.obj);
+                result.push(action);
+            }
+            if (action.configName === 'refresh') {
+                result.push(action);
+            }
+        }
+        this.actions = result;
+    };
     
     Session.prototype.commit = function() {
         var i,
             conn = this.connection,
             promises = [],
             iface;
+        this.consolidate();
         for (i = 0; i < this.actions.length; i++) {
             promises.push(this.actions[i].process()); // action.conn.processTargetAction(action, action.iface));
         }
@@ -148,6 +171,7 @@ obviel.sync = {};
     
     Session.prototype.updated = function() {
         var i, action, result = [];
+        this.consolidate();
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.configName !== 'update') {
@@ -158,14 +182,29 @@ obviel.sync = {};
         return result;
     };
     
-    Session.prototype.createMutator = function(attrName) {
-        var value = this.obj[attrName];
+    Session.prototype.added = function() {
+        var i, action, result = [];
+        this.consolidate();
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            if (action.configName !== 'add') {
+                continue;
+            }
+            result.push({container: action.container,
+                         propertyName: action.propertyName,
+                         obj: action.obj});
+        }
+        return result;
+    };
+    
+    Session.prototype.createMutator = function(obj, propertyName) {
+        var value = obj[propertyName];
         // XXX special case for non-obj attributes, and array attributes
         // XXX does $.isPlainObject deal with inheritance?
         if ($.isPlainObject(value)) {
             return new ObjectMutator(this, value);
         } else if ($.isArray(value)) {
-            return new ArrayMutator(this, this.obj, attrName);
+            return new ArrayMutator(this, obj, propertyName);
         } else {
             return value;
         }
