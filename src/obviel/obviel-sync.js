@@ -65,6 +65,10 @@ obviel.sync = {};
         this.session.update(this.obj);
     };
 
+    ObjectMutator.prototype.refresh = function() {
+        this.session.refresh(this.obj);
+    };
+    
     var ArrayMutator = function(session, obj, arrayName) {
         this.session = session;
         this.obj = obj;
@@ -168,33 +172,36 @@ obviel.sync = {};
         
         return $.when.apply(null, promises);
     };
-    
-    Session.prototype.updated = function() {
+
+    Session.prototype.touched = function(configName) {
         var i, action, result = [];
         this.consolidate();
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            if (action.configName !== 'update') {
+            if (action.configName !== configName) {
                 continue;
             }
-            result.push(action.obj);
+            if (action.configName === 'add') {
+                result.push({obj: action.obj,
+                             container: action.container,
+                             propertyName: action.propertyName});
+            } else {
+                result.push(action.obj);
+            }
         }
         return result;
     };
     
+    Session.prototype.updated = function() {
+        return this.touched('update');
+    };
+    
     Session.prototype.added = function() {
-        var i, action, result = [];
-        this.consolidate();
-        for (i = 0; i < this.actions.length; i++) {
-            action = this.actions[i];
-            if (action.configName !== 'add') {
-                continue;
-            }
-            result.push({container: action.container,
-                         propertyName: action.propertyName,
-                         obj: action.obj});
-        }
-        return result;
+        return this.touched('add');
+    };
+
+    Session.prototype.refreshed = function() {
+        return this.touched('refresh');
     };
     
     Session.prototype.createMutator = function(obj, propertyName) {

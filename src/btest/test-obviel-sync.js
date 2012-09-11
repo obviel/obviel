@@ -618,8 +618,28 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(session.updated(),
                       []);
 
+    },
+
+    "update, then refresh": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.refresh();
+        m.set('value', 2.0);
+        
+        assert.equals(obj.value, 2.0);
+        assert.equals(session.updated(), [obj]);
+        // the refresh will happen later
+        assert.equals(session.refreshed(), [obj]);
     }
-    
+
     // XXX obj that is inherited?
 
     
