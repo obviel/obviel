@@ -95,33 +95,6 @@ obviel.sync = {};
         this.session.remove(this.obj, this.arrayName, value);
     };
  
-    // a simple registry that checks whether we've seen an object
-    // already. seen() scales linearly by amount of objects, unless all objects
-    // have ids, in which case seen() will be constant time 
-    var Seen = function() {
-        this.ids = {};
-        this.objects = [];
-    };
-
-    Seen.prototype.add = function(obj) {
-        if (obj.id !== undefined) {
-            this.ids[obj.id] = true;
-        }
-        this.objects.push(obj);
-    };
-
-    Seen.prototype.seen = function(obj) {
-        var i;
-        if (obj.id !== undefined) {
-            return this.ids[obj.id] !== undefined;
-        }
-        for (i = 0; i < this.objects.length; i++) {
-            if (obj === this.objects[i]) {
-                return true;
-            }
-        }
-        return false;
-    };
     
     var Session = function(connection) {
         this.connection = connection;
@@ -148,11 +121,52 @@ obviel.sync = {};
 
     };
 
+    var hashCounter = 0;
+    
+    var seenHashCode = function(obj) {
+        var hashCode;
+        
+        if (obj.id !== undefined) {
+            return obj.id;
+        }
+        if (obj.hashCode !== undefined) {
+            return obj.hashCode;
+        }
+        hashCode = 'hashCode' + hashCounter;
+        obj.hashCode = hashCode;
+        hashCounter++;
+        return hashCode;
+    };
+
+    var seenHashEquals = function(self, other) {
+        return seenHashCode(self) === seenHashCode(other);
+    };
+    
+    var containerHashCode = function(obj) {
+        if (obj.container.id !== undefined) {
+            return obj.container.id + "," + obj.propertyName;
+        }
+        return obj.container.toString() + "," + obj.propertyName;
+    };
+
+    var containerHashEquals = function(self, other) {
+        return (self.container === other.container &&
+                self.propertyName === other.propertyName);
+    };
+    
     Session.prototype.consolidate = function() {
         var i, action,
+            self = this,
             result = [],
-            updateSeen = new Seen(),
-            refreshSeen = new Seen();
+            updateSeen = new HashSet(seenHashCode, seenHashEquals),
+            refreshSeen = new HashSet(seenHashCode, seenHashEquals),
+            container, removeIds,
+            removeActions = [],
+            removeObjects,
+            containerKey,
+            removeContainers = new Hashtable(containerHashCode,
+                                             containerHashEquals);
+        
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.configName === 'add') {
@@ -163,23 +177,42 @@ obviel.sync = {};
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.configName === 'update') {
-                if (updateSeen.seen(action.obj)) {
+                if (updateSeen.contains(action.obj)) {
                     continue;
                 }
                 updateSeen.add(action.obj);
                 result.push(action);
             }
             if (action.configName === 'refresh') {
-                if (refreshSeen.seen(action.obj)) {
+                if (refreshSeen.contains(action.obj)) {
                     continue;
                 }
                 refreshSeen.add(action.obj);
                 result.push(action);
             }
             if (action.configName === 'remove') {
-                result.push(action);
+                removeActions.push(action);
             }
         }
+        
+        for (i = 0; i < removeActions.length; i++) {
+            action = removeActions[i];
+            containerKey = {container: action.container,
+                            propertyName: action.propertyName};
+            
+            removeObjects = removeContainers.get(containerKey);
+            if (removeObjects === null) {
+                removeObjects = [];
+                removeContainers.put(containerKey, removeObjects);
+            }
+            removeObjects.push(action.obj);
+        }
+
+        removeContainers.each(function(key, value) {
+            result.push(
+                new RemoveAction(self, key.container, key.propertyName, value));
+        });
+        
         this.actions = result;
     };
     
@@ -280,6 +313,8 @@ obviel.sync = {};
     };
 
     Action.prototype.process = function() {
+        // XXX should be able to avoid having to get connection config here,
+        // but will need to pass action to processTarget in that case
         var config = this.getConfig(),
             connectionConfig = this.getConnectionConfig(config);
         return this.session.connection.processTarget(
@@ -320,9 +355,6 @@ obviel.sync = {};
         this.container = container;
         this.propertyName = propertyName;
         this.obj = obj;
-        if (obj.id === undefined) {
-            throw new module.IdError("Need id for removal of obj: " + obj);
-        }
     };
 
     RemoveAction.prototype = new Action();
@@ -335,10 +367,26 @@ obviel.sync = {};
     RemoveAction.prototype.process = function() {
         var config = this.getConfig(),
             connectionConfig = this.getConnectionConfig(config);
+
+        // XXX this needs to be made configurable so we can
+        // post IDs, submit them as URL parameters, all in
+        // one URL per container or multiple times per container,
+        // and posting to remove URLs instead of posting remove ids
+        // for http at least; for socket it's pretty simple, just send
+        // the id
         return this.session.connection.processTarget(
-            connectionConfig, [this.obj.id]);
+            connectionConfig, this.getRemoveIds());
     };
 
+    RemoveAction.prototype.getRemoveIds = function() {
+        var i, result = [];
+        for (i = 0; i < this.obj.length; i++) {
+            result.push(this.obj[i].id);
+        }
+        return result;
+    };
+    
+    
     var RefreshAction = function(session, obj) {
         this.session = session;
         this.configName = 'refresh';
