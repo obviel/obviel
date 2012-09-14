@@ -37,6 +37,7 @@ obviel.sync = {};
         return config;
     };
 
+    // XXX maintain defaults with action?
     var defaultsUpdater = function(config, defaults) {
         var key, subdefaults, subconfig;
         for (key in defaults) {
@@ -55,6 +56,7 @@ obviel.sync = {};
              }
         }
     };
+
     
     var ObjectMutator = function(session, obj) {
         this.session = session;
@@ -121,99 +123,72 @@ obviel.sync = {};
 
     };
 
-    var hashCounter = 0;
+    var objHashCode = function(obj) {
+        if (this.id !== undefined) {
+            return this.id;
+        }
+        return this.toString();
+    };
     
-    var seenHashCode = function(obj) {
-        var hashCode;
-        
-        if (obj.id !== undefined) {
-            return obj.id;
-        }
-        if (obj.hashCode !== undefined) {
-            return obj.hashCode;
-        }
-        hashCode = 'hashCode' + hashCounter;
-        obj.hashCode = hashCode;
-        hashCounter++;
-        return hashCode;
+    var objHashEquals = function(self, other) {
+        return (self === other);
     };
 
-    var seenHashEquals = function(self, other) {
-        return seenHashCode(self) === seenHashCode(other);
-    };
     
-    var containerHashCode = function(obj) {
-        if (obj.container.id !== undefined) {
-            return obj.container.id + "," + obj.propertyName;
-        }
-        return obj.container.toString() + "," + obj.propertyName;
+    var ActionsForObj = function() {
+        this.actions = [];
+        this.actionSet = Hashset();
     };
 
-    var containerHashEquals = function(self, other) {
-        return (self.container === other.container &&
-                self.propertyName === other.propertyName);
+    ActionsForObj.prototype.add = function(action) {
+        this.actions.push(action);
+        this.actionSet.add(action.trumpKey());
     };
-    
-    Session.prototype.consolidate = function() {
-        var i, action,
-            self = this,
-            result = [],
-            updateSeen = new HashSet(seenHashCode, seenHashEquals),
-            refreshSeen = new HashSet(seenHashCode, seenHashEquals),
-            container, removeIds,
-            removeActions = [],
-            removeObjects,
-            containerKey,
-            removeContainers = new Hashtable(containerHashCode,
-                                             containerHashEquals);
-        
-        for (i = 0; i < this.actions.length; i++) {
+
+    ActionsForObj.prototype.removeTrumped = function() {
+        var i, action, result;
+        for (i = 0; i < this.actions.length++; i++) {
             action = this.actions[i];
-            if (action.configName === 'add') {
-                updateSeen.add(action.obj);
-                result.push(action);
+            if (action.isTrumped(this.actionSet)) {
+                continue;
             }
+            result.push(action);
         }
-        for (i = 0; i < this.actions.length; i++) {
-            action = this.actions[i];
-            if (action.configName === 'update') {
-                if (updateSeen.contains(action.obj)) {
-                    continue;
-                }
-                updateSeen.add(action.obj);
-                result.push(action);
-            }
-            if (action.configName === 'refresh') {
-                if (refreshSeen.contains(action.obj)) {
-                    continue;
-                }
-                refreshSeen.add(action.obj);
-                result.push(action);
-            }
-            if (action.configName === 'remove') {
-                removeActions.push(action);
-            }
-        }
-        
-        for (i = 0; i < removeActions.length; i++) {
-            action = removeActions[i];
-            containerKey = {container: action.container,
-                            propertyName: action.propertyName};
-            
-            removeObjects = removeContainers.get(containerKey);
-            if (removeObjects === null) {
-                removeObjects = [];
-                removeContainers.put(containerKey, removeObjects);
-            }
-            removeObjects.push(action.obj);
-        }
-
-        removeContainers.each(function(key, value) {
-            result.push(
-                new RemoveAction(self, key.container, key.propertyName, value));
-        });
-        
         this.actions = result;
+    };
+    
+    Session.prototype.removeDuplicateActions = function() {
+        var i, action, key,
+            knownActions = Hashtable();
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            key = action.duplicateKey();
+            if (knownActions.get(key) !== undefined) {
+                continue;
+            }
+            knownActions.put(key, action);
+        }
+        this.actions = knownActions.values();
+    };
+    
+    Session.prototype.groupActionsForObj = function() {
+        var i, action, group, objects,
+            groups = new Hashtable();
+        for (i = 0; i < this.actions.length; i++) {
+            action = this.actions[i];
+            group = groups.get(action.obj);
+            if (group === null) {
+                group = new ActionsForObj();
+                groups.put(action.obj, group);
+            }
+            group.add(action);
+        }
+        return groups;
+    };
+    
+
+    Session.prototype.consolidate = function() {
+
     };
     
     Session.prototype.commit = function() {
@@ -286,11 +261,31 @@ obviel.sync = {};
         this.session = session;
         this.configName = configName;
     };
-
+    
     Action.prototype.getIface = function() {
         throw new Error("Do not know how to retrieve iface for action");
     };
 
+    Action.prototype.duplicateKey = function() {
+        throw new Error("No duplicate key can be determined");
+    };
+
+    Action.prototype.trumpedBy = function() {
+        return [];
+    };
+
+    Action.prototype.isTrumped = function(actionSet) {
+        var i,
+            trumpedBy = this.trumpedBy();
+        for (i = 0; i < trumpedBy.length; i++) {
+            if (actionSet.contains(createTrumpKey(name, this))) {
+                return true;
+            }
+        }
+        return false;
+            
+    };
+    
     Action.prototype.getTarget = function() {
         var target = mappings[this.getIface()].target;
         if (target === undefined) {
@@ -298,7 +293,7 @@ obviel.sync = {};
         }
         return target;
     };
-
+    
     Action.prototype.getConfig = function() {
         var config = this.getTarget()[this.configName];
         if (config === undefined) {
@@ -320,48 +315,187 @@ obviel.sync = {};
         return this.session.connection.processTarget(
             connectionConfig, this.obj);
     };
-
-    var UpdateAction = function(session, obj) {
-        this.session = session;
-        this.configName = 'update';
+    
+    var ActionDuplicateKey = function(actionName, obj, container, propertyName) {
+        this.actionName = actionName;
         this.obj = obj;
+        this.container = container;
+        this.propertyName = propertyName;
     };
     
-    UpdateAction.prototype = new Action();
-    UpdateAction.prototype.constructor = UpdateAction;
+    ActionDuplicateKey.prototype.objHashCode = function(obj) {
+        if (obj === undefined) {
+            return 'obvielObjectUndefined';
+        }
+        return objHashCode(obj);
+    };
+    
+    ActionDuplicateKey.prototype.hashCode = function() {
+        return (this.actionName + ',' +
+                this.objHashCode(this.obj) + ',' +
+                this.objHashCode(this.container) + ',' +
+                this.propertyName);
+    };
 
-    UpdateAction.prototype.getIface = function() {
+    ActionDuplicateKey.prototype.equals = function(other) {
+        return (this.actionName === other.actionName &&
+                this.obj === other.obj &&
+                this.container === other.container &&
+                this.propertyName === other.propertyName);
+    };
+
+
+    var ObjActionTrumpKey = function(actionName) {
+        this.actionName = actionName;  
+    };
+
+    ObjActionTrumpKey.prototype.hashCode = function() {
+        return this.actionName;
+    };
+
+    ObjActionTrumpKey.prototype.equals = function(other) {
+        return (this.actionName === other.actionName);
+    };
+    
+    var ContainerActionTrumpKey = function(actionName, container, propertyName) {
+        this.actionName = actionName;
+        this.container = container;
+        this.propertyName = propertyName;
+    };
+    
+    ContainerActionTrumpKey.prototype.hashCode = function() {
+        return this.actionName;
+    };
+
+    ContainerActionTrumpKey.prototype.equals = function(other) {
+        if (this.actionName !== other.actionName) {
+            return false;
+        }
+        if (!(other instanceof ContainerActionTrumpKey)) {
+            return true;
+        }
+        return (this.container === other.container &&
+                this.propertyName == other.propertyName);
+    };
+    
+    var ObjectAction = function(session, configName, obj) {
+        Action.call(this, session, configName);
+        this.obj = obj;
+    };
+
+    ObjectAction.prototype = new Action();
+    ObjectAction.prototype.constructor = ObjectAction;
+    
+    ObjectAction.prototype.getIface = function() {
         return this.obj.iface;
     };
 
-    var AddAction = function(session, container, propertyName, obj) {
-        this.session = session;
-        this.configName = 'add';
-        this.container = container;
-        this.propertyName = propertyName;
-        this.obj = obj;
+    ObjectAction.prototype.duplicateKey = function() {
+        return new ActionDuplicateKey(this.configName,
+                                      this.obj);
     };
 
-    AddAction.prototype = new Action();
+
+    ObjectAction.prototype.trumpKey = function() {
+        return new ObjectActionTrumpKey(this.configName);
+    };
+    
+    var ContainerAction = function(session, configName, obj,
+                                   container, propertyName) {
+        ObjectAction.call(this, session, configName, obj);
+        this.container = container;
+        this.propertyName = propertyName;
+    };
+
+    ContainerAction.prototype = new ObjectAction();
+    ContainerAction.prototype.constructor = ContainerAction;
+
+    ContainerAction.prototype.getIface = function() {
+        return this.container.iface;
+    };
+    
+    ContainerAction.prototype.duplicateKey = function() {
+        return new ActionDuplicateKey(this.configName,
+                                      this.obj,
+                                      this.container,
+                                      this.propertyName);
+    };
+
+    ContainerAction.prototype.trumpKey = function() {
+        return new ContainerActionTrumpKey(this.configName,
+                                           this.container,
+                                           this.propertyName);
+    };
+
+    // XXX this contains a bit of knowledge about trump key construction
+    // that we might not want it to know, but is needed to make sure
+    // we don't create a ContainerTrumpKey when we should make an ObjectTrumpKey
+    var createTrumpKey = function(configName, action) {
+        if (configName === 'update' ||
+            configName === 'refresh' ||
+            configName === 'delete') {
+            return new ObjectTrumpKey(configName);
+        }
+        return new containerTrumpKey(configName,
+                                     action.container,
+                                     action.propertyName);
+    };
+    
+    var UpdateAction = function(session, obj) {
+        ObjectAction.call(this, session, 'update', obj);
+    };
+     
+    UpdateAction.prototype = new ObjectAction();
+    UpdateAction.prototype.constructor = UpdateAction;
+
+    UpdateAction.prototype.trumpedBy = function() {
+        return ['add', 'remove', 'delete'];
+    };
+
+    var RefreshAction = function(session, obj) {
+        ObjectAction.call(this, session, 'refresh', obj);
+    };
+    
+    RefreshAction.prototype = new ObjectAction();
+    RefreshAction.prototype.constructor = RefreshAction;
+
+    RefreshAction.prototype.trumpedBy = function() {
+        return ['delete', 'remove'];
+    };
+
+    var DeleteAction = function(session, obj) {
+        ObjectAction.call(this, session, 'delete', obj);
+    };
+
+    DeleteAction.prototype = new ObjectAction();
+    DeleteAction.prototype.constructor = DeleteAction();
+
+    DeleteAction.prototype.trumpedBy = function() {
+        return ['add', 'remove'];
+    };
+    
+    var AddAction = function(session, obj, container, propertyName) {
+        ContainerAction.call(this, session, 'add', obj,
+                             container, propertyName);
+    };
+
+    AddAction.prototype = new ContainerAction();
     AddAction.prototype.constructor = AddAction;
+
+    AddAction.prototype.trumpedBy = function() {
+        return ['delete', 'remove'];
+    };
     
-    AddAction.prototype.getIface = function() {
-        return this.container.iface;
+    var RemoveAction = function(session, obj, container, propertyName) {
+        ContainerAction.call(this, session, 'remove', obj,
+                             container, propertyName);
     };
 
-    var RemoveAction = function(session, container, propertyName, obj) {
-        this.session = session;
-        this.configName = 'remove';
-        this.container = container;
-        this.propertyName = propertyName;
-        this.obj = obj;
-    };
-
-    RemoveAction.prototype = new Action();
+    RemoveAction.prototype = new ContainerAction();
     RemoveAction.prototype.constructor = RemoveAction;
-    
-    RemoveAction.prototype.getIface = function() {
-        return this.container.iface;
+
+    RemoveAction.prototype.trumpedBy = function() {
+        return ['add'];
     };
 
     RemoveAction.prototype.process = function() {
@@ -387,19 +521,6 @@ obviel.sync = {};
     };
     
     
-    var RefreshAction = function(session, obj) {
-        this.session = session;
-        this.configName = 'refresh';
-        this.obj = obj;
-    };
-
-    RefreshAction.prototype = new Action();
-    RefreshAction.prototype.constructor = RefreshAction;
-    
-    RefreshAction.prototype.getIface = function() {
-        return this.obj.iface;
-    };
-
     // XXX want a refresh action that does not POST previous contents but
     // id to refresh or nothing at all to server.
     
