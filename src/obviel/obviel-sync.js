@@ -96,32 +96,6 @@ obviel.sync = {};
         this.obj[this.arrayName].splice(value, 1);
         this.session.remove(this.obj, this.arrayName, value);
     };
- 
-    
-    var Session = function(connection) {
-        this.connection = connection;
-        this.actions = [];
-    };
-
-    Session.prototype.update = function(obj) {
-        this.actions.push(new UpdateAction(this, obj));
-    };
-
-    Session.prototype.add = function(container, propertyName, obj) {
-        this.actions.push(new AddAction(this, container, propertyName, obj));;
-    };
-
-    Session.prototype.refresh = function(obj) {
-        this.actions.push(new RefreshAction(this, obj));
-    };
-
-    Session.prototype.remove = function(container, propertyName, obj) {
-        this.actions.push(new RemoveAction(this,
-                                           container,
-                                           propertyName,
-                                           obj));
-
-    };
 
     var objHashCode = function(obj) {
         if (this.id !== undefined) {
@@ -133,7 +107,7 @@ obviel.sync = {};
     var objHashEquals = function(self, other) {
         return (self === other);
     };
-
+    
     
     var ActionsForObj = function() {
         this.actions = [];
@@ -157,25 +131,51 @@ obviel.sync = {};
         this.actions = result;
     };
     
-    Session.prototype.removeDuplicateActions = function() {
+    var Session = function(connection) {
+        this.connection = connection;
+        this.actions = [];
+    };
+    
+    Session.prototype.update = function(obj) {
+        this.actions.push(new UpdateAction(this, obj));
+    };
+    
+    Session.prototype.del = function(obj) {
+        this.actions.push(new DeleteAction(this, obj));
+    };
+        
+    Session.prototype.refresh = function(obj) {
+        this.actions.push(new RefreshAction(this, obj));
+    };
+        
+    Session.prototype.add = function(obj, container, propertyName) {
+        this.actions.push(new AddAction(this, obj, container, propertyName));
+    };
+    
+    Session.prototype.remove = function(obj, container, propertyName) {
+        this.actions.push(new RemoveAction(this, obj, container, propertyName));
+    };
+    
+        
+    var removeDuplicateActions = function(actions) {
         var i, action, key,
-            knownActions = Hashtable();
-        for (i = 0; i < this.actions.length; i++) {
-            action = this.actions[i];
+            knownActions = new Hashtable();
+        for (i = 0; i < actions.length; i++) {
+            action = actions[i];
             key = action.duplicateKey();
             if (knownActions.get(key) !== undefined) {
                 continue;
             }
             knownActions.put(key, action);
         }
-        this.actions = knownActions.values();
+        return knownActions.values();
     };
     
-    Session.prototype.groupActionsForObj = function() {
+    var groupActionsByObj = function(actions) {
         var i, action, group, objects,
-            groups = new Hashtable();
-        for (i = 0; i < this.actions.length; i++) {
-            action = this.actions[i];
+            groups = new Hashtable(objHashCode, objHashEquals);
+        for (i = 0; i < actions.length; i++) {
+            action = actions[i];
             group = groups.get(action.obj);
             if (group === null) {
                 group = new ActionsForObj();
@@ -185,10 +185,41 @@ obviel.sync = {};
         }
         return groups;
     };
+
+    var removeTrumpedActions = function(actions) {
+        var result = [],
+            groups = groupActionsByObj(actions);
+        groups.each(function(key, group) {
+            var i, action;
+            group.removeTrumped();
+            for (i = 0; i < group.actions.length; i++) {
+                action = group.actions.length[i];
+                result.push(action);
+            }
+        });
+        return result;
+    };
     
-
+    var groupActionsByName = function(actions) {
+        var i, action, groupedActions,
+            name2actions = new Hashtable();
+        for (i = 0; i < actions.length; i++) {
+            groupedActions = name2actions.get(action.configName);
+            if (actions === null) {
+                groupedActions = [];
+                name2actions.put(action.configName, groupedActions);
+            }
+            groupedActions.push(action);
+        }
+        return name2actions;
+    };
+    
     Session.prototype.consolidate = function() {
-
+        var actions = [], groups;
+        actions = removeDuplicateActions(actions);
+        actions = removeTrumpedActions(actions);
+        
+        this.actions = actions;
     };
     
     Session.prototype.commit = function() {
@@ -204,22 +235,26 @@ obviel.sync = {};
         return $.when.apply(null, promises);
     };
 
-    Session.prototype.touched = function(configName) {
-        var i, action, result = [];
+    Session.prototype.actionsByName = function(configName) {
+        var result;
+
         this.consolidate();
+        this.name2actions = groupActionsByName(this.actions);
+
+        result = this.name2actions.get(configName);
+        if (result === null) {
+            return [];
+        }
+        return result;
+    };
+
+    Session.prototype.touched = function(configName) {
+        var i, action,
+            result = [],
+            actions = this.actionsByName(configName);
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            if (action.configName !== configName) {
-                continue;
-            }
-            if (action.configName === 'add' ||
-                action.configName === 'remove') {
-                result.push({obj: action.obj,
-                             container: action.container,
-                             propertyName: action.propertyName});
-            } else {
-                result.push(action.obj);
-            }
+            result.push(action.touchedInfo());
         }
         return result;
     };
@@ -316,7 +351,8 @@ obviel.sync = {};
             connectionConfig, this.obj);
     };
     
-    var ActionDuplicateKey = function(actionName, obj, container, propertyName) {
+    var ActionDuplicateKey = function(actionName, obj,
+                                      container, propertyName) {
         this.actionName = actionName;
         this.obj = obj;
         this.container = container;
@@ -399,6 +435,10 @@ obviel.sync = {};
     ObjectAction.prototype.trumpKey = function() {
         return new ObjectActionTrumpKey(this.configName);
     };
+
+    ObjectAction.prototype.touchedInfo = function() {
+        return this.obj;
+    };
     
     var ContainerAction = function(session, configName, obj,
                                    container, propertyName) {
@@ -427,6 +467,14 @@ obviel.sync = {};
                                            this.propertyName);
     };
 
+    ContainerAction.prototype.touchedInfo = function() {
+        return {
+            obj: this.obj,
+            container: this.container,
+            propertyName: this.propertyName
+        };
+    };
+    
     // XXX this contains a bit of knowledge about trump key construction
     // that we might not want it to know, but is needed to make sure
     // we don't create a ContainerTrumpKey when we should make an ObjectTrumpKey
