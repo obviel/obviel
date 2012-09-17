@@ -564,6 +564,7 @@ obviel.sync = {};
 
     RemoveAction.prototype.getRemoveIds = function() {
         var i, result = [];
+        return [this.obj.id];
         for (i = 0; i < this.obj.length; i++) {
             result.push(this.obj[i].id);
         }

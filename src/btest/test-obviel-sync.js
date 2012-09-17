@@ -290,60 +290,60 @@ var syncTestCase = buster.testCase("sync tests:", {
     // are a single consolidated action
     // we can still split them up into multiple actions in the connection
     // this is less involved
-    "remove multiple from container URL with id, single HTTP JSON post": function(done) {
-        obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                remove: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['removeUrl']; }
-                    }
-                }
-            }
-        });
+    // "remove multiple from container URL with id, single HTTP JSON post": function(done) {
+    //     obviel.sync.mapping({
+    //         iface: 'container',
+    //         target: {
+    //             remove: {
+    //                 http: {
+    //                     method: 'POST',
+    //                     url: function(m) { return m.container['removeUrl']; }
+    //                 }
+    //             }
+    //         }
+    //     });
 
-        var testUrl = 'blah';
+    //     var testUrl = 'blah';
 
-        var removeIds;
+    //     var removeIds;
         
-        this.server.respondWith('POST', testUrl, function(request) {
-            removeIds = $.parseJSON(request.requestBody);
-            request.respond(200, {'Content-Type': 'application/json'},
-                            JSON.stringify({}));
-        });
+    //     this.server.respondWith('POST', testUrl, function(request) {
+    //         removeIds = $.parseJSON(request.requestBody);
+    //         request.respond(200, {'Content-Type': 'application/json'},
+    //                         JSON.stringify({}));
+    //     });
 
-        var conn = new obviel.sync.HttpConnection();
-        var session = conn.session();
+    //     var conn = new obviel.sync.HttpConnection();
+    //     var session = conn.session();
 
-        var obj1 = {
-            iface: 'test',
-            id: 'testid1',
-            value: 1.0
-        };
-        var obj2 = {
-            iface: 'test',
-            id: 'testid2',
-            value: 2.0
-        };
+    //     var obj1 = {
+    //         iface: 'test',
+    //         id: 'testid1',
+    //         value: 1.0
+    //     };
+    //     var obj2 = {
+    //         iface: 'test',
+    //         id: 'testid2',
+    //         value: 2.0
+    //     };
         
-        var container = {
-            iface: 'container',
-            entries: [obj1, obj2],
-            removeUrl: testUrl
-        };
-        container.entries.splice(0, 2);
-        // XXX should the remove check whether there is something to remove?
-        // or is this really the job of the mutator API?
-        session.remove(obj1, container, 'entries');
-        session.remove(obj2, container, 'entries');
+    //     var container = {
+    //         iface: 'container',
+    //         entries: [obj1, obj2],
+    //         removeUrl: testUrl
+    //     };
+    //     container.entries.splice(0, 2);
+    //     // XXX should the remove check whether there is something to remove?
+    //     // or is this really the job of the mutator API?
+    //     session.remove(obj1, container, 'entries');
+    //     session.remove(obj2, container, 'entries');
         
-        session.commit().done(function() {
-            assert.equals(removeIds, ['testid1', 'testid2']);
-            done();
-        });
+    //     session.commit().done(function() {
+    //         assert.equals(removeIds, ['testid1', 'testid2']);
+    //         done();
+    //     });
 
-    },
+    // },
 
     // XXX remove with a list of URL parameters, a configuration option.
     // also let user configure the name of the parameters
