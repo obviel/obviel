@@ -75,6 +75,10 @@ obviel.sync = {};
     ObjectMutator.prototype.refresh = function() {
         this.session.refresh(this.obj);
     };
+
+    // ObjectMutator.prototype.del = function() {
+    //     this.session.del(this.obj);
+    // };
     
     var ArrayMutator = function(session, obj, arrayName) {
         this.session = session;
@@ -88,12 +92,13 @@ obviel.sync = {};
     };
 
     ArrayMutator.prototype.remove = function(value) {
-        var index = $.inArray(value);
+        var array = this.obj[this.arrayName],
+            index = $.inArray(value, array);
         if (index === -1) {
             throw new Error(
                 "Cannot remove item from array as it doesn't exist: " + value);
         }
-        this.obj[this.arrayName].splice(value, 1);
+        array.splice(value, 1);
         this.session.remove(value, this.obj, this.arrayName);
     };
 
@@ -141,9 +146,9 @@ obviel.sync = {};
         this.actions.push(new UpdateAction(this, obj));
     };
     
-    Session.prototype.del = function(obj) {
-        this.actions.push(new DeleteAction(this, obj));
-    };
+    // Session.prototype.del = function(obj) {
+    //     this.actions.push(new DeleteAction(this, obj));
+    // };
         
     Session.prototype.refresh = function(obj) {
         this.actions.push(new RefreshAction(this, obj));
@@ -271,7 +276,7 @@ obviel.sync = {};
     };
 
     Session.prototype.removed = function() {
-        return this.touched('removed');
+        return this.touched('remove');
     };
     
     Session.prototype.refreshed = function() {

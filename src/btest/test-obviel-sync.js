@@ -809,6 +809,55 @@ var syncTestCase = buster.testCase("sync tests:", {
 
     },
 
+    "add to array, then refresh": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var m = session.mutator(obj);
+
+        var addedObj = {name: 'alpha'};
+        
+        m.get('entries').push(addedObj);
+        session.mutator(addedObj).refresh();
+        
+        
+        assert.equals(session.added(),
+                      [{container: obj, propertyName: 'entries',
+                        obj: addedObj}]);
+        assert.equals(session.refreshed(),
+                      [{name: 'alpha'}]);
+    },
+
+    "add to array, then remove": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var m = session.mutator(obj);
+
+        var addedObj = {name: 'alpha'};
+        
+        m.get('entries').push(addedObj);
+        m.get('entries').remove(addedObj);
+        
+        assert.equals(obj.entries, []);
+        
+        // add & removal cancel each other, so no action needs to be taken
+        assert.equals(session.added(), []);
+        assert.equals(session.removed(), []);
+    },
+
     "update, then refresh": function() {
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
@@ -827,7 +876,33 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(session.updated(), [obj]);
         // the refresh will happen later
         assert.equals(session.refreshed(), [obj]);
+    },
+    "remove from array, then update": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+        
+        var addedObj = {name: 'alpha'};
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: [addedObj]
+        };
+        
+        var m = session.mutator(obj);
+        
+        m.get('entries').remove(addedObj);
+        session.mutator(addedObj).set(name, 'alphaChanged');
+        
+        assert.equals(session.removed(),
+                      [{container: obj, propertyName: 'entries',
+                        obj: addedObj}]);
+        assert.equals(session.updated(), []);
+        
+                      // [{name: 'alphaChanged'}]);
     }
+    
+    
     // update & remove
     // add & remove
     // refresh & remove
