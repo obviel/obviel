@@ -111,7 +111,7 @@ obviel.sync = {};
     
     var ActionsForObj = function() {
         this.actions = [];
-        this.actionSet = Hashset();
+        this.actionSet = new HashSet();
     };
 
     ActionsForObj.prototype.add = function(action) {
@@ -120,8 +120,9 @@ obviel.sync = {};
     };
 
     ActionsForObj.prototype.removeTrumped = function() {
-        var i, action, result;
-        for (i = 0; i < this.actions.length++; i++) {
+        var i, action,
+            result = [];
+        for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.isTrumped(this.actionSet)) {
                 continue;
@@ -163,7 +164,7 @@ obviel.sync = {};
         for (i = 0; i < actions.length; i++) {
             action = actions[i];
             key = action.duplicateKey();
-            if (knownActions.get(key) !== undefined) {
+            if (knownActions.get(key) !== null) {
                 continue;
             }
             knownActions.put(key, action);
@@ -193,7 +194,7 @@ obviel.sync = {};
             var i, action;
             group.removeTrumped();
             for (i = 0; i < group.actions.length; i++) {
-                action = group.actions.length[i];
+                action = group.actions[i];
                 result.push(action);
             }
         });
@@ -215,10 +216,9 @@ obviel.sync = {};
     };
     
     Session.prototype.consolidate = function() {
-        var actions = [], groups;
-        actions = removeDuplicateActions(actions);
+        var actions;
+        actions = removeDuplicateActions(this.actions);
         actions = removeTrumpedActions(actions);
-        
         this.actions = actions;
     };
     
@@ -381,15 +381,15 @@ obviel.sync = {};
     };
 
 
-    var ObjActionTrumpKey = function(actionName) {
+    var ObjectActionTrumpKey = function(actionName) {
         this.actionName = actionName;  
     };
 
-    ObjActionTrumpKey.prototype.hashCode = function() {
+    ObjectActionTrumpKey.prototype.hashCode = function() {
         return this.actionName;
     };
 
-    ObjActionTrumpKey.prototype.equals = function(other) {
+    ObjectActionTrumpKey.prototype.equals = function(other) {
         return (this.actionName === other.actionName);
     };
     
@@ -477,16 +477,16 @@ obviel.sync = {};
     
     // XXX this contains a bit of knowledge about trump key construction
     // that we might not want it to know, but is needed to make sure
-    // we don't create a ContainerTrumpKey when we should make an ObjectTrumpKey
+    // we don't create a ContainerActionTrumpKey when we should make an ObjectTrumpKey
     var createTrumpKey = function(configName, action) {
         if (configName === 'update' ||
             configName === 'refresh' ||
             configName === 'delete') {
-            return new ObjectTrumpKey(configName);
+            return new ObjectActionTrumpKey(configName);
         }
-        return new containerTrumpKey(configName,
-                                     action.container,
-                                     action.propertyName);
+        return new ContainerActionTrumpKey(configName,
+                                           action.container,
+                                           action.propertyName);
     };
     
     var UpdateAction = function(session, obj) {
