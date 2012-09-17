@@ -84,7 +84,7 @@ obviel.sync = {};
 
     ArrayMutator.prototype.push = function(value) {
         this.obj[this.arrayName].push(value);
-        this.session.add(this.obj, this.arrayName, value);
+        this.session.add(value, this.obj, this.arrayName);
     };
 
     ArrayMutator.prototype.remove = function(value) {
@@ -94,7 +94,7 @@ obviel.sync = {};
                 "Cannot remove item from array as it doesn't exist: " + value);
         }
         this.obj[this.arrayName].splice(value, 1);
-        this.session.remove(this.obj, this.arrayName, value);
+        this.session.remove(value, this.obj, this.arrayName);
     };
 
     var objHashCode = function(obj) {
@@ -109,22 +109,22 @@ obviel.sync = {};
     };
     
     
-    var ActionsForObj = function() {
+    var ActionsForObject = function() {
         this.actions = [];
-        this.actionSet = new HashSet();
+        this.trumpSet = new HashSet();
     };
 
-    ActionsForObj.prototype.add = function(action) {
+    ActionsForObject.prototype.add = function(action) {
         this.actions.push(action);
-        this.actionSet.add(action.trumpKey());
+        this.trumpSet.add(action.trumpKey());
     };
 
-    ActionsForObj.prototype.removeTrumped = function() {
+    ActionsForObject.prototype.removeTrumped = function() {
         var i, action,
             result = [];
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
-            if (action.isTrumped(this.actionSet)) {
+            if (action.isTrumped(this.trumpSet)) {
                 continue;
             }
             result.push(action);
@@ -179,7 +179,7 @@ obviel.sync = {};
             action = actions[i];
             group = groups.get(action.obj);
             if (group === null) {
-                group = new ActionsForObj();
+                group = new ActionsForObject();
                 groups.put(action.obj, group);
             }
             group.add(action);
@@ -255,8 +255,8 @@ obviel.sync = {};
         var i, action,
             result = [],
             actions = this.actionsByName(configName);
-        for (i = 0; i < this.actions.length; i++) {
-            action = this.actions[i];
+        for (i = 0; i < actions.length; i++) {
+            action = actions[i];
             result.push(action.touchedInfo());
         }
         return result;
@@ -316,16 +316,16 @@ obviel.sync = {};
         return [];
     };
 
-    Action.prototype.isTrumped = function(actionSet) {
-        var i,
+    Action.prototype.isTrumped = function(trumpSet) {
+        var i, key,
             trumpedBy = this.trumpedBy();
         for (i = 0; i < trumpedBy.length; i++) {
-            if (actionSet.contains(createTrumpKey(name, this))) {
+            key = trumpedBy[i];
+            if (trumpSet.contains(key)) {
                 return true;
             }
         }
         return false;
-            
     };
     
     Action.prototype.getTarget = function() {
@@ -482,20 +482,6 @@ obviel.sync = {};
         };
     };
     
-    // XXX this contains a bit of knowledge about trump key construction
-    // that we might not want it to know, but is needed to make sure
-    // we don't create a ContainerActionTrumpKey when we should make an ObjectTrumpKey
-    var createTrumpKey = function(configName, action) {
-        if (configName === 'update' ||
-            configName === 'refresh' ||
-            configName === 'delete') {
-            return new ObjectActionTrumpKey(configName);
-        }
-        return new ContainerActionTrumpKey(configName,
-                                           action.container,
-                                           action.propertyName);
-    };
-    
     var UpdateAction = function(session, obj) {
         ObjectAction.call(this, session, 'update', obj);
     };
@@ -504,7 +490,9 @@ obviel.sync = {};
     UpdateAction.prototype.constructor = UpdateAction;
 
     UpdateAction.prototype.trumpedBy = function() {
-        return ['add', 'remove', 'delete'];
+        return [new ObjectActionTrumpKey('add'),
+                new ObjectActionTrumpKey('remove'),
+                new ObjectActionTrumpKey('delete')];
     };
 
     var RefreshAction = function(session, obj) {
@@ -515,7 +503,8 @@ obviel.sync = {};
     RefreshAction.prototype.constructor = RefreshAction;
 
     RefreshAction.prototype.trumpedBy = function() {
-        return ['delete', 'remove'];
+        return [new ObjectActionTrumpKey('delete'),
+                new ObjectActionTrumpKey('remove')];
     };
 
     var DeleteAction = function(session, obj) {
@@ -526,7 +515,8 @@ obviel.sync = {};
     DeleteAction.prototype.constructor = DeleteAction();
 
     DeleteAction.prototype.trumpedBy = function() {
-        return ['add', 'remove'];
+        return [new ObjectActionTrumpKey('add'),
+                new ObjectActionTrumpKey('remove')];
     };
     
     var AddAction = function(session, obj, container, propertyName) {
@@ -538,7 +528,10 @@ obviel.sync = {};
     AddAction.prototype.constructor = AddAction;
 
     AddAction.prototype.trumpedBy = function() {
-        return ['delete', 'remove'];
+        return [new ObjectActionTrumpKey('delete'),
+                new ContainerActionTrumpKey('remove',
+                                            this.container, this.propertyName)
+               ];
     };
     
     var RemoveAction = function(session, obj, container, propertyName) {
@@ -550,7 +543,9 @@ obviel.sync = {};
     RemoveAction.prototype.constructor = RemoveAction;
 
     RemoveAction.prototype.trumpedBy = function() {
-        return ['add'];
+        return [new ContainerActionTrumpKey('add',
+                                            this.container, this.propertyName)
+               ];
     };
 
     RemoveAction.prototype.process = function() {
