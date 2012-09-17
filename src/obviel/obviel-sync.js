@@ -220,6 +220,8 @@ obviel.sync = {};
         var actions;
         actions = removeDuplicateActions(this.actions);
         actions = removeTrumpedActions(actions);
+        actions.sort(
+            function(self, other) { return self.sequence - other.sequence; });
         this.actions = actions;
     };
     
@@ -293,9 +295,13 @@ obviel.sync = {};
         return new ObjectMutator(this, obj);
     };
 
+    var actionSequence = 0;
+    
     var Action = function(session, configName) {
         this.session = session;
         this.configName = configName;
+        this.sequence = actionSequence;
+        actionSequence++;
     };
     
     Action.prototype.getIface = function() {
