@@ -228,7 +228,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             addUrl: testUrl
         };
         container.entries.push(obj);
-        session.add(container, 'entries', obj);
+        session.add(obj, container, 'entries');
         session.commit().done(function() {
             assert.equals(addData, {iface: 'test', id: 'testid',
                                     value: 1.0});
@@ -272,7 +272,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             removeUrl: testUrl
         };
         container.entries.splice(0, 1);
-        session.remove(container, 'entries', obj);
+        session.remove(obj, container, 'entries');
         session.commit().done(function() {
             assert.equals(removeIds, ['testid']);
             done();
@@ -335,8 +335,8 @@ var syncTestCase = buster.testCase("sync tests:", {
         container.entries.splice(0, 2);
         // XXX should the remove check whether there is something to remove?
         // or is this really the job of the mutator API?
-        session.remove(container, 'entries', obj1);
-        session.remove(container, 'entries', obj2);
+        session.remove(obj1, container, 'entries');
+        session.remove(obj2, container, 'entries');
         
         session.commit().done(function() {
             assert.equals(removeIds, ['testid1', 'testid2']);
@@ -384,7 +384,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     //     };
     //     container.entries.splice(0, 1);
     //     assert.exception(function() {
-    //         session.remove(container, 'entries', obj); 
+    //         session.remove(obj, container, 'entries'); 
     //     }, 'IdError');
     // },
 
@@ -539,7 +539,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         var session = conn.session();
 
         container.entries.push(obj);
-        session.add(container, 'entries', obj);
+        session.add(obj, container, 'entries');
         session.commit().done(function() {
             assert.equals(serverData,
                           [{iface: 'test', id: 'testid', value: 2.0}]);

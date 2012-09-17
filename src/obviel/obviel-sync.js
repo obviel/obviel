@@ -205,8 +205,9 @@ obviel.sync = {};
         var i, action, groupedActions,
             name2actions = new Hashtable();
         for (i = 0; i < actions.length; i++) {
+            action = actions[i];
             groupedActions = name2actions.get(action.configName);
-            if (actions === null) {
+            if (groupedActions === null) {
                 groupedActions = [];
                 name2actions.put(action.configName, groupedActions);
             }
