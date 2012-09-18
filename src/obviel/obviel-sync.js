@@ -75,10 +75,6 @@ obviel.sync = {};
     ObjectMutator.prototype.refresh = function() {
         this.session.refresh(this.obj);
     };
-
-    // ObjectMutator.prototype.del = function() {
-    //     this.session.del(this.obj);
-    // };
     
     var ArrayMutator = function(session, obj, arrayName) {
         this.session = session;
@@ -126,140 +122,120 @@ obviel.sync = {};
 
     ActionsForObject.prototype.removeTrumped = function() {
         var i, action,
-            result = [];
+            newActions = [],
+            removedActions = new HashSet();
         for (i = 0; i < this.actions.length; i++) {
             action = this.actions[i];
             if (action.isTrumped(this.trumpSet)) {
+                removedActions.add(action);
                 continue;
             }
-            result.push(action);
+            newActions.push(action);
         }
-        this.actions = result;
+        this.actions = newActions;
+        return removedActions;
     };
     
     var Session = function(connection) {
         this.connection = connection;
-        this.actions = [];
+        this.actions = new HashSet();
+        this.actionsByName = {};
+        this.knownActions = new HashSet();
+        this.actionsByObject = new Hashtable(objHashCode, objHashEquals);
+    };
+
+    Session.prototype.addAction = function(action) {
+        var removedActions;
+        if (this.isDuplicateAction(action)) {
+            return;
+        }
+        this.actions.add(action);
+        this.addActionByName(action);
+        this.knownActions.add(action.duplicateKey());
+        removedActions = this.addActionByObject(action);
+        substractSet(this.actions, removedActions);
+        for (name in this.actionsByName) {
+            substractSet(this.actionsByName[name], removedActions);
+        }
+        // XXX should we substract from knownActions too?
+    };
+
+    var substractSet = function(self, other) {
+        var i, value,
+            values = other.values();
+        for (i = 0; i < values.length; i++) {
+            value = values[i];
+            self.remove(value);
+        }
+    };
+    
+    Session.prototype.isDuplicateAction = function(action) {
+        return this.knownActions.contains(action.duplicateKey());
+    };
+
+    Session.prototype.addActionByName = function(action) {
+        var actions = this.actionsByName[action.configName];
+        if (actions === undefined) {
+            actions = new HashSet();
+            this.actionsByName[action.configName] = actions;
+        }
+        actions.add(action);
+    };
+
+    Session.prototype.addActionByObject = function(action) {
+        var group = this.actionsByObject.get(action.obj);
+        if (group === null) {
+            group = new ActionsForObject();
+            this.actionsByObject.put(action.obj, group);
+        }
+        group.add(action);
+        return group.removeTrumped();
     };
     
     Session.prototype.update = function(obj) {
-        this.actions.push(new UpdateAction(this, obj));
+        this.addAction(new UpdateAction(this, obj));
     };
-    
-    // Session.prototype.del = function(obj) {
-    //     this.actions.push(new DeleteAction(this, obj));
-    // };
         
     Session.prototype.refresh = function(obj) {
-        this.actions.push(new RefreshAction(this, obj));
+        this.addAction(new RefreshAction(this, obj));
     };
         
     Session.prototype.add = function(obj, container, propertyName) {
-        this.actions.push(new AddAction(this, obj, container, propertyName));
+        this.addAction(new AddAction(this, obj, container, propertyName));
     };
     
     Session.prototype.remove = function(obj, container, propertyName) {
-        this.actions.push(new RemoveAction(this, obj, container, propertyName));
+        this.addAction(new RemoveAction(this, obj, container, propertyName));
     };
     
-        
-    var removeDuplicateActions = function(actions) {
-        var i, action, key,
-            knownActions = new Hashtable();
-        for (i = 0; i < actions.length; i++) {
-            action = actions[i];
-            key = action.duplicateKey();
-            if (knownActions.get(key) !== null) {
-                continue;
-            }
-            knownActions.put(key, action);
-        }
-        return knownActions.values();
-    };
-    
-    var groupActionsByObj = function(actions) {
-        var i, action, group, objects,
-            groups = new Hashtable(objHashCode, objHashEquals);
-        for (i = 0; i < actions.length; i++) {
-            action = actions[i];
-            group = groups.get(action.obj);
-            if (group === null) {
-                group = new ActionsForObject();
-                groups.put(action.obj, group);
-            }
-            group.add(action);
-        }
-        return groups;
-    };
-
-    var removeTrumpedActions = function(actions) {
-        var result = [],
-            groups = groupActionsByObj(actions);
-        groups.each(function(key, group) {
-            var i, action;
-            group.removeTrumped();
-            for (i = 0; i < group.actions.length; i++) {
-                action = group.actions[i];
-                result.push(action);
-            }
-        });
+    var sortActions = function(actions) {
+        var result = actions.values();
+        result.sort(function(self, other)
+                    { return self.sequence - other.sequence; });
         return result;
     };
     
-    var groupActionsByName = function(actions) {
-        var i, action, groupedActions,
-            name2actions = new Hashtable();
-        for (i = 0; i < actions.length; i++) {
-            action = actions[i];
-            groupedActions = name2actions.get(action.configName);
-            if (groupedActions === null) {
-                groupedActions = [];
-                name2actions.put(action.configName, groupedActions);
-            }
-            groupedActions.push(action);
-        }
-        return name2actions;
-    };
-    
-    Session.prototype.consolidate = function() {
-        var actions;
-        actions = removeDuplicateActions(this.actions);
-        actions = removeTrumpedActions(actions);
-        actions.sort(
-            function(self, other) { return self.sequence - other.sequence; });
-        this.actions = actions;
+    Session.prototype.sortedActions = function() {
+        return sortActions(this.actions);
     };
     
     Session.prototype.commit = function() {
         var i,
+            actions = this.sortedActions(),
             conn = this.connection,
             promises = [],
             iface;
-        this.consolidate();
-        for (i = 0; i < this.actions.length; i++) {
-            promises.push(this.actions[i].process());
+        // this.consolidate();
+        for (i = 0; i < actions.length; i++) {
+            promises.push(actions[i].process());
         }
-        
         return $.when.apply(null, promises);
-    };
-
-    Session.prototype.actionsByName = function(configName) {
-        var result;
-
-        this.consolidate();
-        this.name2actions = groupActionsByName(this.actions);
-
-        result = this.name2actions.get(configName);
-        if (result === null) {
-            return [];
-        }
-        return result;
     };
 
     Session.prototype.touched = function(configName) {
         var i, action,
             result = [],
-            actions = this.actionsByName(configName);
+            actions = sortActions(this.actionsByName[configName]);
         for (i = 0; i < actions.length; i++) {
             action = actions[i];
             result.push(action.touchedInfo());
@@ -307,6 +283,14 @@ obviel.sync = {};
         this.configName = configName;
         this.sequence = actionSequence;
         actionSequence++;
+    };
+
+    Action.prototype.hashCode = function() {
+        return "Action" + this.sequence;
+    };
+
+    Action.prototype.equals = function(other) {
+        return this.sequence === other.sequence;
     };
     
     Action.prototype.getIface = function() {
@@ -496,8 +480,7 @@ obviel.sync = {};
 
     UpdateAction.prototype.trumpedBy = function() {
         return [new ObjectActionTrumpKey('add'),
-                new ObjectActionTrumpKey('remove'),
-                new ObjectActionTrumpKey('delete')];
+                new ObjectActionTrumpKey('remove')];
     };
 
     var RefreshAction = function(session, obj) {
@@ -508,20 +491,7 @@ obviel.sync = {};
     RefreshAction.prototype.constructor = RefreshAction;
 
     RefreshAction.prototype.trumpedBy = function() {
-        return [new ObjectActionTrumpKey('delete'),
-                new ObjectActionTrumpKey('remove')];
-    };
-
-    var DeleteAction = function(session, obj) {
-        ObjectAction.call(this, session, 'delete', obj);
-    };
-
-    DeleteAction.prototype = new ObjectAction();
-    DeleteAction.prototype.constructor = DeleteAction();
-
-    DeleteAction.prototype.trumpedBy = function() {
-        return [new ObjectActionTrumpKey('add'),
-                new ObjectActionTrumpKey('remove')];
+        return [new ObjectActionTrumpKey('remove')];
     };
     
     var AddAction = function(session, obj, container, propertyName) {
@@ -533,8 +503,7 @@ obviel.sync = {};
     AddAction.prototype.constructor = AddAction;
 
     AddAction.prototype.trumpedBy = function() {
-        return [new ObjectActionTrumpKey('delete'),
-                new ContainerActionTrumpKey('remove',
+        return [new ContainerActionTrumpKey('remove',
                                             this.container, this.propertyName)
                ];
     };
@@ -619,11 +588,6 @@ obviel.sync = {};
         }
     };
     
-    
-    
-    // Session.prototype.remove = function(container, propertyName, obj) {
-
-    // };
     
     module.Connection = function() {
         return this;
@@ -792,15 +756,6 @@ obviel.sync = {};
             }    
         };
     };
-    
-    // var rules = {};
-
-    // var handlers = {};
-
-    // module.clear = function () {
-    //     rules = {};
-    //     handlers = {};
-    // };
     
     var objectUpdater = function (target, source) {
         var seen = {};

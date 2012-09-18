@@ -898,13 +898,9 @@ var syncTestCase = buster.testCase("sync tests:", {
                       [{container: obj, propertyName: 'entries',
                         obj: addedObj}]);
         assert.equals(session.updated(), []);
-        
-                      // [{name: 'alphaChanged'}]);
     }
     
     
-    // update & remove
-    // add & remove
     // refresh & remove
     // remove & remove again
     
