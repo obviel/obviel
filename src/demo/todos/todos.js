@@ -1,22 +1,56 @@
 (function($, obviel) {
     // enter key
     var KEYCODE = 13;
+
+    var conn = new obviel.sync.LocalStorageConnection('todos');
     
     var _ = obviel.i18n.translate('todos');
+
+    // transform to use obviel-sync
+    // *set up connection globally, or at least in a globally gettable way
+    // * mutator on connection to create session implicitly? and then
+    // a commit on mutator as well
+    // * all cases of an update trigger should now be a commit
+    // * the backend should also send update events and such so that
+    //   the UI can respond. in case of localstorage, these should be
+    //   sent immediately, in case of a remote storage they could also
+    //   be sent immediately, or be sent as soon as we get message from
+    //   the source. event configuration could be done in config
+    // * investigate ways to get the code more compact    
+    // auto-commit on event handling? how to get the active session?
     
     // the application model
     var todos = {
         iface: 'todos',
         items: []
     };
+
+    // XXX these are pretty empty; can we get rid of them entirely?
+    obviel.sync.mapping({
+        iface: 'todos',
+        source: {
+
+        },
+        target: {
+
+        }
+    });
+    
+    obviel.sync.mapping({
+        iface: 'todo',
+        source: {
+
+        },
+        target: {
+
+        }
+    });
+
     // a clear function removing a todo from the application
     var clear = function(todo) {
-        for (var i = 0; i < todos.items.length; i++) {
-            if (todos.items[i] === todo) {
-                todos.items.splice(i, 1);
-                break;
-            }
-        }
+        var m = conn.mutator(todos);
+        m.get('items').remove(todo);
+        m.commit();
     };
     
     // create a special stats model from the todos
@@ -66,15 +100,19 @@
             if (value === '') {
                 return;
             }
-            this.obj.items.push({iface: 'todo', done: false, title: value});
-            $(this.obj).trigger('update');
+            var m = conn.mutator(this.obj);
+            var newObj = {iface: 'todo', done: false, title: value};
+            m.get('items').push(newObj);
+            m.commit();            
         },
         toggleAll: function() {
             var done = $('#toggle-all').get(0).checked;
-            $.each(this.obj.items, function(index, item) {
-                item.done = done;
-            });
-            $(this.obj).trigger('update');
+            var m = conn.mutator(this.obj).get('items');
+            var i;
+            for (i = 0; i < this.obj.items.length; i++) {
+                m.get(i).set('done', done);
+            }
+            m.commit();
         }
     });
 
@@ -89,8 +127,9 @@
                     newItems.push(item);
                 }
             });
-            todos.items = newItems;
-            $(todos).trigger('update');
+            var m = conn.mutator(todos);
+            m.set('items', newItems);
+            m.commit();
         }
     });
 
@@ -114,17 +153,19 @@
             }
         },
         edit: function() {
-            this.obj.iface = 'todo-editing';
-            $(this.obj).trigger('update');
+            var m = conn.mutator(this.obj);
+            m.set('iface', 'todo-editing');
+            m.commit();
         },
         toggle: function() {
-            this.obj.done = !this.obj.done;
-            $(this.obj).trigger('update');
+            var m = conn.mutator(this.obj);
+            m.set('done', !this.obj.done);
+            m.commit();
+            // XXX how do we handle updateStats case?
             $(todos).trigger('updateStats');
         },
         clear: function() {
             clear(this.obj);
-            $(todos).trigger('update');
         }
     });
 
@@ -147,12 +188,12 @@
             var value = $('input.edit', this.el).val();
             if (!value) {
                 clear(this.obj);
-                $(todos).trigger('update');
                 return;
             }
-            this.obj.title = value;  
-            this.obj.iface = 'todo';
-            $(this.obj).trigger('update');
+            var m = conn.mutator(this.obj);
+            m.set('title', value);
+            m.set('iface', todo);
+            m.commit();
         } 
     });
     
