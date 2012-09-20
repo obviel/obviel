@@ -898,8 +898,119 @@ var syncTestCase = buster.testCase("sync tests:", {
                       [{container: obj, propertyName: 'entries',
                         obj: addedObj}]);
         assert.equals(session.updated(), []);
+    },
+    "commit directly from object mutator": function(done) {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.obj['updateUrl']; }
+                    }
+                }
+            }
+        });
+        var updateData = null;
+
+        var testUrl = 'blah';
+        
+        this.server.respondWith('POST', testUrl, function(request) {
+            updateData = $.parseJSON(request.requestBody);
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+
+        
+        var obj = {
+            iface: 'test',
+            updateUrl: testUrl
+        };
+        
+        var m = session.mutator(obj);
+        m.set('foo', 'bar');
+        m.commit().done(function() {
+            assert.equals(updateData, {iface: 'test',
+                                       updateUrl: testUrl,
+                                       foo: 'bar'});
+            done();
+        });
+    },
+    "commit directly from array mutator": function(done) {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                add: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['addUrl']; }
+                    }
+                }
+            }
+        });
+
+        var testUrl = 'blah';
+        
+        var addData = null;
+        
+        this.server.respondWith('POST', testUrl, function(request) {
+            addData = $.parseJSON(request.requestBody);
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+        var container = {
+            iface: 'container',
+            entries: [],
+            addUrl: testUrl
+        };
+        var m = session.mutator(container);
+        m.get('entries').push(obj);
+        m.get('entries').commit().done(function() {
+            assert.equals(addData, {iface: 'test', id: 'testid',
+                                    value: 1.0});
+            done();
+        });
+    },
+    "get on array mutator to get mutator for index": function() {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+        
+        var indexObj = {name: 'alpha'};
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: [indexObj]
+        };
+        
+        var m = session.mutator(obj);
+
+        assert.equals(m.get('entries').get(0).get('name'), 'alpha');
+    },
+    "get mutator directly from connection": function() {
+        var conn = new obviel.sync.HttpConnection();
+
+        var obj = {
+            iface: 'test',
+            value: 'a'
+        };
+        var m = conn.mutator(obj);
+        m.set('value', 'b');
+        
+        assert.equals(obj.value, 'b');
     }
-    
     
     // refresh & remove
     // remove & remove again

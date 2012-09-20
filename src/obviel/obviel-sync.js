@@ -75,6 +75,10 @@ obviel.sync = {};
     ObjectMutator.prototype.refresh = function() {
         this.session.refresh(this.obj);
     };
+
+    ObjectMutator.prototype.commit = function() {
+        return this.session.commit();
+    };
     
     var ArrayMutator = function(session, obj, arrayName) {
         this.session = session;
@@ -82,6 +86,11 @@ obviel.sync = {};
         this.arrayName = arrayName;
     };
 
+    ArrayMutator.prototype.get = function(index) {
+        return new ObjectMutator(this.session,
+                                 this.obj[this.arrayName][index]);
+    };
+    
     ArrayMutator.prototype.push = function(value) {
         this.obj[this.arrayName].push(value);
         this.session.add(value, this.obj, this.arrayName);
@@ -96,6 +105,10 @@ obviel.sync = {};
         }
         array.splice(value, 1);
         this.session.remove(value, this.obj, this.arrayName);
+    };
+    
+    ArrayMutator.prototype.commit = function() {
+        return this.session.commit();
     };
 
     var objHashCode = function(obj) {
@@ -634,6 +647,10 @@ obviel.sync = {};
         return new Session(this);
     };
 
+    module.Connection.prototype.mutator = function(obj) {
+        return new Session(this).mutator(obj);
+    };
+    
     module.HttpConnection = function() {
     };
     
@@ -708,6 +725,33 @@ obviel.sync = {};
         this.io.emit(config.type, obj);
     };
 
+    module.LocalStorageConnection = function(key) {
+        this.key = key;
+    };
+
+    module.LocalStorageConnection.prototype = new module.Connection();
+
+    module.LocalStorageConnection.prototype.getConfig = function(config, action) {
+        return {};
+    };
+
+    module.LocalStorageConnection.prototype.process = function(session) {
+        var storage = localStorage[this.key];
+        
+        
+    };
+
+    module.LocalStorageConnection.prototype.processAdd = function(obj, container, propertyName) {
+        var localContainer = this.findContainer(container);
+        localContainer[propertyName].push(obj);
+        this.save(localContainer);
+    };
+
+    // module.LocalStorageConnection.prototype.findContainer = function(container) {
+    //     return localStorage[
+    // };
+    
+    
     // a global registry of objects by id
     var id2objects = {};
     
