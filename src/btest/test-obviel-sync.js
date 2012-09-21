@@ -1010,6 +1010,38 @@ var syncTestCase = buster.testCase("sync tests:", {
         m.set('value', 'b');
         
         assert.equals(obj.value, 'b');
+    },
+    "localstorage init": function(done) {
+        var obj = {
+            iface: 'test',
+            value: 'a'
+        };
+
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                update: {
+                    finder: function(orig) {
+                        return obj;
+                    }
+                }
+            }
+        });
+
+        var conn = new obviel.sync.LocalStorageConnection('test');
+        conn.init(obj);
+
+        var m = conn.mutator(obj);
+        m.set('value', 'b');
+        m.commit().done(function() {
+            var conn2 = new obviel.sync.LocalStorageConnection('test');
+            obj.value = 'c';
+            conn2.init(obj).done(function() {
+                assert.equals(obj.value, 'b');
+                done();
+            });
+        });
+        
     }
     
     // refresh & remove

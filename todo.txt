@@ -1,0 +1,171 @@
+After todos review:
+
+* get mutator directly from connection (done)
+
+* commit directly on mutator will commit underlying session (done)
+
+* get(index) on array to get underlying mutator (done)
+
+* finish local storage connection
+
+* events need to be triggered by backend upon commit. how to enable
+  this? configugre it? in some cases you don't want events, but only events 
+  from source. in other cases you want only events triggered when message is
+  sent to target.
+
+* how to make sure stats are updated correctly in todos app?
+
+* how to make sure iface is removed when syncing to localstorage? transformer?
+
+* how to do application startup and read current state from backend?
+
+* auto-commit in event handler on end of event handling. How to configure?
+  Default on in views? But how to get the 'current session' to commit?
+
+* a notion of "current session" would be okay in JS due to
+  non-threaded nature of JS? Though what happens if we have two
+  sessions created explicitly in that case? I guess we can have a
+  'last created session' and auto-commit that, or even a list of
+  currently opened sessions which we commit if the session isn't
+  committed yet.
+
+* we could get a mutator from 'this', the view for this.obj?
+
+* currentSession infrastructure & autocommit testing, separate test module 
+  which includes obviel. is order obviel core, then obviel sync okay for
+  this registration? how to disable event hook?
+
+* instead of 'this.mutator()' on views we could offer an extra shortcut passes
+  a variable 'm' into an event handler.
+
+* we need a way to turn a model object into a JSON before sending it; i.e.
+  work with non-pure-json objects as models.
+
+* an 'init' action is like refresh, but is used to explicitly initialize
+  the application and sends an init event when done.
+   could be simplified as 'obviel.sync.init(todos)' - this makes a refresh 
+   happen on init and when it's done, you can start rendering the UI.
+   or perhaps there's even an automated bit that finds 'app' and renders
+   the root obj given to init?
+  
+   obviel.initialize(todos, '#app', 'nl_NL'); could load i18n info, set domain to nl_NL,
+   then refresh todos, then when done, render it on #app.
+
+* without an 'init' it is not possible to create a 'session'. this because we 
+  need to know that the root object is there and loaded.
+
+
+* if we add something, then do an update in a sub-object in it, that should
+  not be an update event to the server. But how would we know it's a sub-object
+  that was added? same with removing something and doing an update in a sub-object.
+  how do we know that update is useless?
+
+* split core out of obviel.js, and make obviel.js the front-end to pull
+  in obviel core, template, sync, etc in an integrated way. currently
+  obviel.js is both with optional integration.
+
+* add & remove needs to be consolidatable and have various options to
+  send the full object one by one, a list of objects, or a list of ids.
+  the default for add would be a list of objects, the default for remove
+  a list of ids.
+
+* could multiple updates be consolidated in a single action as well?
+
+* is delete supportable in the face of removing things from arrays? we 
+  don't know the parent.. the opposite would be 'create', but that makes
+  no sense either. We *could* support a 'add to object' and 'remove from obj'
+  operation however, i.e. obj.create('foo', {}) and obj.del('foo');
+
+* remove from an array; is it really the inverse of delete. Can you really 
+  not refresh a removed item? This depends on whether 'removal' means
+  removal from the tree entirely, or removal from an array.
+
+* what is the relationship between operations on objects synced with target,
+  versus operations synced from source? we can define the same
+  operations, do we want to have overlap in source?
+
+* create localstorage backend. can this be done without ids?
+
+* transform on the way in, transform on the way out. transformer can be
+  shared between update and add, though may be per backend.
+
+* removal by index versus by object?
+
+* how do we do source events with socket? I.e. a particular event
+  is interpreted as an 'update'. We can inspect the iface of the incoming
+  object to determine what's going on for an update, but what for 
+  add or removing? we need a mapping from event name to event.
+
+  this implies a 'socket' data structure for source, where we have simply
+  the way to name the type of incoming event. as a result, those events will
+  be processed that way. This is different from how http responses are
+  processed, where we specify in the target what we want to do with the
+  response handler (which in turn will typically use the source configuration).
+
+* version protocol support.
+
+* using the session again after a commit; wipe the slate clean?
+
+* rollback for session so we can actually rollback the local situation? this
+  would need actions to retain previous information, in particular for
+  update.
+
+* the connection can pull information from the session when processing it.
+  this way it can consolidate actions? though in part consolidation is
+  part of the non-connection settings, isn't it? though bulk-submits of
+  multiple additions or removals does not make much sense with websockets or
+  localstorage, so perhaps it's connection specific.
+
+* refresh can be done by id and by url. how to configure?
+
+* the connection needs to distinguish between actions. 
+
+* local storage operations:
+
+  update: find existing object, then update it, save object
+
+  add: find existing container, then add new object to it, save container
+
+  remove: find existing container, remove object from it, save container.
+
+  refresh: find stored object, update local object from stored object
+  can this be used for initial load?
+
+  how does local storage deal with cross-object pointers? i.e. if I have
+  an object with a property or array entry that is stored separately too?
+
+consolidate only add & remove actions by container (though it'd be nice to
+have a generic container action handler for this...)
+
+loop through all objects, add those with a container to container table.
+perhaps we should have a special ContainerActionGroup?
+
+anyway, then we group by container, then we recompose new container
+actions of the same type...
+
+again:
+
+we group by action name
+
+then we loop through all actions of an action group, and create a
+container group which consists of the first action along with the list
+of objects for that container.
+
+we then loop through all actions, and turn it into a single
+action. this can be done by taking the first action and changing obj to a
+list of objs.
+
+We always do this consolidation. But during commit of such an action,
+the backend can decide to split it up into multiple interactions. This
+is part of backend configuration.
+
+we could potentially also consolidate communication about updates into
+a single backend interaction, or even mixed situations such as add then
+update. If the backend can get information from the session
+instead of the session sending information to the backend, this might
+be easier to arrange.
+
+
+
+
+

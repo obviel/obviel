@@ -12,6 +12,8 @@ obviel.sync = {};
 (function($, module) {
     // when a UI event is handled, we automatically commit the current
     // session
+    // XXX reverse this and make obviel core do this integration if
+    // obviel.sync is available? similar to way it interacts with obviel.template
     if (obviel.eventHook !== undefined) {
         obviel.eventHook(function() {
             var session = module.currentSession();
@@ -613,9 +615,16 @@ obviel.sync = {};
     
     
     module.Connection = function() {
-        return this;
+        this.root = null;
     };
 
+    module.Connection.prototype.init = function(root) {
+        this.root = root;
+        var session = this.session();
+        session.refresh(root);
+        return session.commit();
+    };
+    
     module.Connection.prototype.getTarget = function(iface) {
         var target = mappings[iface].target;
         if (target === undefined) {
@@ -654,7 +663,13 @@ obviel.sync = {};
     };
     
     module.Connection.prototype.session = function() {
-        var session = new Session(this);
+        var session;
+        // XXX temporarily disabled until we can adjust tests
+        // if (this.root === null) {
+        //     throw new module.ConnectionError(
+        //         "Cannot make session without doing init first");
+        // }
+        session = new Session(this);
         currentSession = session;
         return session;
     };
@@ -860,21 +875,35 @@ obviel.sync = {};
         return {};
     };
 
-    module.LocalStorageConnection.prototype.process = function(session) {
-        var storage = localStorage[this.key];
+    module.LocalStorageConnection.prototype.commitSession = function(session) {
+        var i,
+            defer = $.Deferred(),
+            actions = session.sortedActions(),
+            data;
+        defer.resolve();
+        if (actions.length === 0) {
+            return defer.promise();
+        }
         
-        
+        for (i = 0; i < actions.length; i++) {
+            // XXX this isn't correct, as we are not refreshing non-root
+            // but always root. but with local storage it won't matter
+            // unless it were to wipe out our changes too early, which
+            // it probably does, so need test
+            if (actions[i].configName === 'refresh') {
+                data = localStorage[this.key];
+                if (data !== undefined) {
+                    module.multiUpdater(this, $.parseJSON(data));
+                }
+                return defer.promise();
+            }
+        }
+        // XXX now we can't do target refresh and update at the same time..
+        data = JSON.stringify(this.root);
+        localStorage[this.key] = data;
+        return defer.promise();
     };
-
-    module.LocalStorageConnection.prototype.processAdd = function(obj, container, propertyName) {
-        var localContainer = this.findContainer(container);
-        localContainer[propertyName].push(obj);
-        this.save(localContainer);
-    };
-
-    // module.LocalStorageConnection.prototype.findContainer = function(container) {
-    //     return localStorage[
-    // };
+    
     
     
     // a global registry of objects by id
