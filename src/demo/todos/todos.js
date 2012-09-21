@@ -24,7 +24,7 @@
         iface: 'todos',
         items: []
     };
-
+    
     // XXX these are pretty empty; can we get rid of them entirely?
     obviel.sync.mapping({
         iface: 'todos',
@@ -45,6 +45,7 @@
 
         }
     });
+
 
     // a clear function removing a todo from the application
     var clear = function(todo) {
@@ -191,12 +192,17 @@
     });
     
 
+    // XXX initialization can be summarized in one call like this
+    // obviel.init(todos, '#app', connection, 'nl_NL');
+    // or
+    // $('#app').initrender(todos, connection, 'nl_NL');
+    
     // when the document is ready, load up languages & sync the todos
     // model, and render it when it's done
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
             obviel.i18n.setLocale('nl_NL').done(function() {
-                obviel.sync.init(todos).done(function() {
+                connection.init(todos).done(function() {
                     $('#app').render(todos);
                 });
             });
