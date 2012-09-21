@@ -50,7 +50,6 @@
     var clear = function(todo) {
         var m = conn.mutator(todos);
         m.get('items').remove(todo);
-        m.commit();
     };
     
     // create a special stats model from the todos
@@ -100,19 +99,17 @@
             if (value === '') {
                 return;
             }
-            var m = conn.mutator(this.obj);
+            var m = this.mutator();
             var newObj = {iface: 'todo', done: false, title: value};
             m.get('items').push(newObj);
-            m.commit();            
         },
         toggleAll: function() {
             var done = $('#toggle-all').get(0).checked;
-            var m = conn.mutator(this.obj).get('items');
+            var m = this.mutator().get('items');
             var i;
             for (i = 0; i < this.obj.items.length; i++) {
                 m.get(i).set('done', done);
             }
-            m.commit();
         }
     });
 
@@ -129,7 +126,6 @@
             });
             var m = conn.mutator(todos);
             m.set('items', newItems);
-            m.commit();
         }
     });
 
@@ -153,14 +149,12 @@
             }
         },
         edit: function() {
-            var m = conn.mutator(this.obj);
+            var m = this.mutator();
             m.set('iface', 'todo-editing');
-            m.commit();
         },
         toggle: function() {
-            var m = conn.mutator(this.obj);
+            var m = this.mutator();
             m.set('done', !this.obj.done);
-            m.commit();
             // XXX how do we handle updateStats case?
             $(todos).trigger('updateStats');
         },
@@ -190,19 +184,21 @@
                 clear(this.obj);
                 return;
             }
-            var m = conn.mutator(this.obj);
+            var m = this.mutator();
             m.set('title', value);
             m.set('iface', todo);
-            m.commit();
         } 
     });
     
 
-    // when the document is ready, load up languages & render the app model
+    // when the document is ready, load up languages & sync the todos
+    // model, and render it when it's done
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
             obviel.i18n.setLocale('nl_NL').done(function() {
-                $('#app').render(todos);
+                obviel.sync.init(todos).done(function() {
+                    $('#app').render(todos);
+                });
             });
         });
     });
