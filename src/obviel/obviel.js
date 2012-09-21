@@ -326,7 +326,7 @@ if (typeof console === "undefined") {
             });
         });
     };
-
+    
     module.View.prototype.getHandler = function(name) {
         var self = this;
         var f = this[name];
@@ -339,6 +339,7 @@ if (typeof console === "undefined") {
             ev.view = self;
             ev.args = Array.prototype.slice.call(arguments, 1);
             f.call(self, ev);
+            self.registry.eventHook();
         };
     };
 
@@ -508,10 +509,14 @@ if (typeof console === "undefined") {
         return obj;
     };
 
+    var nullEventHook = function() {
+    };
+    
     module.Registry = function() {
         this.views = {};
         /* the default transformer doesn't do anything */
         this.transformerHook = nullTransformer;
+        this.eventHook = nullEventHook;
     };
 
     module.Registry.prototype.register = function(view) {
@@ -617,6 +622,13 @@ if (typeof console === "undefined") {
             transformer = nullTransformer;
         }
         this.transformerHook = transformer;
+    };
+
+    module.Registry.prototype.registerEventHook = function(eventHook) {
+        if (eventHook === null || eventHook === undefined) {
+            eventHook = nullEventHook;
+        }
+        this.eventHook = eventHook;
     };
     
     module.registry = new module.Registry();
@@ -950,6 +962,10 @@ if (typeof console === "undefined") {
 
     module.transformer = function(transformer) {
         module.registry.registerTransformer(transformer);
+    };
+
+    module.eventHook = function(eventHook) {
+        module.registry.registerEventHook(eventHook);
     };
     
     $.fn.render = function(obj, name) {

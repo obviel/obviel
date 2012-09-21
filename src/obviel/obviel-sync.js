@@ -10,6 +10,24 @@ if (typeof obviel === "undefined") {
 obviel.sync = {};
 
 (function($, module) {
+    // when a UI event is handled, we automatically commit the current
+    // session
+    if (obviel.eventHook !== undefined) {
+        obviel.eventHook(function() {
+            var session = module.currentSession();
+            if (session === null) {
+                return;
+            }
+            session.commit();
+        });
+    }
+
+    var currentSession = null;
+
+    module.currentSession = function() {
+        return currentSession;
+    };
+    
     module.ConnectionError = function(message) {
         this.name = 'ConnectionError';
         this.message = message;
@@ -233,16 +251,7 @@ obviel.sync = {};
     };
     
     Session.prototype.commit = function() {
-        var i,
-            actions = this.sortedActions(),
-            conn = this.connection,
-            promises = [],
-            iface;
-        // this.consolidate();
-        for (i = 0; i < actions.length; i++) {
-            promises.push(actions[i].process());
-        }
-        return $.when.apply(null, promises);
+        return this.connection.commitSession(this);
     };
 
     Session.prototype.touched = function(configName) {
@@ -289,6 +298,7 @@ obviel.sync = {};
         return new ObjectMutator(this, obj);
     };
 
+    
     var actionSequence = 0;
     
     var Action = function(session, configName) {
@@ -644,7 +654,9 @@ obviel.sync = {};
     };
     
     module.Connection.prototype.session = function() {
-        return new Session(this);
+        var session = new Session(this);
+        currentSession = session;
+        return session;
     };
 
     module.Connection.prototype.mutator = function(obj) {
@@ -668,7 +680,108 @@ obviel.sync = {};
 
         return http;
     };
+
+
+    module.HttpConnection.prototype.commitSession = function(session) {
+        // take actions of a kind from session, group 'm by url if we have
+        // configured it to do so, and then pass them along to
+        // individual process functions. this allows a batch story.
+        // XXX but first we do it in a simple way
+        var i,
+            actions = session.sortedActions(),
+            promises = [];
+        for (i = 0; i < actions.length; i++) {
+            promises.push(this.processTarget2(actions[i]));
+        }
+        return $.when.apply(null, promises);
+
+    };
     
+    module.HttpConnection.prototype.processTarget2 = function(action) {
+        var promise,
+            self = this,
+            config = action.getConfig(),
+            http = this.getConfig(config, action); 
+        if (action.configName === 'update') {
+            promise = this.processTargetUpdate(
+                action.obj,
+                config, http);
+        } else if (action.configName === 'add') {
+            promise = this.processTargetAdd(
+                action.obj, action.container, action.propertyName,
+                config, http);
+        } else if (action.configName === 'remove') {
+            promise = this.processTargetRemove(
+                action.obj, action.container, action.propertyName,
+                config, http);
+        } else if (action.configName === 'refresh') {
+            promise = this.processTargetRefresh(
+                action.obj,
+                config, http);
+        }
+        return promise.done(function(responseObj) {
+            var response = http.response;
+            if (!response) {
+                return;
+            }
+            response(self, responseObj);
+        });
+    };
+
+    module.HttpConnection.prototype.processTargetUpdate = function(
+        obj, config, http) {
+        var data = JSON.stringify(obj);
+        return $.ajax({
+            type: http.method,
+            url: http.calculatedUrl,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: data
+        });
+    };
+    
+    module.HttpConnection.prototype.processTargetAdd = function(
+        obj, container, propertyName, config, http) {
+        var data = JSON.stringify(obj);
+        return $.ajax({
+            type: http.method,
+            url: http.calculatedUrl,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: data
+        });
+    };
+
+    // XXX this won't work correctly for a remove that just lists the ids
+    // to remove.
+    module.HttpConnection.prototype.processTargetRemove = function(
+        obj, container, propertyName, config, http) {
+        var data = JSON.stringify([obj.id]);
+        return $.ajax({
+            type: http.method,
+            url: http.calculatedUrl,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: data
+        });
+    };
+
+    module.HttpConnection.prototype.processTargetRefresh = function(
+        obj, config, http) {
+        return $.ajax({
+            type: http.method,
+            url: http.calculatedUrl,
+            processData: false,
+            contentType: 'application/json',
+            dataType: 'json',
+            data: null
+        });
+    };
+    
+
     module.HttpConnection.prototype.processTarget = function(config, obj) {
         var self = this,
             data,
@@ -720,9 +833,21 @@ obviel.sync = {};
     module.SocketIoConnection.prototype.getConfig = function(config, action) {
         return config.socket;
     };
+
+    module.SocketIoConnection.prototype.commitSession = function(session) {
+        var i,
+            actions = session.sortedActions(),
+            promises = [];
+        for (i = 0; i < actions.length; i++) {
+            promises.push(this.processTarget(actions[i]));
+        }
+        return $.when.apply(null, promises);
+    };
     
-    module.SocketIoConnection.prototype.processTarget = function(config, obj) {
-        this.io.emit(config.type, obj);
+    module.SocketIoConnection.prototype.processTarget = function(action) {
+        var config = action.getConfig(),
+            socket = this.getConfig(config, action);
+        this.io.emit(socket.type, action.obj);
     };
 
     module.LocalStorageConnection = function(key) {
