@@ -6,12 +6,18 @@ After todos review:
 
 * get(index) on array to get underlying mutator (done)
 
-* finish local storage connection
+* finish local storage connection (something works)
 
 * events need to be triggered by backend upon commit. how to enable
   this? configugre it? in some cases you don't want events, but only events 
   from source. in other cases you want only events triggered when message is
   sent to target.
+
+* factor out obviel-core.js from obviel. then make obviel be the thing
+  that glues the bits together and depends on the rest of the obviel-*
+  packages. (or offers a dummy, in case of i18n, or offer failing API
+  in case of sync bits that are attached to view?).
+
 
 * how to make sure stats are updated correctly in todos app?
 
@@ -53,6 +59,14 @@ After todos review:
 
 * without an 'init' it is not possible to create a 'session'. this because we 
   need to know that the root object is there and loaded.
+
+* automatic commit during event handling is not what the developer
+  wants in some cases where multiple clicks are required to result in
+  a single update, where the first click already puts stuff in the
+  session. This also implies that the session needs the inverse of
+  add, update, remove to remove an object from session. or at least
+  something like session.forget(obj).
+
 
 
 * if we add something, then do an update in a sub-object in it, that should
