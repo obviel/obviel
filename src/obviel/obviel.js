@@ -1,6 +1,4 @@
-/*global jQuery:true, obviel:true, jsontemplate:false
-  alert:true , browser:true, document:true, window:true
-*/
+/*global jsontemplate:false */
 
 if (typeof obviel === "undefined") {
     var obviel = {};
@@ -17,7 +15,9 @@ if (typeof console === "undefined") {
     // a fallback i18n module that doesn't do any translation.
     // this way we can use obviel with the obviel i18n API without
     // actually having to load obviel-i18n.js. of course it won't
-    // do any translations, but one can't have everything
+    // do any translations in that case either, but one can't have everything
+
+    // XXX fake Gettext.strargs in fake obviel i18n?
     
     if (typeof obviel.i18n !== 'undefined') {
         return;
@@ -81,37 +81,55 @@ if (typeof console === "undefined") {
     if (typeof obviel.template !== 'undefined') {
         module.variables = obviel.template.variables;
     }
-})(jQuery);
+}(jQuery));
 
 (function($, module) {
-    module._ifaces = {
+    var _ifaces = {
         'base': []
     };
 
-    module.IfaceError = function(obj) {
-        this.obj = obj;
-    };
-
-    module.IfaceError.prototype.toString = function() {
-        return ("object has both ifaces as well as iface property");
+    module.clearIface = function() {
+        _ifaces = {
+            'base': []
+        };
     };
     
-    module.LookupError = function(obj, name) {
-        this.obj = obj;
-        this.name = name;
-    };
-    
-    module.LookupError.prototype.toString = function() {
-        var ifaces = module.ifaces(this.obj);
-        return ("view lookup error for ifaces [" + ifaces.join(', ') +
-                "] and name '" + this.name + "'");
-    };
-
-    
-    module.CompilerError = function(message) {
+    module.IfaceError = function(message) {
+        this.name = 'IfaceError';
         this.message = message;
     };
 
+    module.IfaceError.prototype = new Error();
+    module.IfaceError.prototype.constructor = module.IfaceError;
+    
+    module.IfaceError.prototype.toString = function() {
+        return this.message;
+    };
+    
+    module.LookupError = function(obj, viewName) {
+        this.name = 'LookupError';
+        this.obj = obj;
+        this.viewName = viewName;
+        var ifaces = module.ifaces(this.obj);
+        this.message = ("view lookup error for ifaces [" + ifaces.join(', ') +
+                        "] and name '" + this.viewName + "'");
+    };
+
+    module.LookupError.prototype = new Error();
+    module.LookupError.prototype.constructor = module.LookupError;
+    
+    module.LookupError.prototype.toString = function() {
+        return "LookupError: " + this.message;
+    };
+    
+    module.CompilerError = function(message) {
+        this.name = 'CompilerError';
+        this.message = message;
+    };
+
+    module.CompilerError.prototype = new Error();
+    module.CompilerError.prototype.constructor = module.CompilerError;
+    
     module.CompilerError.prototype.toString = function() {
         return "CompilerError: " + this.message;
     };
@@ -130,8 +148,8 @@ if (typeof console === "undefined") {
      * extend the iface 'base'
      */
     module.iface = function(name) {
-        if (module._ifaces[name]) {
-            throw((new module.DuplicateInterfaces(name)));
+        if (_ifaces[name]) {
+            throw new module.IfaceError("duplicate iface: " + name);
         }
         var bases = [];
         var i;
@@ -144,15 +162,16 @@ if (typeof console === "undefined") {
         }
 
         for (i=0; i < bases.length; i++) {
-            var basebases = module._ifaces[bases[i]];
+            var basebases = _ifaces[bases[i]];
             if (basebases === undefined) {
-                throw(
-                    'while registering iface ' + name + ': ' +
-                    'base iface ' + bases[i] + ' not found!');
+                throw new module.IfaceError('while registering iface ' +
+                                            name + ': ' +
+                                            'base iface ' + bases[i] +
+                                            ' not found!');
             }
         }
 
-        module._ifaces[name] = bases;
+        _ifaces[name] = bases;
     };
     
     /**
@@ -162,7 +181,7 @@ if (typeof console === "undefined") {
     module.provides = function(obj, base) {
         var ifaces = module.ifaces(obj);
         for (var i=0; i < ifaces.length; i++) {
-            if (ifaces[i] == base) {
+            if (ifaces[i] === base) {
                 return true;
             }
         }
@@ -174,16 +193,20 @@ if (typeof console === "undefined") {
      * @param base: base iface (string)
      */
     module.extendsIface = function(name, base) {
-        var basebases = module._ifaces[base];
+        var basebases = _ifaces[base];
         if (basebases === undefined) {
-            throw((new module.UnknownIface(base)));
+            throw new module.IfaceError('unknown iface: ' + base);
+        }
+        if (_ifaces[name] === undefined) {
+            throw new module.IfaceError('unknown iface: ' + name);
         }
         for (var i=0; i < basebases.length; i++) {
-            if (basebases[i] == name) {
-                throw((new module.RecursionError(name, basebases[i])));
+            if (basebases[i] === name) {
+                throw new module.IfaceError('iface ' + name +
+                                            ' cannot depend on itself');
             }
         }
-        module._ifaces[name].push(base);
+        _ifaces[name].push(base);
     };
 
     /**
@@ -204,7 +227,8 @@ if (typeof console === "undefined") {
         if (obj.ifaces !== undefined) {
             // if we already have ifaces, report error
             if (ifaces.length !== 0) {
-                throw new module.IfaceError(obj);
+                throw new module.IfaceError(
+                    "object has both ifaces as well as iface property");
             }
             // a string instead of an array for ifaces will also work,
             // as it's added by concat too
@@ -217,12 +241,12 @@ if (typeof console === "undefined") {
         var bases = [].concat(ifaces);
         while (bases.length) {
             var base = bases.shift();
-            if (base == 'base') {
+            if (base === 'base') {
                 continue;
             }
             var duplicate = false;
             for (var i=0; i < ret.length; i++) {
-                if (base == ret[i]) {
+                if (base === ret[i]) {
                     duplicate = true;
                     break;
                 }
@@ -231,7 +255,7 @@ if (typeof console === "undefined") {
                 continue;
             }
             ret.push(base);
-            var basebases = module._ifaces[base];
+            var basebases = _ifaces[base];
             if (basebases) {
                 // XXX should we warn/error on unknown interfaces?
                 bases = bases.concat(basebases);
@@ -359,7 +383,7 @@ if (typeof console === "undefined") {
         var self = this;
         var wrappedHandler = null;
         
-        if (typeof handler == 'string') {
+        if (typeof handler === 'string') {
             wrappedHandler = function(ev) {
                 ev.view = self;
                 ev.args = Array.prototype.slice.call(arguments, 1);
@@ -480,8 +504,8 @@ if (typeof console === "undefined") {
                 // for that iface
                 var el = $(this);
                 var previousView = el.data('obviel.renderedView');
-                if ((view.iface != previousView.iface) ||
-                    (view.name != previousView.name)) {
+                if ((view.iface !== previousView.iface) ||
+                    (view.name !== previousView.name)) {
                     return;
                 }
                 // the el with which we get called gets replaced
@@ -579,7 +603,7 @@ if (typeof console === "undefined") {
     module.Registry.prototype.render = function(el, obj, name) {
         var self = this;
         var url = null;
-        if (typeof obj == 'string') {
+        if (typeof obj === 'string') {
             url = obj;
         }
         var promise;
@@ -667,7 +691,9 @@ if (typeof console === "undefined") {
     };
     
     module.SourceLoaderError = function(text) {
+        this.name = 'SourceLoaderError';
         this.text = text;
+        this.message = this.toString();
     };
 
     module.SourceLoaderError.toString = function() {
@@ -682,7 +708,7 @@ if (typeof console === "undefined") {
 
     module.InlineSourceLoader.prototype.key = function() {
         return (this.type + '_' +
-                this.compilerIdentifier + '_' + 
+                this.compilerIdentifier + '_' +
                 this.source);
     };
 
@@ -1032,4 +1058,4 @@ if (typeof console === "undefined") {
         }
     );
 
-})(jQuery, obviel);
+}(jQuery, obviel));

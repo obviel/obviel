@@ -1,6 +1,6 @@
-/* */
+/*global buster:false, sinon:false, obviel:false */
 var assert = buster.assert;
-var refuse = buster.refute;
+var refute = buster.refute;
 
 // TODO
 
@@ -190,7 +190,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             assert.equals(updateData.value, 1.0);
             done();
         });
-    },    
+    },
     "add to container URL": function(done) {
         obviel.sync.mapping({
             iface: 'container',
@@ -384,7 +384,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     //     };
     //     container.entries.splice(0, 1);
     //     assert.exception(function() {
-    //         session.remove(obj, container, 'entries'); 
+    //         session.remove(obj, container, 'entries');
     //     }, 'IdError');
     // },
 
@@ -718,7 +718,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         };
 
         
-        var m1 = session.mutator(obj1);        
+        var m1 = session.mutator(obj1);
         var m2 = session.mutator(obj2);
         
         m1.set('value', 2.0);

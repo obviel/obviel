@@ -1,8 +1,5 @@
-/*global jQuery: false, alert: false, obviel: false, _: false */
-/*jshint white: false, browser: true, onevar: false, undef: true,
-eqeqeq: true, plusplus: false, bitwise: true, regexp: true, newcap: true,
-immed: true, strict: false, maxlen: 80, maxerr: 9999 */
-
+/*global HashSet:false, Hashtable:false*/
+    
 if (typeof obviel === "undefined") {
     var obviel = {};
 }
@@ -40,7 +37,7 @@ obviel.sync = {};
         this.message = message;
     };
     
-    var mappings = {};    
+    var mappings = {};
     module.mapping = function(config) {
         // XXX should use cleverer iface storage aware of inheritance?
         initDefaults(config);
@@ -178,7 +175,7 @@ obviel.sync = {};
     };
 
     Session.prototype.addAction = function(action) {
-        var removedActions;
+        var removedActions, name;
         if (this.isDuplicateAction(action)) {
             return;
         }
@@ -403,7 +400,7 @@ obviel.sync = {};
 
 
     var ObjectActionTrumpKey = function(actionName) {
-        this.actionName = actionName;  
+        this.actionName = actionName;
     };
 
     ObjectActionTrumpKey.prototype.hashCode = function() {
@@ -432,7 +429,7 @@ obviel.sync = {};
             return true;
         }
         return (this.container === other.container &&
-                this.propertyName == other.propertyName);
+                this.propertyName === other.propertyName);
     };
     
     var ObjectAction = function(session, configName, obj) {
@@ -564,10 +561,10 @@ obviel.sync = {};
     RemoveAction.prototype.getRemoveIds = function() {
         var i, result = [];
         return [this.obj.id];
-        for (i = 0; i < this.obj.length; i++) {
-            result.push(this.obj[i].id);
-        }
-        return result;
+        // for (i = 0; i < this.obj.length; i++) {
+        //     result.push(this.obj[i].id);
+        // }
+        // return result;
     };
     
     
@@ -609,7 +606,7 @@ obviel.sync = {};
                 // XXX is this an error?
                 continue;
             }
-            objectUpdater(finder({name: 'update', obj: entry}), entry); 
+            objectUpdater(finder({name: 'update', obj: entry}), entry);
         }
     };
     
@@ -651,7 +648,8 @@ obviel.sync = {};
         var finder, obj, info;
         if (action.name === 'update') {
             finder = mappings[action.obj.iface].source.update.finder;
-            objectUpdater(finder(action), entry);
+            // XXX this code isn't covered and needs testing
+            objectUpdater(finder(action), action.obj);
         } else if (action.name === 'add') {
             // action.containerIface is container iface..
             // could also get container by containerId, though this
@@ -716,7 +714,7 @@ obviel.sync = {};
         var promise,
             self = this,
             config = action.getConfig(),
-            http = this.getConfig(config, action); 
+            http = this.getConfig(config, action);
         if (action.configName === 'update') {
             promise = this.processTargetUpdate(
                 action.obj,
@@ -947,11 +945,11 @@ obviel.sync = {};
                 add: {
                     http: {
                         method: 'POST',
-                        url: function(action) { return m.container.addUrl; },
+                        url: function(action) { return action.container.addUrl; },
                         response: obviel.sync.multiUpdater
                     }
                 }
-            }    
+            }
         };
     };
     

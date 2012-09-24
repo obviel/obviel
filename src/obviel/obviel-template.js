@@ -1,11 +1,4 @@
-/*global obviel: true, jQuery: true, templateUrl: true
-  alert: true , browser: true, document: true, appUrl: true,
-  window: true, Gettext: true, jsonLocaleData: true
-*/
-/*jshint evil: true */
-
 /*
-
 How does this work?
 
 There are two phases:
@@ -57,6 +50,7 @@ when rendering a section:
 */
 
 if (typeof obviel === "undefined") {
+    /*jshint shadow:false */
     var obviel = {};
 }
 
@@ -81,29 +75,32 @@ obviel.template = {};
     // set them dynamically thorugh data-<attrName>
     var SPECIAL_ATTR = {'id': true,  'src': true};
     
-    module.Error = function(el, message) {
+    module.CompilationError = function(el, message) {
+        this.name = 'CompilationError';
         this.el = el;
         this.message = message;
     };
+
+    module.CompilationError.prototype = new Error();
+    module.CompilationError.prototype.constructor = module.CompilationError;
     
-    module.Error.prototype.toString = function() {
+    module.CompilationError.prototype.toString = function() {
         return this.message;
     };
     
-    module.CompilationError = function(el, message) {
-        this.el = el;
-        this.message = message;
-    };
-
-    module.CompilationError.prototype = new module.Error();
-    
     module.RenderError = function(el, message) {
+        this.name = 'RenderError';
         this.el = el;
         this.message = message;
     };
 
-    module.RenderError.prototype = new module.Error();
-
+    module.RenderError.prototype = new Error();
+    module.RenderError.prototype.constructor = module.RenderError;
+    
+    module.RenderError.prototype.toString = function() {
+        return this.message;
+    };
+    
     module.Template = function(text) {
         var parsed;
 
@@ -443,7 +440,7 @@ obviel.template = {};
         };
         var each = {};
         $.extend(each, info);
-        each[name] = info;      
+        each[name] = info;
         return {
             '@each': each
         };
@@ -972,7 +969,7 @@ obviel.template = {};
         }
         
         var parts = this.value.split('||');
-        if (parts.length == 1) {
+        if (parts.length === 1) {
             if (this.transInfo.countVariable !== null) {
                 throw new module.CompilationError(
                     el, "data-plural used for attribute content but no || " +
@@ -1696,19 +1693,21 @@ obviel.template = {};
     };
 
     module.IfExpression.prototype.resolve = function(el, scope) {
-        var result = this.dataIf(scope);
-        if (this.notEnabled) {
-            /* XXX jshint doesn't like the == false comparison */
-            return (result === undefined ||
-                    result === null ||
-                    result == false);
+        var result = this.dataIf(scope),
+            tf;
+        if ($.isArray(result) && result.length === 0) {
+            tf = false;
+        } else {
+            if (result) {
+                tf = true;
+            } else {
+                tf = false;
+            }
         }
-        // result != false is NOT equivalent to result == true in JS
-        // and it is the one we want
-        /* XXX jshint doesn't like the != false comparison */
-        return (result !== undefined &&
-                result !== null &&
-                result != false);
+        if (this.notEnabled) {
+            return (!tf);
+        }
+        return tf;
     };
     
     module.Scope = function(obj) {
@@ -2134,6 +2133,7 @@ obviel.template = {};
     };
 
     module.Codegen.prototype.getFunction = function() {
+        /*jshint evil:true*/
         var code = this.result.join('');
         return new Function(this.args, code);
     };

@@ -1,6 +1,4 @@
-/*global obviel: true, jQuery: true, templateUrl: true
-  alert: true , browser: true, document: true, appUrl: true,
-  window: true, Gettext: true, jsonLocaleData: true
+/*global obviel:false Gettext:false
 */
 
 obviel.forms = {};
@@ -24,8 +22,8 @@ obviel.forms = {};
     // rather messy but I don't know of a reliable to recognize
     // a jQuery expando...
     var isInternal = function(attributeName) {
-        return (attributeName == '__events__' ||
-                attributeName.slice(0, 6) == 'jQuery');
+        return (attributeName === '__events__' ||
+                attributeName.slice(0, 6) === 'jQuery');
     };
     
     obviel.iface('viewform');
@@ -379,32 +377,42 @@ obviel.forms = {};
     
     module.Form.prototype.submitControl = function(controlEl, control) {
         var self = this;
-
+        var defer = $.Deferred();
+        
         if (!control.noValidation) {
             self.updateErrors().done(function() {
                 // if there are  errors, disable submit
                 if (self.totalErrorCount() > 0) {
                     controlEl.attr('disabled', 'true').trigger(
                         'button-updated.obviel');
+                    defer.resolve();
                     return;
                 }
-                self.directSubmit(control);
+                self.directSubmit(control).done(function() {
+                    defer.resolve();
+                });
             });
+            return defer.promise();
         } else {
-            self.directSubmit(control);
+            return self.directSubmit(control);
         }
     };
     
     module.Form.prototype.submit = function(control) {
         var self = this;
-
+        var defer = $.Deferred();
+        
         self.updateErrors().done(function() {
             // don't submit if there are any errors
             if (self.totalErrorCount() > 0) {
+                defer.resolve();
                 return;
             }
-            self.directSubmit(control);
+            self.directSubmit(control).done(function() {
+                defer.resolve();
+            });
         });
+        return defer.promise();
     };
 
     module.Form.prototype.jsonData = function() {
@@ -413,13 +421,15 @@ obviel.forms = {};
     
     module.Form.prototype.directSubmit = function(control) {
         var self = this;
+        var defer = $.Deferred();
         
         // if there is no action, we just leave: we assume that
         // some event handler is hooked up to the control, for instance
         // using the class
         var action = control.action;
         if (action === undefined) {
-            return;
+            defer.resolve();
+            return defer.promise();
         }
 
         var data = null;
@@ -441,9 +451,12 @@ obviel.forms = {};
             contentType: contentType,
             dataType: 'json',
             success: function(data) {
-                self.el.render(data, viewName);
+                self.el.render(data, viewName).done(function() {
+                    defer.resolve();
+                });
             }
         });
+        return defer.promise();
     };
     
     module.Form.prototype.triggerChanges = function() {
@@ -511,7 +524,7 @@ obviel.forms = {};
                 labelEl.addClass('obviel-required');
             }
             self.el.prepend(labelEl);
-        } 
+        }
         
         // add in description
         if (self.obj.description) {
@@ -889,7 +902,7 @@ obviel.forms = {};
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
         var fieldEl = $('<div class="obviel-field-input" ' +
-                            'id="obviel-field-' + self.obj.prefixedName + '">');    
+                        'id="obviel-field-' + self.obj.prefixedName + '">');
         self.el.append(fieldEl);
     };
 
@@ -1064,7 +1077,7 @@ obviel.forms = {};
                 '</div>'
         };
         $.extend(d, settings);
-        module.Widget.call(this, d);        
+        module.Widget.call(this, d);
     };
 
     module.InputWidget.prototype = new module.Widget();
@@ -1145,7 +1158,7 @@ obviel.forms = {};
 
         if (obj.validate.regs) {
             $.each(obj.validate.regs, function(index, reg) {
-                var regexp = RegExp(reg.reg); // no flags?
+                var regexp = new RegExp(reg.reg); // no flags?
                 var result = regexp.exec(value);
                 if (!result) {
                     error = reg.message;
@@ -1186,7 +1199,7 @@ obviel.forms = {};
         module.TextLineWidget.prototype.attributes.call(this, el, variable);
         if (variable('height')) {
             el.css('height', variable('height') + 'em');
-        }        
+        }
     };
 
     obviel.iface('integerField', 'inputField');
@@ -1209,7 +1222,7 @@ obviel.forms = {};
         if (isNaN(asint)) {
             return {error: _("not a number")};
         }
-        if (asint != parseFloat(value)) {
+        if (asint !== parseFloat(value)) {
             return {error: _("not an integer number")};
         }
         return {value: asint};
@@ -1238,10 +1251,10 @@ obviel.forms = {};
         }
         if (obj.validate.length !== undefined) {
             var asstring = value.toString();
-            if (asstring.charAt(0) == '-') {
+            if (asstring.charAt(0) === '-') {
                 asstring = asstring.slice(1);
             }
-            if (asstring.length != obj.validate.length) {
+            if (asstring.length !== obj.validate.length) {
                 return Gettext.strargs(_('value must be %1 digits long'),
                                        [obj.validate.length]);
             }
@@ -1282,7 +1295,7 @@ obviel.forms = {};
         if (!isDecimal(sep, value)) {
             return {error: _("not a float")};
         }
-        if (sep != '.') {
+        if (sep !== '.') {
             value = value.replace(sep, '.');
         }
         var asfloat = parseFloat(value);
@@ -1300,7 +1313,7 @@ obviel.forms = {};
         value = value.toString();
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
-        if (sep != '.') {
+        if (sep !== '.') {
             value = value.replace('.', sep);
         }
         return value;
@@ -1353,7 +1366,7 @@ obviel.forms = {};
         }
         
         // normalize to . as separator
-        if (sep != '.') {
+        if (sep !== '.') {
             value = value.replace(sep, '.');
         }
         // this may be redunant but can't hurt I think
@@ -1372,7 +1385,7 @@ obviel.forms = {};
         value = module.InputWidget.prototype.convertBack.call(this, value);
         obj.validate = obj.validate || {};
         var sep = obj.validate.separator || '.';
-        if (sep != '.') {
+        if (sep !== '.') {
             value = value.replace('.', sep);
         }
         return value;
@@ -1390,7 +1403,7 @@ obviel.forms = {};
             return undefined;
         }
 
-        if (!obj.validate.allowNegative && value.charAt(0) == '-') {
+        if (!obj.validate.allowNegative && value.charAt(0) === '-') {
             return _('negative numbers are not allowed');
         }
         
@@ -1403,7 +1416,7 @@ obviel.forms = {};
             afterSep = '';
         }
 
-        if (beforeSep.charAt(0) == '-') {
+        if (beforeSep.charAt(0) === '-') {
             beforeSep = beforeSep.slice(1);
         }
 
@@ -1587,4 +1600,4 @@ obviel.forms = {};
 
     obviel.view(new module.HiddenWidget());
     
-})(jQuery, obviel, obviel.forms);
+}(jQuery, obviel, obviel.forms));
