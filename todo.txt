@@ -1,5 +1,13 @@
 After todos review:
 
+* Review IE 8 compat stuff in the light of 
+  http://hsivonen.iki.fi/doctype/
+
+* review body.html concernign <script> tags, are these still needed?
+
+* using 'this.source' in key generation for InlineSourceLoader seems
+  inefficient.
+
 * get mutator directly from connection (done)
 
 * commit directly on mutator will commit underlying session (done)
