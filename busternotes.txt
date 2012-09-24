@@ -1,0 +1,13 @@
+npm_install buster-lint in obviel dir
+
+https://github.com/cjohansen/Sinon.JS/commit/fca5648590b46739c142b7e0e3907031990ce7a0
+
+fix stub.js in sinon.js to fix IE behavior 
+
+a working version of coverage:
+
+ npm install https://github.com/robgietema/buster-coverage/tarball/master
+
+a buildout config:
+
+ https://github.com/plone/buildout.deco/blob/master/buster.cfg#L13
