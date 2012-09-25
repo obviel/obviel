@@ -1,6 +1,6 @@
 After todos review:
 
-* Review IE 8 compat stuff in the light of 
+* Review IE 8 compat stuff (also docs) in the light of 
   http://hsivonen.iki.fi/doctype/
 
 * review body.html concernign <script> tags, are these still needed?
@@ -26,6 +26,7 @@ After todos review:
   packages. (or offers a dummy, in case of i18n, or offer failing API
   in case of sync bits that are attached to view?).
 
+* create minified bundled version for download which includes everything.
 
 * how to make sure stats are updated correctly in todos app?
 
@@ -48,6 +49,14 @@ After todos review:
 * currentSession infrastructure & autocommit testing, separate test module 
   which includes obviel. is order obviel core, then obviel sync okay for
   this registration? how to disable event hook?
+
+* current session should be on connection, as multiple connections can have
+  a different current session. session() should return the current session 
+  if there is one?
+
+* autocommit infastructure should be revised in this light.
+
+
 
 * instead of 'this.mutator()' on views we could offer an extra shortcut passes
   a variable 'm' into an event handler.
