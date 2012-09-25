@@ -22,6 +22,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         this.server.autoRespond = true;
     },
     tearDown: function() {
+        obviel.sync.clear();
         this.server.restore();
     },
     "config with explicit target.update.http": function() {
@@ -1037,7 +1038,31 @@ var syncTestCase = buster.testCase("sync tests:", {
             });
         });
         
+    },
+    "a session is reused if not yet committed": function() {
+        var obj = {
+            iface: 'test',
+            value: 'a',
+            entries: []
+        };
+
+        var conn = new obviel.sync.HttpConnection();
+        
+        var m = conn.mutator(obj);
+        m.set('value', 'b');
+        assert.equals(m.session.updated(), [obj]);
+
+        var newObj = {
+            iface: 'sub'
+        };
+        m.get('entries').push(newObj);
+        assert.equals(m.session.added(), [{container: obj,
+                                           propertyName: 'entries',
+                                           obj: newObj}]);
+        assert.equals(m.session.updated(), [obj]);
+        
     }
+    
     
     // refresh & remove
     // remove & remove again

@@ -11,21 +11,15 @@ obviel.sync = {};
     // session
     // XXX reverse this and make obviel core do this integration if
     // obviel.sync is available? similar to way it interacts with obviel.template
-    if (obviel.eventHook !== undefined) {
-        obviel.eventHook(function() {
-            var session = module.currentSession();
-            if (session === null) {
-                return;
-            }
-            session.commit();
-        });
-    }
-
-    var currentSession = null;
-
-    module.currentSession = function() {
-        return currentSession;
-    };
+    // if (obviel.eventHook !== undefined) {
+    //     obviel.eventHook(function() {
+    //         var session = module.currentSession();
+    //         if (session === null) {
+    //             return;
+    //         }
+    //         session.commit();
+    //     });
+    // }
     
     module.ConnectionError = function(message) {
         this.name = 'ConnectionError';
@@ -42,6 +36,10 @@ obviel.sync = {};
         // XXX should use cleverer iface storage aware of inheritance?
         initDefaults(config);
         mappings[config.iface] = config;
+    };
+
+    module.clear = function() {
+        mappings = {};
     };
 
     module.getMapping = function(iface) {
@@ -250,6 +248,7 @@ obviel.sync = {};
     };
     
     Session.prototype.commit = function() {
+        this.connection.currentSession = null;
         return this.connection.commitSession(this);
     };
 
@@ -613,6 +612,7 @@ obviel.sync = {};
     
     module.Connection = function() {
         this.root = null;
+        this.currentSession = null;
     };
 
     module.Connection.prototype.init = function(root) {
@@ -667,11 +667,15 @@ obviel.sync = {};
         //     throw new module.ConnectionError(
         //         "Cannot make session without doing init first");
         // }
+        if (this.currentSession !== null) {
+            return this.currentSession;
+        }
         session = new Session(this);
-        currentSession = session;
+        this.currentSession = session;
         return session;
     };
 
+    
     module.Connection.prototype.mutator = function(obj) {
         return new Session(this).mutator(obj);
     };
