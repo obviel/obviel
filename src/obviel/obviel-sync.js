@@ -9,17 +9,33 @@ obviel.sync = {};
 (function($, module) {
     // when a UI event is handled, we automatically commit the current
     // session
-    // XXX reverse this and make obviel core do this integration if
-    // obviel.sync is available? similar to way it interacts with obviel.template
-    // if (obviel.eventHook !== undefined) {
-    //     obviel.eventHook(function() {
-    //         var session = module.currentSession();
-    //         if (session === null) {
-    //             return;
-    //         }
-    //         session.commit();
-    //     });
-    // }
+    //XXX reverse this and make obviel core do this integration if
+    //obviel.sync is available? similar to way it interacts with obviel.template
+    if (obviel.eventHook !== undefined) {
+        obviel.eventHook(function() {
+            var session;
+            if (currentConnection === null) {
+                return;
+                
+            }
+            session = currentConnection.session();
+            if (session === null) {
+                return;
+            }
+            session.commit();
+        });
+    }
+    var currentConnection = null;
+
+    // XXX same story here; should go into obviel itself
+    if (obviel.View !== undefined) {
+        obviel.View.prototype.mutator = function() {
+            if (currentConnection === null) {
+                throw new Error("No current connection, use obviel.sync.init()");
+            }
+            return currentConnection.mutator(this.obj);
+        };
+    }
     
     module.ConnectionError = function(message) {
         this.name = 'ConnectionError';
@@ -248,8 +264,15 @@ obviel.sync = {};
     };
     
     Session.prototype.commit = function() {
-        this.connection.currentSession = null;
-        return this.connection.commitSession(this);
+        var self = this;
+        return this.connection.commitSession(this).done(function() {
+            var i,
+                actions = self.sortedActions();
+            for (i = 0; i < actions.length; i++) {
+                actions[i].afterCommit();
+            }
+            self.connection.currentSession = null;
+        });
     };
 
     Session.prototype.touched = function(configName) {
@@ -314,14 +337,18 @@ obviel.sync = {};
         return this.sequence === other.sequence;
     };
     
+    Action.prototype.getObj = function() {
+        throw new Error("Object for action cannot be determined");
+    };
+
     Action.prototype.getIface = function() {
-        throw new Error("Do not know how to retrieve iface for action");
+        return this.getObj().iface;
     };
 
     Action.prototype.duplicateKey = function() {
         throw new Error("No duplicate key can be determined");
     };
-
+    
     Action.prototype.trumpedBy = function() {
         return [];
     };
@@ -345,6 +372,10 @@ obviel.sync = {};
         }
         return target;
     };
+
+    Action.prototype.afterCommit = function() {
+        this.sendEvent();
+    };
     
     Action.prototype.getConfig = function() {
         var config = this.getTarget()[this.configName];
@@ -355,18 +386,32 @@ obviel.sync = {};
         return config;
     };
     
+    Action.prototype.sendEvent = function() {
+        var obj, event,
+            config = this.getConfig();
+        if (!config) {
+            return;
+        }
+        obj = this.getObj();
+        event = config.event;
+        if (!event) {
+            return;
+        }
+        $(obj).trigger(event);
+    };
+    
     Action.prototype.getConnectionConfig = function(config) {
         return this.session.connection.getConfig(config, this);
     };
 
-    Action.prototype.process = function() {
-        // XXX should be able to avoid having to get connection config here,
-        // but will need to pass action to processTarget in that case
-        var config = this.getConfig(),
-            connectionConfig = this.getConnectionConfig(config);
-        return this.session.connection.processTarget(
-            connectionConfig, this.obj);
-    };
+    // Action.prototype.process = function() {
+    //     // XXX should be able to avoid having to get connection config here,
+    //     // but will need to pass action to processTarget in that case
+    //     var config = this.getConfig(),
+    //         connectionConfig = this.getConnectionConfig(config);
+    //     return this.session.connection.processTarget(
+    //         connectionConfig, this.obj);
+    // };
     
     var ActionDuplicateKey = function(actionName, obj,
                                       container, propertyName) {
@@ -438,9 +483,9 @@ obviel.sync = {};
 
     ObjectAction.prototype = new Action();
     ObjectAction.prototype.constructor = ObjectAction;
-    
-    ObjectAction.prototype.getIface = function() {
-        return this.obj.iface;
+
+    ObjectAction.prototype.getObj = function() {
+        return this.obj;
     };
 
     ObjectAction.prototype.duplicateKey = function() {
@@ -466,9 +511,9 @@ obviel.sync = {};
 
     ContainerAction.prototype = new ObjectAction();
     ContainerAction.prototype.constructor = ContainerAction;
-
-    ContainerAction.prototype.getIface = function() {
-        return this.container.iface;
+    
+    ContainerAction.prototype.getObj = function() {
+        return this.container;
     };
     
     ContainerAction.prototype.duplicateKey = function() {
@@ -617,6 +662,7 @@ obviel.sync = {};
 
     module.Connection.prototype.init = function(root) {
         this.root = root;
+        currentConnection = this;
         var session = this.session();
         session.refresh(root);
         return session.commit();
@@ -677,7 +723,7 @@ obviel.sync = {};
 
     
     module.Connection.prototype.mutator = function(obj) {
-        return new Session(this).mutator(obj);
+        return this.session().mutator(obj);
     };
     
     module.HttpConnection = function() {
@@ -744,7 +790,7 @@ obviel.sync = {};
             response(self, responseObj);
         });
     };
-
+    
     module.HttpConnection.prototype.processTargetUpdate = function(
         obj, config, http) {
         var data = JSON.stringify(obj);
@@ -799,34 +845,34 @@ obviel.sync = {};
     };
     
 
-    module.HttpConnection.prototype.processTarget = function(config, obj) {
-        var self = this,
-            data,
-            method = config.method || 'POST';
-        if (method === 'POST' || method === 'PUT') {
-            if (obj !== undefined) {
-                data = JSON.stringify(obj);
-            } else {
-                data = null;
-            }
-        } else {
-            data = null;
-        }
-        return $.ajax({
-            type: method,
-            url: config.calculatedUrl,
-            processData: false,
-            contentType: 'application/json',
-            dataType: 'json',
-            data: data
-        }).done(function(responseObj) {
-            var response = config.response;
-            if (!response) {
-                return;
-            }
-            response(self, responseObj);
-        });
-    };
+    // module.HttpConnection.prototype.processTarget = function(config, obj) {
+    //     var self = this,
+    //         data,
+    //         method = config.method || 'POST';
+    //     if (method === 'POST' || method === 'PUT') {
+    //         if (obj !== undefined) {
+    //             data = JSON.stringify(obj);
+    //         } else {
+    //             data = null;
+    //         }
+    //     } else {
+    //         data = null;
+    //     }
+    //     return $.ajax({
+    //         type: method,
+    //         url: config.calculatedUrl,
+    //         processData: false,
+    //         contentType: 'application/json',
+    //         dataType: 'json',
+    //         data: data
+    //     }).done(function(responseObj) {
+    //         var response = config.response;
+    //         if (!response) {
+    //             return;
+    //         }
+    //         response(self, responseObj);
+    //     });
+    // };
 
     // module.HttpConnection.prototype.processSource = function(properties, obj) {
     //     return $.ajax({

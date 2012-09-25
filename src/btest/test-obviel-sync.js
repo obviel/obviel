@@ -1021,6 +1021,11 @@ var syncTestCase = buster.testCase("sync tests:", {
                         return obj;
                     }
                 }
+            },
+            // XXX why do I need to create this to support event sending?
+            target: {
+                refresh: {
+                }
             }
         });
 

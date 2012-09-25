@@ -26,23 +26,34 @@
     };
     
     // XXX these are pretty empty; can we get rid of them entirely?
+    // maybe not anymore once we have JS events configured
     obviel.sync.mapping({
         iface: 'todos',
         source: {
-
         },
         target: {
-
+            update: {
+                event: 'update'
+            },
+            add: {
+                event: 'update'
+            },
+            remove: {
+                event: 'update'
+            },
+            refresh: {
+            }
         }
     });
     
     obviel.sync.mapping({
         iface: 'todo',
         source: {
-
         },
         target: {
-
+            update: {
+                event: 'update'
+            }
         }
     });
 
@@ -202,7 +213,7 @@
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
             obviel.i18n.setLocale('nl_NL').done(function() {
-                connection.init(todos).done(function() {
+                conn.init(todos).done(function() {
                     $('#app').render(todos);
                 });
             });

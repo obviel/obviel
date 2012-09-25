@@ -1,5 +1,9 @@
 After todos review:
 
+* it should be possible to set events for both source and target.
+  These events will be sent to the object and will fire as the session is
+  commited or as the source events come in.
+
 * Review IE 8 compat stuff (also docs) in the light of 
   http://hsivonen.iki.fi/doctype/
 
