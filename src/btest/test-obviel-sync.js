@@ -1066,8 +1066,48 @@ var syncTestCase = buster.testCase("sync tests:", {
                                            obj: newObj}]);
         assert.equals(m.session.updated(), [obj]);
         
+    },
+    "events are sent for targets if configured": function() {
+        obviel.sync.mapping({
+            iface: 'test',
+            target: {
+                update: {
+                    event: 'foo',
+                    http: {
+                    }
+                }
+            }
+        });
+
+        var testUrl = 'testurl';
+        
+        var obj = {
+            iface: 'test',
+            value: 'a',
+            updateUrl: testUrl
+        };
+        
+        this.server.respondWith('POST', testUrl, function(request) {
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+        
+        var events = 0;
+        $(obj).bind('foo', function() {
+            events++;
+        });
+        
+        var conn = new obviel.sync.HttpConnection();
+        var m = conn.mutator(obj);
+        m.set('value', 'b');
+        // nothing has been committed, so no events sent
+        assert.equals(events, 0);
+        // now we commit
+        m.commit().done(function() {
+            // now we expect there have been an event
+            assert.equals(events, 1);
+        });
     }
-    
     
     // refresh & remove
     // remove & remove again
