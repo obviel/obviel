@@ -127,14 +127,18 @@ obviel.sync = {};
         this.session.add(value, this.obj, this.arrayName);
     };
 
-    ArrayMutator.prototype.remove = function(value) {
-        var array = this.obj[this.arrayName],
-            index = $.inArray(value, array);
+    var removeFromArray = function(array, value) {
+        var index = $.inArray(value, array);
         if (index === -1) {
             throw new Error(
                 "Cannot remove item from array as it doesn't exist: " + value);
         }
         array.splice(value, 1);
+    };
+    
+    ArrayMutator.prototype.remove = function(value) {
+        var array = this.obj[this.arrayName];
+        removeFromArray(array, value);
         this.session.remove(value, this.obj, this.arrayName);
     };
     
@@ -309,6 +313,14 @@ obviel.sync = {};
     Session.prototype.mutator = function(obj) {
         return new ObjectMutator(this, obj);
     };
+
+    Session.prototype.afterCommit = function() {
+        var i,
+            actions = this.sortedActions();
+        for (i = 0; i < actions.length; i++) {
+            actions[i].afterCommit();
+        }
+    };
     
     var TargetSession = function(connection) {
         Session.call(this);
@@ -325,11 +337,7 @@ obviel.sync = {};
     TargetSession.prototype.commit = function() {
         var self = this;
         return this.connection.commitSession(this).done(function() {
-            var i,
-                actions = self.sortedActions();
-            for (i = 0; i < actions.length; i++) {
-                actions[i].afterCommit();
-            }
+            self.afterCommit();
             self.connection.currentSession = null;
         });
     };
@@ -346,6 +354,19 @@ obviel.sync = {};
         return mappings[iface].source;
     };
 
+    SourceSession.prototype.commit = function() {
+        var i,
+            defer,
+            actions = this.sortedActions();
+        for (i = 0; i < actions.length; i++) {
+            actions[i].apply();
+        }
+        this.afterCommit();
+        defer = $.Deferred();
+        defer.resolve();
+        return defer.promise();
+    };
+    
     var actionSequence = 0;
     
     var Action = function(session, name) {
@@ -394,15 +415,19 @@ obviel.sync = {};
     Action.prototype.afterCommit = function() {
         this.sendEvent();
     };
-    
-    Action.prototype.getConfig = function() {
-        var section = this.session.getSection(this.getIface()),
-            config = section[this.name];
+
+    var getConfigForIface = function(session, iface, name) {
+        var section = session.getSection(iface),
+            config = section[name];
         if (config === undefined) {
             throw new module.ConnectionError(
-                "No " + this.name + " defined for target");
+                "No " + name + " config defined");
         }
         return config;
+    };
+    
+    Action.prototype.getConfig = function() {
+        return getConfigForIface(this.session, this.getIface(), this.name);
     };
     
     Action.prototype.sendEvent = function() {
@@ -559,15 +584,31 @@ obviel.sync = {};
                 new ObjectActionTrumpKey('remove')];
     };
 
+    UpdateAction.prototype.apply = function() {
+        var finder = this.getConfig().finder,
+            obj = finder(this);
+        // XXX this code isn't covered and needs testing
+        objectUpdater(obj, this.obj);
+        // XXX this is cheating but is needed to make afterCommit
+        // run properly
+        this.obj = obj;
+    };
+    
     var RefreshAction = function(session, obj) {
         ObjectAction.call(this, session, 'refresh', obj);
     };
     
     RefreshAction.prototype = new ObjectAction();
     RefreshAction.prototype.constructor = RefreshAction;
-
+    
     RefreshAction.prototype.trumpedBy = function() {
         return [new ObjectActionTrumpKey('remove')];
+    };
+
+    RefreshAction.prototype.apply = function() {
+        // nothing to be done for source-level refresh action as
+        // it makes little sense I think
+        // XXX raise exception instead?
     };
     
     var AddAction = function(session, obj, container, propertyName) {
@@ -583,6 +624,10 @@ obviel.sync = {};
                                             this.container, this.propertyName)
                ];
     };
+
+    AddAction.prototype.apply = function() {
+        this.container[this.propertyName].push(this.obj);
+    };
     
     var RemoveAction = function(session, obj, container, propertyName) {
         ContainerAction.call(this, session, 'remove', obj,
@@ -596,6 +641,10 @@ obviel.sync = {};
         return [new ContainerActionTrumpKey('add',
                                             this.container, this.propertyName)
                ];
+    };
+
+    RemoveAction.prototype.apply = function() {
+        removeFromArray(this.container[this.propertyName], this.obj);
     };
 
     RemoveAction.prototype.process = function() {
@@ -620,19 +669,42 @@ obviel.sync = {};
         // }
         // return result;
     };
+
+    var findContainerInfo = function(session, iface, name, actionInfo) {
+        return getConfigForIface(session, iface, name).finder(actionInfo);
+    };
     
+    var createAction = function(session, a) {
+        var info;
+        if (a.name === 'update') {
+            return new UpdateAction(session, a.obj);
+        } else if (a.name === 'add') {
+            info = findContainerInfo(session, a.containerIface, 'add', a);
+            return new AddAction(session, a.obj,
+                                 info.container, info.propertyName);
+        } else if (a.name === 'remove') {
+            info = findContainerInfo(session, a.containerIface, 'remove', a);
+            return new RemoveAction(session, a.obj,
+                                    info.container, info.propertyName);
+        } else if (a.name === 'refresh') {
+            return new RefreshAction(session, a.obj);
+        } else {
+            throw new Error("Unknown action name: " + a.name);
+        }
+    };
+    
+        
     module.actionProcessor = function(connection, entries) {
-        var i;
+        var i,
+            actions = [],
+            session = new SourceSession();
         if (!$.isArray(entries)) {
             entries = [entries];
         }
-        
         for (i = 0; i < entries.length; i++) {
-            // if (entries[i].name === 'update') {
-            //     action = new UpdateAction(
-            // }
-            connection.processSourceAction(entries[i]);
+            session.addAction(createAction(session, entries[i]));
         }
+        return session.commit();
     };
     
     module.multiUpdater = function(connection, entries) {
@@ -675,7 +747,6 @@ obviel.sync = {};
         }
         return target;
     };
-
     
     module.Connection.prototype.getSource = function(iface) {
         var source = mappings[iface].source;
@@ -687,29 +758,6 @@ obviel.sync = {};
 
     module.Connection.prototype.getConfig = function(context, action) {
         throw new module.ConnectionError("Not implemented");
-    };
-    
-
-    module.Connection.prototype.processSourceAction = function(action) {
-        var finder, obj, info, event;
-        if (action.name === 'update') {
-            finder = mappings[action.obj.iface].source.update.finder;
-            obj = finder(action);
-            // XXX this code isn't covered and needs testing
-            objectUpdater(obj, action.obj);
-            // XXX hack to make test pass for now
-            event = mappings[action.obj.iface].source.update.event;
-            if (event) {
-                $(obj).trigger(event);
-            }
-        } else if (action.name === 'add') {
-            // action.containerIface is container iface..
-            // could also get container by containerId, though this
-            // assumes id-based lookup
-            finder = mappings[action.containerIface].source.add.finder;
-            info = finder(action);
-            info.container[info.propertyName].push(action.obj);
-        }
     };
     
     module.Connection.prototype.session = function() {
@@ -726,7 +774,6 @@ obviel.sync = {};
         this.currentSession = session;
         return session;
     };
-
     
     module.Connection.prototype.mutator = function(obj) {
         return this.session().mutator(obj);
@@ -749,8 +796,7 @@ obviel.sync = {};
 
         return http;
     };
-
-
+    
     module.HttpConnection.prototype.commitSession = function(session) {
         // take actions of a kind from session, group 'm by url if we have
         // configured it to do so, and then pass them along to
@@ -794,7 +840,6 @@ obviel.sync = {};
                 return;
             }
             response(self, responseObj);
-            action.sendEvent();
         });
     };
     

@@ -1,17 +1,13 @@
 After todos review:
 
+* source events from socket io not implemented yet
+
 * make localstorage work for todos.
 
 * we should be able to define transport specific events. These will be
   fired in addition to the action related events. This means the session
   needs to be in charge of getting the config, and the connection should
   be in charge of getting the transport-specific events.
-
-* a Session and a TargetSession and a SourceSession. TargetSession adds
-  commit, SourceSession adds apply. Or perhaps that is commit too,
-  as it uses finder to find objects?
-
-* configName -> name.
 
 * adjust todos so that we can use a fake http backend too (using
   sinon). implement this in a separate file.
