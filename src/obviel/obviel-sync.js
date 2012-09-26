@@ -218,10 +218,10 @@ obviel.sync = {};
     };
 
     Session.prototype.addActionByName = function(action) {
-        var actions = this.actionsByName[action.configName];
+        var actions = this.actionsByName[action.name];
         if (actions === undefined) {
             actions = new HashSet();
-            this.actionsByName[action.configName] = actions;
+            this.actionsByName[action.name] = actions;
         }
         actions.add(action);
     };
@@ -275,10 +275,10 @@ obviel.sync = {};
         });
     };
 
-    Session.prototype.touched = function(configName) {
+    Session.prototype.touched = function(name) {
         var i, action,
             result = [],
-            actions = sortActions(this.actionsByName[configName]);
+            actions = sortActions(this.actionsByName[name]);
         for (i = 0; i < actions.length; i++) {
             action = actions[i];
             result.push(action.touchedInfo());
@@ -322,9 +322,9 @@ obviel.sync = {};
     
     var actionSequence = 0;
     
-    var Action = function(session, configName) {
+    var Action = function(session, name) {
         this.session = session;
-        this.configName = configName;
+        this.name = name;
         this.sequence = actionSequence;
         actionSequence++;
     };
@@ -378,10 +378,10 @@ obviel.sync = {};
     };
     
     Action.prototype.getConfig = function() {
-        var config = this.getTarget()[this.configName];
+        var config = this.getTarget()[this.name];
         if (config === undefined) {
             throw new module.ConnectionError(
-                "No " + this.configName + " defined for target");
+                "No " + this.name + " defined for target");
         }
         return config;
     };
@@ -476,8 +476,8 @@ obviel.sync = {};
                 this.propertyName === other.propertyName);
     };
     
-    var ObjectAction = function(session, configName, obj) {
-        Action.call(this, session, configName);
+    var ObjectAction = function(session, name, obj) {
+        Action.call(this, session, name);
         this.obj = obj;
     };
 
@@ -489,22 +489,22 @@ obviel.sync = {};
     };
 
     ObjectAction.prototype.duplicateKey = function() {
-        return new ActionDuplicateKey(this.configName,
+        return new ActionDuplicateKey(this.name,
                                       this.obj);
     };
 
 
     ObjectAction.prototype.trumpKey = function() {
-        return new ObjectActionTrumpKey(this.configName);
+        return new ObjectActionTrumpKey(this.name);
     };
 
     ObjectAction.prototype.touchedInfo = function() {
         return this.obj;
     };
     
-    var ContainerAction = function(session, configName, obj,
+    var ContainerAction = function(session, name, obj,
                                    container, propertyName) {
-        ObjectAction.call(this, session, configName, obj);
+        ObjectAction.call(this, session, name, obj);
         this.container = container;
         this.propertyName = propertyName;
     };
@@ -517,14 +517,14 @@ obviel.sync = {};
     };
     
     ContainerAction.prototype.duplicateKey = function() {
-        return new ActionDuplicateKey(this.configName,
+        return new ActionDuplicateKey(this.name,
                                       this.obj,
                                       this.container,
                                       this.propertyName);
     };
 
     ContainerAction.prototype.trumpKey = function() {
-        return new ContainerActionTrumpKey(this.configName,
+        return new ContainerActionTrumpKey(this.name,
                                            this.container,
                                            this.propertyName);
     };
@@ -618,7 +618,7 @@ obviel.sync = {};
         }
         
         for (i = 0; i < entries.length; i++) {
-            // if (entries[i].configName === 'update') {
+            // if (entries[i].name === 'update') {
             //     action = new UpdateAction(
             // }
             connection.processSourceAction(entries[i]);
@@ -761,19 +761,19 @@ obviel.sync = {};
             self = this,
             config = action.getConfig(),
             http = this.getConfig(config, action);
-        if (action.configName === 'update') {
+        if (action.name === 'update') {
             promise = this.processTargetUpdate(
                 action.obj,
                 config, http);
-        } else if (action.configName === 'add') {
+        } else if (action.name === 'add') {
             promise = this.processTargetAdd(
                 action.obj, action.container, action.propertyName,
                 config, http);
-        } else if (action.configName === 'remove') {
+        } else if (action.name === 'remove') {
             promise = this.processTargetRemove(
                 action.obj, action.container, action.propertyName,
                 config, http);
-        } else if (action.configName === 'refresh') {
+        } else if (action.name === 'refresh') {
             promise = this.processTargetRefresh(
                 action.obj,
                 config, http);
@@ -935,7 +935,7 @@ obviel.sync = {};
             // but always root. but with local storage it won't matter
             // unless it were to wipe out our changes too early, which
             // it probably does, so need test
-            if (actions[i].configName === 'refresh') {
+            if (actions[i].name === 'refresh') {
                 data = localStorage[this.key];
                 if (data !== undefined) {
                     module.multiUpdater(this, $.parseJSON(data));
