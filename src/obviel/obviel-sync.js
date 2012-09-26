@@ -180,8 +180,7 @@ obviel.sync = {};
         return removedActions;
     };
     
-    var Session = function(connection) {
-        this.connection = connection;
+    var Session = function() {
         this.actions = new HashSet();
         this.actionsByName = {};
         this.knownActions = new HashSet();
@@ -263,18 +262,6 @@ obviel.sync = {};
         return sortActions(this.actions);
     };
     
-    Session.prototype.commit = function() {
-        var self = this;
-        return this.connection.commitSession(this).done(function() {
-            var i,
-                actions = self.sortedActions();
-            for (i = 0; i < actions.length; i++) {
-                actions[i].afterCommit();
-            }
-            self.connection.currentSession = null;
-        });
-    };
-
     Session.prototype.touched = function(name) {
         var i, action,
             result = [],
@@ -318,8 +305,27 @@ obviel.sync = {};
     Session.prototype.mutator = function(obj) {
         return new ObjectMutator(this, obj);
     };
-
     
+    var TargetSession = function(connection) {
+        Session.call(this);
+        this.connection = connection;
+    };
+
+    TargetSession.prototype = new Session();
+    TargetSession.prototype.constructor = TargetSession;
+    
+    Session.prototype.commit = function() {
+        var self = this;
+        return this.connection.commitSession(this).done(function() {
+            var i,
+                actions = self.sortedActions();
+            for (i = 0; i < actions.length; i++) {
+                actions[i].afterCommit();
+            }
+            self.connection.currentSession = null;
+        });
+    };
+
     var actionSequence = 0;
     
     var Action = function(session, name) {
@@ -712,7 +718,7 @@ obviel.sync = {};
         if (this.currentSession !== null) {
             return this.currentSession;
         }
-        session = new Session(this);
+        session = new TargetSession(this);
         this.currentSession = session;
         return session;
     };
