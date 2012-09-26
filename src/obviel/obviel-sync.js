@@ -391,14 +391,6 @@ obviel.sync = {};
         return false;
     };
     
-    // Action.prototype.getTarget = function() {
-    //     var target = mappings[this.getIface()].target;
-    //     if (target === undefined) {
-    //         throw new module.ConnectionError("No target defined");
-    //     }
-    //     return target;
-    // };
-
     Action.prototype.afterCommit = function() {
         this.sendEvent();
     };
