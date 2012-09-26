@@ -187,6 +187,10 @@ obviel.sync = {};
         this.actionsByObject = new Hashtable(objHashCode, objHashEquals);
     };
 
+    Session.prototype.getSection = function(iface) {
+        throw new Error("Session base class cannot get section");
+    };
+    
     Session.prototype.addAction = function(action) {
         var removedActions, name;
         if (this.isDuplicateAction(action)) {
@@ -313,8 +317,12 @@ obviel.sync = {};
 
     TargetSession.prototype = new Session();
     TargetSession.prototype.constructor = TargetSession;
+
+    TargetSession.prototype.getSection = function(iface) {
+        return mappings[iface].target;
+    };
     
-    Session.prototype.commit = function() {
+    TargetSession.prototype.commit = function() {
         var self = this;
         return this.connection.commitSession(this).done(function() {
             var i,
@@ -324,6 +332,18 @@ obviel.sync = {};
             }
             self.connection.currentSession = null;
         });
+    };
+
+    
+    var SourceSession = function() {
+        Session.call(this);
+    };
+
+    SourceSession.prototype = new Session();
+    SourceSession.prototype.constructor = SourceSession;
+    
+    SourceSession.prototype.getSection = function(iface) {
+        return mappings[iface].source;
     };
 
     var actionSequence = 0;
@@ -371,20 +391,21 @@ obviel.sync = {};
         return false;
     };
     
-    Action.prototype.getTarget = function() {
-        var target = mappings[this.getIface()].target;
-        if (target === undefined) {
-            throw new module.ConnectionError("No target defined");
-        }
-        return target;
-    };
+    // Action.prototype.getTarget = function() {
+    //     var target = mappings[this.getIface()].target;
+    //     if (target === undefined) {
+    //         throw new module.ConnectionError("No target defined");
+    //     }
+    //     return target;
+    // };
 
     Action.prototype.afterCommit = function() {
         this.sendEvent();
     };
     
     Action.prototype.getConfig = function() {
-        var config = this.getTarget()[this.name];
+        var section = this.session.getSection(this.getIface()),
+            config = section[this.name];
         if (config === undefined) {
             throw new module.ConnectionError(
                 "No " + this.name + " defined for target");
