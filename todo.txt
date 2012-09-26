@@ -1,5 +1,12 @@
 After todos review:
 
+* need to make sure that missing source target information doesn't give
+  errors now that events have been introduced.
+
+* test for events
+
+* test that the mutator session is reused.
+
 * it should be possible to set events for both source and target.
   These events will be sent to the object and will fire as the session is
   commited or as the source events come in.
