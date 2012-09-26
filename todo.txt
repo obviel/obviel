@@ -1,5 +1,29 @@
 After todos review:
 
+* make localstorage work for todos.
+
+* adjust todos so that we can use a fake http backend too (using
+  sinon). implement this in a separate file.
+
+* how does source add and remove find the container? based on obj added,  
+  or based on container id.
+
+* want a refresh action that does not POST previous contents but
+  uses an id to indicate what to refresh (or no message from server).
+
+* server-triggered actions. construct real Action objects here. use a specially configured
+  session so that Action retrieves config from source, not
+  target. This way we can benefit from conflict resolution and event
+  sending. The session will also have a special apply method which
+  will apply the actions to objects. This means actions need to gain
+  special abilities to be applied to an object.  this special session
+  can also be used for socket-style events.
+
+* how does a source based add inform the system about the container?
+  the action could container containerId the container could be found
+  on the basis of the obj added (trajectParent, or iface + id, or
+  something else)
+
 * need to make sure that missing source target information doesn't give
   errors now that events have been introduced.
 

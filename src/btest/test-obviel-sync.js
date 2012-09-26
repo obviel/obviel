@@ -1067,7 +1067,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(m.session.updated(), [obj]);
         
     },
-    "events are sent for targets if configured": function() {
+    "events are sent for targets if configured": function(done) {
         obviel.sync.mapping({
             iface: 'test',
             target: {
@@ -1106,8 +1106,68 @@ var syncTestCase = buster.testCase("sync tests:", {
         m.commit().done(function() {
             // now we expect there have been an event
             assert.equals(events, 1);
+            done();
+        });
+    },
+    "events are sent for sources if configured": function(done) {
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                update: {
+                    event: 'foo'
+                }
+            },
+            target: {
+                refresh: {
+                    http: {
+                        response: obviel.sync.actionProcessor
+                    }
+                }
+            }
+        });
+
+        var testUrl = 'testurl';
+        
+        var obj = {
+            id: 'one',
+            iface: 'test',
+            value: 'a',
+            refreshUrl: testUrl
+        };
+
+        obviel.sync.registerObjById(obj);
+        
+        this.server.respondWith('GET', testUrl, function(request) {
+            request.respond(200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    name: 'update',
+                    obj: {
+                        id: 'one',
+                        iface: 'test',
+                        value: 'b',
+                        refreshUrl: testUrl
+                    }
+                }));
+        });
+        
+        var events = 0;
+        $(obj).bind('foo', function() {
+            events++;
+        });
+        
+        var conn = new obviel.sync.HttpConnection();
+        var m = conn.mutator(obj);
+        m.refresh();
+        // nothing has been committed, so no events sent
+        assert.equals(events, 0);
+        // now we commit
+        m.commit().done(function() {
+            // now we expect there have been an event
+            assert.equals(events, 1);
+            done();
         });
     }
+
     
     // refresh & remove
     // remove & remove again

@@ -611,19 +611,6 @@ obviel.sync = {};
         // return result;
     };
     
-    
-    // XXX want a refresh action that does not POST previous contents but
-    // id to refresh or nothing at all to server.
-    
-    // how does a source based add inform the system about the container?
-    // the action could container containerId
-    // the container could be found on the basis of the obj added
-    // (trajectParent, or iface + id, or something else)
-    
-    
-    // XXX what we need is some code that can only perform the
-    // bit that involves the source bits. this way we can simulate
-    // session actions from the server
     module.actionProcessor = function(connection, entries) {
         var i;
         if (!$.isArray(entries)) {
@@ -631,6 +618,9 @@ obviel.sync = {};
         }
         
         for (i = 0; i < entries.length; i++) {
+            // if (entries[i].configName === 'update') {
+            //     action = new UpdateAction(
+            // }
             connection.processSourceAction(entries[i]);
         }
     };
@@ -691,11 +681,17 @@ obviel.sync = {};
     
 
     module.Connection.prototype.processSourceAction = function(action) {
-        var finder, obj, info;
+        var finder, obj, info, event;
         if (action.name === 'update') {
             finder = mappings[action.obj.iface].source.update.finder;
+            obj = finder(action);
             // XXX this code isn't covered and needs testing
-            objectUpdater(finder(action), action.obj);
+            objectUpdater(obj, action.obj);
+            // XXX hack to make test pass for now
+            event = mappings[action.obj.iface].source.update.event;
+            if (event) {
+                $(obj).trigger(event);
+            }
         } else if (action.name === 'add') {
             // action.containerIface is container iface..
             // could also get container by containerId, though this
@@ -788,6 +784,7 @@ obviel.sync = {};
                 return;
             }
             response(self, responseObj);
+            action.sendEvent();
         });
     };
     
