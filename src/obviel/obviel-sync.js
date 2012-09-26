@@ -430,15 +430,6 @@ obviel.sync = {};
     Action.prototype.getConnectionConfig = function(config) {
         return this.session.connection.getConfig(config, this);
     };
-
-    // Action.prototype.process = function() {
-    //     // XXX should be able to avoid having to get connection config here,
-    //     // but will need to pass action to processTarget in that case
-    //     var config = this.getConfig(),
-    //         connectionConfig = this.getConnectionConfig(config);
-    //     return this.session.connection.processTarget(
-    //         connectionConfig, this.obj);
-    // };
     
     var ActionDuplicateKey = function(actionName, obj,
                                       container, propertyName) {
@@ -777,13 +768,13 @@ obviel.sync = {};
             actions = session.sortedActions(),
             promises = [];
         for (i = 0; i < actions.length; i++) {
-            promises.push(this.processTarget2(actions[i]));
+            promises.push(this.processTarget(actions[i]));
         }
         return $.when.apply(null, promises);
 
     };
     
-    module.HttpConnection.prototype.processTarget2 = function(action) {
+    module.HttpConnection.prototype.processTarget = function(action) {
         var promise,
             self = this,
             config = action.getConfig(),
@@ -868,49 +859,6 @@ obviel.sync = {};
         });
     };
     
-
-    // module.HttpConnection.prototype.processTarget = function(config, obj) {
-    //     var self = this,
-    //         data,
-    //         method = config.method || 'POST';
-    //     if (method === 'POST' || method === 'PUT') {
-    //         if (obj !== undefined) {
-    //             data = JSON.stringify(obj);
-    //         } else {
-    //             data = null;
-    //         }
-    //     } else {
-    //         data = null;
-    //     }
-    //     return $.ajax({
-    //         type: method,
-    //         url: config.calculatedUrl,
-    //         processData: false,
-    //         contentType: 'application/json',
-    //         dataType: 'json',
-    //         data: data
-    //     }).done(function(responseObj) {
-    //         var response = config.response;
-    //         if (!response) {
-    //             return;
-    //         }
-    //         response(self, responseObj);
-    //     });
-    // };
-
-    // module.HttpConnection.prototype.processSource = function(properties, obj) {
-    //     return $.ajax({
-    //         type: properties.method || 'GET',
-    //         url: properties.url,
-    //         processData: false,
-    //         contentType: 'application/json',
-    //         dataType: 'json'
-    //     }).done(function(newObj) {
-    //         objectUpdater(obj, newObj);
-    //     });
-    // };
-
-
     module.SocketIoConnection = function(io) {
         this.io = io;
     };
