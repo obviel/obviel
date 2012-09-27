@@ -708,22 +708,32 @@ obviel.sync = {};
     };
     
     module.multiUpdater = function(connection, entries) {
-        var i, finder, entry;
+        var i, finder, entry, defer,
+            session = new SourceSession();
         if ($.isEmptyObject(entries)) {
-            return;
+            defer = $.Deferred();
+            return defer.promise();
         }
         if (!$.isArray(entries)) {
             entries = [entries];
         }
         for (i = 0; i < entries.length; i++) {
             entry = entries[i];
-            finder = connection.getSource(entry.iface).update.finder;
-            if (!finder) {
-                // XXX is this an error?
-                continue;
-            }
-            objectUpdater(finder({name: 'update', obj: entry}), entry);
+            session.update(entry);
         }
+        return session.commit();
+        
+        
+        // for (i = 0; i < entries.length; i++) {
+        //     entry = entries[i];
+            
+        //     finder = connection.getSource(entry.iface).update.finder;
+        //     if (!finder) {
+        //         // XXX is this an error?
+        //         continue;
+        //     }
+        //     objectUpdater(finder({name: 'update', obj: entry}), entry);
+        // }
     };
     
     
@@ -1007,7 +1017,15 @@ obviel.sync = {};
                         url: function(action) { return action.container.addUrl; },
                         response: obviel.sync.multiUpdater
                     }
+                },
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(action) { return action.container.removeUrl; },
+                        response: obviel.sync.multiUpdater
+                    }
                 }
+
             }
         };
     };
