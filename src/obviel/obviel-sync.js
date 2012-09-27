@@ -722,18 +722,6 @@ obviel.sync = {};
             session.update(entry);
         }
         return session.commit();
-        
-        
-        // for (i = 0; i < entries.length; i++) {
-        //     entry = entries[i];
-            
-        //     finder = connection.getSource(entry.iface).update.finder;
-        //     if (!finder) {
-        //         // XXX is this an error?
-        //         continue;
-        //     }
-        //     objectUpdater(finder({name: 'update', obj: entry}), entry);
-        // }
     };
     
     
