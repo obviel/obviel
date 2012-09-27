@@ -30,6 +30,11 @@
     obviel.sync.mapping({
         iface: 'todos',
         source: {
+            'update': {
+                finder: function() {
+                    return todos;
+                }
+            }
         },
         target: {
             update: {

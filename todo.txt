@@ -1,5 +1,10 @@
 After todos review:
 
+* todos app shouldn't store state information.
+
+* todo app doesn't allow clearing up everything after you press 'mark everything 
+  as done'.
+
 * source events from socket io not implemented yet
 
 * make localstorage work for todos.
