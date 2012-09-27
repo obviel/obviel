@@ -2,8 +2,11 @@ After todos review:
 
 * todos app shouldn't store state information.
 
-* todo app doesn't allow clearing up everything after you press 'mark everything 
-  as done'.
+* todo app doesn't allow clearing up everything after you press 'mark
+  everything as done'.
+
+* go through todo app mapping configuration and see what could be defaults,
+  for instance the finder that finds the root?
 
 * source events from socket io not implemented yet
 

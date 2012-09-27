@@ -62,12 +62,6 @@
         }
     });
 
-
-    // a clear function removing a todo from the application
-    var clear = function(todo) {
-        var m = conn.mutator(todos);
-        m.get('items').remove(todo);
-    };
     
     // create a special stats model from the todos
     var getStats = function(todos) {
@@ -176,7 +170,7 @@
             $(todos).trigger('updateStats');
         },
         clear: function() {
-            clear(this.obj);
+            conn.mutator(todos).get('items').remove(this.obj);
         }
     });
 
@@ -198,12 +192,12 @@
         close: function() {
             var value = $('input.edit', this.el).val();
             if (!value) {
-                clear(this.obj);
+                conn.mutator(todos).get('items').remove(this.obj);
                 return;
             }
             var m = this.mutator();
             m.set('title', value);
-            m.set('iface', todo);
+            m.set('iface', 'todo');
         } 
     });
     
