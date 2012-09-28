@@ -1177,6 +1177,61 @@ var syncTestCase = buster.testCase("sync tests:", {
             assert.equals(events, 1);
             done();
         });
+    },
+    "source transformer for update": function(done) {
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0,
+            refreshUrl: 'refreshObj'
+        };
+
+        obviel.sync.mapping({
+            iface: 'test',
+            source: {
+                update: {
+                    finder: function(action) {
+                        return obj;
+                    },
+                    http: {
+                        transformer: function(obj) {
+                            obj.extra = "extra!";
+                            return obj;
+                        }
+                    }
+                }
+            },
+            target: {
+                refresh: {
+                    http: {
+                        method: 'GET',
+                        url: function(m) { return m.obj['refreshUrl']; },
+                        response: obviel.sync.multiUpdater
+                    }
+                }
+
+            }
+        });
+        
+        this.server.respondWith('GET', 'refreshObj', function(request) {
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    iface: 'test',
+                    id: 'testid',
+                    value: 2.0,
+                    refreshUrl: 'refreshObj'
+                }));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+        session.refresh(obj);
+        session.commit().done(function() {
+            assert.equals(obj.extra, "extra!");
+            done();
+        });
+
     }
 
     
