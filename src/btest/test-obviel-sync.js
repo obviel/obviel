@@ -428,6 +428,8 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return obj;
+                    },
+                    http: {
                     }
                 }
             },
@@ -485,6 +487,8 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return obj;
+                    },
+                    http: {
                     }
                 }
             }
@@ -496,6 +500,9 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return container;
+                    },
+                    http: {
+
                     }
                 }
             },
@@ -1019,6 +1026,8 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(orig) {
                         return obj;
+                    },
+                    local: {
                     }
                 }
             },
@@ -1114,7 +1123,9 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             source: {
                 update: {
-                    event: 'foo'
+                    event: 'foo',
+                    http: {
+                    }
                 }
             },
             target: {

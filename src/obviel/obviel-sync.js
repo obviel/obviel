@@ -184,7 +184,8 @@ obviel.sync = {};
         return removedActions;
     };
     
-    var Session = function() {
+    var Session = function(connection) {
+        this.connection = connection;
         this.actions = new HashSet();
         this.actionsByName = {};
         this.knownActions = new HashSet();
@@ -323,8 +324,7 @@ obviel.sync = {};
     };
     
     var TargetSession = function(connection) {
-        Session.call(this);
-        this.connection = connection;
+        Session.call(this, connection);
     };
 
     TargetSession.prototype = new Session();
@@ -341,10 +341,9 @@ obviel.sync = {};
             self.connection.currentSession = null;
         });
     };
-
     
-    var SourceSession = function() {
-        Session.call(this);
+    var SourceSession = function(connection) {
+        Session.call(this, connection);
     };
 
     SourceSession.prototype = new Session();
@@ -585,8 +584,11 @@ obviel.sync = {};
     };
 
     UpdateAction.prototype.apply = function() {
-        var finder = this.getConfig().finder,
-            obj = finder(this);
+        var config = this.getConfig(),
+            connectionConfig = this.getConnectionConfig(config),
+            finder = config.finder,
+            transformer = connectionConfig.transformer,
+            obj = transformer(finder(this));
         // XXX this code isn't covered and needs testing
         objectUpdater(obj, this.obj);
         // XXX this is cheating but is needed to make afterCommit
@@ -693,11 +695,10 @@ obviel.sync = {};
         }
     };
     
-        
     module.actionProcessor = function(connection, entries) {
         var i,
             actions = [],
-            session = new SourceSession();
+            session = new SourceSession(connection);
         if (!$.isArray(entries)) {
             entries = [entries];
         }
@@ -709,7 +710,7 @@ obviel.sync = {};
     
     module.multiUpdater = function(connection, entries) {
         var i, finder, entry, defer,
-            session = new SourceSession();
+            session = new SourceSession(connection);
         if ($.isEmptyObject(entries)) {
             defer = $.Deferred();
             return defer.promise();
@@ -723,7 +724,6 @@ obviel.sync = {};
         }
         return session.commit();
     };
-    
     
     module.Connection = function() {
         this.root = null;
@@ -927,7 +927,7 @@ obviel.sync = {};
     module.LocalStorageConnection.prototype = new module.Connection();
 
     module.LocalStorageConnection.prototype.getConfig = function(config, action) {
-        return {};
+        return config.local;
     };
 
     module.LocalStorageConnection.prototype.commitSession = function(session) {
@@ -974,43 +974,88 @@ obviel.sync = {};
         id2objects[obj.id] = obj;
     };
     
+
+    var nullTransformer = function(obj) {
+        return obj;
+    };
     
     var getDefaults = function() {
         return {
             source: {
                 update: {
-                    finder: module.modelByObj
+                    finder: module.modelByObj,
+                    http: {
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
+                    }
+                },
+                add: {
+                    finder: module.modelByObj,
+                    http: {
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
+                    }
+                },
+                remove: {
+                    finder: module.modelByObj,
+                    http: {
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
+                    }
                 }
             },
             target: {
                 update: {
                     http: {
                         method: 'POST',
-                        url: function(action) { return action.obj.updateUrl; }
+                        url: function(action) { return action.obj.updateUrl; },
+                        transformer: nullTransformer
                     },
                     socket: {
-                        type: function(action) { return action.obj.updateType; }
+                        type: function(action) { return action.obj.updateType; },
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
                     }
                 },
                 refresh: {
                     http: {
                         method: 'GET',
                         url: function(action) { return action.obj['refreshUrl']; },
-                        response: obviel.sync.multiUpdater
+                        response: obviel.sync.multiUpdater,
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
                     }
                 },
                 add: {
                     http: {
                         method: 'POST',
                         url: function(action) { return action.container.addUrl; },
-                        response: obviel.sync.multiUpdater
+                        response: obviel.sync.multiUpdater,
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
                     }
                 },
                 remove: {
                     http: {
                         method: 'POST',
                         url: function(action) { return action.container.removeUrl; },
-                        response: obviel.sync.multiUpdater
+                        response: obviel.sync.multiUpdater,
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
                     }
                 }
 
