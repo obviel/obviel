@@ -588,9 +588,10 @@ obviel.sync = {};
             connectionConfig = this.getConnectionConfig(config),
             finder = config.finder,
             transformer = connectionConfig.transformer,
-            obj = transformer(finder(this));
+            obj = finder(this),
+            transformedObj = transformer(this.obj);
         // XXX this code isn't covered and needs testing
-        objectUpdater(obj, this.obj);
+        objectUpdater(obj, transformedObj);
         // XXX this is cheating but is needed to make afterCommit
         // run properly
         this.obj = obj;
@@ -628,7 +629,11 @@ obviel.sync = {};
     };
 
     AddAction.prototype.apply = function() {
-        this.container[this.propertyName].push(this.obj);
+        var config = this.getConfig(),
+            connectionConfig = this.getConnectionConfig(config),
+            transformer = connectionConfig.transformer,
+            obj = transformer(this.obj);
+        this.container[this.propertyName].push(obj);
     };
     
     var RemoveAction = function(session, obj, container, propertyName) {
@@ -646,7 +651,11 @@ obviel.sync = {};
     };
 
     RemoveAction.prototype.apply = function() {
-        removeFromArray(this.container[this.propertyName], this.obj);
+        var config = this.getConfig(),
+            connectionConfig = this.getConnectionConfig(config),
+            transformer = connectionConfig.transformer,
+            obj = transformer(this.obj);
+        removeFromArray(this.container[this.propertyName], obj);
     };
 
     RemoveAction.prototype.process = function() {

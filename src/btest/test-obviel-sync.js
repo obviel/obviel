@@ -569,6 +569,9 @@ var syncTestCase = buster.testCase("sync tests:", {
                             container: container,
                             propertyName: 'entries'
                         };
+                    },
+                    http: {
+
                     }
                 }
             },
@@ -1232,8 +1235,75 @@ var syncTestCase = buster.testCase("sync tests:", {
             done();
         });
 
-    }
+    },
+    "source transformer for add": function(done) {
+        var container = {
+            id: 'foo',
+            iface: 'container',
+            entries: [],
+            refreshUrl: 'getAdditions'
+        };
+        
+        obviel.sync.mapping({
+            iface: 'container',
+            source: {
+                add: {
+                    finder: function(action) {
+                        return {
+                            container: container,
+                            propertyName: 'entries'
+                        };
+                    },
+                    http: {
+                        transformer: function(obj) {
+                            obj.extra = 'extra!';
+                            return obj;
+                        }
+                    }
+                }
+            },
+            target: {
+                refresh: {
+                    http: {
+                        method: 'GET',
+                        url: function(m) { return m.obj['refreshUrl']; },
+                        response: obviel.sync.actionProcessor
+                    }
+                }
+            }
+        });
+        
+        this.server.respondWith('GET', 'getAdditions', function(request) {
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    name: 'add',
+                    containerIface: 'container',
+                    obj: {
+                        iface: 'test',
+                        id: 'testid',
+                        value: 2.0
+                    }
+                }));
+        });
+        
+        
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
 
+        session.refresh(container);
+        
+        session.commit().done(function(entries) {
+            assert.equals(container.entries.length, 1);
+            assert.equals(container.entries[0], {
+                iface: 'test',
+                id: 'testid',
+                value: 2.0,
+                extra: 'extra!'
+            });
+            done();
+        });
+    }
     
     // refresh & remove
     // remove & remove again
