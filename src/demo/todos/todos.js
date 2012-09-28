@@ -20,19 +20,6 @@
         source: {
             'update': {
                 http: {
-                    transformer: function(orig) {
-                        var i, item,
-                            items = [];
-                        for (i = 0; i < items.length; i++) {
-                            item = orig.items[i];
-                            item.iface = 'todo';
-                            items.push(item);
-                        }
-                        return {
-                            iface: 'todos',
-                            items: items
-                        };
-                    }
                 },
                 finder: function() {
                     return todos;
@@ -62,7 +49,22 @@
             },
             refresh: {
                 http: {
-                    url: function(m) { return '/todos'; }
+                    url: function(m) { return '/todos'; },
+                    responseTransformer: function(orig) {
+                        var i, item,
+                            items = [];
+                        for (i = 0; i < orig.items.length; i++) {
+                            item = orig.items[i];
+                            item.iface = 'todo';
+                            items.push(item);
+                        }
+                        return {
+                            iface: 'todos',
+                            items: items,
+                            addUrl: orig.addUrl,
+                            removeUrl: orig.removeUrl
+                        };
+                    }
                 }
             }
         }

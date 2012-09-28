@@ -3,6 +3,7 @@ After todos review:
 * source transformer should be applied in .apply(). but source transformer
   can come from connection, so how is this done? 
 
+* a test for the responseTransformer.
 
 * todos app shouldn't store state information.
 

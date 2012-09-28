@@ -842,11 +842,15 @@ obviel.sync = {};
                 config, http);
         }
         return promise.done(function(responseObj) {
-            var response = http.response;
+            var response = http.response,
+                responseTransformer = http.responseTransformer;
             if (!response) {
                 return;
             }
-            response(self, responseObj);
+            if (!responseTransformer) {
+                return;
+            }
+            response(self, responseTransformer(responseObj));
         });
     };
     

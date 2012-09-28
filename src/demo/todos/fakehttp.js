@@ -4,7 +4,7 @@ var fakeTodosHttpServer = {};
 
 (function(module) {
     
-    var todos = [];
+    var todos = [{id: 1, title: 'Hello'}];
     
     var json_headers = { "Content-Type": "application/json"};
 
