@@ -1,5 +1,9 @@
 After todos review:
 
+* source transformer should be applied in .apply(). but source transformer
+  can come from connection, so how is this done? 
+
+
 * todos app shouldn't store state information.
 
 * todo app doesn't allow clearing up everything after you press 'mark

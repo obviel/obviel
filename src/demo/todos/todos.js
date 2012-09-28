@@ -2,22 +2,10 @@
     // enter key
     var KEYCODE = 13;
 
-    var conn = new obviel.sync.LocalStorageConnection('todos');
+    //var conn = new obviel.sync.LocalStorageConnection('todos');
+    var conn = new obviel.sync.HttpConnection();
     
     var _ = obviel.i18n.translate('todos');
-
-    // transform to use obviel-sync
-    // *set up connection globally, or at least in a globally gettable way
-    // * mutator on connection to create session implicitly? and then
-    // a commit on mutator as well
-    // * all cases of an update trigger should now be a commit
-    // * the backend should also send update events and such so that
-    //   the UI can respond. in case of localstorage, these should be
-    //   sent immediately, in case of a remote storage they could also
-    //   be sent immediately, or be sent as soon as we get message from
-    //   the source. event configuration could be done in config
-    // * investigate ways to get the code more compact    
-    // auto-commit on event handling? how to get the active session?
     
     // the application model
     var todos = {
@@ -31,22 +19,51 @@
         iface: 'todos',
         source: {
             'update': {
+                http: {
+                    transformer: function(orig) {
+                        var i, item,
+                            items = [];
+                        for (i = 0; i < items.length; i++) {
+                            item = orig.items[i];
+                            item.iface = 'todo';
+                            items.push(item);
+                        }
+                        return {
+                            iface: 'todos',
+                            items: items
+                        };
+                    }
+                },
                 finder: function() {
                     return todos;
                 }
             }
         },
         target: {
-            update: {
-                event: 'update'
-            },
+            // update: {
+            //     http: {
+            //         url: function(m) { return m.obj.updateUrl; }
+            //     },
+            //     event: 'update'
+            // },
             add: {
+                http: {
+                    url: function(m) { return m.container.addUrl; }
+                },
+                // no handling of output, how to turn off?
                 event: 'update'
             },
             remove: {
+                http: {
+                    url: function(m) { return m.container.removeUrl; }
+                },
+                // no handling of output, how to turn off?
                 event: 'update'
             },
             refresh: {
+                http: {
+                    url: function(m) { return '/todos'; }
+                }
             }
         }
     });
@@ -57,6 +74,9 @@
         },
         target: {
             update: {
+                http: {
+                    url: function(m) { return m.obj.updateUrl; }
+                },
                 event: 'update'
             }
         }
@@ -212,6 +232,7 @@
     $(document).ready(function() {
         obviel.i18n.load().done(function() {
             obviel.i18n.setLocale('nl_NL').done(function() {
+                fakeTodosHttpServer.enable();
                 conn.init(todos).done(function() {
                     $('#app').render(todos);
                 });
