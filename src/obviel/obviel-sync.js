@@ -42,10 +42,16 @@ obviel.sync = {};
         this.message = message;
     };
 
+    module.ConnectionError.prototype = new Error();
+    module.ConnectionError.prototype.constructor = module.ConnectionError;
+    
     module.IdError = function(message) {
         this.name = 'IdError';
         this.message = message;
     };
+
+    module.IdError.prototype = new Error();
+    module.IdError.prototype.constructor = module.IdError();
     
     var mappings = {};
     module.mapping = function(config) {
@@ -133,7 +139,7 @@ obviel.sync = {};
             throw new Error(
                 "Cannot remove item from array as it doesn't exist: " + value);
         }
-        array.splice(value, 1);
+        array.splice(index, 1);
     };
     
     ArrayMutator.prototype.remove = function(value) {
@@ -377,10 +383,15 @@ obviel.sync = {};
         var self = this;
         this.combine();
         this.transform();
-        return this.connection.commitSession(this).done(function() {
-            self.afterCommit();
+        try {
+            return this.connection.commitSession(this).done(function() {
+                self.afterCommit();
+                self.connection.currentSession = null;
+            });
+        } catch(e) {
             self.connection.currentSession = null;
-        });
+            throw e;
+        }
     };
     
     var SourceSession = function(connection) {
