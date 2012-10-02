@@ -847,10 +847,10 @@ obviel.sync = {};
             if (!response) {
                 return;
             }
-            if (!responseTransformer) {
-                return;
+            if (responseTransformer) {
+                responseObj = responseTransformer(responseObj);
             }
-            response(self, responseTransformer(responseObj));
+            response(self, responseObj);
         });
     };
     
