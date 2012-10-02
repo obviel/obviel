@@ -14,6 +14,7 @@ var fakeTodosHttpServer = {};
         
         server.respondWith('GET', '/todos', function(request) {
             var i, todo;
+            console.log("GET /todos");
             for (i = 0; i < todos.length; i++) {
                 todo = todos[i];
                 // hack update url directly into todo item, but will work
@@ -29,6 +30,7 @@ var fakeTodosHttpServer = {};
         
         server.respondWith('POST', '/todos/add', function(request) {
             var item = JSON.parse(request.requestBody);
+            console.log("POST /todos/add " + request.requestBody);
             todos.push(item);
             request.respond(200, json_headers,
                             JSON.stringify([]));
@@ -39,6 +41,7 @@ var fakeTodosHttpServer = {};
             ids = JSON.parse(request.requestBody),
             idSet = {},
             newTodos = [];
+            console.log("POST /todos/remove " + request.requestBody);
             for (i = 0; i < ids.length; i++) {
                 idSet[ids[i]] = true;
             }
@@ -55,7 +58,8 @@ var fakeTodosHttpServer = {};
         
         server.respondWith('POST', /\/todos\/(\d+)\/update/, function(request, id) {
             var i, todo, key,
-            updated = JSON.parse(request.requestBody);
+                updated = JSON.parse(request.requestBody);
+            console.log("POST /todos/" + id + "/update " + request.requestBody);
             for (i = 0; i < todos.length; i++) {
                 todo = todos[i];
                 if (todo.id === id) {
