@@ -27,12 +27,12 @@
             }
         },
         target: {
-            // update: {
-            //     http: {
-            //         url: function(m) { return m.obj.updateUrl; }
-            //     },
-            //     event: 'update'
-            // },
+            update: {
+                http: {
+                    url: function(m) { return m.obj.updateUrl; }
+                },
+                event: 'update'
+            },
             add: {
                 http: {
                     url: function(m) { return m.container.addUrl; }
@@ -45,7 +45,9 @@
                     url: function(m) { return m.container.removeUrl; }
                 },
                 // no handling of output, how to turn off?
-                event: 'update'
+                event: 'update',
+                combine: true,
+                transformer: obviel.sync.idsTransformer
             },
             refresh: {
                 http: {
@@ -101,6 +103,8 @@
         return {iface: 'stats', remaining: remaining, done: done,
                 amount: amount};
     };
+
+    var todoIds = 100;
     
     // a view for the whole todos application
     obviel.view({
@@ -133,7 +137,9 @@
                 return;
             }
             var m = this.mutator();
-            var newObj = {iface: 'todo', done: false, title: value};
+            var todoId = todoIds;
+            todoIds++;
+            var newObj = {iface: 'todo', id: todoId, done: false, title: value};
             m.get('items').push(newObj);
         },
         toggleAll: function() {
@@ -151,14 +157,16 @@
         iface: 'stats',
         obvtScript: 'obvt-todo-stats',
         clearCompleted: function() {
-            var newItems = [];
+            var m = conn.mutator(todos),
+                toRemove = [];
             $.each(todos.items, function(index, item) {
-                if (!item.done) {
-                    newItems.push(item);
+                if (item.done) {
+                    toRemove.push(item);
                 }
             });
-            var m = conn.mutator(todos);
-            m.set('items', newItems);
+            $.each(toRemove, function(index, item) {
+                m.get('items').remove(item);
+            });
         }
     });
 
