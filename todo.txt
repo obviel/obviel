@@ -1,5 +1,15 @@
 After todos review:
 
+* removeFromArray test
+
+* todo app spurious submits:
+
+  * when selecting all items, an 'update' event is sent for the first entry.
+
+
+* the todo app is sending spurious updates due to UI state being maintained
+  in the objects and handled with mutator. How to solve?
+
 * the combiner and the transformer run when the session is committed.
   but what if touched() style functions are called after the session
   was committed? Do we want to clear the session anyway at this point?
@@ -8,6 +18,12 @@ After todos review:
   be a result of a target transformation.
 
 * todos app shouldn't store UI state information.
+
+* todos app is triggering session commit even when clicking on 
+  checkboxes. That wouldn't be so bad but there are actual items to commit!
+
+* todo is also causing a processTarget when the app is loading. Is
+  that the refresh?
 
 * todo app doesn't allow clearing up everything after you press 'mark
   everything as done'.
