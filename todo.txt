@@ -1,5 +1,28 @@
 After todos review:
 
+* the combiner and the transformer run when the session is committed.
+  but what if touched() style functions are called after the session
+  was committed? Do we want to clear the session anyway at this point?
+
+* an action combiner. 
+
+  The idea. we can configure a container target (add or remove) as follows:
+
+  remove: {
+    combine: true
+  }
+
+  the combined obj entries are added to a list. A transformer can then
+  be used to transform this list to a list of ids.
+ 
+  How does such combination work? The first time we run into a container
+  target action, we turn the obj into a list. We then store it in a hash,
+  with the container + propertyName as a key. Each time we find another such   
+  action we look it up in the hash and add the obj to the list.
+
+* a way to affect the URL used, at least to add parameters. This can 
+  be a result of a target transformation.
+
 * source transformer should be applied in .apply(). but source transformer
   can come from connection, so how is this done? 
 

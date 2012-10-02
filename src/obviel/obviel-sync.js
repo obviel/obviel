@@ -209,6 +209,7 @@ obviel.sync = {};
         for (name in this.actionsByName) {
             substractSet(this.actionsByName[name], removedActions);
         }
+        
         // XXX should we substract from knownActions too?
     };
 
@@ -333,9 +334,49 @@ obviel.sync = {};
     TargetSession.prototype.getSection = function(iface) {
         return mappings[iface].target;
     };
+
+    TargetSession.prototype.combine = function() {
+        var i, action, combinedAction, key, obj,
+            actionsByContainer = new Hashtable(),
+            newActions =  new HashSet(),
+            actions = this.sortedActions();
+        for (i = 0; i < actions.length; i++) {
+            action = actions[i];
+            if (!(action instanceof ContainerAction)) {
+                newActions.add(action);
+                continue;
+            }
+            if (!action.getConfig().combine) {
+                newActions.add(action);
+                continue;
+            }
+            key = action.trumpKey();
+            obj = action.obj;
+            combinedAction = actionsByContainer.get(key);
+            if (combinedAction === null) {
+                combinedAction = action;
+                combinedAction.obj = [];
+                actionsByContainer.put(key, combinedAction);
+                newActions.add(combinedAction);
+            }
+            combinedAction.obj.push(obj);
+        }
+        this.actions = newActions;
+    };
+
+    TargetSession.prototype.transform = function() {
+        var i, action,
+            actions = this.sortedActions();
+        for (i = 0; i < actions.length; i++) {
+            action = actions[i];
+            action.transform();
+        }
+    };
     
     TargetSession.prototype.commit = function() {
         var self = this;
+        this.combine();
+        this.transform();
         return this.connection.commitSession(this).done(function() {
             self.afterCommit();
             self.connection.currentSession = null;
@@ -384,7 +425,7 @@ obviel.sync = {};
     };
     
     Action.prototype.getObj = function() {
-        throw new Error("Object for action cannot be determined");
+        throw new Error("getObj not implemented");
     };
 
     Action.prototype.getIface = function() {
@@ -392,7 +433,11 @@ obviel.sync = {};
     };
 
     Action.prototype.duplicateKey = function() {
-        throw new Error("No duplicate key can be determined");
+        throw new Error("duplicateKey not implemented");
+    };
+
+    Action.prototype.transform = function() {
+        throw new Error("transform not implemented");
     };
     
     Action.prototype.trumpedBy = function() {
@@ -522,6 +567,17 @@ obviel.sync = {};
         return this.obj;
     };
 
+    ObjectAction.prototype.transform = function() {
+        var config = this.getConfig();
+        if (!config) {
+            return;
+        }
+        if (!config.transformer) {
+            return;
+        }
+        this.obj = config.transformer(this.obj);
+    };
+    
     ObjectAction.prototype.duplicateKey = function() {
         return new ActionDuplicateKey(this.name,
                                       this.obj);
@@ -656,29 +712,6 @@ obviel.sync = {};
             transformer = connectionConfig.transformer,
             obj = transformer(this.obj);
         removeFromArray(this.container[this.propertyName], obj);
-    };
-
-    RemoveAction.prototype.process = function() {
-        var config = this.getConfig(),
-            connectionConfig = this.getConnectionConfig(config);
-
-        // XXX this needs to be made configurable so we can
-        // post IDs, submit them as URL parameters, all in
-        // one URL per container or multiple times per container,
-        // and posting to remove URLs instead of posting remove ids
-        // for http at least; for socket it's pretty simple, just send
-        // the id
-        return this.session.connection.processTarget(
-            connectionConfig, this.getRemoveIds());
-    };
-
-    RemoveAction.prototype.getRemoveIds = function() {
-        var i, result = [];
-        return [this.obj.id];
-        // for (i = 0; i < this.obj.length; i++) {
-        //     result.push(this.obj[i].id);
-        // }
-        // return result;
     };
 
     var findContainerInfo = function(session, iface, name, actionInfo) {
@@ -884,7 +917,7 @@ obviel.sync = {};
     // to remove.
     module.HttpConnection.prototype.processTargetRemove = function(
         obj, container, propertyName, config, http) {
-        var data = JSON.stringify([obj.id]);
+        var data = JSON.stringify(obj);
         return $.ajax({
             type: http.method,
             url: http.calculatedUrl,
@@ -990,6 +1023,19 @@ obviel.sync = {};
 
     var nullTransformer = function(obj) {
         return obj;
+    };
+
+    module.idsTransformer = function(entries) {
+        var i, entry, id,
+            result = [];
+        for (i = 0; i < entries.length; i++) {
+            id = entries[i].id;
+            if (id === undefined) {
+                throw new module.IdError("No id for obj");
+            }
+            result.push(id);
+        }
+        return result;
     };
     
     var getDefaults = function() {

@@ -239,7 +239,9 @@ var syncTestCase = buster.testCase("sync tests:", {
                     http: {
                         method: 'POST',
                         url: function(m) { return m.container['removeUrl']; }
-                    }
+                    },
+                    combine: true,
+                    transformer: obviel.sync.idsTransformer
                 }
             }
         });
@@ -275,114 +277,101 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
 
     },
-
-    // we ask the session to remove multiple times
-    // the http configuration says we want to consolidate this into a single
-    // POST where possible
-    // so we need to track what HTTP requests are to be sent, and consolidate
-    // all the ones to the same URL
-    // alternatively, we always consolidate remove actions early on. they can
-    // be consolidated by container - all removals from the same container
-    // are a single consolidated action
-    // we can still split them up into multiple actions in the connection
-    // this is less involved
-    // "remove multiple from container URL with id, single HTTP JSON post": function(done) {
-    //     obviel.sync.mapping({
-    //         iface: 'container',
-    //         target: {
-    //             remove: {
-    //                 http: {
-    //                     method: 'POST',
-    //                     url: function(m) { return m.container['removeUrl']; }
-    //                 }
-    //             }
-    //         }
-    //     });
-
-    //     var testUrl = 'blah';
-
-    //     var removeIds;
-        
-    //     this.server.respondWith('POST', testUrl, function(request) {
-    //         removeIds = $.parseJSON(request.requestBody);
-    //         request.respond(200, {'Content-Type': 'application/json'},
-    //                         JSON.stringify({}));
-    //     });
-
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
-
-    //     var obj1 = {
-    //         iface: 'test',
-    //         id: 'testid1',
-    //         value: 1.0
-    //     };
-    //     var obj2 = {
-    //         iface: 'test',
-    //         id: 'testid2',
-    //         value: 2.0
-    //     };
-        
-    //     var container = {
-    //         iface: 'container',
-    //         entries: [obj1, obj2],
-    //         removeUrl: testUrl
-    //     };
-    //     container.entries.splice(0, 2);
-    //     // XXX should the remove check whether there is something to remove?
-    //     // or is this really the job of the mutator API?
-    //     session.remove(obj1, container, 'entries');
-    //     session.remove(obj2, container, 'entries');
-        
-    //     session.commit().done(function() {
-    //         assert.equals(removeIds, ['testid1', 'testid2']);
-    //         done();
-    //     });
-
-    // },
-
-    // XXX remove with a list of URL parameters, a configuration option.
-    // also let user configure the name of the parameters
-    // XXX remove with multiple remove events, with a url without ids
-    // should also be an option. this mean we cannot consolidate remove actions
-    // into a single action in a backend independent manner, though what
-    // we could do is save up the remove URLs and consolidate the URLs if
-    // they all have the same parameters for consolidation purposes
     
-    // "remove from container URL without id fails": function() {
-    //     obviel.sync.mapping({
-    //         iface: 'container',
-    //         target: {
-    //             remove: {
-    //                 http: {
-    //                     method: 'POST',
-    //                     url: function(m) { return m.container['removeUrl']; }
-    //                 }
-    //             }
-    //         }
-    //     });
+    "remove multiple from container URL with id, single HTTP JSON post": function(done) {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['removeUrl']; }
+                    },
+                    combine: true,
+                    transformer: obviel.sync.idsTransformer
+                }
+            }
+        });
 
+        var testUrl = 'blah';
 
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
-
-    //     // obj has no id, so we cannot remove it
-    //     var obj = {
-    //         iface: 'test',
-    //         value: 1.0
-    //     };
+        var removeIds;
         
-    //     var testUrl = 'blah';
-    //     var container = {
-    //         iface: 'container',
-    //         entries: [obj],
-    //         addUrl: testUrl
-    //     };
-    //     container.entries.splice(0, 1);
-    //     assert.exception(function() {
-    //         session.remove(obj, container, 'entries');
-    //     }, 'IdError');
-    // },
+        this.server.respondWith('POST', testUrl, function(request) {
+            removeIds = $.parseJSON(request.requestBody);
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj1 = {
+            iface: 'test',
+            id: 'testid1',
+            value: 1.0
+        };
+        var obj2 = {
+            iface: 'test',
+            id: 'testid2',
+            value: 2.0
+        };
+        
+        var container = {
+            iface: 'container',
+            entries: [obj1, obj2],
+            removeUrl: testUrl
+        };
+        container.entries.splice(0, 2);
+        // XXX should the remove check whether there is something to remove?
+        // or is this really the job of the mutator API?
+        session.remove(obj1, container, 'entries');
+        session.remove(obj2, container, 'entries');
+        
+        session.commit().done(function() {
+            assert.equals(removeIds, ['testid1', 'testid2']);
+            done();
+        });
+
+    },
+    
+    "remove from container URL without id fails": function() {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['removeUrl']; }
+                    },
+                    combine: true,
+                    transformer: obviel.sync.idsTransformer
+                }
+            }
+        });
+
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        // obj has no id, so we cannot remove it
+        var obj = {
+            iface: 'test',
+            value: 1.0
+        };
+        
+        var testUrl = 'blah';
+        var container = {
+            iface: 'container',
+            entries: [obj],
+            addUrl: testUrl
+        };
+        container.entries.splice(0, 1);
+        session.remove(obj, container, 'entries');
+        assert.exception(function() {
+            session.commit();
+        }, 'IdError');
+    },
 
     "update to socket io": function(done) {
         obviel.sync.mapping({
