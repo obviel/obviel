@@ -1,3 +1,8 @@
+Sync tests:
+
+* test with explicit URL getting functionality, not relying on defaults
+
+
 After todos review:
 
 * the todo app should have a transformer removing the iface & done

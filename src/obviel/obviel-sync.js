@@ -82,11 +82,13 @@ obviel.sync = {};
             subdefaults = defaults[key];
             subconfig = config[key];
              if ($.isPlainObject(subdefaults)) {
-                 if ($.isPlainObject(subconfig)) {
-                     defaultsUpdater(subconfig, subdefaults);
-                 } else if (subconfig === undefined) {
-                     config[key] = null;
+                 if (!$.isPlainObject(subconfig)) {
+                     subconfig = config[key] = {};
                  }
+                 defaultsUpdater(subconfig, subdefaults);
+                 // } else if (subconfig === undefined) {
+                 //     config[key] = null;
+                 // }
              } else {
                  if (subconfig === undefined) {
                      config[key] = subdefaults;
@@ -1230,7 +1232,7 @@ obviel.sync = {};
                     http: {
                         method: 'POST',
                         url: function(action) { return action.container.addUrl; },
-                        response: obviel.sync.multiUpdater,
+                        response: module.multiUpdater,
                         transformer: nullTransformer
                     },
                     local: {
@@ -1238,11 +1240,12 @@ obviel.sync = {};
                     }
                 },
                 remove: {
+                    combine: true,
+                    transformer: module.idsTransformer,
                     http: {
                         method: 'POST',
                         url: function(action) { return action.container.removeUrl; },
-                        response: obviel.sync.multiUpdater,
-                        transformer: nullTransformer
+                        response: module.multiUpdater
                     },
                     local: {
                         transformer: nullTransformer

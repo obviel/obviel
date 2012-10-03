@@ -50,10 +50,6 @@ var syncTestCase = buster.testCase("sync tests:", {
         obviel.sync.mapping({
             iface: 'test',
             target: {
-                update: {
-                    http: {
-                    }
-                }
             }
         });
         assert.equals(
@@ -71,8 +67,7 @@ var syncTestCase = buster.testCase("sync tests:", {
                 }
             }
         });
-        assert.equals(
-            obviel.sync.getMapping('test').target.update.http, null);
+        assert($.isPlainObject(obviel.sync.getMapping('test').target.update.http));
     },
     "config empty target, without update": function() {
         obviel.sync.mapping({
@@ -80,15 +75,13 @@ var syncTestCase = buster.testCase("sync tests:", {
             target: {
             }
         });
-        assert.equals(
-            obviel.sync.getMapping('test').target.update, null);
+        assert($.isPlainObject(obviel.sync.getMapping('test').target.update));
     },
     "config without target": function() {
         obviel.sync.mapping({
             iface: 'test'
         });
-        assert.equals(
-            obviel.sync.getMapping('test').target, null);
+        assert($.isPlainObject(obviel.sync.getMapping('test').target));
     },
 
     "config with explicit source.update": function() {
@@ -140,27 +133,17 @@ var syncTestCase = buster.testCase("sync tests:", {
             source: {
             }
         });
-        assert.equals(
-            obviel.sync.getMapping('test').source.update, null);
+        assert($.isPlainObject(obviel.sync.getMapping('test').source.update));
     },
     "config without source": function() {
         obviel.sync.mapping({
             iface: 'test'
         });
-        assert.equals(
-            obviel.sync.getMapping('test').source, null);
+        assert($.isPlainObject(obviel.sync.getMapping('test').source));
     },
     "update to object URL": function(done) {
         obviel.sync.mapping({
-            iface: 'test',
-            target: {
-                update: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.obj['updateUrl']; }
-                    }
-                }
-            }
+            iface: 'test'
         });
         var updateData = null;
 
@@ -189,15 +172,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     },
     "add to container URL": function(done) {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                add: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['addUrl']; }
-                    }
-                }
-            }
+            iface: 'container'
         });
 
         var testUrl = 'blah';
@@ -233,17 +208,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     },
     "remove from container URL with id, HTTP JSON post": function(done) {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                remove: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['removeUrl']; }
-                    },
-                    combine: true,
-                    transformer: obviel.sync.idsTransformer
-                }
-            }
+            iface: 'container'
         });
 
         var testUrl = 'blah';
@@ -280,17 +245,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     
     "remove multiple from container URL with id, single HTTP JSON post": function(done) {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                remove: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['removeUrl']; }
-                    },
-                    combine: true,
-                    transformer: obviel.sync.idsTransformer
-                }
-            }
+            iface: 'container'
         });
 
         var testUrl = 'blah';
@@ -336,17 +291,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     },
     "remove single id from container URL with multiple entries": function(done) {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                remove: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['removeUrl']; }
-                    },
-                    combine: true,
-                    transformer: obviel.sync.idsTransformer
-                }
-            }
+            iface: 'container'
         });
 
         var testUrl = 'blah';
@@ -390,19 +335,8 @@ var syncTestCase = buster.testCase("sync tests:", {
 
     "remove from container URL without id fails": function() {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                remove: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['removeUrl']; }
-                    },
-                    combine: true,
-                    transformer: obviel.sync.idsTransformer
-                }
-            }
+            iface: 'container'
         });
-
 
         var conn = new obviel.sync.HttpConnection();
         var session = conn.session();
@@ -470,20 +404,8 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return obj;
-                    },
-                    http: {
                     }
                 }
-            },
-            target: {
-                refresh: {
-                    http: {
-                        method: 'GET',
-                        url: function(m) { return m.obj['refreshUrl']; },
-                        response: obviel.sync.multiUpdater
-                    }
-                }
-
             }
         });
         
@@ -529,8 +451,6 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return obj;
-                    },
-                    http: {
                     }
                 }
             }
@@ -542,18 +462,6 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(action) {
                         return container;
-                    },
-                    http: {
-
-                    }
-                }
-            },
-            target: {
-                add: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['addUrl']; },
-                        response: obviel.sync.multiUpdater
                     }
                 }
             }
@@ -611,17 +519,12 @@ var syncTestCase = buster.testCase("sync tests:", {
                             container: container,
                             propertyName: 'entries'
                         };
-                    },
-                    http: {
-
                     }
                 }
             },
             target: {
                 refresh: {
                     http: {
-                        method: 'GET',
-                        url: function(m) { return m.obj['refreshUrl']; },
                         response: obviel.sync.actionProcessor
                     }
                 }
@@ -810,7 +713,6 @@ var syncTestCase = buster.testCase("sync tests:", {
             target: {
                 add: {
                     http: {
-                        method: 'POST',
                         url: 'add',
                         response: obviel.sync.actionProcessor
                     }
@@ -819,14 +721,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
 
         obviel.sync.mapping({
-            iface: 'item',
-            source: {
-                update: {
-                    http: {
-
-                    }
-                }
-            }
+            iface: 'item'
         });
         
         this.server.respondWith('POST', 'add', function(request) {
@@ -1009,15 +904,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         var session = conn.session();
 
         obviel.sync.mapping({
-            iface: 'test',
-            target: {
-                update: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.obj['updateUrl']; }
-                    }
-                }
-            }
+            iface: 'test'
         });
         var updateData = null;
 
@@ -1047,15 +934,7 @@ var syncTestCase = buster.testCase("sync tests:", {
     },
     "commit directly from array mutator": function(done) {
         obviel.sync.mapping({
-            iface: 'container',
-            target: {
-                add: {
-                    http: {
-                        method: 'POST',
-                        url: function(m) { return m.container['addUrl']; }
-                    }
-                }
-            }
+            iface: 'container'
         });
 
         var testUrl = 'blah';
@@ -1129,14 +1008,7 @@ var syncTestCase = buster.testCase("sync tests:", {
                 update: {
                     finder: function(orig) {
                         return obj;
-                    },
-                    local: {
                     }
-                }
-            },
-            // XXX why do I need to create this to support event sending?
-            target: {
-                refresh: {
                 }
             }
         });
@@ -1184,9 +1056,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             target: {
                 update: {
-                    event: 'foo',
-                    http: {
-                    }
+                    event: 'foo'
                 }
             }
         });
@@ -1226,9 +1096,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             iface: 'test',
             source: {
                 update: {
-                    event: 'foo',
-                    http: {
-                    }
+                    event: 'foo'
                 }
             },
             target: {
@@ -1303,16 +1171,6 @@ var syncTestCase = buster.testCase("sync tests:", {
                         }
                     }
                 }
-            },
-            target: {
-                refresh: {
-                    http: {
-                        method: 'GET',
-                        url: function(m) { return m.obj['refreshUrl']; },
-                        response: obviel.sync.multiUpdater
-                    }
-                }
-
             }
         });
         
@@ -1365,8 +1223,6 @@ var syncTestCase = buster.testCase("sync tests:", {
             target: {
                 refresh: {
                     http: {
-                        method: 'GET',
-                        url: function(m) { return m.obj['refreshUrl']; },
                         response: obviel.sync.actionProcessor
                     }
                 }
