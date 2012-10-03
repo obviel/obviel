@@ -334,7 +334,60 @@ var syncTestCase = buster.testCase("sync tests:", {
         });
 
     },
-    
+    "remove single id from container URL with multiple entries": function(done) {
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                remove: {
+                    http: {
+                        method: 'POST',
+                        url: function(m) { return m.container['removeUrl']; }
+                    },
+                    combine: true,
+                    transformer: obviel.sync.idsTransformer
+                }
+            }
+        });
+
+        var testUrl = 'blah';
+
+        var removeIds;
+        
+        this.server.respondWith('POST', testUrl, function(request) {
+            removeIds = $.parseJSON(request.requestBody);
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({}));
+        });
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj1 = {
+            iface: 'test',
+            id: 'testid1',
+            value: 1.0
+        };
+        var obj2 = {
+            iface: 'test',
+            id: 'testid2',
+            value: 2.0
+        };
+        
+        var container = {
+            iface: 'container',
+            entries: [obj1, obj2],
+            removeUrl: testUrl
+        };
+        container.entries.splice(1, 1);
+        session.remove(obj2, container, 'entries');
+        
+        session.commit().done(function() {
+            assert.equals(removeIds, ['testid2']);
+            done();
+        });
+
+    },
+
     "remove from container URL without id fails": function() {
         obviel.sync.mapping({
             iface: 'container',
@@ -748,6 +801,59 @@ var syncTestCase = buster.testCase("sync tests:", {
                         obj: addedObj}]);
     },
 
+    // "add to array, backend-assigned id": function(done) {
+    //     var conn = new obviel.sync.HttpConnection();
+    //     var session = conn.session();
+
+    //     obviel.sync.mapping({
+    //         iface: 'container',
+    //         target: {
+    //             add: {
+    //                 http: {
+    //                     method: 'POST',
+    //                     url: 'add'
+    //                 }
+    //             }
+    //         }
+    //     });
+
+    //     obviel.sync.mapping({
+    //         iface: 'item',
+    //         source: {
+    //             update: {
+    //                 finder: obviel.sync.idFinder
+    //             }
+    //         }
+    //     });
+        
+    //     this.server.respondWith('POST', 'add', function(request) {
+    //         var obj = $.parseJSON(request.requestBody);
+    //         obj.id = 'b';
+    //         request.respond(
+    //             200, {'Content-Type': 'application/json'},
+    //             JSON.stringify({
+    //                 name: 'update',
+    //                 obj: obj}));
+    //     });
+
+    //     var obj = {
+    //         iface: 'container',
+    //         id: 'a',
+    //         entries: []
+    //     };
+        
+    //     var m = session.mutator(obj);
+
+    //     var addedObj = {iface: 'item', name: 'alpha'};
+        
+    //     m.get('entries').push(addedObj);
+
+    //     session.commit().done(function() {
+    //         assert.equals(addedObj.id, 'b');
+    //         done();
+    //     });
+        
+    // },
 
     "add to array, then update": function() {
         var conn = new obviel.sync.HttpConnection();

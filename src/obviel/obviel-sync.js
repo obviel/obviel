@@ -62,6 +62,7 @@ obviel.sync = {};
 
     module.clear = function() {
         mappings = {};
+        objLookup.clear();
     };
 
     module.getMapping = function(iface) {
@@ -1016,22 +1017,70 @@ obviel.sync = {};
         return defer.promise();
     };
     
-    
-    
-    // a global registry of objects by id
-    var id2objects = {};
-    
-    module.modelByObj = function(action) {
-        // XXX assert action.obj.id exists
-        return id2objects[action.obj.id];
-    };
-    
-    module.registerObjById = function(obj) {
-        // XXX assert obj.id exists
-        id2objects[obj.id] = obj;
-    };
-    
 
+    var ObjLookup = function() {
+        this.serverId2Obj = {};
+        this.clientId2Obj = {};
+    };
+
+    ObjLookup.prototype.clear = function() {
+        this.serverId2Obj = {};
+        this.clientId2Obj = {};
+    };
+    
+    ObjLookup.prototype.get = function(serverObj) {
+        var clientObj,
+            serverId = serverObj.id,
+            clientId = serverObj.clientId;
+        if (serverId !== undefined) {
+            clientObj = this.serverId2Obj[serverId];
+            if (clientObj === undefined) {
+                return null;
+            }
+            return clientObj;
+        }
+        if (clientId === undefined) {
+            return null;
+        }
+        clientObj = this.clientId2Obj[clientId];
+        if (clientObj === undefined) {
+            return null;
+        }
+        return clientObj;
+    };
+
+    ObjLookup.prototype.register = function(clientObj) {
+        var serverId = clientObj.id,
+            clientId = clientObj.clientId;
+        if (serverId !== undefined) {
+            this.serverId2Obj[serverId] = clientObj;
+        }
+        if (clientId !== undefined) {
+            this.clientId2Obj[clientId] = clientObj;
+        }
+    };
+
+    ObjLookup.prototype.unregister = function(clientObj) {
+        var serverId = clientObj.id,
+            clientId = clientObj.clientId;
+        if (serverId !== undefined) {
+            delete this.serverId2Obj[serverId];
+        }
+        if (clientId !== undefined) {
+            delete this.clientId2Obj[clientId];
+        }
+    };
+
+    var objLookup = new ObjLookup;
+
+    module.idFinder = function(action) {
+        return objLookup.get(action.obj);
+    };
+    
+    module.registerObjById = function(clientObj) {
+        objLookup.register(clientObj);
+    };
+    
     var nullTransformer = function(obj) {
         return obj;
     };
@@ -1053,7 +1102,7 @@ obviel.sync = {};
         return {
             source: {
                 update: {
-                    finder: module.modelByObj,
+                    finder: module.idFinder,
                     http: {
                         transformer: nullTransformer
                     },
@@ -1062,7 +1111,6 @@ obviel.sync = {};
                     }
                 },
                 add: {
-                    finder: module.modelByObj,
                     http: {
                         transformer: nullTransformer
                     },
@@ -1071,7 +1119,6 @@ obviel.sync = {};
                     }
                 },
                 remove: {
-                    finder: module.modelByObj,
                     http: {
                         transformer: nullTransformer
                     },
