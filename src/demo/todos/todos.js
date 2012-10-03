@@ -35,7 +35,8 @@
             },
             add: {
                 http: {
-                    url: function(m) { return m.container.addUrl; }
+                    url: function(m) { return m.container.addUrl; },
+                    response: obviel.sync.actionProcessor
                 },
                 // no handling of output, how to turn off?
                 event: 'update'
@@ -75,6 +76,30 @@
     obviel.sync.mapping({
         iface: 'todo',
         source: {
+            update: {
+                finder: obviel.sync.idFinder,
+                http: {
+                }
+            }
+        },
+        target: {
+            update: {
+                http: {
+                    url: function(m) { return m.obj.updateUrl; }
+                },
+                event: 'update'
+            }
+        }
+    });
+
+    obviel.sync.mapping({
+        iface: 'todo-editing',
+        source: {
+            update: {
+                finder: obviel.sync.idFinder,
+                http: {
+                }
+            }
         },
         target: {
             update: {
@@ -103,8 +128,6 @@
         return {iface: 'stats', remaining: remaining, done: done,
                 amount: amount};
     };
-
-    var todoIds = 100;
     
     // a view for the whole todos application
     obviel.view({
@@ -137,9 +160,7 @@
                 return;
             }
             var m = this.mutator();
-            var todoId = todoIds;
-            todoIds++;
-            var newObj = {iface: 'todo', id: todoId, done: false, title: value};
+            var newObj = {iface: 'todo', done: false, title: value};
             m.get('items').push(newObj);
         },
         toggleAll: function() {

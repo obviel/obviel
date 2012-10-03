@@ -8,6 +8,8 @@ var fakeTodosHttpServer = {};
     
     var json_headers = { "Content-Type": "application/json"};
 
+    var todoIds = 100;
+    
     module.enable = function() {
         var server = sinon.fakeServer.create();
         server.autoRespond = true;
@@ -32,8 +34,14 @@ var fakeTodosHttpServer = {};
             var item = JSON.parse(request.requestBody);
             console.log("POST /todos/add " + request.requestBody);
             todos.push(item);
+            item.id = todoIds;
+            todoIds++;
+            item.updateUrl = '/todos/' + item.id + '/update';
             request.respond(200, json_headers,
-                            JSON.stringify([]));
+                            JSON.stringify({
+                                name: 'update',
+                                obj: item
+                            }));
         });
         
         server.respondWith('POST', '/todos/remove', function(request) {
