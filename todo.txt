@@ -2,6 +2,11 @@ Sync tests:
 
 * test with explicit URL getting functionality, not relying on defaults
 
+* need a way to explicitly turn off response processing
+
+* a response processor that sets the id into a just-added object.
+
+* a default event sent when things happen?
 
 After todos review:
 

@@ -19,8 +19,6 @@
         iface: 'todos',
         source: {
             'update': {
-                http: {
-                },
                 finder: function() {
                     return todos;
                 }
@@ -28,33 +26,19 @@
         },
         target: {
             update: {
-                http: {
-                    url: function(m) { return m.obj.updateUrl; }
-                },
                 event: 'update'
             },
             touch: {
-                http: {
-
-                },
                 event: 'update'
             },
             add: {
                 http: {
-                    url: function(m) { return m.container.addUrl; },
                     response: obviel.sync.actionProcessor
                 },
-                // no handling of output, how to turn off?
                 event: 'update'
             },
             remove: {
-                http: {
-                    url: function(m) { return m.container.removeUrl; }
-                },
-                // no handling of output, how to turn off?
-                event: 'update',
-                combine: true,
-                transformer: obviel.sync.idsTransformer
+                event: 'update'
             },
             refresh: {
                 http: {
@@ -81,23 +65,11 @@
     
     obviel.sync.mapping({
         iface: 'todo',
-        source: {
-            update: {
-                finder: obviel.sync.idFinder,
-                http: {
-                }
-            }
-        },
         target: {
             update: {
-                http: {
-                    url: function(m) { return m.obj.updateUrl; }
-                },
                 event: 'update'
             },
             touch: {
-                http: {
-                },
                 event: 'update'
             }
         }
@@ -105,24 +77,11 @@
 
     obviel.sync.mapping({
         iface: 'todo-editing',
-        source: {
-            update: {
-                finder: obviel.sync.idFinder,
-                http: {
-                }
-            }
-        },
         target: {
             update: {
-                http: {
-                    url: function(m) { return m.obj.updateUrl; }
-                },
                 event: 'update'
             },
             touch: {
-                http: {
-
-                },
                 event: 'update'
             }
 
