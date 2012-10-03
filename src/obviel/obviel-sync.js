@@ -376,6 +376,7 @@ obviel.sync = {};
             actions = this.sortedActions();
         for (i = 0; i < actions.length; i++) {
             action = actions[i];
+            action.registerObj();
             action.transform();
         }
     };
@@ -451,7 +452,11 @@ obviel.sync = {};
     Action.prototype.transform = function() {
         throw new Error("transform not implemented");
     };
+
     
+    Action.prototype.registerObj = function() {
+    };
+
     Action.prototype.trumpedBy = function() {
         return [];
     };
@@ -578,7 +583,7 @@ obviel.sync = {};
     ObjectAction.prototype.getObj = function() {
         return this.obj;
     };
-
+    
     ObjectAction.prototype.transform = function() {
         var config = this.getConfig();
         if (!config) {
@@ -589,7 +594,15 @@ obviel.sync = {};
         }
         this.obj = config.transformer(this.obj);
     };
-    
+
+    ObjectAction.prototype.registerObj = function() {
+        if (this.obj.id === undefined) {
+            this.obj.clientId = clientIds;
+            clientIds++;
+        }
+        objLookup.register(this.obj);
+    };
+
     ObjectAction.prototype.duplicateKey = function() {
         return new ActionDuplicateKey(this.name,
                                       this.obj);
@@ -696,6 +709,8 @@ obviel.sync = {};
                ];
     };
 
+    var clientIds = 0;
+    
     AddAction.prototype.apply = function() {
         var config = this.getConfig(),
             connectionConfig = this.getConnectionConfig(config),
@@ -716,6 +731,11 @@ obviel.sync = {};
         return [new ContainerActionTrumpKey('add',
                                             this.container, this.propertyName)
                ];
+    };
+
+    
+    RemoveAction.prototype.registerObj = function() {
+        objLookup.unregister(this.obj);
     };
 
     RemoveAction.prototype.apply = function() {
@@ -1034,10 +1054,9 @@ obviel.sync = {};
             clientId = serverObj.clientId;
         if (serverId !== undefined) {
             clientObj = this.serverId2Obj[serverId];
-            if (clientObj === undefined) {
-                return null;
+            if (clientObj !== undefined) {
+                return clientObj;
             }
-            return clientObj;
         }
         if (clientId === undefined) {
             return null;

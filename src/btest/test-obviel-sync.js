@@ -801,59 +801,63 @@ var syncTestCase = buster.testCase("sync tests:", {
                         obj: addedObj}]);
     },
 
-    // "add to array, backend-assigned id": function(done) {
-    //     var conn = new obviel.sync.HttpConnection();
-    //     var session = conn.session();
+    "add to array, backend-assigned id": function(done) {
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
 
-    //     obviel.sync.mapping({
-    //         iface: 'container',
-    //         target: {
-    //             add: {
-    //                 http: {
-    //                     method: 'POST',
-    //                     url: 'add'
-    //                 }
-    //             }
-    //         }
-    //     });
+        obviel.sync.mapping({
+            iface: 'container',
+            target: {
+                add: {
+                    http: {
+                        method: 'POST',
+                        url: 'add',
+                        response: obviel.sync.actionProcessor
+                    }
+                }
+            }
+        });
 
-    //     obviel.sync.mapping({
-    //         iface: 'item',
-    //         source: {
-    //             update: {
-    //                 finder: obviel.sync.idFinder
-    //             }
-    //         }
-    //     });
+        obviel.sync.mapping({
+            iface: 'item',
+            source: {
+                update: {
+                    http: {
+
+                    }
+                }
+            }
+        });
         
-    //     this.server.respondWith('POST', 'add', function(request) {
-    //         var obj = $.parseJSON(request.requestBody);
-    //         obj.id = 'b';
-    //         request.respond(
-    //             200, {'Content-Type': 'application/json'},
-    //             JSON.stringify({
-    //                 name: 'update',
-    //                 obj: obj}));
-    //     });
+        this.server.respondWith('POST', 'add', function(request) {
+            var obj = $.parseJSON(request.requestBody);
+            // the backend assigns the id
+            obj.id = 'b';
+            request.respond(
+                200, {'Content-Type': 'application/json'},
+                JSON.stringify({
+                    name: 'update',
+                    obj: obj}));
+        });
 
-    //     var obj = {
-    //         iface: 'container',
-    //         id: 'a',
-    //         entries: []
-    //     };
+        var obj = {
+            iface: 'container',
+            id: 'a',
+            entries: []
+        };
         
-    //     var m = session.mutator(obj);
+        var m = session.mutator(obj);
 
-    //     var addedObj = {iface: 'item', name: 'alpha'};
+        var addedObj = {iface: 'item', name: 'alpha'};
         
-    //     m.get('entries').push(addedObj);
+        m.get('entries').push(addedObj);
 
-    //     session.commit().done(function() {
-    //         assert.equals(addedObj.id, 'b');
-    //         done();
-    //     });
+        session.commit().done(function() {
+            assert.equals(addedObj.id, 'b');
+            done();
+        });
         
-    // },
+    },
 
     "add to array, then update": function() {
         var conn = new obviel.sync.HttpConnection();
@@ -1034,6 +1038,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         var m = session.mutator(obj);
         m.set('foo', 'bar');
         m.commit().done(function() {
+            delete updateData['clientId'];
             assert.equals(updateData, {iface: 'test',
                                        updateUrl: testUrl,
                                        foo: 'bar'});
