@@ -33,6 +33,12 @@
                 },
                 event: 'update'
             },
+            touch: {
+                http: {
+
+                },
+                event: 'update'
+            },
             add: {
                 http: {
                     url: function(m) { return m.container.addUrl; },
@@ -88,6 +94,11 @@
                     url: function(m) { return m.obj.updateUrl; }
                 },
                 event: 'update'
+            },
+            touch: {
+                http: {
+                },
+                event: 'update'
             }
         }
     });
@@ -107,7 +118,14 @@
                     url: function(m) { return m.obj.updateUrl; }
                 },
                 event: 'update'
+            },
+            touch: {
+                http: {
+
+                },
+                event: 'update'
             }
+
         }
     });
 
@@ -168,7 +186,7 @@
             var m = this.mutator().get('items');
             var i;
             for (i = 0; i < this.obj.items.length; i++) {
-                m.get(i).set('done', done);
+                m.get(i).touch('done', done);
             }
         }
     });
@@ -212,11 +230,11 @@
         },
         edit: function() {
             var m = this.mutator();
-            m.set('iface', 'todo-editing');
+            m.touch('iface', 'todo-editing');
         },
         toggle: function() {
             var m = this.mutator();
-            m.set('done', !this.obj.done);
+            m.touch('done', !this.obj.done);
             // XXX how do we handle updateStats case?
             $(todos).trigger('updateStats');
         },
@@ -248,7 +266,7 @@
             }
             var m = this.mutator();
             m.set('title', value);
-            m.set('iface', 'todo');
+            m.touch('iface', 'todo');
         } 
     });
     

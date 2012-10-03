@@ -110,6 +110,11 @@ obviel.sync = {};
         this.session.update(this.obj);
     };
 
+    ObjectMutator.prototype.touch = function(name, value) {
+        this.obj[name] = value;
+        this.session.touch(this.obj);
+    };
+    
     ObjectMutator.prototype.refresh = function() {
         this.session.refresh(this.obj);
     };
@@ -255,7 +260,11 @@ obviel.sync = {};
     Session.prototype.update = function(obj) {
         this.addAction(new UpdateAction(this, obj));
     };
-        
+
+    Session.prototype.touch = function(obj) {
+        this.addAction(new TouchAction(this, obj));
+    };
+    
     Session.prototype.refresh = function(obj) {
         this.addAction(new RefreshAction(this, obj));
     };
@@ -279,7 +288,7 @@ obviel.sync = {};
         return sortActions(this.actions);
     };
     
-    Session.prototype.touched = function(name) {
+    Session.prototype.dirty = function(name) {
         var i, action,
             result = [],
             actions = sortActions(this.actionsByName[name]);
@@ -291,19 +300,23 @@ obviel.sync = {};
     };
     
     Session.prototype.updated = function() {
-        return this.touched('update');
+        return this.dirty('update');
     };
     
     Session.prototype.added = function() {
-        return this.touched('add');
+        return this.dirty('add');
     };
 
     Session.prototype.removed = function() {
-        return this.touched('remove');
+        return this.dirty('remove');
     };
     
     Session.prototype.refreshed = function() {
-        return this.touched('refresh');
+        return this.dirty('refresh');
+    };
+
+    Session.prototype.touched = function() {
+        return this.dirty('touch');
     };
     
     Session.prototype.createMutator = function(obj, propertyName) {
@@ -677,6 +690,25 @@ obviel.sync = {};
         // run properly
         this.obj = obj;
     };
+
+    var TouchAction = function(session, obj) {
+        ObjectAction.call(this, session, 'touch', obj);
+    };
+
+    TouchAction.prototype = new ObjectAction();
+    TouchAction.prototype.constructor = TouchAction;
+    
+    TouchAction.prototype.trumpedBy = function() {
+        return [new ObjectActionTrumpKey('update'),
+                new ObjectActionTrumpKey('add'),
+                new ObjectActionTrumpKey('remove')];
+    };
+
+    TouchAction.prototype.apply = function() {
+        // nothing to be done for source-level touch action as
+        // it makes little sense I think
+        // XXX raise exception instead?
+    };
     
     var RefreshAction = function(session, obj) {
         ObjectAction.call(this, session, 'refresh', obj);
@@ -764,6 +796,8 @@ obviel.sync = {};
                                     info.container, info.propertyName);
         } else if (a.name === 'refresh') {
             return new RefreshAction(session, a.obj);
+        } else if (a.name === 'touch') {
+            return new TouchAction(session, a.obj);
         } else {
             throw new Error("Unknown action name: " + a.name);
         }
@@ -905,6 +939,10 @@ obviel.sync = {};
             promise = this.processTargetRefresh(
                 action.obj,
                 config, http);
+        } else if (action.name === 'touch') {
+            promise = this.processTargetTouch(
+                action.obj,
+                config, http);
         }
         return promise.done(function(responseObj) {
             var response = http.response,
@@ -971,7 +1009,14 @@ obviel.sync = {};
             data: null
         });
     };
-    
+
+    module.HttpConnection.prototype.processTargetTouch = function(
+        obj, config, http) {
+        var defer = $.Deferred();
+        defer.resolve();
+        return defer.promise();
+    };
+
     module.SocketIoConnection = function(io) {
         this.io = io;
     };
@@ -1031,6 +1076,7 @@ obviel.sync = {};
                 return defer.promise();
             }
         }
+        // XXX shouldn't be doing update if there are only touch actions
         // XXX now we can't do target refresh and update at the same time..
         data = JSON.stringify(this.root);
         localStorage[this.key] = data;
@@ -1166,6 +1212,14 @@ obviel.sync = {};
                         method: 'GET',
                         url: function(action) { return action.obj['refreshUrl']; },
                         response: obviel.sync.multiUpdater,
+                        transformer: nullTransformer
+                    },
+                    local: {
+                        transformer: nullTransformer
+                    }
+                },
+                touch: {
+                    http: {
                         transformer: nullTransformer
                     },
                     local: {

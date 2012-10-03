@@ -1,20 +1,16 @@
 After todos review:
 
+* the todo app should have a transformer removing the iface & done
+  status before sending it to the backend.
 
 * connectionConfig is obtained (including calculation of URL) for
   source in actionProcessor. While connectionConfig may be needed, the
   URL calculation shouldn't take place..
 
-* todo app spurious submits:
-
-  * when selecting all items, an 'update' event is sent for the first entry.
-
-* the todo app is sending spurious updates due to UI state being maintained
-  in the objects and handled with mutator. How to solve?
-
 * the todo app doesn't show the 'clear all' button when selecting everything.
   it does show up in the case where all are selected by hand.
 
+* add tests for 'touched'.
 
 
 * the combiner and the transformer run when the session is committed.
