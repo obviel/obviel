@@ -311,7 +311,7 @@ test('form with controls', function() {
     var formEl = $('form', el);
     equal($('button', el).length, 1);
     equal($('button', el).attr('name'), 'foo');
-    equal($('button', el).attr('class'), 'obviel-control fooClass');
+    equal($('button', el).attr('class'), 'obviel-control btn fooClass');
 });
 
 test('form with non-validating control', function() {
@@ -2236,7 +2236,7 @@ test("field error rendering", function() {
     var formErrorEl = $('.obviel-formerror', el);
     equal(formErrorEl.text(), '1 field did not validate');
     // the submit buttons are disabled
-    var controlEls = $('button[class="obviel-control"]', el);
+    var controlEls = $('button.obviel-control', el);
     equal(controlEls.is(':disabled'), true);
 });
 
@@ -2490,7 +2490,7 @@ test("repeating field error not seen until submit", function() {
     equal(errorA_el.text(), '');
     equal(errorB_el.text(), '');
     // don't trigger event but try submitting immediately
-    var buttonEl = $('button[class="obviel-control"]', el);
+    var buttonEl = $('button.obviel-control', el);
     buttonEl.trigger('click');
     // we now expect the error
     equal(errorA_el.text(), 'value too short');
