@@ -1036,7 +1036,7 @@ just so easy to express a rule like this in JavaScript with jQuery:
 
 You could have this ``evenodd`` function on the view that needs
 it. But in case of a generally useful functionality like this you can
-plug it in globally for the application::
+plug it in globally for the application:
 
 .. code-block:: javascript
 
