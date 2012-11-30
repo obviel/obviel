@@ -56,12 +56,12 @@ config["Obviel Core"] = {
         'src/obviel/obviel.js'
     ],
     tests: [
-        "src/btest/test-obviel-iface.js",
-        "src/btest/test-obviel.js"
+        "src/test/test-obviel-iface.js",
+        "src/test/test-obviel.js"
     ],
     resources: [
-        {path: '/', file: 'src/btest/body.html'},
-        'src/btest/fixtures/**.**'
+        {path: '/', file: 'src/test/body.html'},
+        'src/test/fixtures/**.**'
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -80,7 +80,7 @@ config["Obviel Template"] = {
         "src/obviel/obviel-template.js"
     ],
     tests: [
-        "src/btest/test-obviel-template.js"
+        "src/test/test-obviel-template.js"
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -97,7 +97,7 @@ config["Obviel Traject"] = {
         'src/obviel/obviel-traject.js'
     ],
     tests: [
-        "src/btest/test-obviel-traject.js"
+        "src/test/test-obviel-traject.js"
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -116,7 +116,7 @@ config["Obviel i18n"] = {
         'src/obviel/obviel-i18n.js'
     ],
     tests: [
-        "src/btest/test-obviel-i18n.js"
+        "src/test/test-obviel-i18n.js"
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -137,10 +137,10 @@ config["Obviel Forms"] = {
         'src/obviel/obviel-forms.js'
     ],
     tests: [
-        "src/btest/test-obviel-forms.js"
+        "src/test/test-obviel-forms.js"
     ],
     resources: [
-        {path: '/', file: 'src/btest/body.html'}
+        {path: '/', file: 'src/test/body.html'}
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -163,10 +163,10 @@ config["Obviel Forms Datepicker"] = {
         'src/obviel/obviel-forms-datepicker.js'
     ],
     tests: [
-        "src/btest/test-obviel-forms-datepicker.js"
+        "src/test/test-obviel-forms-datepicker.js"
     ],
     resources: [
-        {path: '/', file: 'src/btest/body.html'}
+        {path: '/', file: 'src/test/body.html'}
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -189,10 +189,10 @@ config["Obviel Forms Autocomplete"] = {
         'src/obviel/obviel-forms-autocomplete.js'
     ],
     tests: [
-        "src/btest/test-obviel-forms-autocomplete.js"
+        "src/test/test-obviel-forms-autocomplete.js"
     ],
     resources: [
-        {path: '/', file: 'src/btest/body.html'}
+        {path: '/', file: 'src/test/body.html'}
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -210,7 +210,7 @@ config["Obviel Patterns"] = {
         'src/obviel/obviel-patterns.js'
     ],
     tests: [
-        "src/btest/test-obviel-patterns.js"
+        "src/test/test-obviel-patterns.js"
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
@@ -228,7 +228,7 @@ config['Obviel Sync'] = {
         'src/obviel/obviel-sync.js'
     ],
     tests: [
-        "src/btest/test-obviel-sync.js"
+        "src/test/test-obviel-sync.js"
     ],
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
