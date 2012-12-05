@@ -28,85 +28,52 @@ send us a pull request when you want us to merge your improvements.
 Running the tests
 -----------------
 
-The Obviel tests run in a web browser.
+The Obviel tests use `Buster.JS`_, a powerful test runner that can run
+a complete browser test suite from the command line.
 
-Accessing the tests
-~~~~~~~~~~~~~~~~~~~
+.. _`Buster.JS`: http://www.busterjs.org
 
-You can access Obviel's tests by constructing a ``file:`` URL
-to the test page. For instance:
+To run the tests you need to install Buster.JS as a Node.js
+module. See the `Buster.JS getting started tutorial`_ for more
+information. You can ignore the part about creating a config file to
+the project and below, as Obviel already has a config file.
 
-file:///home/faassen/projects/obviel/src/test/index.html
+.. _`Buster.JS getting started tutorial`: http://docs.busterjs.org/en/latest/getting-started/
 
-You can also access Obviel's tests through a web server. This is
-useful as some web browsers have test failures due to the peculiar way
-``file:`` URLs are accessed. In addition, the JSCoverage tool
-described below recommends against the use of ``file:`` URLs. A simple
-way to start a web server is to type this in the project directory::
+.. sidebar:: Development version of Buster.JS
 
-  $ python -m SimpleHTTPServer
+  If you have problems running the tests, it may be necessary to install the
+  `development version`_ of Buster.JS instead. 
+  
+  .. _`development version`: http://docs.busterjs.org/en/latest/developers/environment/
 
-where ``python`` is a Python 2.x interpreter. You can then navigate
-to:
+Now to run the tests you first need to set a buster server. You do
+this in Obviel's project directory::
 
-http://localhost:8000/src/test
+  $ buster server
 
-for the test page.
+It will mention starting a test server on http://localhost:1111 
 
-Executing the tests
-~~~~~~~~~~~~~~~~~~~
+Go there and capture your browser as a test slave to the buster server. You
+can also connect more than one browser if you want, to run the tests in
+different browser environments.
 
-From the test page, you will see various links to the individual test
-suites:
+Now on a different terminal you can run the tests, again in Obviel's project
+directory::
 
-* obviel.js tests - tests for the Obviel core
+  $ buster test
 
-* obviel-forms.js tests - tests for Obviel forms
-
-* JSHint - run JSHint against Obviel
-
-There is also a section with manual (non-automatic) tests; this is
-more for experimentation during development with the form logic in
-particular.
+Note that the Obviel test configuration also has integration with JSHint, so 
+that any JSHint issues in your code will be automatically reported too.
  
 Modifying the tests
 ~~~~~~~~~~~~~~~~~~~
 
 The tests are maintained in the ``test`` directory under the ``src``
-directory. They use qunit_ test engine.
+directory. If you want to modify the tests you should read up on 
+`Buster.JS`_ as well as `Sinon.JS`_ (mocks for JavaScript).
 
-.. _`qunit`: http://docs.jquery.com/Qunit
-
-Test coverage
-~~~~~~~~~~~~~
-
-The JSCoverage_ tool can be used to analyze the test coverage: how
-much of the Obviel code is being actually called from the test
-suite. To use it, first create a special coverage-analysis copy of the
-Obviel project directory.  If your Obviel project directory is called
-``obviel``, change to the parent directory above it and type this::
-
-  $ jscoverage obviel obviel-cov
-
-Then go to obviel-cov and start a web server::
-
-  $ python -m SimpleHTTPServer
-
-Now go to the special coverage analysis page:
-
-http://localhost:8000/jscoverage.html
-
-In the URL input on the coverage page, type the following and press
-``Open in frame``:
-
-http://localhost:8000/src/test
-
-Then click on the automatic test suite you want to run.
-
-You can then click on the 'Summary' tab and see how much coverage the
-test suite has for the file ``src/obviel.js``.
-
-.. _`JSCoverage`: http://siliconforks.com/jscoverage/
+.. _`Sinon.JS`: http://sinonjs.org
 
 Building the documentation
 --------------------------
