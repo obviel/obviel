@@ -38,6 +38,12 @@ module. See the `Buster.JS getting started tutorial`_ for more
 information. You can ignore the part about creating a config file to
 the project and below, as Obviel already has a config file.
 
+In addition to installing Buster.JS, you also need to install
+``buster-lint``, an extension, into the Obviel project directory, like
+this::
+
+  $ npm_install buster-lint
+
 .. _`Buster.JS getting started tutorial`: http://docs.busterjs.org/en/latest/getting-started/
 
 .. sidebar:: Development version of Buster.JS
