@@ -8,6 +8,11 @@ CHANGES
   library. See :doc:`the development documentation <development>` for
   more information.
 
+* obviel-forms now uses Bootstrap_ CSS classes. If Bootstrap CSS is included
+  on a page, the forms will render with pretty form widgts.
+
+  .. _Bootstrap: http://twitter.github.com/bootstrap/
+
 * Removed js.obviel Fanstatic_ packaging. Instead moved this to a
   `separate project`_, just like other Fanstatic projects.
 

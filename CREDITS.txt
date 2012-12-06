@@ -13,6 +13,8 @@ Creation and Implementation
 * Christian Zagrodnick - js.obviel Fanstatic integration improvements,
   JSON-Template integration improvements
 
+* Rob Gietema - Bootstrap integration for Obviel Forms
+
 Useful conversations
 --------------------
 
