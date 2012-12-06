@@ -645,7 +645,7 @@ in the view. You can bind DOM events to methods of the view using the
 For instance, if you want to bind a handler for the ``click`` event on
 a ``div``, you can do it like this::
 
-  <div data-handler="click|someFunction">Click here!</click>
+  <div data-handler="click|someFunction">Click here!</div>
 
 When the user now clicks on the ``div`` element, the function
 indicated by ``someFunction`` will be executed. ``someFunction`` is
@@ -654,7 +654,7 @@ in a view::
 
   obviel.view({
     iface: 'foo',
-    obvt: '<div data-handler="click|someFunction">Click here!</click>', 
+    obvt: '<div data-handler="click|someFunction">Click here!</div>', 
     someFunction: function(ev) {
       alert("You clicked!");
     }

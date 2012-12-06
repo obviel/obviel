@@ -1,6 +1,18 @@
 CHANGES
 *******
 
+1.0b3 (unreleased)
+==================
+
+* Switch to the Buster.JS test framework and the Sinon.JS mocking
+  library. See :doc:`the development documentation <development>` for
+  more information.
+
+* Beginnings of Obviel Sync. This is as yet undocumented and
+  incomplete, but the goal is to allow the developer to define
+  declaratively how client models (and UI updates) interact with the
+  server models.
+
 1.0b2 (2012-07-19)
 ==================
 
