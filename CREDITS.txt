@@ -10,6 +10,9 @@ Creation and Implementation
 
 * Izhar Firdaus - design discussions, prototyping, implementation, feedback
 
+* Christian Zagrodnick - js.obviel Fanstatic integration improvements,
+  JSON-Template integration improvements
+
 Useful conversations
 --------------------
 
@@ -29,6 +32,8 @@ Useful conversations
 
 Thank you
 ---------
+
+* Gocept
 
 * KNMP / Z-Index
 
