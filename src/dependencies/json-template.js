@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// $Id$
-
 //
 // JavaScript implementation of json-template.
 //
@@ -40,7 +38,9 @@ function _MakeTokenRegex(meta_left, meta_right) {
   var key = meta_left + meta_right;
   var regex = token_re_cache[key];
   if (regex === undefined) {
-    var str = '(' + EscapeMeta(meta_left) + '.*?' + EscapeMeta(meta_right) +
+    // there must at least one character inside {}, and the first one must be a
+    // non-space, to be accepting of "function() { return {@}; }"
+    var str = '(' + EscapeMeta(meta_left) + '\\S.*?' + EscapeMeta(meta_right) +
               '\n?)';
     regex = new RegExp(str, 'g');
   }
@@ -109,22 +109,40 @@ var DEFAULT_FORMATTERS = {
   'AbsUrl': function(value, context) {
     // TODO: Normalize leading/trailing slashes
     return context.get('base-url') + '/' + value;
+  },
+  'plain-url': function(x) {
+    return '<a href="' + HtmlTagEscape(x) + '">' + HtmlEscape(x) + '</a>' ;
   }
 };
 
-var DEFAULT_PREDICATES = {
-  'singular?': function(x) { return  x == 1; },
-  'plural?': function(x) { return x > 1; },
-  'Debug?': function(unused, context) {
-    try {
-      return context.get('debug');
-    } catch(err) {
-      if (err.name == 'UndefinedVariable') {
-        return false;
-      } else {
-        throw err;
-      }
+var _TestAttribute = function(unused, context, args) {
+  var name = args[0];
+  if (name === undefined) {
+    throw { name: 'EvaluationError',
+            message: 'The "test" predicate requires an argument.' };
+  }
+  try {
+    return context.get(name);
+  } catch(err) {
+    if (err.name == 'UndefinedVariable') {
+      return false;
+    } else {
+      throw err;
     }
+  }
+};
+
+var singular = function(x) { return  x == 1; };
+var plural = function(x) { return x > 1; };
+var DEFAULT_PREDICATES = {
+  'singular': singular,
+  'plural': plural,
+
+   // OLD: do not use
+  'singular?': singular,
+  'plural?': plural,
+  'Debug?': function(unused, context) {
+    return _TestAttribute(unused, context, ['debug']);
   }
 };
 
@@ -195,14 +213,15 @@ var ChainedRegistry = function(registries) {
 // Template implementation
 //
 
-function _ScopedContext(context, undefined_str) {
+// Context wraps a data dictionary and makes it "walkable".
+function Context(context, undefined_str) {
   // The stack contains:
   //   The current context (an object).
   //   An iteration index.  -1 means we're NOT iterating.
   var stack = [{context: context, index: -1}];
 
   return {
-    PushSection: function(name) {
+    pushName: function(name) {
       if (name === undefined || name === null) {
         return null;
       }
@@ -216,7 +235,7 @@ function _ScopedContext(context, undefined_str) {
       return new_context;
     },
 
-    Pop: function() {
+    pop: function() {
       stack.pop();
     },
 
@@ -242,14 +261,8 @@ function _ScopedContext(context, undefined_str) {
       return true;  // OK, we mutated the stack
     },
 
-    _Undefined: function(name) {
-      if (undefined_str === undefined) {
-        throw {
-          name: 'UndefinedVariable', message: name + ' is not defined'
-        };
-      } else {
-        return undefined_str;
-      }
+    _Undefined: function() {
+      return (undefined_str === undefined) ? undefined : undefined_str;
     },
 
     _LookUpStack: function(name) {
@@ -280,14 +293,15 @@ function _ScopedContext(context, undefined_str) {
       if (name == '@') {
         return stack[stack.length-1].context;
       }
-      var parts = name.split('.');
-      var value = this._LookUpStack(parts[0]);
-      if (parts.length > 1) {
-        for (var i=1; i<parts.length; i++) {
-          value = value[parts[i]];
-          if (value === undefined) {
-            return this._Undefined(parts[i]);
-          }
+      var parts = name.split('.'),
+          value = this._LookUpStack(parts[0]);  // First lookup is special 
+      if (value === undefined) {
+        return this._Undefined();
+      }
+      for (var i=1; i<parts.length; i++) {
+        value = value[parts[i]];
+        if (value === undefined) {
+          return this._Undefined();
         }
       }
       return value;
@@ -391,8 +405,12 @@ function _Execute(statements, context, callback) {
 }
 
 function _DoSubstitute(statement, context, callback) {
-  var value;
-  value = context.get(statement.name);
+  var value = context.get(statement.name);
+  if (value === undefined) {
+    throw {
+      name: 'UndefinedVariable', message: statement.name + ' is not defined'
+    };
+  }
 
   // Format values
   for (var i=0; i<statement.formatters.length; i++) {
@@ -409,7 +427,7 @@ function _DoSubstitute(statement, context, callback) {
 function _DoSection(args, context, callback) {
 
   var block = args;
-  var value = context.PushSection(block.section_name);
+  var value = context.pushName(block.section_name);
   var do_section = false;
 
   // "truthy" values should have their sections executed.
@@ -423,9 +441,9 @@ function _DoSection(args, context, callback) {
 
   if (do_section) {
     _Execute(block.Statements(), context, callback);
-    context.Pop();
+    context.pop();
   } else {  // Empty list, None, False, etc.
-    context.Pop();
+    context.pop();
     _Execute(block.Statements('or'), context, callback);
   }
 }
@@ -451,10 +469,9 @@ function _DoPredicates(args, context, callback) {
 
 
 function _DoRepeatedSection(args, context, callback) {
-  var block = args;
-
-  items = context.PushSection(block.section_name);
-  pushed = true;
+  var block = args,
+      items = context.pushName(block.section_name),
+      pushed = true;
 
   if (items && items.length > 0) {
     // TODO: check that items is an array; apparently this is hard in JavaScript
@@ -464,7 +481,7 @@ function _DoRepeatedSection(args, context, callback) {
     // Execute the statements in the block for every item in the list.
     // Execute the alternate block on every iteration except the last.  Each
     // item could be an atom (string, integer, etc.) or a dictionary.
-    
+
     var last_index = items.length - 1;
     var statements = block.Statements();
     var alt_statements = block.Statements('alternate');
@@ -479,7 +496,7 @@ function _DoRepeatedSection(args, context, callback) {
     _Execute(block.Statements('or'), context, callback);
   }
 
-  context.Pop();
+  context.pop();
 }
 
 
@@ -523,9 +540,12 @@ function _Compile(template_str, options) {
 
   var more_predicates = MakeRegistry(options.more_predicates);
 
-  // TODO: Add defaults
+  // default predicates with arguments
+  var default_predicates = PrefixRegistry([
+      {name: 'test', func: _TestAttribute}
+      ]);
   var all_predicates = new ChainedRegistry([
-      more_predicates, SimpleRegistry(DEFAULT_PREDICATES)
+      more_predicates, SimpleRegistry(DEFAULT_PREDICATES), default_predicates
       ]);
 
   // We want to allow an explicit null value for default_formatter, which means
@@ -548,13 +568,17 @@ function _Compile(template_str, options) {
     return pair;
   }
 
-  function GetPredicate(pred_str) {
+  function GetPredicate(pred_str, test_attr) {
     var pair = all_predicates.lookup(pred_str);
     if (!pair[0]) {
-      throw {
-        name: 'BadPredicate',
-        message: pred_str + ' is not a valid predicate'
-      };
+      if (test_attr) {
+        pair = [_TestAttribute, [pred_str.slice(null, -1)]];
+      } else {
+        throw {
+          name: 'BadPredicate',
+          message: pred_str + ' is not a valid predicate'
+        };
+      }
     }
     return pair;
   }
@@ -589,10 +613,11 @@ function _Compile(template_str, options) {
 
   while (true) {
     token_match = token_re.exec(template_str);
+    var token;
     if (token_match === null) {
       break;
     } else {
-      var token = token_match[0];
+      token = token_match[0];
     }
 
     // Add the previous literal to the program
@@ -656,24 +681,25 @@ function _Compile(template_str, options) {
       var or_match = token.match(_OR_RE);
       if (or_match) {
         pred_str = or_match[1];
-        pred = pred_str ? GetPredicate(pred_str) : null;
+        pred = pred_str ? GetPredicate(pred_str, false) : null;
         current_block.NewOrClause(pred);
         continue;
       }
 
-      // Match either {.pred?} or {.if pred?}
-      var matched = false;
+      // {.if predicate} or {.attr?}
+      var if_token = false, pred_token = false;
 
       var if_match = token.match(_IF_RE);
       if (if_match) {
         pred_str = if_match[1];
-        matched = true;
+        if_token = true;
       } else if (token.charAt(token.length-1) == '?') {
         pred_str = token;
-        matched = true;
+        pred_token = true;
       }
-      if (matched) {
-        pred = pred_str ? GetPredicate(pred_str) : null;
+      if (if_token || pred_token) {
+        // test_attr=true if we got the {.attr?} style (pred_token)
+        pred = pred_str ? GetPredicate(pred_str, pred_token) : null;
         new_block = _PredicateSection();
         new_block.NewOrClause(pred);
         current_block.Append([_DoPredicates, new_block]);
@@ -756,9 +782,13 @@ function Template(template_str, options) {
   this._program = _Compile(template_str, this._options);
 }
 
-Template.prototype.render = function(data_dict, callback) {
-  // options.undefined_str can either be a string or undefined
-  var context = _ScopedContext(data_dict, this._options.undefined_str);
+Template.prototype.render = function(context, callback) {
+  // If it has a .get() method already, assume it's already a context object we
+  // can use.
+  if (typeof context.get !== 'function') {
+    // options.undefined_str can either be a string or undefined
+    context = Context(context, this._options.undefined_str);
+  }
   _Execute(this._program.Statements(), context, callback);
 };
 
@@ -782,8 +812,9 @@ var OPTION_NAMES = [
 var OPTION_NAMES_RE = new RegExp(OPTION_NAMES.join('|'));
 
 function fromString(s, options) {
-  var parsed = {};
-  var begin = 0, end = 0;
+  var parsed = {},
+      begin = 0, end = 0,
+      parsedAny = false;
 
   while (true) {
     var parsedOption = false;
@@ -804,6 +835,7 @@ function fromString(s, options) {
         }
         parsed[name] = value;
         parsedOption = true;
+        parsedAny = true;
       }
     }
     if (!parsedOption) {
@@ -812,15 +844,19 @@ function fromString(s, options) {
   }
   // TODO: This doesn't enforce the blank line between options and template, but
   // that might be more trouble than it's worth
-  if (parsed !== {}) {
-    body = s.slice(begin);
-  } else {
-    body = s;
-  }
+  var body = parsedAny ? s.slice(begin) : s;
+
   for (var o in options) {
     parsed[o] = options[o];
   }
   return Template(body, parsed);
+}
+
+// Public function to combine a template string and data directly.  Use this
+// when you don't care about the speed of compiling.
+function expand(template_str, data, options) {
+  var t = Template(template_str, options);
+  return t.expand(data);
 }
 
 
@@ -831,7 +867,7 @@ return {
     Template: Template, HtmlEscape: HtmlEscape,
     FunctionRegistry: FunctionRegistry, SimpleRegistry: SimpleRegistry,
     CallableRegistry: CallableRegistry, ChainedRegistry: ChainedRegistry,
-    fromString: fromString,
+    fromString: fromString, expand: expand,
     // Private but exposed for testing
     _Section: _Section
     };

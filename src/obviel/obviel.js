@@ -948,7 +948,7 @@ if (typeof console === "undefined") {
 
     module.JsontTemplate = function(location, source) {
         this.location = location;
-        this.compiled = new jsontemplate.Template(source);
+        this.compiled = new jsontemplate.fromString(source);
     };
 
     module.JsontTemplate.prototype.render = function(view) {
