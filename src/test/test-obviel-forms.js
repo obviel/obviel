@@ -349,7 +349,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var formEl = $('form', el);
         assert.equals($('button', el).length, 1);
         assert.equals($('button', el).attr('name'), 'foo');
-        assert.equals($('button', el).attr('class'), 'obviel-control fooClass');
+        assert.equals($('button', el).attr('class'), 'obviel-control btn fooClass');
     },
 
     'form with non-validating control': function() {
@@ -2264,7 +2264,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var formErrorEl = $('.obviel-formerror', el);
         assert.equals(formErrorEl.text(), '1 field did not validate');
         // the submit buttons are disabled
-        var controlEls = $('button[class="obviel-control"]', el);
+        var controlEls = $('button.obviel-control', el);
         assert.equals(controlEls.is(':disabled'), true);
     },
 
@@ -2358,7 +2358,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // we don't see a form error anymore
         assert.equals(formErrorEl.text(), '');
         // the submit button isn't disabled
-        var controlEls = $('button[class="obviel-control"]', el);
+        var controlEls = $('button.obviel-control', el);
         assert.equals(controlEls.is(':disabled'), false);
         
     },
@@ -2518,7 +2518,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(errorA_el.text(), '');
         assert.equals(errorB_el.text(), '');
         // don't trigger event but try submitting immediately
-        var buttonEl = $('button[class="obviel-control"]', el);
+        var buttonEl = $('button.obviel-control', el);
         buttonEl.trigger('click');
         // we now expect the error
         assert.equals(errorA_el.text(), 'value too short');

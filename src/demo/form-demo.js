@@ -71,7 +71,7 @@ $(document).ready(function() {
             controls: [
                 {
                     'label': 'Examine data',
-                    'class': 'examine'
+                    'class': 'examine btn-primary'
                 },
                 {
                     'label': 'Change data',

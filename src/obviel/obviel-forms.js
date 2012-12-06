@@ -34,11 +34,11 @@ obviel.forms = {};
             iface: 'viewform',
             name: 'default',
             html:
-                '<form ' +
+                '<form class="form-horizontal" ' +
                 'method="POST"> ' +
                 '<div class="obviel-fields"></div>' +
                 '<div class="obviel-formerror"></div>' +
-                '<div class="obviel-controls"></div>' +
+                '<div class="obviel-controls form-actions"></div>' +
                 '</form>'
         };
         $.extend(d, settings);
@@ -121,9 +121,11 @@ obviel.forms = {};
                     "{count} field did not validate",
                     "{count} fields did not validate",
                     count), {count: count});
-                $('.obviel-formerror', el).text(msg);
+                $('.obviel-formerror', el).text(msg).addClass(
+                                                        'alert alert-error');
             } else {
-                $('.obviel-formerror', el).text('');
+                $('.obviel-formerror', el).text('').removeClass(
+                                                        'alert alert-error');
             }
             if (count) {
                 $('button.obviel-control', el).each(function(
@@ -179,7 +181,7 @@ obviel.forms = {};
                                                    globalErrors,
                                                    disabled) {
         var self = this;
-        var fieldEl = $('<div class="obviel-field"></div>');
+        var fieldEl = $('<div class="obviel-field control-group"></div>');
         $.each(widget.ifaces, function(index, value) {
             fieldEl.addClass(value);
         });
@@ -202,7 +204,15 @@ obviel.forms = {};
         });
 
         self.widgetViews.push(fieldEl.view());
-        
+
+        fieldEl.bind('field-error.obviel-forms', function(ev) {
+            fieldEl.addClass('error');
+        });
+
+        fieldEl.bind('field-error-clear.obviel-forms', function(ev) {
+            fieldEl.removeClass('error');
+        });
+
         // somewhat nasty, but required for a lot of style issues
         // (they need an element at the end they can rely on, and
         // the field-error div gets removed from view at times)
@@ -230,7 +240,8 @@ obviel.forms = {};
 
     module.Form.prototype.renderControl = function(control) {
         var self = this;
-        var controlEl = $('<button class="obviel-control" type="button" />');
+        var controlEl = $(
+                '<button class="obviel-control btn" type="button" />');
         controlEl.text(control.label || '');
         if (control['class']) {
             controlEl.addClass(control['class']);
@@ -492,18 +503,19 @@ obviel.forms = {};
         iface: 'obvielFormsErrorArea',
         render: function() {
             // add in field validation or conversion failing error area
-            this.el.append('<div id="' +
+            this.el.append('<span id="' +
                            this.obj.fieldErrorId +
-                           '" class="obviel-field-error"></div>');
+                           '" class="obviel-field-error"></span>');
             // add in global level validation failure error area
-            this.el.append('<div id="' +
+            this.el.append('<span id="' +
                            this.obj.globalErrorId +
-                           '" class="obviel-global-error"></div>');
+                           '" class="obviel-global-error"></span>');
         }
     });
     
     module.Widget.prototype.renderErrorArea = function() {
-        this.el.append('<div class="obviel-error-area"></div>');
+        $('.obviel-field-input', this.el).append(
+            '<span class="obviel-error-area help-inline"></div>');
         
         $('.obviel-error-area', this.el).render(
             {iface: 'obvielFormsErrorArea',
@@ -517,7 +529,8 @@ obviel.forms = {};
         var self = this;
         if (self.obj.title) {
             var labelEl = $('<label for="obviel-field-' +
-                            self.obj.prefixedName + '">' +
+                            self.obj.prefixedName + '" ' +
+                            'class="control-label">' +
                             entitize(self.obj.title) +
                             '</label>');
             if (self.obj.validate && self.obj.validate.required) {
@@ -722,7 +735,7 @@ obviel.forms = {};
         var el = self.el;
         var obj = self.obj;
         
-        var fieldEl = $('<div class="obviel-field-input" ' +
+        var fieldEl = $('<div class="obviel-field-input controls" ' +
                             'id="obviel-field-' + obj.prefixedName + '">');
         
         $.each(obj.widgets, function(index, subWidget) {
@@ -901,8 +914,8 @@ obviel.forms = {};
     
     module.RepeatingWidget.prototype.render = function() {
         var self = this;
-        var fieldEl = $('<div class="obviel-field-input" ' +
-                        'id="obviel-field-' + self.obj.prefixedName + '">');
+        var fieldEl = $('<div class="obviel-field-input controls" ' +
+                            'id="obviel-field-' + self.obj.prefixedName + '">');
         self.el.append(fieldEl);
     };
 
@@ -1072,7 +1085,7 @@ obviel.forms = {};
         var d = {
             iface: 'inputField',
             obvt:
-                '<div class="obviel-field-input">' +
+                '<div class="obviel-field-input controls">' +
                 '<input type="text" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
                 '</div>'
         };
@@ -1184,7 +1197,7 @@ obviel.forms = {};
         var d = {
             iface: 'textField',
             obvt:
-            '<div class="obviel-field-input">' +
+            '<div class="obviel-field-input controls">' +
             '<textarea data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '</div>'
         };
@@ -1463,7 +1476,7 @@ obviel.forms = {};
         var d = {
             iface: 'booleanField',
             obvt:
-            '<div class="obviel-field-input"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="labelBeforeInput">{label}</div></div>' +
+            '<div class="obviel-field-input controls"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="labelBeforeInput">{label}</div></div>' +
             '<input type="checkbox" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '<div data-unwrap="" data-if="label"><div unwrap="" data-if="!labelBeforeInput">{label}</div></div>' +
             '</div>'
@@ -1501,7 +1514,7 @@ obviel.forms = {};
             // XXX htmltag was used in jsontemplate for emptyOption and label
             // and value rendering
             obvt:
-            '<div class="obviel-field-input">' +
+            '<div class="obviel-field-input controls">' +
             '<select data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<option data-if="emptyOption" value="">{emptyOption}</option>' +
             '<option data-each="choices" value="{value}">{label}</option>' +
@@ -1553,7 +1566,7 @@ obviel.forms = {};
         var d = {
             iface: 'displayField',
             obvt:
-                '<div class="obviel-field-input">' +
+                '<div class="obviel-field-input controls">' +
                 '<span name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}"> ' +
                 '</span>' +
                 '</div>'
