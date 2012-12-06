@@ -8,6 +8,20 @@ CHANGES
   library. See :doc:`the development documentation <development>` for
   more information.
 
+* Removed js.obviel Fanstatic_ packaging. Instead moved this to a
+  `separate project`_, just like other Fanstatic projects.
+
+  .. _`separate project`: https://bitbucket.org/fanstatic/js.obviel
+
+* Make ``option:value`` configuration within JSON-Templates possible.
+  (using ``fromString`` instead of using the ``Template
+  constructor``). You may need to upgrade to the latest version of
+  JSON-Template (now included in ``src/dependencies``) to make this
+  work.
+
+* Upgraded JSON-Template in ``src/dependencies`` to the latest version
+  (0.85).
+ 
 * Beginnings of Obviel Sync. This is as yet undocumented and
   incomplete, but the goal is to allow the developer to define
   declaratively how client models (and UI updates) interact with the
