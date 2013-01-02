@@ -1,6 +1,13 @@
 CHANGES
 *******
 
+1.0b4 (unreleased)
+==================
+
+* the autocomplete widget was not sending 'change' events correctly when 
+  the autocomplete field received the 'blur' or 'close' event. With previous
+  jQuery versions this was okay, but this broke with jQuery 1.7.x.
+
 1.0b3 (2012-12-06)
 ==================
 

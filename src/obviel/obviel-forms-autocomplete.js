@@ -113,7 +113,7 @@
             // a change explicitly so we can report errors
             inputEl.val(cloneEl.val());
             var changeEv = $.Event('change');
-            changeEv.target = inputEl;
+            changeEv.target = inputEl.get(0);
             inputEl.trigger(changeEv);
         };
         cloneEl.autocomplete(autocompleteOptions);
@@ -126,7 +126,7 @@
             }
             inputEl.val(cloneEl.val());
             var changeEv = $.Event('change');
-            changeEv.target = inputEl;
+            changeEv.target = inputEl.get(0);
             inputEl.trigger(changeEv);
         });
     };

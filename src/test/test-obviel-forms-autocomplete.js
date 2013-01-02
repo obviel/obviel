@@ -1,5 +1,6 @@
 /*global buster:false, sinon:false */
 var assert = buster.assert;
+var console = buster.console;
 
 var testel = function() {
     return $("#viewdiv");
@@ -73,6 +74,41 @@ var autocompleteTestCase = buster.testCase('autocomplete tests', {
         assert.equals(data.a, 'bar');
     },
 
+    "autocomplete set value with blur": function () {
+        var el= testel();
+        var data = {};
+        var errors = {};
+        
+        el.render({
+            ifaces: ['viewform'],
+            form: {
+                name: 'test',
+                widgets: [{
+                    ifaces: ['autocompleteField'],
+                    name: 'a',
+                    title: 'Autocomplete',
+                    data: [
+                        {value: 'foo', label: 'Foo'},
+                        {value: 'bar', label: 'Bar'}
+                    ],
+                    defaultvalue: 'foo'
+                }]
+            },
+            data: data,
+            errors: errors
+        });
+
+        var formEl = $('form', el);
+        var fieldEl = $('input[name="obviel-field-cloned-test-a"]', formEl);
+        fieldEl.val('Bar');
+        fieldEl.trigger('blur');
+        assert.equals(errors.a, '');
+        assert.equals(data.a, 'bar');
+    },
+
+    // would be nice to also test close event but seems difficult to
+    // simulate
+    
     "autocomplete requiredness": function () {
         var el = testel();
         var data = {};
