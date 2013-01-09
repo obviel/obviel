@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0b4 (unreleased)
+1.0b4 (2013-01-09)
 ==================
 
 * the autocomplete widget was not sending 'change' events correctly when 
