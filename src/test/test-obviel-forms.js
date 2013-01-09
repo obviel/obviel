@@ -3510,6 +3510,42 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         refute(fieldA_el.parents('.obviel-field').hasClass('foo'));
         refute(fieldB_el.parents('.obviel-field').hasClass('foo'));
         
-    }
+    },
+    'http error in validationUrl': function() {
+        var el = testel();
+        var data = {};
+        var errors = {};
+        var globalErrors = {};
+
+        var spy = sinon.spy();
+        obviel.httpErrorHook(spy);
+        
+        this.server.respondWith('POST', 'validate', function(request) {
+            request.respond(500, {'Content-Type': 'text/html'},
+                            '<div>Internal server error</div>');
+        });
+        
+        el.render({
+            ifaces: ['viewform'],
+            form: {
+                name: 'test',
+                widgets: []
+            },
+            validationUrl: 'validate',
+            data: data,
+            errors: errors,
+            globalErrors: globalErrors
+        });
+
+        this.server.autoRespond = false;
+        
+        var formEl = $('form', el);
+        var view = el.view();
+        view.submit({});
+        this.server.respond();
+
+        assert.calledOnce(spy);
+        assert.equals(spy.args[0][0].status, 500);
+  }
 
 });

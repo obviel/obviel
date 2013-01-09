@@ -16,6 +16,9 @@ CHANGES
 * The ``httpErrorHook`` functionality is also used by the autocomplete
   widget when a URL is in use as a data source.
 
+* The ``httpErrorHook`` functionality is also used by the
+  ``validationUrl`` option for Obviel forms.
+
 * Now correctly make deferred returned by ``.render()`` fail when
   there is a problem resolving URLs during rendering, including when
   sub-views are in use.

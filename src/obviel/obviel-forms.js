@@ -383,6 +383,11 @@ obviel.forms = {};
             var formEl = $('form', self.el);
             formEl.trigger('form-change.obviel');
         });
+
+        defer.fail(function(xhr) {
+            self.registry.httpErrorHook(xhr);
+        });
+        
         return defer;
     };
     
