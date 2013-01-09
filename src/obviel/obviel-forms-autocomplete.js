@@ -76,12 +76,8 @@
                             labels.push(item.label);
                         });
                         autocompleteCallback(labels);
-                    },
-                    error: function(xhr, status, error) {
-                        // XXX must always call autocomplete callback
-                        // even when there's an error?
                     }
-                });
+                }).fail(self.registry.httpErrorHook);
             };
         } else if (autocompleteData.length &&
                    typeof autocompleteData[0] !== 'string') {

@@ -8,6 +8,18 @@ CHANGES
   the autocomplete field received the 'blur' or 'close' event. With previous
   jQuery versions this was okay, but this broke with jQuery 1.7.x.
 
+* new functionality to set an ``httpErrorHook`` function, which is
+  called when a HTTP error occurs when a URL is resolved using
+  ``.render()``. It is called with an ``xhr`` (``jqXHR``) object as
+  the first argument. 
+
+* The ``httpErrorHook`` functionality is also used by the autocomplete
+  widget when a URL is in use as a data source.
+
+* Now correctly make deferred returned by ``.render()`` fail when
+  there is a problem resolving URLs during rendering, including when
+  sub-views are in use.
+
 1.0b3 (2012-12-06)
 ==================
 

@@ -1,4 +1,4 @@
-/*global jsontemplate:false */
+/*global jsontemplate:false alert:false */
 
 if (typeof obviel === "undefined") {
     var obviel = {};
@@ -347,7 +347,12 @@ if (typeof console === "undefined") {
                     self.finalize();
                     self.defer.resolve(self);
                 });
+                subviewsPromise.fail(function() {
+                    self.defer.reject(self);
+                });
             });
+        }).fail(function() {
+            self.defer.reject(self);
         });
     };
     
@@ -535,12 +540,17 @@ if (typeof console === "undefined") {
 
     var nullEventHook = function() {
     };
+
+    var defaultHttpErrorHook = function(jqXHR) {
+        alert(jqXHR.statusText);
+    };
     
     module.Registry = function() {
         this.views = {};
         /* the default transformer doesn't do anything */
         this.transformerHook = nullTransformer;
         this.eventHook = nullEventHook;
+        this.httpErrorHook = defaultHttpErrorHook;
     };
 
     module.Registry.prototype.register = function(view) {
@@ -638,6 +648,9 @@ if (typeof console === "undefined") {
             var view = self.cloneView(el, obj, name, defer);
             view.fromUrl = url;
             return view;
+        }).fail(function(xhr) {
+            self.httpErrorHook(xhr);
+            defer.reject(xhr);
         });
     };
     
@@ -653,6 +666,13 @@ if (typeof console === "undefined") {
             eventHook = nullEventHook;
         }
         this.eventHook = eventHook;
+    };
+
+    module.Registry.prototype.registerHttpErrorHook = function(hook) {
+        if (hook === null || hook === undefined) {
+            hook = defaultHttpErrorHook;
+        }
+        this.httpErrorHook = hook;
     };
     
     module.registry = new module.Registry();
@@ -992,6 +1012,10 @@ if (typeof console === "undefined") {
 
     module.eventHook = function(eventHook) {
         module.registry.registerEventHook(eventHook);
+    };
+
+    module.httpErrorHook = function(hook) {
+        module.registry.registerHttpErrorHook(hook);
     };
     
     $.fn.render = function(obj, name) {

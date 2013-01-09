@@ -1,4 +1,4 @@
-/*global buster:false, sinon:false */
+/*global buster:false, sinon:false, obviel:false */
 var assert = buster.assert;
 var console = buster.console;
 
@@ -275,5 +275,43 @@ var autocompleteTestCase = buster.testCase('autocomplete tests', {
         
         assert.equals(fieldEl.val(), 'Qux');
 
+    },
+    "autocomplete url http error": function () {
+        var el = testel();
+        var data = {};
+        var errors = {};
+
+        var spy = sinon.spy();
+        obviel.httpErrorHook(spy);
+
+        // need to be a general handler because otherwise urls with parameters
+        // (which autocomplete generates) won't be handled and the error
+        // will be a 404
+        this.server.respondWith(function(request) {
+            request.respond(500, {'Content-Type': 'text/html'},
+                                 '<div>Internal server error</div>');
+        });
+
+        
+        el.render({
+            ifaces: ['viewform'],
+            form: {
+                name: 'test',
+                widgets: [{
+                    ifaces: ['autocompleteField'],
+                    name: 'a',
+                    title: 'Autocomplete',
+                    data: 'testUrl',
+                    defaultvalue: 'foo'
+                }]
+            },
+            data: data,
+            errors: errors
+        });
+        this.server.respond();
+        
+        assert.calledOnce(spy);
+        assert.equals(spy.args[0][0].status, 500);
     }
+
 });

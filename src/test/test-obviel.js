@@ -1933,9 +1933,67 @@ var coreTestCase = buster.testCase("core tests", {
             assert.equals(e.toString(),
                           "variable 'notfound' could not be found (foo obvtScript:obvt_notfound_id /)");
         }
+    },
+    "http error": function(done) {
+        var spy = sinon.spy();
+        obviel.httpErrorHook(spy);
         
-    }
+        this.server.respondWith('GET', 'testUrl',
+                                [500, {'Content-Type': 'text/html'},
+                                 '<div>Internal server error</div>']);
 
+        var el = testel();
+        el.render('testUrl').fail(function() {
+            assert.calledOnce(spy);
+            assert.equals(spy.args[0][0].status, 500);
+            done();
+        });
+    },
+    
+    "http error in template-based subview": function(done) {
+        obviel.view({
+            iface: 'foo',
+            obvt: '<div data-view="sub"></div>'
+        });
+        var spy = sinon.spy();
+        obviel.httpErrorHook(spy);
+        
+        this.server.respondWith('GET', 'testUrl',
+                                [500, {'Content-Type': 'text/html'},
+                                 '<div>Internal server error</div>']);
+
+        var el = testel();
+        el.render({iface: 'foo', sub: 'testUrl'}).fail(function() {
+            assert.calledOnce(spy);
+            assert.equals(spy.args[0][0].status, 500);
+            done();
+        });
+
+    },
+    "http error in classic subview": function(done) {
+        obviel.view({
+            iface: 'foo',
+            obvt: '<div class="thediv"></div>',
+            subviews: {
+                ".thediv": 'sub'
+            }
+        });
+        var spy = sinon.spy();
+        obviel.httpErrorHook(spy);
+        
+        this.server.respondWith('GET', 'testUrl',
+                                [500, {'Content-Type': 'text/html'},
+                                 '<div>Internal server error</div>']);
+
+        var el = testel();
+        el.render({iface: 'foo', sub: 'testUrl'}).fail(function() {
+            assert.calledOnce(spy);
+            assert.equals(spy.args[0][0].status, 500);
+            done();
+        });
+    }
+    
+    
     // XXX problems testing this due to asynchronous nature of JS; exception
 // doesn't get thrown in time. need to write this around deferred.reject
 // "location of script url error": function(done) {
