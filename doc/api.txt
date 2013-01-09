@@ -109,6 +109,29 @@ Obviel core
 
   You can disable the transformer function by passing in ``null``.
 
+.. function:: obviel.eventHook(hook)
+
+  :param hook: a function with the signature ``function()``.
+
+  Register an event hook function with Obviel. Obviel will call this
+  hook whenever an event is handled by Obviel Template. By default
+  the event hook does nothing. This can be used in combination with
+  Obviel Sync to automatically commit the session in event handlers.
+
+  You can disable the event hook by passing in ``null``.
+
+.. function:: obviel.httpErrorHook(hook)
+
+  :param hook: a function with the signature ``function(xhr)`` where
+    ``xhr`` is a jqXHR object as in use with jQuery ``$.ajax``.
+  
+  Register a hook function that gets called whenever an jQuery
+  ``$.ajax`` call fails during rendering (though not during template
+  load). This is the case when calling ``render`` on a URL, in
+  subviews which call render on a URL, using the form validation URL,
+  and the autocomplete form widget which uses a URL to receive
+  autocomplete data.
+
 .. function:: element.render(obj[, name])
 
   Render a view for an object on a jQuery element. This instantiates a
