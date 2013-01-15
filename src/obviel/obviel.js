@@ -542,7 +542,6 @@ if (typeof console === "undefined") {
     };
 
     var defaultHttpErrorHook = function(jqXHR) {
-        alert(jqXHR.statusText);
     };
     
     module.Registry = function() {
