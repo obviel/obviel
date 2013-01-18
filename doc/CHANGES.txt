@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0b5 (unreleased)
+1.0b5 (2013-01-18)
 ==================
 
 * The default HTTP error hook shouldn't do an alert; it's now quiet.
