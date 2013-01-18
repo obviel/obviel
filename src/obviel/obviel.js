@@ -541,7 +541,7 @@ if (typeof console === "undefined") {
     var nullEventHook = function() {
     };
 
-    var defaultHttpErrorHook = function(jqXHR) {
+    var nullHttpErrorHook = function(jqXHR) {
     };
     
     module.Registry = function() {
@@ -549,7 +549,7 @@ if (typeof console === "undefined") {
         /* the default transformer doesn't do anything */
         this.transformerHook = nullTransformer;
         this.eventHook = nullEventHook;
-        this.httpErrorHook = defaultHttpErrorHook;
+        this.httpErrorHook = nullHttpErrorHook;
     };
 
     module.Registry.prototype.register = function(view) {
@@ -669,7 +669,7 @@ if (typeof console === "undefined") {
 
     module.Registry.prototype.registerHttpErrorHook = function(hook) {
         if (hook === null || hook === undefined) {
-            hook = defaultHttpErrorHook;
+            hook = nullHttpErrorHook;
         }
         this.httpErrorHook = hook;
     };
