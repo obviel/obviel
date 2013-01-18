@@ -520,7 +520,7 @@ obviel.forms = {};
     
     module.Widget.prototype.renderErrorArea = function() {
         $('.obviel-field-input', this.el).append(
-            '<span class="obviel-error-area help-inline"></div>');
+            '<span class="obviel-error-area help-inline"></span>');
         
         $('.obviel-error-area', this.el).render(
             {iface: 'obvielFormsErrorArea',

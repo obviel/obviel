@@ -6,6 +6,9 @@ CHANGES
 
 * The default HTTP error hook shouldn't do an alert; it's now quiet.
 
+* Fix a bug in obviel forms that caused errors not to be displayed
+  properly for fields in Internet Explorer.
+
 1.0b4 (2013-01-09)
 ==================
 
