@@ -1473,10 +1473,10 @@ var coreTestCase = buster.testCase("core tests", {
     },
 
 
-    'obviel template, data-func lookup on view': function() {
+    'obviel template, data-call lookup on view': function() {
         obviel.view({
             iface: 'test',
-            obvt: '<div class="someClass" data-func="myFunc"></div>',
+            obvt: '<div class="someClass" data-call="myFunc"></div>',
             myFunc: function(el) {
                 el.addClass('FOO');
             }
@@ -1487,7 +1487,7 @@ var coreTestCase = buster.testCase("core tests", {
         assert($('.someClass', el).hasClass('FOO'));
     },
 
-    'obviel template, data-func lookup falls back to globally registered': function() {
+    'obviel template, data-call lookup falls back to globally registered': function() {
         
         obviel.template.registerFunc(
             'myFunc',
@@ -1497,7 +1497,7 @@ var coreTestCase = buster.testCase("core tests", {
         
         obviel.view({
             iface: 'test',
-            obvt: '<div class="someClass" data-func="myFunc"></div>'
+            obvt: '<div class="someClass" data-call="myFunc"></div>'
         });
 
         var el = testel();
@@ -1505,10 +1505,10 @@ var coreTestCase = buster.testCase("core tests", {
         assert($('.someClass', el).hasClass('FOO'));
     },
 
-    'obviel template, data-func which refers to view': function() {
+    'obviel template, data-call which refers to view': function() {
         obviel.view({
             iface: 'foo',
-            obvt: '<div class="alpha" data-func="someFunc"></div>',
+            obvt: '<div class="alpha" data-call="someFunc"></div>',
             someFunc: function(el, variable, context) {
                 if (this.obj.flag) {
                     el.addClass('foo');

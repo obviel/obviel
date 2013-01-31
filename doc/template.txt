@@ -11,7 +11,7 @@ deliberately a very minimal template language. The idea is that more
 complicated logic should be kept in JavaScript code, not templates,
 because it is much clearer to express it in JavaScript. You can do
 this by preprocessing the object that goes into the template, or by
-using ``data-func`` in the template.
+using ``data-call`` in the template.
 
 Obviel Template is different from many template languages you might
 have encountered in that it is element-based and HTML aware, not
@@ -410,7 +410,7 @@ So to address ``something.persons`` in a loop, you use
 To support various user interface you want to add a class into the DOM
 depending on a some ``@repeat`` value, such as ``even`` or
 ``odd``. While you can do this with ``data-attr`` (which we'll see
-later), we recommend you use ``data-func`` for this (which we'll also
+later), we recommend you use ``data-call`` for this (which we'll also
 see later), as your code will generally be clearer.
 
 Nested scoping
@@ -630,7 +630,7 @@ be defined as methods on the view that uses the template::
 
 Again, formatters cannot be used to include HTML, only text; for
 including HTML you can use views. To do some special DOM manipulation,
-you can also consider using ``data-func``.
+you can also consider using ``data-call``.
 
 If you are registering global formatters, you should register
 formatters only once per web page, before template rendering starts.
@@ -730,10 +730,10 @@ You could also use ``data-repeat`` to generate a whole series of elements::
 ``data-attr``: dynamically generating attributes
 ------------------------------------------------
 
-.. sidebar:: consider using ``data-func`` instead
+.. sidebar:: consider using ``data-call`` instead
 
   In the case where you need to use ``data-attr``, always consider
-  using ``data-func`` instead. Your code will often be a lot more
+  using ``data-call`` instead. Your code will often be a lot more
   clear and easier to write with a small custom method on the view
   that adds attributes using jQuery than it is using ``data-attr``.
 
@@ -769,7 +769,7 @@ You could also use ``data-repeat`` to generate a whole series of elements::
     </div>
 
   This is all rather cumbersome however, and we recommend you use
-  ``data-func`` in these situations instead.
+  ``data-call`` in these situations instead.
 
 Normally you'd generate a dynamic attribute like this::
 
@@ -857,13 +857,13 @@ you'd get this output::
 
   <div class="first"></div>
 
-But as we say in the sidebar, consider using ``data-func`` instead in
+But as we say in the sidebar, consider using ``data-call`` instead in
 these cases.
 
-``data-func``
+``data-call``
 -------------
 
-.. sidebar:: safe and unsafe operations for ``data-func``
+.. sidebar:: safe and unsafe operations for ``data-call``
 
   In general the rule is that any operations that alter the amount of
   child nodes of the element (or sub-elements) in the DOM are
@@ -903,10 +903,10 @@ these cases.
 In many cases it is more convenient to use JavaScript and jQuery to
 manipulate the DOM directly than it would be to use Obviel Template
 constructions such as ``data-attr``. Obviel Template offers a special
-directive called ``data-func`` that lets you plug custom functions
+directive called ``data-call`` that lets you plug custom functions
 into the template rendering process directly.
 
-To see what ``data-func`` does, let's consider a simple case first. Let's
+To see what ``data-call`` does, let's consider a simple case first. Let's
 imagine these two individuals::
 
   { 
@@ -930,11 +930,11 @@ in a relatively cumbersome way, with ``data-attr`` and ``data-el``::
     obvt: '<div><span data-if="wild" data-attr="class" data-value="wild" />{name}</div>'
   });
 
-Let's rewrite this to use ``data-func`` and a method on the view instead::
+Let's rewrite this to use ``data-call`` and a method on the view instead::
 
   obviel.view({
     iface: 'person',
-    obvt: '<div data-func="attributes">{name}</div>',
+    obvt: '<div data-call="attributes">{name}</div>',
     attributes: function(el) {
       if (this.obj.wild) {
          el.addClass('wild');
@@ -945,14 +945,14 @@ Let's rewrite this to use ``data-func`` and a method on the view instead::
 Especially for more complicated logic, this is often a lot more easy
 to understand.
 
-The method called by ``data-func`` gets an optional second argument,
+The method called by ``data-call`` gets an optional second argument,
 ``variable``.  This is a function you can use to get to variables in
-the same scope as the template does where ``data-func`` was
+the same scope as the template does where ``data-call`` was
 defined. Let's rewrite the view to use ``variable``::
 
   obviel.view({
     iface: 'person',
-    obvt: '<div data-func="attributes">{name}</div>',
+    obvt: '<div data-call="attributes">{name}</div>',
     attributes: function(el, variable) {
       if (variable('wild')) {
          el.addClass('wild');
@@ -961,7 +961,7 @@ defined. Let's rewrite the view to use ``variable``::
   });
 
 
-It's also possible to register a ``data-func`` function globally. It
+It's also possible to register a ``data-call`` function globally. It
 will look for these if it cannot find it on the view itself. Here is a
 silly example that adds a ``magic`` attribute:
 
@@ -974,13 +974,13 @@ silly example that adds a ``magic`` attribute:
 Once this registration has been made, we can use it within any template,
 for instance this one::
 
-  <p data-func="magic">Hello world!</p>
+  <p data-call="magic">Hello world!</p>
 
 And once the template is rendered, we'll see this::
 
   <p magic="Magic!">Hello world!</p>
 
-``data-func`` is especially useful in combination with
+``data-call`` is especially useful in combination with
 ``data-repeat``. Let's consider the case where we want to add an
 ``even`` and ``odd`` class to each iteration. We could write a
 template like this::
@@ -1046,14 +1046,14 @@ And then we can use it on ``p``::
 
   <ul>
     <li data-repeat="list">
-      <p data-func="evenodd">{@.}</p>
+      <p data-call="evenodd">{@.}</p>
     </li>
   </ul>
 
 Or to use it to add the class to ``li`` directly::
 
   <ul>
-    <li data-repeat="list" data-func="evenodd">
+    <li data-repeat="list" data-call="evenodd">
       <p>{@.}</p>
     </li>
   </ul>
@@ -1074,21 +1074,21 @@ to add a ``class`` attribute on even or odd, but every third item:
 and then use it::
 
   <ul>
-    <li data-repeat="list" data-func="everythird">
+    <li data-repeat="list" data-call="everythird">
       <p>{@.}</p>
     </li>
   </ul>
 
 ``everythird`` cannot be expressed using Obviel Template alone, but is
-easy to express using a custom fuction.
+easy to express using a custom function.
 
-So using ``data-func`` you can supplement Obviel Template with
+So using ``data-call`` you can supplement Obviel Template with
 functionality particular to your views or application. This is useful
 for particular functionality your view needs, or for general
 functionality your whole application needs.
 
-There are some restrictions on ``data-func``. You should *only* use
-``data-func`` to *change* the element, for instance by manipulating
+There are some restrictions on ``data-call``. You should *only* use
+``data-call`` to *change* the element, for instance by manipulating
 its attributes, *not* to add or remove child elements (or
 text-nodes). Most DOM manipulations by adding, moving or removing
 elements or text modes are unsafe: it can break Obviel Template in
@@ -1203,7 +1203,7 @@ The order of execution of operations on an element is as follows :
 
 * ``data-attr``
 
-* ``data-func``
+* ``data-call``
 
 * ``data-el``, ``data-unwrap``
 
@@ -1221,7 +1221,7 @@ This order holds no matter in what order you define the attributes.
 ``data-trans`` is at the same level as ``data-render``. It's not allowed
 on an element with ``data-render``.
 
-``data-attr`` and ``data-func`` are executed last for an element, and
+``data-attr`` and ``data-call`` are executed last for an element, and
 finally elements are transformed using ``data-el`` or ``data-unwrap``.
 
 Literals

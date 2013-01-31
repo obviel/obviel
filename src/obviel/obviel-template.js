@@ -573,7 +573,7 @@ obviel.template = {};
         this.compileAttrTexts(el);
         this.compileContentTexts(el);
         this.compileDataHandler(el);
-        this.compileFunc(el);
+        this.compileCall(el);
         this.compileSpecialAttr(el);
         this.compileDataEl(el);
         this.compileDataAttr(el);
@@ -648,8 +648,8 @@ obviel.template = {};
         this._dynamic = true;
     };
     
-    module.DynamicElement.prototype.compileFunc = function(el) {
-        var funcName = getDirective(el, 'data-func');
+    module.DynamicElement.prototype.compileCall = function(el) {
+        var funcName = getDirective(el, 'data-call');
         if (funcName === null) {
             return;
         }
@@ -866,7 +866,7 @@ obviel.template = {};
         }
     };
     
-    module.DynamicElement.prototype.renderDataFunc = function(
+    module.DynamicElement.prototype.renderDataCall = function(
         el, scope, context) {
         if (this.funcName === null) {
             return;
@@ -874,7 +874,7 @@ obviel.template = {};
         var func = context.getFunc(this.funcName);
         if (!func) {
             throw new module.RenderError(
-                el, 'cannot render data-func because cannot find func: ' +
+                el, 'cannot render data-call because cannot find function: ' +
                     this.funcName);
         }
         func($(el),
@@ -887,7 +887,7 @@ obviel.template = {};
         el, scope, context) {
         this.renderDataAttr(el);
         this.renderDataHandler(el, context);
-        this.renderDataFunc(el, scope, context);
+        this.renderDataCall(el, scope, context);
     };
     
     module.DynamicText = function(el, text) {

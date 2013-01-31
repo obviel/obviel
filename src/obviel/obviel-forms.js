@@ -1091,7 +1091,7 @@ obviel.forms = {};
             iface: 'inputField',
             obvt:
                 '<div class="obviel-field-input controls">' +
-                '<input type="text" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
+                '<input type="text" data-call="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
                 '</div>'
         };
         $.extend(d, settings);
@@ -1203,7 +1203,7 @@ obviel.forms = {};
             iface: 'textField',
             obvt:
             '<div class="obviel-field-input controls">' +
-            '<textarea data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
+            '<textarea data-call="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '</div>'
         };
         $.extend(d, settings);
@@ -1482,7 +1482,7 @@ obviel.forms = {};
             iface: 'booleanField',
             obvt:
             '<div class="obviel-field-input controls"><div data-unwrap="" data-if="label"><div data-unwrap="" data-if="labelBeforeInput">{label}</div></div>' +
-            '<input type="checkbox" data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
+            '<input type="checkbox" data-call="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}" />' +
             '<div data-unwrap="" data-if="label"><div unwrap="" data-if="!labelBeforeInput">{label}</div></div>' +
             '</div>'
         };
@@ -1520,7 +1520,7 @@ obviel.forms = {};
             // and value rendering
             obvt:
             '<div class="obviel-field-input controls">' +
-            '<select data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
+            '<select data-call="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<option data-if="emptyOption" value="">{emptyOption}</option>' +
             '<option data-repeat="choices" value="{value}">{label}</option>' +
             '</select>'

@@ -4,13 +4,17 @@ CHANGES
 1.0b6
 =====
 
-* Template language renaming: 
+* Template language renaming. The general pattern is to use imperative
+  verbs where possible for directives:
 
   * ``data-each`` was renamed to ``data-repeat`` and ``@each`` to
     ``@repeat``.
  
   * ``data-view`` becomes ``data-render``, as it really calls Obviel's
     ``render()`` function to render an object.
+
+  * ``data-func`` becomes ``data-call``, as it really calls a function on
+     the view.
 
   A simple search and replace in your templates for these names should
   be enough to update your templates.

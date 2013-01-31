@@ -883,77 +883,77 @@ var templateTestCase = buster.testCase('template tests', {
                           '<ul><li>1</li><li>2</li></ul>');
     },
 
-    'data-func': function() {
+    'data-call': function() {
         obtemp.registerFunc('addattr', function(el) {
             el.attr('magic', "Magic!");
         });
         
         assert.htmlEquals(render(
-            '<p data-func="addattr">Hello world!</p>', {}),
+            '<p data-call="addattr">Hello world!</p>', {}),
                           '<p magic="Magic!">Hello world!</p>');
         
     },
 
-    'data-func with variable': function() {
+    'data-call with variable': function() {
         obtemp.registerFunc('addattr', function(el, variable) {
             el.attr('magic', variable('foo'));
         });
         
         assert.htmlEquals(render(
-            '<p data-func="addattr">Hello world!</p>', {foo: "Foo!"}),
+            '<p data-call="addattr">Hello world!</p>', {foo: "Foo!"}),
                           '<p magic="Foo!">Hello world!</p>');
         
     },
 
-    'data-func with data-with': function() {
+    'data-call with data-with': function() {
         obtemp.registerFunc('addattr', function(el, variable) {
             el.attr('magic', variable('foo'));
         });
         
         assert.htmlEquals(render(
-            '<p data-with="sub" data-func="addattr">Hello world!</p>',
+            '<p data-with="sub" data-call="addattr">Hello world!</p>',
             {sub: {foo: "Foo!"}}),
                           '<p magic="Foo!">Hello world!</p>');
 
     },
 
-    'data-func with data-if where if is true': function() {
+    'data-call with data-if where if is true': function() {
         obtemp.registerFunc('addattr', function(el, variable) {
             el.attr('magic', variable('foo'));
         });
         
         assert.htmlEquals(render(
-            '<p data-if="flag" data-func="addattr">Hello world!</p>',
+            '<p data-if="flag" data-call="addattr">Hello world!</p>',
             {foo: "Foo!", flag: true}),
                           '<p magic="Foo!">Hello world!</p>');
     },
 
 
-    'data-func with data-if where if is false': function() {
+    'data-call with data-if where if is false': function() {
         obtemp.registerFunc('addattr', function(el, variable) {
             el.attr('magic', variable('foo'));
         });
         
         assert.htmlEquals(render(
-            '<p data-if="flag" data-func="addattr">Hello world!</p>',
+            '<p data-if="flag" data-call="addattr">Hello world!</p>',
             {foo: "Foo!", flag: false}),
                           '');
     },
 
-    'data-func with data-trans': function() {
+    'data-call with data-trans': function() {
         obtemp.registerFunc('addattr', function(el, variable) {
             el.attr('magic', variable('foo'));
-            // translation has happened before data-func is called
+            // translation has happened before data-call is called
             assert.equals(el.text(), 'Hallo wereld!');
         });
         
         assert.htmlEquals(render(
-            '<p data-trans="" data-func="addattr">Hello world!</p>',
+            '<p data-trans="" data-call="addattr">Hello world!</p>',
             {foo: "Foo!"}),
                           '<p magic="Foo!">Hallo wereld!</p>');
     },
 
-    'data-func with data-repeat': function() {
+    'data-call with data-repeat': function() {
         obtemp.registerFunc('even-odd', function(el, variable) {
             if (variable('@repeat.index') % 2 === 0) {
                 el.addClass('even');
@@ -963,16 +963,16 @@ var templateTestCase = buster.testCase('template tests', {
         });
         
         assert.htmlEquals(render(
-            '<p data-repeat="list" data-func="even-odd">{@.}</p>',
+            '<p data-repeat="list" data-call="even-odd">{@.}</p>',
             {list: [0, 1, 2, 3]}),
                           '<p class="even">0</p><p class="odd">1</p><p class="even">2</p><p class="odd">3</p>'
                          );
     },
 
 
-    'data-func where func is missing': function() {
+    'data-call where func is missing': function() {
         assert.raises(function() {
-            render('<p data-trans="" data-func="addattr">Hello world!</p>',
+            render('<p data-trans="" data-call="addattr">Hello world!</p>',
                    {foo: "Foo!"});
         }, obtemp.RenderError);
     },
