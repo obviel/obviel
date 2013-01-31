@@ -1159,7 +1159,7 @@ var templateTestCase = buster.testCase('template tests', {
                 this.el.text('the ' + this.obj.name);
             }
         });
-        assert.htmlEquals(render('<p data-trans="">Hello <em data-view="who|summary" />!</p>',
+        assert.htmlEquals(render('<p data-trans="">Hello <em data-render="who|summary" />!</p>',
                                  {who: {iface: 'person', name: 'Fred'}}),
                           '<p><em>the Fred</em>, hallo!</p>');
     },
@@ -1199,7 +1199,7 @@ var templateTestCase = buster.testCase('template tests', {
         assert.htmlEquals(html, '<p>Greetings <em>wereld</em>!</p>');
     },
 
-    'implicit data-tvar for data-view': function() {
+    'implicit data-tvar for data-render': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1207,7 +1207,7 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
 
-        assert.htmlEquals(render('<p data-trans="">Hello <span data-view="who"></span>!</p>',
+        assert.htmlEquals(render('<p data-trans="">Hello <span data-render="who"></span>!</p>',
                                  {who: {iface: 'person', name: 'Bob'}}),
                           '<p><span><em>Bob</em></span>, hallo!</p>');
     },
@@ -1452,7 +1452,7 @@ var templateTestCase = buster.testCase('template tests', {
                           '<p>&lt;em&gt;test&lt;/em&gt;</p>');
     },
 
-    'data-view by itself': function() {
+    'data-render by itself': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1460,12 +1460,12 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
 
-        assert.htmlEquals(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+        assert.htmlEquals(render('<div data-render="bob"></div>', {bob: {iface: 'person',
                                                                        name: 'Bob'}}),
                           '<div><p>Bob</p></div>');
     },
 
-    'data-view to url instead of obj': function(done) {
+    'data-render to url instead of obj': function(done) {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1477,7 +1477,7 @@ var templateTestCase = buster.testCase('template tests', {
                                 [200, {"Content-Type": "application/json"},
                                  '{"iface": "person", "name": "Bob"}']);
         
-        var template = new obtemp.Template('<div data-view="bob"></div>');
+        var template = new obtemp.Template('<div data-render="bob"></div>');
         var el = $("<div></div>");
         
         template.render(el,  {bob: 'bob_url'}).done(function() {
@@ -1487,7 +1487,7 @@ var templateTestCase = buster.testCase('template tests', {
     
     },
     
-    'data-view with named view': function() {
+    'data-render with named view': function() {
         obviel.view({
             iface: 'person',
             name: 'summary',
@@ -1496,13 +1496,13 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
 
-        assert.htmlEquals(render('<div data-view="bob|summary"></div>', {bob: {iface: 'person',
+        assert.htmlEquals(render('<div data-render="bob|summary"></div>', {bob: {iface: 'person',
                                                                                name: 'Bob'}}),
                           '<div><p>Bob</p></div>');
 
     },
 
-    'data-view with altered default view': function() {
+    'data-render with altered default view': function() {
         obviel.view({
             iface: 'person',
             name: 'summary',
@@ -1513,13 +1513,13 @@ var templateTestCase = buster.testCase('template tests', {
 
         obtemp.setDefaultViewName('summary');
         
-        assert.htmlEquals(render('<div data-view="bob"></div>', {bob: {iface: 'person',
+        assert.htmlEquals(render('<div data-render="bob"></div>', {bob: {iface: 'person',
                                                                        name: 'Bob'}}),
                           '<div><p>Bob</p></div>');
 
     },
 
-    'data-view empties element': function() {
+    'data-render empties element': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1527,14 +1527,14 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
         
-        assert.htmlEquals(render('<div data-view="bob"><div>Something</div></div>',
+        assert.htmlEquals(render('<div data-render="bob"><div>Something</div></div>',
                                  {bob: {iface: 'person',
                                         name: 'Bob'}}),
                           '<div><p>Bob</p></div>');
 
     },
 
-    'data-view must point to object or string': function() {
+    'data-render must point to object or string': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1543,17 +1543,17 @@ var templateTestCase = buster.testCase('template tests', {
         });
 
         assert.raises(function() {
-            render('<div data-view="bob"></div>', {bob: 1});
+            render('<div data-render="bob"></div>', {bob: 1});
         }, obtemp.RenderError);
     },
 
-    'data-view cannot find view for object': function() {
+    'data-render cannot find view for object': function() {
         assert.raises(function() {
-            render('<div data-view="bob"></div>', {bob: {iface: 'person'}});
+            render('<div data-render="bob"></div>', {bob: {iface: 'person'}});
         }, obtemp.RenderError);
     },
 
-    'data-view with data-with': function() {
+    'data-render with data-with': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1561,13 +1561,13 @@ var templateTestCase = buster.testCase('template tests', {
                 this.el.append('<p>' + this.obj.name + '</p>');
             }
         });
-        assert.htmlEquals(render('<div data-with="sub" data-view="person">person</div>',
+        assert.htmlEquals(render('<div data-with="sub" data-render="person">person</div>',
                                  {sub: {person: {iface: 'person',
                                                  name: 'Bob'}}}),
                           '<div><p>Bob</p></div>');
     },
 
-    'deeper data-view with data-with': function() {
+    'deeper data-render with data-with': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1575,13 +1575,13 @@ var templateTestCase = buster.testCase('template tests', {
                 this.el.append('<p>' + this.obj.name + '</p>');
             }
         });
-        assert.htmlEquals(render('<div><div data-with="sub" data-view="person">person</div></div>',
+        assert.htmlEquals(render('<div><div data-with="sub" data-render="person">person</div></div>',
                                  {sub: {person: {iface: 'person',
                                                  name: 'Bob'}}}),
                           '<div><div><p>Bob</p></div></div>');
     },
 
-    'data-view with data-if where if is true': function() {
+    'data-render with data-if where if is true': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1591,7 +1591,7 @@ var templateTestCase = buster.testCase('template tests', {
         });
         
         
-        assert.htmlEquals(render('<div data-if="flag" data-view="person">person</div>',
+        assert.htmlEquals(render('<div data-if="flag" data-render="person">person</div>',
                                  {person: {iface: 'person',
                                            name: 'Bob'},
                                   flag: true}),
@@ -1599,7 +1599,7 @@ var templateTestCase = buster.testCase('template tests', {
         
     },
 
-    'data-view with deeper data-if where if is false': function() {
+    'data-render with deeper data-if where if is false': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1609,7 +1609,7 @@ var templateTestCase = buster.testCase('template tests', {
         });
         
 
-        assert.htmlEquals(render('<div><div data-if="flag" data-view="person"></div></div>',
+        assert.htmlEquals(render('<div><div data-if="flag" data-render="person"></div></div>',
                                  {person: {iface: 'person',
                                            name: 'Bob'},
                                   flag: false}),
@@ -1617,7 +1617,7 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
-    'data-view with data-repeat': function() {
+    'data-render with data-repeat': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1626,7 +1626,7 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
         
-        assert.htmlEquals(render('<div data-repeat="persons" data-view="@."></div>',
+        assert.htmlEquals(render('<div data-repeat="persons" data-render="@."></div>',
                                  {persons: [
                                      {iface: 'person',
                                       name: 'Bob'},
@@ -1639,7 +1639,7 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'deeper data-view with data-repeat': function() {
+    'deeper data-render with data-repeat': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1648,7 +1648,7 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
         
-        assert.htmlEquals(render('<div><div data-repeat="persons" data-view="@."></div></div>',
+        assert.htmlEquals(render('<div><div data-repeat="persons" data-render="@."></div></div>',
                                  {persons: [
                                      {iface: 'person',
                                       name: 'Bob'},
@@ -1660,13 +1660,13 @@ var templateTestCase = buster.testCase('template tests', {
         
     },
 
-    'data-view with data-trans on same element is not allowed': function() {
+    'data-render with data-trans on same element is not allowed': function() {
         assert.raises(function() {
-            render('<div data-view="foo" data-trans="">foo</div>', {});
+            render('<div data-render="foo" data-trans="">foo</div>', {});
         }, obtemp.CompilationError);
     },
 
-    'data-view with data-trans on same element for attributes is allowed': function() {
+    'data-render with data-trans on same element for attributes is allowed': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1676,12 +1676,12 @@ var templateTestCase = buster.testCase('template tests', {
         });
 
         assert.htmlEquals(
-            render('<div data-view="foo" data-trans="title" title="Hello world!">foo</div>',
+            render('<div data-render="foo" data-trans="title" title="Hello world!">foo</div>',
                    {foo: {iface: 'person', name: 'Bob'}}),
             '<div title="Hallo wereld!"><p>Bob</p></div>');
     },
 
-    'data-view with data-tvar is allowed': function() {
+    'data-render with data-tvar is allowed': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1690,7 +1690,7 @@ var templateTestCase = buster.testCase('template tests', {
         });
 
         assert.htmlEquals(
-            render('<div data-trans="">Hello <span data-tvar="who" data-view="foo"></span>!</div>',
+            render('<div data-trans="">Hello <span data-tvar="who" data-render="foo"></span>!</div>',
                    {foo: {iface: 'person', name: 'Bob'}}),
             '<div><span><strong>Bob</strong></span>, hallo!</div>');
     },
@@ -2035,9 +2035,9 @@ var templateTestCase = buster.testCase('template tests', {
         }, obtemp.CompilationError);
     },
 
-    'illegal variable in data-view is checked': function() {
+    'illegal variable in data-render is checked': function() {
         assert.raises(function() {
-            render('<div data-view="foo."></div>', {});
+            render('<div data-render="foo."></div>', {});
         }, obtemp.CompilationError);
     },
 

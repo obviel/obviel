@@ -308,20 +308,20 @@ may also be expressed like this::
 
   View names are also not included in the message ids, so this::
 
-    <p data-trans="">I saw <span data-view="person|summary"></span>.</p>
+    <p data-trans="">I saw <span data-render="person|summary"></span>.</p>
  
   will use the same message id as this::
 
-    <p data-trans="">I saw <span data-view="person"></span>.</p>
+    <p data-trans="">I saw <span data-render="person"></span>.</p>
 
   namely::
 
     I saw {person}.
 
-You can also always omit the ``data-tvar`` in case of a ``data-view``
+You can also always omit the ``data-tvar`` in case of a ``data-render``
 element::
 
-  <p data-trans="">The great <span data-view="foo"></span>.</p>
+  <p data-trans="">The great <span data-render="foo"></span>.</p>
 
 This will result in a message id like this::
 

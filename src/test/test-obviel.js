@@ -1526,7 +1526,7 @@ var coreTestCase = buster.testCase("core tests", {
     // 'obviel data-repeat with data-attr inside': function() {
     //     obviel.view({
     //         iface: 'outer',
-    //         obvt: '<ul><li data-repeat="items" data-view="@."></li></ul>'
+    //         obvt: '<ul><li data-repeat="items" data-render="@."></li></ul>'
     //     });
     //     obviel.view({
     //         iface: 'inner',
@@ -1781,7 +1781,7 @@ var coreTestCase = buster.testCase("core tests", {
         assert.equals(called, true);
     },
     
-    'render only completes when data-view has been rendered': function() {
+    'render only completes when data-render has been rendered': function() {
         var defer = $.Deferred();
         obviel.view({
             iface: 'subview',
@@ -1792,7 +1792,7 @@ var coreTestCase = buster.testCase("core tests", {
         });
         obviel.view({
             iface: 'main',
-            obvt: '<div><p data-view="sub"></p></div>'
+            obvt: '<div><p data-render="sub"></p></div>'
         });
         
         var called = false;
@@ -1809,7 +1809,7 @@ var coreTestCase = buster.testCase("core tests", {
         assert.equals(called, true);
     },
     
-    'render only completes when data-views have been rendered': function() {
+    'render only completes when all data-render has been rendered': function() {
         var defer0 = $.Deferred(),
         defer1 = $.Deferred();
         obviel.view({
@@ -1829,7 +1829,7 @@ var coreTestCase = buster.testCase("core tests", {
         
         obviel.view({
             iface: 'main',
-            obvt: '<div><p data-repeat="l" data-view="@."></p></div>'
+            obvt: '<div><p data-repeat="l" data-render="@."></p></div>'
         });
         
         var called = false;
@@ -1953,7 +1953,7 @@ var coreTestCase = buster.testCase("core tests", {
     "http error in template-based subview": function(done) {
         obviel.view({
             iface: 'foo',
-            obvt: '<div data-view="sub"></div>'
+            obvt: '<div data-render="sub"></div>'
         });
         var spy = sinon.spy();
         obviel.httpErrorHook(spy);

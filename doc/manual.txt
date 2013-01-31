@@ -699,16 +699,16 @@ the model indicated by ``this.obj.attr``. ``this.obj.attr`` may be a
 sub-object or a URL referring to another object.
 
 Doing this by hand is not too bad, but Obviel also allows you to do this
-using a template using ``data-view``::
+with a template using ``data-render``::
 
   obviel.view({
-    obvt: '<div data-view="attr"></div>'
+    obvt: '<div data-render="attr"></div>'
   });
 
 Wow, that's a lot shorter! 
 
 Now let's examine the application from the section above again, using
-templates and ``data-view``::
+templates and ``data-render``::
 
     obviel.view({
        iface: 'text',
@@ -723,7 +723,7 @@ templates and ``data-view``::
 
     obviel.view({
        iface: 'page',
-       obvt: '<div data-repeat="parts" data-view="@."></div>'
+       obvt: '<div data-repeat="parts" data-render="@."></div>'
     });
 
 As you can see, that has cleaned up the code a lot!
@@ -867,7 +867,7 @@ we created before. Here it is, using Obviel Template::
 
     obviel.view({
        iface: 'page',
-       obvt: '<div data-repeat="parts" data-view="@."></div>'
+       obvt: '<div data-repeat="parts" data-render="@."></div>'
     });
 
 We also leave the other views to render ``text`` and ``list`` ifaces

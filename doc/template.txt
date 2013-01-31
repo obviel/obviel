@@ -460,7 +460,7 @@ will therefore get you::
 
   <p>b in scope a: redefined</p>
 
-``data-view``
+``data-render``
 -------------
 
 Consider the following data:
@@ -500,15 +500,15 @@ events (which we'll see later). Let's consider a view:
 This is a view for the iface ``person``. We use the Obviel Template
 (indicated by ``obvt``) to render the view.
 
-Now we can change our template to render ``who`` as a view::
+Now we can change our template to render ``who`` with a view::
 
-  <p>{greeting} <span data-view="who"></span></p>
+  <p>{greeting} <span data-render="who"></span></p>
 
 The result is still the same::
 
   <p>Hello <span><a href="http://www.example.com/pat_pending">Pat Pending</a></span></p>
 
-Another advantage of using ``data-view`` in this case is that you have
+Another advantage of using ``data-render`` in this case is that you have
 made the outer template more generic. If the object indicated by the
 name ``who`` has another ``iface``, the template will still work
 unchanged. For example, here is a data structure where ``who`` is a
@@ -535,13 +535,13 @@ and this is a view for the iface ``robot``:
 
 and here is our outer template again, unchanged::
 
-  <p>{greeting} <span data-view="who"></span></p>
+  <p>{greeting} <span data-render="who"></span></p>
 
 when we render the data now, we get this::
 
   <p>Greetings <span>OVL-R 4711</span></p>
 
-in other words, if you add ``data-view`` to an element ``el`` to
+in other words, if you add ``data-render`` to an element ``el`` to
 render object ``who``, Obviel Template will do the equivalent of this:
 
 .. code-block:: javascript
@@ -549,7 +549,7 @@ render object ``who``, Obviel Template will do the equivalent of this:
   $(el).render(who);
 
 Sometimes you have multiple views for an ``iface``, distinguished by
-name. You can indicate the name used by ``data-view`` with a ``|``
+name. You can indicate the name used by ``data-render`` with a ``|``
 character. Here's another view for ``person`` with the name ``extended``:
 
 .. code-block:: javascript
@@ -563,9 +563,9 @@ character. Here's another view for ``person`` with the name ``extended``:
 
 and here is how you refer to this ``extended`` view::
 
-  <p>{greeting} <span data-view="who|extended"></span></p>
+  <p>{greeting} <span data-render="who|extended"></span></p>
 
-By default, ``data-view`` looks up a view named ``default`` -- the default
+By default, ``data-render`` looks up a view named ``default`` -- the default
 view name for Obviel. If you want to change the way templates look up
 views to use another view globally you can do so in JavaScript:
 
@@ -581,17 +581,17 @@ loaded. Note that this does *not* alter the default view name of
 Obviel itself when you use ``el.render(obj)``; this will remain
 ``default``.
 
-``data-view`` can also point to a variable that is a string, not an
+``data-render`` can also point to a variable that is a string, not an
 object.  In this case the variable is treated as a URL, and this is
 loaded as a JSON object. The view is then rendered for that object.
 
-``data-view`` must point to an object or a string. It cannot point to an
-array or other value.
+``data-render`` must point to an object or a string. It cannot point
+to an array or other value.
 
 Formatters
 ----------
 
-If you need to insert HTML snippets, use ``data-view``. If you must
+If you need to insert HTML snippets, use ``data-render``. If you must
 manipulate text in some consistent way, you can use
 formatters. Formatters can be registered globally with Obviel Template
 like this:
@@ -1094,7 +1094,7 @@ text-nodes). Most DOM manipulations by adding, moving or removing
 elements or text modes are unsafe: it can break Obviel Template in
 unexpected ways, as it relies on the order of child nodes to stay the
 same. But if you want to insert a whole bunch of elements you should
-consider using ``data-view`` instead.
+consider using ``data-render`` instead.
 
 special attributes (``id``, ``src``)
 ------------------------------------
@@ -1199,7 +1199,7 @@ The order of execution of operations on an element is as follows :
 
 * ``data-with``
 
-* ``data-view`` or ``data-trans``
+* ``data-render`` or ``data-trans``
 
 * ``data-attr``
 
@@ -1209,7 +1209,7 @@ The order of execution of operations on an element is as follows :
 
 For example, you could combine directives like this::
 
-  <p data-if="a" data-repeat="b" data-with="c" data-view="d"></p>
+  <p data-if="a" data-repeat="b" data-with="c" data-render="d"></p>
 
 This means that if the value ``a`` is present and true, the ``p``
 element will be included in the rendered template (at all). After
@@ -1218,8 +1218,8 @@ we render the object ``d`` in the ``c`` scope with a view.
 
 This order holds no matter in what order you define the attributes.
 
-``data-trans`` is at the same level as ``data-view``. It's not allowed
-on an element with ``data-view``.
+``data-trans`` is at the same level as ``data-render``. It's not allowed
+on an element with ``data-render``.
 
 ``data-attr`` and ``data-func`` are executed last for an element, and
 finally elements are transformed using ``data-el`` or ``data-unwrap``.

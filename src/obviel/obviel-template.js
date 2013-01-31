@@ -195,7 +195,7 @@ obviel.template = {};
             this.parentNode.removeChild(this);
         });
 
-        // need to wait until data-view triggered views are done
+        // need to wait until data-render triggered views are done
         return $.when.apply(null, context.subviewPromises);
     };
     
@@ -236,7 +236,7 @@ obviel.template = {};
         //this.elFuncs = { funcs: [], sub: {} };
         
         this.dynamicElements = [];
-        this.viewElements = [];
+        this.renderElements = [];
         this.subSections = [];
         this.compile(el);
     };
@@ -257,8 +257,8 @@ obviel.template = {};
             return;
         }
 
-        // compile any view on top element
-        this.compileView(el);
+        // compile any render on top element
+        this.compileRender(el);
         
         // now compile sub-elements
         for (var i = 0; i < el.childNodes.length; i++) {
@@ -303,7 +303,7 @@ obviel.template = {};
             return;
         }
 
-        this.compileView(el);
+        this.compileRender(el);
 
         for (var i = 0; i < el.childNodes.length; i++) {
             var node = el.childNodes[i];
@@ -370,16 +370,16 @@ obviel.template = {};
         return c.getFunction();
     };
     
-    module.Section.prototype.compileView = function(el) {
-        var viewElement = new module.ViewElement(el);
+    module.Section.prototype.compileRender = function(el) {
+        var renderElement = new module.RenderElement(el);
 
-        if (!viewElement.isDynamic()) {
+        if (!renderElement.isDynamic()) {
             return;
         }
         
-        this.viewElements.push({
+        this.renderElements.push({
             finder: this.getElFinder(el),
-            viewElement: viewElement
+            renderElement: renderElement
         });
     };
     
@@ -527,10 +527,10 @@ obviel.template = {};
 
     module.Section.prototype.renderViews = function(el, scope,
                                                      context) {
-        for (var i in this.viewElements) {
-            var value = this.viewElements[i];
-            var viewEl = value.finder(el);
-            value.viewElement.render(viewEl, scope, context);
+        for (var i in this.renderElements) {
+            var value = this.renderElements[i];
+            var renderEl = value.finder(el);
+            value.renderElement.render(renderEl, scope, context);
         }
     };
 
@@ -1059,15 +1059,15 @@ obviel.template = {};
         return result;
     };
 
-    module.ViewElement = function(el) {
-        var dataView = getDirective(el, 'data-view');
-        if (dataView === null) {
+    module.RenderElement = function(el) {
+        var dataRender = getDirective(el, 'data-render');
+        if (dataRender === null) {
             this.dynamic = false;
             return;
         }
-        validateDottedName(el, dataView);
+        validateDottedName(el, dataRender);
         this.dynamic = true;
-        var r = splitNameFormatter(el, dataView);
+        var r = splitNameFormatter(el, dataRender);
         this.objName = r.name;
         this.getValue = module.resolveFunc(r.name);
         this.viewName = r.formatter;
@@ -1076,22 +1076,22 @@ obviel.template = {};
         }
     };
     
-    module.ViewElement.prototype.isDynamic = function() {
+    module.RenderElement.prototype.isDynamic = function() {
         return this.dynamic;
     };
 
-    module.ViewElement.prototype.render = function(el, scope, context) {
+    module.RenderElement.prototype.render = function(el, scope, context) {
         var obj = this.getValue(scope);
         if (obj === undefined) {
             throw new module.RenderError(
-                el, "data-view object '" + this.propertyName + "' " +
+                el, "data-render object '" + this.propertyName + "' " +
                     "could not be found");
         }
         var type = $.type(obj);
         if (type !== 'object' && type !== 'string') {
             throw new module.RenderError(
                 el,
-                "data-view must point to an object or string (URL), not to " + type);
+                "data-render must point to an object or string (URL), not to " + type);
         }
         
         // empty element
@@ -1119,10 +1119,10 @@ obviel.template = {};
 
     module.TransInfo.prototype.compile = function(el) {
         this.compileDataTrans(el);
-        if (this.content !== null && el.hasAttribute('data-view')) {
+        if (this.content !== null && el.hasAttribute('data-render')) {
             throw new module.CompilationError(
                 el,
-                "data-view not allowed when content is marked with data-trans");
+                "data-render not allowed when content is marked with data-trans");
         }
         this.compileDataTvar(el);
         this.compileDataPlural(el);
@@ -1413,7 +1413,7 @@ obviel.template = {};
                 index: index,
                 dynamic: new module.DynamicElement(tvarNode, true),
                 dynamicNotrans: new module.DynamicElement(node, true),
-                view: tvarInfo.view
+                render: tvarInfo.render
             };
         }
         // COMMENTNODE
@@ -1507,10 +1507,10 @@ obviel.template = {};
         checkMessageId(el, messageId, 'element');
     };
     
-    module.ContentTrans.prototype.implicitTvar = function(node, view) {
-        if (view !== null) {
-            // data-view exists on element, use name as tvar name
-            return view.objName;
+    module.ContentTrans.prototype.implicitTvar = function(node, render) {
+        if (render !== null) {
+            // data-render exists on element, use name as tvar name
+            return render.objName;
         }
         // only if we have a single text child node that is a variable
         // by itself do we have an implicit tvar
@@ -1538,12 +1538,12 @@ obviel.template = {};
             var tvarInfo = parseTvar(el, tvar);
             tvar = tvarInfo.tvar;
         }
-        var view = null;
-        if (el.hasAttribute('data-view')) {
-            view = new module.ViewElement(el);
+        var render = null;
+        if (el.hasAttribute('data-render')) {
+            render = new module.RenderElement(el);
         }
         if (tvar === null) {
-            tvar = this.implicitTvar(el, view);
+            tvar = this.implicitTvar(el, render);
             if (tvar === null) {
                 throw new module.CompilationError(
                     el, this.directiveName + " element has sub-elements " +
@@ -1557,7 +1557,7 @@ obviel.template = {};
                 el, "data-tvar must be unique within " +
                     this.directiveName + ": " + tvar);
         }
-        return {tvar: tvar, view: view};
+        return {tvar: tvar, render: render};
     };
 
     module.ContentTrans.prototype.getTvarNode = function(
@@ -1570,8 +1570,8 @@ obviel.template = {};
         var tvarNode = tvarInfo.node.cloneNode(true);
 
         tvarInfo.dynamic.render(tvarNode, scope, context);
-        if (tvarInfo.view !== null) {
-            tvarInfo.view.render(tvarNode, scope, context);
+        if (tvarInfo.render !== null) {
+            tvarInfo.render.render(tvarNode, scope, context);
         }
         return tvarNode;
     };
