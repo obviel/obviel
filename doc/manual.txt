@@ -1015,11 +1015,11 @@ this first to use a method on the view for the event handler::
   });
 
 We can now hook up the event handler using Obviel Template instead, using
-the ``data-handler`` directive::
+the ``data-on`` directive::
 
   obviel.view({ 
      iface: 'foo',
-     obvt: '<div data-handler="click|clickHandler">Click me!</div><div id="clickResult"></div>', 
+     obvt: '<div data-on="click|clickHandler">Click me!</div><div id="clickResult"></div>', 
      clickHandler: function(ev) {
         $('#clickResult', this.el).text('clicked!');
      }

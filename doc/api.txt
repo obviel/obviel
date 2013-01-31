@@ -494,9 +494,9 @@ Everything is in the ``obviel.template`` namespace.
 
       ``getHandler``
         A function that gets a single name argument and returns the
-        handler that matches that name. If no handler can be found by
+        event handler that matches that name. If no handler can be found by
         that name, ``null`` should be returned. Used by
-        ``data-handler``.
+        ``data-on``.
 
       ``getFormatter``
         A function that gets a single name argument and returns the

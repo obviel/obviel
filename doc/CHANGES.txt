@@ -5,7 +5,7 @@ CHANGES
 =====
 
 * Template language renaming. The general pattern is to use imperative
-  verbs where possible for directives:
+  verbs where possible for directives (though ``data-on`` is an exception):
 
   * ``data-each`` was renamed to ``data-repeat`` and ``@each`` to
     ``@repeat``.
@@ -15,6 +15,9 @@ CHANGES
 
   * ``data-func`` becomes ``data-call``, as it really calls a function on
      the view.
+
+  * ``data-handler`` becomes ``data-on`` as its shorter and ``on`` typically
+    implies event handling.
 
   A simple search and replace in your templates for these names should
   be enough to update your templates.

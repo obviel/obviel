@@ -1406,7 +1406,7 @@ var coreTestCase = buster.testCase("core tests", {
         
         obviel.view({
             iface: 'test',
-            obvt: '<div class="someClass" data-handler="click|handleClick">Click here!</div>',
+            obvt: '<div class="someClass" data-on="click|handleClick">Click here!</div>',
             handleClick: function(ev) {
                 clicked = true;
             }
@@ -1424,7 +1424,7 @@ var coreTestCase = buster.testCase("core tests", {
         
         obviel.view({
             iface: 'test',
-            obvt: '<div class="someClass" data-handler="click|handleClick">Click here!</div>',
+            obvt: '<div class="someClass" data-on="click|handleClick">Click here!</div>',
             handleClick: function(ev) {
                 this.obj.clicked = true;
             }

@@ -635,17 +635,17 @@ you can also consider using ``data-call``.
 If you are registering global formatters, you should register
 formatters only once per web page, before template rendering starts.
 
-``data-handler``: binding DOM event handlers
---------------------------------------------
+``data-on``: binding DOM event handlers
+---------------------------------------
 
 Often in a view you want to handle particular DOM events for elements
 in the view. You can bind DOM events to methods of the view using the
-``data-handler`` directive.
+``data-on`` directive.
 
 For instance, if you want to bind a handler for the ``click`` event on
 a ``div``, you can do it like this::
 
-  <div data-handler="click|someFunction">Click here!</div>
+  <div data-on="click|someFunction">Click here!</div>
 
 When the user now clicks on the ``div`` element, the function
 indicated by ``someFunction`` will be executed. ``someFunction`` is
@@ -654,7 +654,7 @@ in a view::
 
   obviel.view({
     iface: 'foo',
-    obvt: '<div data-handler="click|someFunction">Click here!</div>', 
+    obvt: '<div data-on="click|someFunction">Click here!</div>', 
     someFunction: function(ev) {
       alert("You clicked!");
     }
@@ -663,7 +663,7 @@ in a view::
 To bind more than one event handler on an element at the same time, 
 separate them by a space character::
 
-  <div data-handler="click|onClick dblclick|onDblclick">Click here!</div>
+  <div data-on="click|onClick dblclick|onDblclick">Click here!</div>
 
 It is a ``RenderError`` if the handler function is not available on
 the view during render time.
@@ -1202,6 +1202,8 @@ The order of execution of operations on an element is as follows :
 * ``data-render`` or ``data-trans``
 
 * ``data-attr``
+
+* ``data-on``
 
 * ``data-call``
 

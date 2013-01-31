@@ -2065,7 +2065,7 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'data-handler working': function() {
+    'data-on working': function() {
             var handlerCalled = false;
         var handlers = {
             myHandler: function(ev) {
@@ -2078,7 +2078,7 @@ var templateTestCase = buster.testCase('template tests', {
         };
         
         var template = new obtemp.Template(
-            '<div id="one" data-handler="click|myHandler">Click here</div>');
+            '<div id="one" data-on="click|myHandler">Click here</div>');
         
         var el = $('<div></div>');
         template.render(el, {}, { getHandler: getHandler});
@@ -2086,11 +2086,11 @@ var templateTestCase = buster.testCase('template tests', {
         assert.equals(handlerCalled, true);
     },
 
-    'data-handler no handlers supplied': function() {
+    'data-on no handlers supplied': function() {
         var handlerCalled = false;
         
         var template = new obtemp.Template(
-            '<div id="one" data-handler="click|myHandler">Click here</div>');
+            '<div id="one" data-on="click|myHandler">Click here</div>');
         
         var el = $('<div></div>');
         assert.raises(function() {
@@ -2098,7 +2098,7 @@ var templateTestCase = buster.testCase('template tests', {
         }, obtemp.RenderError);
     },
 
-    'data-handler specific handler not supplied': function() {
+    'data-on specific handler not supplied': function() {
         var handlerCalled = false;
         
         var getHandler = function(name) {
@@ -2106,7 +2106,7 @@ var templateTestCase = buster.testCase('template tests', {
         };
         
         var template = new obtemp.Template(
-            '<div id="one" data-handler="click|myHandler">Click here</div>');
+            '<div id="one" data-on="click|myHandler">Click here</div>');
         
         var el = $('<div></div>');
             assert.raises(function() {
@@ -2114,7 +2114,7 @@ var templateTestCase = buster.testCase('template tests', {
             }, obtemp.RenderError);
     },
 
-        'data-handler with data-el': function() {
+        'data-on with data-el': function() {
             var handlerCalled = false;
             var handlers = {
                 myHandler: function(ev) {
@@ -2127,7 +2127,7 @@ var templateTestCase = buster.testCase('template tests', {
             };
             
             var template = new obtemp.Template(
-                '<span data-el="div" id="one" data-handler="click|myHandler">Click here</span>');
+                '<span data-el="div" id="one" data-on="click|myHandler">Click here</span>');
             
                 var el = $('<div></div>');
             template.render(el, {}, { getHandler: getHandler});
@@ -2136,7 +2136,7 @@ var templateTestCase = buster.testCase('template tests', {
                 
         },
 
-    'data-handler multiple on same el': function() {
+    'data-on multiple on same el': function() {
             var firstHandlerCalled = false;
         var secondHandlerCalled = false;
         var handlers = {
@@ -2153,7 +2153,7 @@ var templateTestCase = buster.testCase('template tests', {
         };
         
         var template = new obtemp.Template(
-            '<div id="one" data-handler="click|firstHandler blur|secondHandler">Click here</div>');
+            '<div id="one" data-on="click|firstHandler blur|secondHandler">Click here</div>');
         
         var el = $('<div></div>');
         template.render(el, {}, { getHandler: getHandler});

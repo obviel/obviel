@@ -572,7 +572,7 @@ obviel.template = {};
         
         this.compileAttrTexts(el);
         this.compileContentTexts(el);
-        this.compileDataHandler(el);
+        this.compileDataOn(el);
         this.compileCall(el);
         this.compileSpecialAttr(el);
         this.compileDataEl(el);
@@ -625,22 +625,22 @@ obviel.template = {};
         }
     };
     
-    module.DynamicElement.prototype.compileDataHandler = function(el) {
-        var dataHandler = getDirective(el, 'data-handler');
-        if (dataHandler === null) {
+    module.DynamicElement.prototype.compileDataOn = function(el) {
+        var dataOn = getDirective(el, 'data-on');
+        if (dataOn === null) {
             return;
         }
-        var nameFormatters = splitNameFormatters(el, dataHandler);
+        var nameFormatters = splitNameFormatters(el, dataOn);
         if (nameFormatters.length === 0) {
             throw new module.CompilationError(
-                el, 'data-handler: must have content');
+                el, 'data-on: must have content');
         }
         for (var i = 0; i < nameFormatters.length; i++) {
             var nameFormatter = nameFormatters[i];
     
             if (!nameFormatter.formatter) {
                 throw new module.CompilationError(
-                    el, "data-handler: handler function name is not specified");
+                    el, "data-on: handler function name is not specified");
             }
             this.handlers.push({eventName: nameFormatter.name,
                                 handlerName: nameFormatter.formatter});
@@ -837,7 +837,7 @@ obviel.template = {};
         parent.attr(name, value);
     };
 
-    module.DynamicElement.prototype.renderDataHandler = function(
+    module.DynamicElement.prototype.renderDataOn = function(
         el, context) {
         if (this.handlers.length === 0) {
             return;
@@ -848,7 +848,7 @@ obviel.template = {};
             if (context.getHandler === null ||
                 context.getHandler === undefined) {
                 throw new module.RenderError(
-                    el, "cannot render data-handler for event '" +
+                    el, "cannot render data-on for event '" +
                         handler.eventName + "' and handler '" +
                         handler.handlerName +
                         "' because no getHandler function " +
@@ -857,7 +857,7 @@ obviel.template = {};
             var f = context.getHandler(handler.handlerName);
             if (f === undefined || f === null) {
                 throw new module.RenderError(
-                    el, "cannot render data-handler for event '" +
+                    el, "cannot render data-on for event '" +
                         handler.eventName + "' and handler '" +
                         handler.handlerName + "' because handler function " +
                         "could not be found");
@@ -886,7 +886,7 @@ obviel.template = {};
     module.DynamicElement.prototype.finalizeRender = function(
         el, scope, context) {
         this.renderDataAttr(el);
-        this.renderDataHandler(el, context);
+        this.renderDataOn(el, context);
         this.renderDataCall(el, scope, context);
     };
     
