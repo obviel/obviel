@@ -290,7 +290,7 @@ will render like this::
   </ul>
 
 ``@repeat`` variable
-------------------
+--------------------
 
 ``data-repeat`` supports the special variable ``@repeat``. This variable
 contains some useful properties during the construction of loops:
@@ -461,7 +461,7 @@ will therefore get you::
   <p>b in scope a: redefined</p>
 
 ``data-render``
--------------
+---------------
 
 Consider the following data:
 
@@ -737,6 +737,19 @@ You could also use ``data-repeat`` to generate a whole series of elements::
   clear and easier to write with a small custom method on the view
   that adds attributes using jQuery than it is using ``data-attr``.
 
+Normally you'd generate a dynamic attribute like this::
+
+   <a href="{url}">{title}</a>
+
+but sometimes this isn't good enough: in particular, we sometimes want
+to be able to generate attributes that are only there if some
+condition is true. Obviel Template has a special ``data-attr``
+directive that lets you do this. The equivalent of the above example
+using ``data-attr`` looks like this::
+
+  <a><span data-attr="href" data-value="{url}"/>{title}</a>
+
+
 .. sidebar:: ``data-attr`` with special HTML elements
 
   In HTML, the following elements are **void**, meaning they may not
@@ -770,18 +783,6 @@ You could also use ``data-repeat`` to generate a whole series of elements::
 
   This is all rather cumbersome however, and we recommend you use
   ``data-call`` in these situations instead.
-
-Normally you'd generate a dynamic attribute like this::
-
-   <a href="{url}">{title}</a>
-
-but sometimes this isn't good enough: in particular, we sometimes want
-to be able to generate attributes that are only there if some
-condition is true. Obviel Template has a special ``data-attr``
-directive that lets you do this. The equivalent of the above example
-using ``data-attr`` looks like this::
-
-  <a><span data-attr="href" data-value="{url}"/>{title}</a>
 
 What will happen when this template is rendered is the same as in the
 first example::
