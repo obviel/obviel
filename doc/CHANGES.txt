@@ -1,11 +1,12 @@
 CHANGES
 *******
 
-1.0b6
-=====
+1.0b6 (unreleased)
+==================
 
-* Template language renaming. The general pattern is to use imperative
-  verbs where possible for directives (though ``data-on`` is an exception):
+* **Backwards incompatible!** Template language renaming. The general
+  pattern is to use imperative verbs where possible for directives
+  (though ``data-on`` is an exception):
 
   * ``data-each`` was renamed to ``data-repeat`` and ``@each`` to
     ``@repeat``.

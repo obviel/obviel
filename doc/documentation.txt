@@ -32,6 +32,8 @@ documentation:
 
 * :doc:`demo code <demo>` will help!
 
+* :doc:`the changelog <CHANGES>`
+
 .. _Fanstatic: http://fanstatic.org
 
 Here is a full table of contents:
