@@ -717,13 +717,13 @@ templates and ``data-view``::
 
     obviel.view({
        iface: 'list',
-       obvt: '<ul><li data-each="entries">{@.}</li></ul>'
+       obvt: '<ul><li data-repeat="entries">{@.}</li></ul>'
     });
 
 
     obviel.view({
        iface: 'page',
-       obvt: '<div data-each="parts" data-view="@."></div>'
+       obvt: '<div data-repeat="parts" data-view="@."></div>'
     });
 
 As you can see, that has cleaned up the code a lot!
@@ -867,7 +867,7 @@ we created before. Here it is, using Obviel Template::
 
     obviel.view({
        iface: 'page',
-       obvt: '<div data-each="parts" data-view="@."></div>'
+       obvt: '<div data-repeat="parts" data-view="@."></div>'
     });
 
 We also leave the other views to render ``text`` and ``list`` ifaces

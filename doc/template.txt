@@ -90,7 +90,7 @@ an error and the template won't render; you get a ``RenderError``
 exception.
 
 Dotted names work whenever a variable can be used, so also works in
-other directives such as ``data-with``, ``data-if`` and ``data-each``,
+other directives such as ``data-with``, ``data-if`` and ``data-repeat``,
 which we will discuss later.
 
 Interpolating the current object: ``@.``
@@ -213,10 +213,10 @@ the template will render like this::
 
   <p>Evan is not present</p>
 
-``data-each`` for repetition
-----------------------------
+``data-repeat`` for repetition
+------------------------------
 
-If you point to an array with ``data-each``, it will render each entry
+If you point to an array with ``data-repeat``, it will render each entry
 in the array into the DOM. So with a data structure like this:
 
 .. code-block:: javascript
@@ -235,7 +235,7 @@ in the array into the DOM. So with a data structure like this:
 and a template like this::
  
   <ul>
-    <li data-each="persons">{name}</li>
+    <li data-repeat="persons">{name}</li>
   </ul>
 
 the result will be this::
@@ -245,8 +245,8 @@ the result will be this::
     <li>Steven</li>
   </ul>
  
-Note that ``data-each`` changes the scope to each entry in the
-array. So, ``data-each`` changes the object in which the variables are
+Note that ``data-repeat`` changes the scope to each entry in the
+array. So, ``data-repeat`` changes the object in which the variables are
 looked up to each entry in the array, one by one.
 
 If the array is empty, nothing will be rendered at all. So, this
@@ -278,7 +278,7 @@ each item is not an object in itself. For instance:
 and this template::
 
   <ul>
-    <li data-each="persons">{@.}</li>
+    <li data-repeat="persons">{@.}</li>
   </ul>
 
 will render like this::
@@ -289,10 +289,10 @@ will render like this::
     <li>Jay</li>
   </ul>
 
-``@each`` variable
+``@repeat`` variable
 ------------------
 
-``data-each`` supports the special variable ``@each``. This variable
+``data-repeat`` supports the special variable ``@repeat``. This variable
 contains some useful properties during the construction of loops:
 
 * ``index`` - the index of the current iteration, starting at 0
@@ -308,7 +308,7 @@ contains some useful properties during the construction of loops:
 For example::
 
   <ul>
-    <li data-each="persons">{@each.index}</li>
+    <li data-repeat="persons">{@repeat.index}</li>
   </ul>
 
 will render (with three items in the list) as follows::
@@ -319,17 +319,17 @@ will render (with three items in the list) as follows::
     <li>2/li>
   </ul>
 
-To support nested use of ``data-each``, ``@each`` also supports a
+To support nested use of ``data-repeat``, ``@repeat`` also supports a
 variable named after the variable that is currently being looped
 through, in this example ``persons``::
 
   <ul>
-    <li data-each="persons">{@each.persons.index}</li>
+    <li data-repeat="persons">{@repeat.persons.index}</li>
   </ul>
 
 which will do the same as the previous template.
 
-Let's look at how this is used in a nested ``data-each``. Here's the data:
+Let's look at how this is used in a nested ``data-repeat``. Here's the data:
 
 .. code-block:: javascript
 
@@ -341,10 +341,10 @@ Let's look at how this is used in a nested ``data-each``. Here's the data:
 And here's a template::
 
   <ul>
-    <li data-each="outer">
+    <li data-repeat="outer">
       <ul>
-        <li data-each="inner">
-        value: {@.} outer: {@each.outer.number} inner: {@each.inner.number}
+        <li data-repeat="inner">
+        value: {@.} outer: {@repeat.outer.number} inner: {@repeat.inner.number}
         </li>
       </ul>
     </li>
@@ -378,8 +378,8 @@ If you used this template with the data, you would get this output::
     </li>
   </ul>
 
-What if the variable ``data-each`` goes through is a dotted name - how
-is it used with ``data-each``? You can addres it by replacing the
+What if the variable ``data-repeat`` goes through is a dotted name - how
+is it used with ``data-repeat``? You can addres it by replacing the
 periods by underscores. For instance, given this data:
 
 .. code-block:: javascript
@@ -393,7 +393,7 @@ periods by underscores. For instance, given this data:
 and this template::
 
   <ul>
-    <li data-each="something.persons">{@each.something_persons.number}</li>
+    <li data-repeat="something.persons">{@repeat.something_persons.number}</li>
   </ul>
 
 you will get this as a result::
@@ -408,7 +408,7 @@ So to address ``something.persons`` in a loop, you use
 ``something_persons``, with the ``.`` replaced by ``_``.
 
 To support various user interface you want to add a class into the DOM
-depending on a some ``@each`` value, such as ``even`` or
+depending on a some ``@repeat`` value, such as ``even`` or
 ``odd``. While you can do this with ``data-attr`` (which we'll see
 later), we recommend you use ``data-func`` for this (which we'll also
 see later), as your code will generally be clearer.
@@ -672,7 +672,7 @@ the view during render time.
 ----------------------------------------
 
 Obviel Template has element-based directives (``data-if``,
-``data-each``, etc). But sometimes you just want to conditionally or
+``data-repeat``, etc). But sometimes you just want to conditionally or
 repeatedly include a piece of text, not an element. You can do this by
 using a special ``data-unwrap`` element. During template rendering all
 elements marked by ``data-unwrap`` disappear.
@@ -799,10 +799,10 @@ attributes now::
 
 Now, the ``href`` attribute will appear *only* if ``flag`` is true.
 
-In combination with ``data-each`` this can be used to dynamically
+In combination with ``data-repeat`` this can be used to dynamically
 generate multiple attributes from data::
 
-  <a><span data-each="attributes" data-attr="{name}" data-value="{value}"/>{title}</a>
+  <a><span data-repeat="attributes" data-attr="{name}" data-value="{value}"/>{title}</a>
 
 That template, combined with this data:
 
@@ -981,14 +981,14 @@ And once the template is rendered, we'll see this::
   <p magic="Magic!">Hello world!</p>
 
 ``data-func`` is especially useful in combination with
-``data-each``. Let's consider the case where we want to add an
+``data-repeat``. Let's consider the case where we want to add an
 ``even`` and ``odd`` class to each iteration. We could write a
 template like this::
 
   <ul>
-    <li data-each="list">
-      <p data-if="@each.even" class="even">{@.}</p>
-      <p data-if="@each.odd" class="odd">{@.}</p>
+    <li data-repeat="list">
+      <p data-if="@repeat.even" class="even">{@.}</p>
+      <p data-if="@repeat.odd" class="odd">{@.}</p>
     </li>
   </ul>
 
@@ -1002,10 +1002,10 @@ We could also use dynamically generated attributes to solve this
 case::
 
   <ul>
-    <li data-each="list">
+    <li data-repeat="list">
       <p>
-        <span data-if="@each.even" data-attr="class" data-value="even"/>
-        <span data-if="@each.odd"  data-attr="class" data-value="odd" />
+        <span data-if="@repeat.even" data-attr="class" data-value="even"/>
+        <span data-if="@repeat.odd"  data-attr="class" data-value="odd" />
         {@.}
       </p>
     </li>
@@ -1014,9 +1014,9 @@ case::
 This would also allow us to generate the ``class`` attribute on the ``li``::
 
   <ul>
-    <li data-each="list">
-      <span data-if="@each.even" data-attr="class" data-value="even"/>
-      <span data-if="@each.odd" data-attr="class" data-value="odd" />
+    <li data-repeat="list">
+      <span data-if="@repeat.even" data-attr="class" data-value="even"/>
+      <span data-if="@repeat.odd" data-attr="class" data-value="odd" />
       <p>{@.}</p>
     </li>
   </ul>
@@ -1027,7 +1027,7 @@ just so easy to express a rule like this in JavaScript with jQuery:
 .. code-block:: javascript
 
   var evenodd = function(el, variable) {
-     if (variable('@each.even')) {
+     if (variable('@repeat.even')) {
         el.addClass('even');
      } else {
         el.addClass('odd');
@@ -1045,7 +1045,7 @@ plug it in globally for the application:
 And then we can use it on ``p``::
 
   <ul>
-    <li data-each="list">
+    <li data-repeat="list">
       <p data-func="evenodd">{@.}</p>
     </li>
   </ul>
@@ -1053,7 +1053,7 @@ And then we can use it on ``p``::
 Or to use it to add the class to ``li`` directly::
 
   <ul>
-    <li data-each="list" data-func="evenodd">
+    <li data-repeat="list" data-func="evenodd">
       <p>{@.}</p>
     </li>
   </ul>
@@ -1064,7 +1064,7 @@ to add a ``class`` attribute on even or odd, but every third item:
 .. code-block:: javascript
 
   var everythird = function(el, variable) {
-     if (variable('@each.index') % 3 === 0) {
+     if (variable('@repeat.index') % 3 === 0) {
         el.addClass('third');
      }
   };
@@ -1074,7 +1074,7 @@ to add a ``class`` attribute on even or odd, but every third item:
 and then use it::
 
   <ul>
-    <li data-each="list" data-func="everythird">
+    <li data-repeat="list" data-func="everythird">
       <p>{@.}</p>
     </li>
   </ul>
@@ -1195,7 +1195,7 @@ The order of execution of operations on an element is as follows :
 
 * ``data-if``
 
-* ``data-each``
+* ``data-repeat``
 
 * ``data-with``
 
@@ -1209,7 +1209,7 @@ The order of execution of operations on an element is as follows :
 
 For example, you could combine directives like this::
 
-  <p data-if="a" data-each="b" data-with="c" data-view="d"></p>
+  <p data-if="a" data-repeat="b" data-with="c" data-view="d"></p>
 
 This means that if the value ``a`` is present and true, the ``p``
 element will be included in the rendered template (at all). After

@@ -100,10 +100,10 @@ translatable content that's in HTML attributes, we're done with the
 explanations on how to mark up your template. But complexities occur
 when we mark up an element that contains not only text, but also HTML.
 
-``data-trans`` may not contain ``data-if`` and ``data-each``
-------------------------------------------------------------
+``data-trans`` may not contain ``data-if`` and ``data-repeat``
+--------------------------------------------------------------
 
-``data-each`` and ``data-if`` may not be used on elements contained in
+``data-repeat`` and ``data-if`` may not be used on elements contained in
 an element with ``data-trans`` on it (when ``data-trans`` is used to
 indicate the content of the element as opposed to attributes). 
 

@@ -13,7 +13,7 @@ There are two phases:
 How does compilation work?
 
 * a separated Section is compiled for each data-with, data-if and
-  data-each element, or combinations thereof.
+  data-repeat element, or combinations thereof.
 
 * Sections are organized in a tree; each section may have
   sub-sections. The template itself starts with a single Section at
@@ -204,9 +204,9 @@ obviel.template = {};
 
         var dataIf = getDirective(el, 'data-if');
         var dataWith = getDirective(el, 'data-with');
-        var dataEach = getDirective(el, 'data-each');
+        var dataRepeat = getDirective(el, 'data-repeat');
         
-        if (!rootSection && !dataIf && !dataWith && !dataEach) {
+        if (!rootSection && !dataIf && !dataWith && !dataRepeat) {
             this.dynamic = false;
             return;
         }
@@ -225,12 +225,12 @@ obviel.template = {};
         } else {
             this.dataWith = null;
         }
-        if (dataEach) {
-            validateDottedName(el, dataEach);
-            this.dataEach = module.resolveFunc(dataEach);
-            this.dataEachName = dataEach.replace('.', '_');
+        if (dataRepeat) {
+            validateDottedName(el, dataRepeat);
+            this.dataRepeat = module.resolveFunc(dataRepeat);
+            this.dataRepeatName = dataRepeat.replace('.', '_');
         } else {
-            this.dataEach = null;
+            this.dataRepeat = null;
         }
 
         //this.elFuncs = { funcs: [], sub: {} };
@@ -415,8 +415,8 @@ obviel.template = {};
             }
         }
 
-        if (this.dataEach) {
-            this.renderEach(el, scope, context);
+        if (this.dataRepeat) {
+            this.renderRepeat(el, scope, context);
         } else {
             this.renderEl(el, scope, context);
         }
@@ -429,32 +429,32 @@ obviel.template = {};
         this.render(topEl, scope, context);
     };
     
-    var eachInfo = function(index, name, dataEach) {
+    var repeatInfo = function(index, name, dataRepeat) {
         var even = index % 2 === 0;
         var info = {
             index: index,
             number: index + 1,
-            length: dataEach.length,
+            length: dataRepeat.length,
             even: even,
             odd: !even
         };
-        var each = {};
-        $.extend(each, info);
-        each[name] = info;
+        var repeat = {};
+        $.extend(repeat, info);
+        repeat[name] = info;
         return {
-            '@each': each
+            '@repeat': repeat
         };
     };
     
-    module.Section.prototype.renderEach = function(el, scope, context) {
-        var dataEach = this.dataEach(scope);
-        if (!$.isArray(dataEach)) {
+    module.Section.prototype.renderRepeat = function(el, scope, context) {
+        var dataRepeat = this.dataRepeat(scope);
+        if (!$.isArray(dataRepeat)) {
             throw new module.RenderError(
-                el, ("data-each must point to an array, not to " +
-                     $.type(dataEach)));
+                el, ("data-repeat must point to an array, not to " +
+                     $.type(dataRepeat)));
         }
         // empty array, so don't render any elements
-        if (dataEach.length === 0) {
+        if (dataRepeat.length === 0) {
             el.parentNode.removeChild(el);
             return;
         }
@@ -469,19 +469,19 @@ obviel.template = {};
         var parentNode = el.parentNode;
 
         // render the first iteration on the element
-        scope.push(eachInfo(0, this.dataEachName, dataEach));
-        scope.push(dataEach[0]);
+        scope.push(repeatInfo(0, this.dataRepeatName, dataRepeat));
+        scope.push(dataRepeat[0]);
         this.renderEl(el, scope, context);
         scope.pop();
         scope.pop();
 
         // now insert the next iterations after the first iteration
-        for (var i = 1; i < dataEach.length; i++) {
+        for (var i = 1; i < dataRepeat.length; i++) {
             var iterationClone = iterationNode.cloneNode(false);
             parentNode.insertBefore(iterationClone, insertBeforeNode);
 
-            scope.push(eachInfo(i, this.dataEachName, dataEach));
-            scope.push(dataEach[i]);
+            scope.push(repeatInfo(i, this.dataRepeatName, dataRepeat));
+            scope.push(dataRepeat[i]);
             this.renderEl(iterationClone, scope, context);
             scope.pop();
             scope.pop();
@@ -538,7 +538,7 @@ obviel.template = {};
                                                             context) {
         var toRender = [];
         // first we find all elements. we do this before rendering starts,
-        // as rendering can in some cases (data-each) insert new elements
+        // as rendering can in some cases (data-repeat) insert new elements
         // and that would break the finding
         for (var i in this.subSections) {
             toRender.push({value: this.subSections[i],
@@ -1456,10 +1456,10 @@ obviel.template = {};
                 el,
                 "inside data-trans element data-with may not be used");
         }
-        if (el.hasAttribute('data-each')) {
+        if (el.hasAttribute('data-repeat')) {
             throw new module.CompilationError(
                 el,
-                "inside data-trans element data-each may not be used");
+                "inside data-trans element data-repeat may not be used");
         }
     };
     

@@ -1522,7 +1522,7 @@ obviel.forms = {};
             '<div class="obviel-field-input controls">' +
             '<select data-func="attributes" name="obviel-field-{prefixedName}" data-id="obviel-field-{prefixedName}">' +
             '<option data-if="emptyOption" value="">{emptyOption}</option>' +
-            '<option data-each="choices" value="{value}">{label}</option>' +
+            '<option data-repeat="choices" value="{value}">{label}</option>' +
             '</select>'
         };
         $.extend(d, settings);

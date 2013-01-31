@@ -674,8 +674,8 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'data-each with 3 elements': function() {
-        assert.htmlEquals(render('<ul><li data-each="list">{title}</li></ul>',
+    'data-repeat with 3 elements': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list">{title}</li></ul>',
                                  {list: [{title: 'a'},
                                          {title: 'b'},
                                          {title: 'c'}]}),
@@ -683,46 +683,46 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
     'top-level data each': function() {
-        assert.htmlEquals(render('<p data-each="list">{title}</p>',
+        assert.htmlEquals(render('<p data-repeat="list">{title}</p>',
                                  {list: [{title: 'a'},
                                          {title: 'b'},
                                          {title: 'c'}]}),
                           '<p>a</p><p>b</p><p>c</p>');
     },
 
-    'data-each with @.': function() {
-        assert.htmlEquals(render('<p data-each="list">{@.}</p>',
+    'data-repeat with @.': function() {
+        assert.htmlEquals(render('<p data-repeat="list">{@.}</p>',
                                  {list: ['a', 'b', 'c']}),
                           '<p>a</p><p>b</p><p>c</p>');
     },
 
-    'data-each with 2 elements': function() {
-        assert.htmlEquals(render('<ul><li data-each="list">{title}</li></ul>',
+    'data-repeat with 2 elements': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list">{title}</li></ul>',
                                  {list: [{title: 'a'},
                                          {title: 'b'}]}),
                           '<ul><li>a</li><li>b</li></ul>');
     },
 
-    'data-each with 1 element': function() {
-        assert.htmlEquals(render('<ul><li data-each="list">{title}</li></ul>',
+    'data-repeat with 1 element': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list">{title}</li></ul>',
                                  {list: [{title: 'a'}]}),
                           '<ul><li>a</li></ul>');
     },
 
-    'data-each with 0 elements': function() {
-        assert.htmlEquals(render('<ul><li data-each="list">{title}</li></ul>',
+    'data-repeat with 0 elements': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list">{title}</li></ul>',
                                  {list: []}),
                           '<ul></ul>');
     },
 
-    'data-each, small table': function() {
+    'data-repeat, small table': function() {
         var data = { table: [] };
         for (var i = 0; i < 2; i++) {
             data.table.push([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         }
         assert.htmlEquals(render('<table>' +
-                                 '<tr data-each="table">' +
-                                 '<td data-each="@.">{@.}</td>' +
+                                 '<tr data-repeat="table">' +
+                                 '<td data-repeat="@.">{@.}</td>' +
                                  '</tr>' +
                                  '</table>', data),
                           '<table>' +
@@ -733,52 +733,52 @@ var templateTestCase = buster.testCase('template tests', {
                           '</table>');
     },
 
-    'data-each with deeper elements': function() {
-        assert.htmlEquals(render('<ul><li data-each="list"><p>{title}</p></li></ul>',
+    'data-repeat with deeper elements': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list"><p>{title}</p></li></ul>',
                                  {list: [{title: 'a'},
                                          {title: 'b'},
                                          {title: 'c'}]}),
                           '<ul><li><p>a</p></li><li><p>b</p></li><li><p>c</p></li></ul>');
     },
 
-    'data-each with some element content not rendered': function() {
+    'data-repeat with some element content not rendered': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list"><p data-if="@.">whatever</p></li></ul>',
+            '<ul><li data-repeat="list"><p data-if="@.">whatever</p></li></ul>',
             {list: [true, false]}),
                           '<ul><li><p>whatever</p></li><li></li></ul>');
     },
 
 
-    'data-each with half of element content not rendered': function() {
+    'data-repeat with half of element content not rendered': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list"><p data-if="@.">True</p><p data-if="!@.">False</p></li></ul>',
+            '<ul><li data-repeat="list"><p data-if="@.">True</p><p data-if="!@.">False</p></li></ul>',
             {list: [true, false]}),
                           '<ul><li><p>True</p></li><li><p>False</p></li></ul>');
     },
 
-    'data-each with attributes': function() {
-        assert.htmlEquals(render('<a data-each="list" href="{url}">link</a>',
+    'data-repeat with attributes': function() {
+        assert.htmlEquals(render('<a data-repeat="list" href="{url}">link</a>',
                                  {list: [{url: 'a'},
                                          {url: 'b'}]}),
                           '<a href="a">link</a><a href="b">link</a>');
 
     },
 
-    'data-each with text after it': function() {
-        assert.htmlEquals(render('<ul><li data-each="list">{title}</li>after</ul>',
+    'data-repeat with text after it': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list">{title}</li>after</ul>',
                                  {list: [{title: 'a'},
                                          {title: 'b'}]}),
                           '<ul><li>a</li><li>b</li>after</ul>');
     },
 
-    'data-each not pointing to array': function() {
+    'data-repeat not pointing to array': function() {
         assert.raises(function() {
-            render('<p data-each="foo"></p>', {foo: 'not an array'});
+            render('<p data-repeat="foo"></p>', {foo: 'not an array'});
         }, obtemp.RenderError);
     },
     
-    'data-each with data-if and true': function() {
-        assert.htmlEquals(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
+    'data-repeat with data-if and true': function() {
+        assert.htmlEquals(render('<ul><li data-if="flag" data-repeat="list">{title}</li></ul>',
                                  {flag: true,
                                   list: [{title: 'a'},
                                          {title: 'b'}]}),
@@ -786,8 +786,8 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
-    'data-each with data-if and false': function() {
-        assert.htmlEquals(render('<ul><li data-if="flag" data-each="list">{title}</li></ul>',
+    'data-repeat with data-if and false': function() {
+        assert.htmlEquals(render('<ul><li data-if="flag" data-repeat="list">{title}</li></ul>',
                                  {flag: false,
                                   list: [{title: 'a'},
                                          {title: 'b'}]}),
@@ -795,40 +795,40 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
-    'data-each with data-with': function() {
-        assert.htmlEquals(render('<ul><li data-each="list" data-with="sub">{title}</li></ul>',
+    'data-repeat with data-with': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list" data-with="sub">{title}</li></ul>',
                                  {list: [{sub: {title: 'a'}},
                                          {sub: {title: 'b'}}]}),
                           '<ul><li>a</li><li>b</li></ul>');
     },
 
-    'data-each with data-with and data-if and true': function() {
-        assert.htmlEquals(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+    'data-repeat with data-with and data-if and true': function() {
+        assert.htmlEquals(render('<ul><li data-if="flag" data-repeat="list" data-with="sub">{title}</li></ul>',
                                  {flag: true,
                                   list: [{sub: {title: 'a'}},
                                          {sub: {title: 'b'}}]}),
                           '<ul><li>a</li><li>b</li></ul>');
     },
 
-    'data-each with data-with and data-if and false': function() {
-        assert.htmlEquals(render('<ul><li data-if="flag" data-each="list" data-with="sub">{title}</li></ul>',
+    'data-repeat with data-with and data-if and false': function() {
+        assert.htmlEquals(render('<ul><li data-if="flag" data-repeat="list" data-with="sub">{title}</li></ul>',
                                  {flag: false,
                                   list: [{sub: {title: 'a'}},
                                          {sub: {title: 'b'}}]}),
                           '<ul></ul>');
     },
 
-    'data-each with data-trans': function() {
+    'data-repeat with data-trans': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list" data-trans="">Hello world!</li></ul>',
+            '<ul><li data-repeat="list" data-trans="">Hello world!</li></ul>',
             {list: [1, 2]}),
                           '<ul><li>Hallo wereld!</li><li>Hallo wereld!</li></ul>');
     },
 
 
-    'nested data-each': function() {
+    'nested data-repeat': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="outer"><ul><li data-each="inner">{title}</li></ul></li></ul>',
+            '<ul><li data-repeat="outer"><ul><li data-repeat="inner">{title}</li></ul></li></ul>',
             {outer: [
                 {inner: [{title: 'a'}, {title: 'b'}]},
                 {inner: [{title: 'c'}, {title: 'd'}]}
@@ -837,23 +837,23 @@ var templateTestCase = buster.testCase('template tests', {
         
     },
 
-    'data-each with @each vars': function() {
+    'data-repeat with @repeat vars': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list">{@each.index} {@each.length}</li></ul>',
+            '<ul><li data-repeat="list">{@repeat.index} {@repeat.length}</li></ul>',
             {list: [1, 2]}),
                           '<ul><li>0 2</li><li>1 2</li></ul>');
     },
 
-    'data-each with @each vars, explicit loop': function() {
+    'data-repeat with @repeat vars, explicit loop': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list">{@each.list.index} {@each.list.length}</li></ul>',
+            '<ul><li data-repeat="list">{@repeat.list.index} {@repeat.list.length}</li></ul>',
             {list: [1, 2]}),
                           '<ul><li>0 2</li><li>1 2</li></ul>');
     },
 
-    'data-each with @each vars, nested loop': function() {
+    'data-repeat with @repeat vars, nested loop': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="outer"><ul><li data-each="inner">{@each.inner.index} {@each.outer.index}</li></ul></li></ul>',
+            '<ul><li data-repeat="outer"><ul><li data-repeat="inner">{@repeat.inner.index} {@repeat.outer.index}</li></ul></li></ul>',
             {outer: [
                 {inner: [{title: 'a'}, {title: 'b'}]},
                 {inner: [{title: 'c'}]}
@@ -862,23 +862,23 @@ var templateTestCase = buster.testCase('template tests', {
                          );
     },
 
-    'data-each with @each vars using number': function() {
+    'data-repeat with @repeat vars using number': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list">{@each.number}</li></ul>',
+            '<ul><li data-repeat="list">{@repeat.number}</li></ul>',
             {list: ['a', 'b']}),
                           '<ul><li>1</li><li>2</li></ul>');
     },
 
-    'data-each with @each vars using even/odd': function() {
+    'data-repeat with @repeat vars using even/odd': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="list"><p data-if="@each.even">Even</p><p data-if="@each.odd">Odd</p></li></ul>',
+            '<ul><li data-repeat="list"><p data-if="@repeat.even">Even</p><p data-if="@repeat.odd">Odd</p></li></ul>',
             {list: ['a', 'b']}),
                           '<ul><li><p>Even</p></li><li><p>Odd</p></li></ul>');
     },
 
-    'data-each with @each vars with dotted name': function() {
+    'data-repeat with @repeat vars with dotted name': function() {
         assert.htmlEquals(render(
-            '<ul><li data-each="sub.list">{@each.sub_list.number}</li></ul>',
+            '<ul><li data-repeat="sub.list">{@repeat.sub_list.number}</li></ul>',
             {sub: {list: ['a', 'b']}}),
                           '<ul><li>1</li><li>2</li></ul>');
     },
@@ -953,9 +953,9 @@ var templateTestCase = buster.testCase('template tests', {
                           '<p magic="Foo!">Hallo wereld!</p>');
     },
 
-    'data-func with data-each': function() {
+    'data-func with data-repeat': function() {
         obtemp.registerFunc('even-odd', function(el, variable) {
-            if (variable('@each.index') % 2 === 0) {
+            if (variable('@repeat.index') % 2 === 0) {
                 el.addClass('even');
             } else {
                 el.addClass('odd');
@@ -963,7 +963,7 @@ var templateTestCase = buster.testCase('template tests', {
         });
         
         assert.htmlEquals(render(
-            '<p data-each="list" data-func="even-odd">{@.}</p>',
+            '<p data-repeat="list" data-func="even-odd">{@.}</p>',
             {list: [0, 1, 2, 3]}),
                           '<p class="even">0</p><p class="odd">1</p><p class="even">2</p><p class="odd">3</p>'
                          );
@@ -1251,9 +1251,9 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'data-trans may not contain data-each': function() {
+    'data-trans may not contain data-repeat': function() {
         assert.raises(function() {
-            render('<p data-trans="">Hello <strong data-tvar="who" data-each="a">{who}</strong>!',
+            render('<p data-trans="">Hello <strong data-tvar="who" data-repeat="a">{who}</strong>!',
                    {who: 'X', a: []});
         }, obtemp.CompilationError);
     },
@@ -1273,9 +1273,9 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'data-tvar may not contain data-each': function() {
+    'data-tvar may not contain data-repeat': function() {
         assert.raises(function() {
-            render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-each="a">{who}</em></strong>!',
+            render('<p data-trans="">Hello <strong data-tvar="who">blah<em data-tvar="nested" data-repeat="a">{who}</em></strong>!',
                    {who: 'X', a: []});
         }, obtemp.CompilationError);
     },
@@ -1617,7 +1617,7 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
-    'data-view with data-each': function() {
+    'data-view with data-repeat': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1626,7 +1626,7 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
         
-        assert.htmlEquals(render('<div data-each="persons" data-view="@."></div>',
+        assert.htmlEquals(render('<div data-repeat="persons" data-view="@."></div>',
                                  {persons: [
                                      {iface: 'person',
                                       name: 'Bob'},
@@ -1639,7 +1639,7 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
 
-    'deeper data-view with data-each': function() {
+    'deeper data-view with data-repeat': function() {
         obviel.view({
             iface: 'person',
             render: function() {
@@ -1648,7 +1648,7 @@ var templateTestCase = buster.testCase('template tests', {
             }
         });
         
-        assert.htmlEquals(render('<div><div data-each="persons" data-view="@."></div></div>',
+        assert.htmlEquals(render('<div><div data-repeat="persons" data-view="@."></div></div>',
                                  {persons: [
                                      {iface: 'person',
                                       name: 'Bob'},
@@ -1722,8 +1722,8 @@ var templateTestCase = buster.testCase('template tests', {
         
     },
 
-    'data-trans with data-each': function() {
-        assert.htmlEquals(render('<div data-each="entries" data-trans="">Hello {who}!</div>',
+    'data-trans with data-repeat': function() {
+        assert.htmlEquals(render('<div data-repeat="entries" data-trans="">Hello {who}!</div>',
                                  {entries: [{who: 'Bob'}, {who: 'Jay'}]}),
                           '<div>Bob, hallo!</div><div>Jay, hallo!</div>');
     },
@@ -1759,8 +1759,8 @@ var templateTestCase = buster.testCase('template tests', {
                           '<div></div>');
     },
 
-    "data-el with data-each": function() {
-        assert.htmlEquals(render('<div data-el="{@.}" data-each="list">Content</div>',
+    "data-el with data-repeat": function() {
+        assert.htmlEquals(render('<div data-el="{@.}" data-repeat="list">Content</div>',
                                  {list: ['p', 'span']}),
                           '<p>Content</p><span>Content</span>');
     },
@@ -1829,8 +1829,8 @@ var templateTestCase = buster.testCase('template tests', {
 // });
 
 
-    'data-attr in data-each': function() {
-        assert.htmlEquals(render('<ul><li data-each="list"><span data-if="@each.even" data-attr="class" data-value="even" /><span data-if="@each.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul>',
+    'data-attr in data-repeat': function() {
+        assert.htmlEquals(render('<ul><li data-repeat="list"><span data-if="@repeat.even" data-attr="class" data-value="even" /><span data-if="@repeat.odd" data-attr="class" data-value="odd" /><p>{@.}</p></li></ul>',
                                  {list: ['a', 'b']}),
                           '<ul><li class="even"><p>a</p></li><li class="odd"><p>b</p></li></ul>');
     },
@@ -1905,8 +1905,8 @@ var templateTestCase = buster.testCase('template tests', {
                           '<div>Something</div>');
     },
 
-    'data-unwrap with data-each': function() {
-        assert.htmlEquals(render('<div data-unwrap="" data-each="list">{@.}</div>',
+    'data-unwrap with data-repeat': function() {
+        assert.htmlEquals(render('<div data-unwrap="" data-repeat="list">{@.}</div>',
                                  {list: ['a', 'b']}),
                           'ab');
     },
@@ -1934,15 +1934,15 @@ var templateTestCase = buster.testCase('template tests', {
         }, obtemp.CompilationError);
     },
 
-    'empty data-each is illegal': function() {
+    'empty data-repeat is illegal': function() {
         assert.raises(function() {
-            render('<div data-each="">Foo</div>', {});
+            render('<div data-repeat="">Foo</div>', {});
         }, obtemp.CompilationError);
     },
 
-    'deeper empty data-each is illegal': function() {
+    'deeper empty data-repeat is illegal': function() {
         assert.raises(function() {
-            render('<div><div data-each="">Foo</div></div>', {});
+            render('<div><div data-repeat="">Foo</div></div>', {});
         }, obtemp.CompilationError);
     },
 
@@ -2029,9 +2029,9 @@ var templateTestCase = buster.testCase('template tests', {
         }, obtemp.CompilationError);
     },
 
-    'illegal variable in data-each is checked': function() {
+    'illegal variable in data-repeat is checked': function() {
         assert.raises(function() {
-            render('<div data-each="foo.">Hello world!</div>', {});
+            render('<div data-repeat="foo.">Hello world!</div>', {});
         }, obtemp.CompilationError);
     },
 
@@ -2164,7 +2164,7 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
     // XXX test failure if dotted name has non-end name to name that doesn't exist
-    // also test with data-with, data-if, data-each
+    // also test with data-with, data-if, data-repeat
 
 
     // XXX data-if random nonsense
@@ -2381,8 +2381,8 @@ var templateTestCase = buster.testCase('template tests', {
 
 
 
-    "data-each should not break finders with second section": function() {
-        // there was a bug where data-each broke finders referring to
+    "data-repeat should not break finders with second section": function() {
+        // there was a bug where data-repeat broke finders referring to
         // elements coming after it, because they would now point into
         // the generated loop
         // this causes in this case 'var' to be rendered into the
@@ -2391,7 +2391,7 @@ var templateTestCase = buster.testCase('template tests', {
         
         var complex = (
             '<ul>' +
-                '<li data-each="entries">' +
+                '<li data-repeat="entries">' +
                 '<span></span>' +
                 '</li>' +
                 '<li data-if="v">' +
@@ -2404,10 +2404,10 @@ var templateTestCase = buster.testCase('template tests', {
                           '<ul><li><span/></li><li><span/></li><li><a>bar</a></ul>');
     },
 
-    "data-each should not break finders without second section": function() {
+    "data-repeat should not break finders without second section": function() {
         var complex = (
             '<ul>' +
-                '<li data-each="entries">' +
+                '<li data-repeat="entries">' +
                 '<span></span>' +
                 '</li>' +
                 '<li>' +

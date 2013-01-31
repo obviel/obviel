@@ -1,6 +1,17 @@
 CHANGES
 *******
 
+1.0b6
+=====
+
+* Template language renaming: 
+
+  * ``data-each`` was renamed to ``data-repeat`` and ``@each`` to
+    ``@repeat``.
+ 
+  A simple search and replace in your templates for these names should
+  be enough to update your templates.
+
 1.0b5 (2013-01-18)
 ==================
 

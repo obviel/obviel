@@ -1523,10 +1523,10 @@ var coreTestCase = buster.testCase("core tests", {
 
     // XXX this used to work but we switched to frag based rendering
     // to isolate things
-    // 'obviel data-each with data-attr inside': function() {
+    // 'obviel data-repeat with data-attr inside': function() {
     //     obviel.view({
     //         iface: 'outer',
-    //         obvt: '<ul><li data-each="items" data-view="@."></li></ul>'
+    //         obvt: '<ul><li data-repeat="items" data-view="@."></li></ul>'
     //     });
     //     obviel.view({
     //         iface: 'inner',
@@ -1829,7 +1829,7 @@ var coreTestCase = buster.testCase("core tests", {
         
         obviel.view({
             iface: 'main',
-            obvt: '<div><p data-each="l" data-view="@."></p></div>'
+            obvt: '<div><p data-repeat="l" data-view="@."></p></div>'
         });
         
         var called = false;
@@ -1868,7 +1868,7 @@ var coreTestCase = buster.testCase("core tests", {
     "location of inline compiler error in top section": function() {
         obviel.view({
             iface: 'foo',
-            obvt: '<p data-each=""></p>' // deliberately broken
+            obvt: '<p data-repeat=""></p>' // deliberately broken
         });
         
         var el = testel();
@@ -1878,14 +1878,14 @@ var coreTestCase = buster.testCase("core tests", {
             el.render({iface: 'foo'});
         } catch(e) {
             assert.equals(e.toString(),
-                          "data-each may not be empty (foo obvt /p)");
+                          "data-repeat may not be empty (foo obvt /p)");
         }
     },
     
     "location of inline compiler error in deeper section": function() {
         obviel.view({
             iface: 'foo',
-            obvt: '<div data-if="foo"><p data-each=""></p></div>' // deliberately broken
+            obvt: '<div data-if="foo"><p data-repeat=""></p></div>' // deliberately broken
         });
         
         var el = testel();
@@ -1895,7 +1895,7 @@ var coreTestCase = buster.testCase("core tests", {
             el.render({iface: 'foo'});
         } catch(e) {
             assert.equals(e.toString(),
-                          "data-each may not be empty (foo obvt /div/p)");
+                          "data-repeat may not be empty (foo obvt /div/p)");
         }
     },
     
