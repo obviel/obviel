@@ -23,6 +23,10 @@ CHANGES
   A simple search and replace in your templates for these names should
   be enough to update your templates.
 
+* Start of sync documentation.
+
+* A few documentation tweaks.
+
 1.0b5 (2013-01-18)
 ==================
 
