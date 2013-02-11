@@ -1,0 +1,95 @@
+Sync: synchronizing objects
+===========================
+
+Introduction
+------------
+
+Obviel Sync is a library that lets you inform a backend (like a web
+service) when client-side model objects have changed, and also can
+update the client-side objects when the backend has changed.
+
+We can divide a dynamic web application in a frontend and backend. The
+frontend takes care of the UI the user sees in the browser. It runs on
+the client. The UI is constructed from *models* which are JavaScript
+objects on the client -- the *Ob* in Obviel. But how are these objects
+maintained?
+
+The simplest case is a web application that maintains its models
+itself and needs no persistence at all; the models are part of the web
+application, and the models disappear as soon as the web application
+is closed. In this case, the only software that touches the models is
+the web application itself and the only storage is main memory. Simple
+single-player games on the web are often like this (unless they save
+and shares high scores).
+
+But in many cases the information represented by an application's
+models needs to persist even when the web application is not active. A
+todo-list application, for instance, needs to have its todos persist
+even when you close the application and open it again later.
+
+At least some of the information represented by an application's
+models typically needs to be shared between different users that use
+multiple instances of the same application, or possibly different
+applications. Forum software is like this, for example, as forum
+messages need to be visible to multiple users. Another case we already
+mentioned is sharing high-score information for a web game.
+
+So, while the frontend needs to maintain the UI, the backend usually
+needs to do *storage*. The backend often also has other
+responsibilities -- coordinating information between different users,
+deriving information, and making sure the data stored is consistent.
+
+The information in the backend needs to be kept in sync with the
+models in the web application. So, when a todo item is added to the
+todo list, the backend is informed of this; similarly when a todo item
+is removed or altered.
+
+The syncing is typically two-way: the backend needs to be updated when
+models in the web application change, and the web application models
+need to be updated when the state of the backend changes. For example,
+when you post an item on a forum, the server backend is informed about
+it, and the backend then informs other people who may be viewing the
+forum about the new item as well. So, there is a bi-directional
+exchange of information between frontend and backend:
+
+* The backend needs to be informed about changes to the object
+  structure done by the UI.
+
+* The frontend needs to be informed about changes done to the object
+  structure on the server.
+
+You can write code to keep application models and backend in sync
+manually. For HTTP Obviel core offers some facilities to help you with
+this -- you can render a URL directly, causing the object to be loaded
+from the server and (re)rendered.
+
+Obviel Sync goes beyond that. It is a declarative system that lets you
+declare how your frontend models relate to a backend.
+
+
+
+In Obviel, the frontend UI represents a number of JavaScript
+*objects*. Typically these objects have relationships with each other;
+the objects have a kind of structure. There is a bi-directional
+exchange of information between frontend and backend:
+
+* The backend needs to be informed about changes to the object
+  structure done by the UI.
+
+* The frontend needs to be informed about changes done to the object
+  structure by other users, or by externally provided information.
+
+The frontend and backend can be seen as synchronizing copies of the
+same object structure, but the data structure the frontend maintains
+does not need to have the same structure as the backend's structure at
+all. Instead, the frontend structure will be optimized for the UI,
+while the backend structure will be optimized for other purposes, such
+as aggregation of information from multiple users. We can get a bit
+more abstract: we can see the frontend and backend as sharing the
+same abstract *information*.
+
+Obviel Sync is a JavaScript library that helps you keep frontend
+information in sync with backend information. It supports different
+kinds of backends: HTTP (Rest_), localstorage, and websockets.
+
+
