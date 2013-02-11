@@ -1135,7 +1135,7 @@ This registers a handler that gets triggered when the custom
 and now let's trigger the ``update`` event on ``myObj``. This is done by
 wrapping the object in ``$`` first::
 
-  $(myObj).trigger('custom');
+  $(myObj).trigger('update');
 
 This will cause ``rerender`` to be called, which will redraw the
 view. If ``myObj`` has changed in the mean time, the view will be
