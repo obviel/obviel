@@ -4,92 +4,263 @@ Sync: synchronizing objects
 Introduction
 ------------
 
-Obviel Sync is a library that lets you inform a backend (like a web
-service) when client-side model objects have changed, and also can
-update the client-side objects when the backend has changed.
+Obviel Sync is a JavaScript library that keeps track of client-side
+objects and can keep them in sync with a backend and a UI. It supports
+different kinds of backends: HTTP (Rest_), localstorage, and
+websockets, and abstracts the application away from the particular
+backend used.
 
 We can divide a dynamic web application in a frontend and backend. The
 frontend takes care of the UI the user sees in the browser. It runs on
-the client. The UI is constructed from *models* which are JavaScript
-objects on the client -- the *Ob* in Obviel. But how are these objects
-maintained?
+the client; in the web browser. The UI is constructed from *models*
+which are JavaScript objects on the client -- the *Ob* in Obviel. How
+are these models maintained?
 
 The simplest case is a web application that maintains its models
-itself and needs no persistence at all; the models are part of the web
-application, and the models disappear as soon as the web application
-is closed. In this case, the only software that touches the models is
+itself and that's it. The models disappear as soon as the web
+application is closed. The only software that touches the models is
 the web application itself and the only storage is main memory. Simple
-single-player games on the web are often like this (unless they save
-and shares high scores).
+single-player games on the web are often like this, though often there
+is an exception to this when they need to save and share high scores.
 
-But in many cases the information represented by an application's
-models needs to persist even when the web application is not active. A
-todo-list application, for instance, needs to have its todos persist
-even when you close the application and open it again later.
+In many cases the information represented by an application's models
+needs to persist even when the web application is not active. A
+todo-list application, for instance, needs to have its todos stored so
+when you close the application and open it again later, the todos are
+there again.
 
-At least some of the information represented by an application's
-models typically needs to be shared between different users that use
-multiple instances of the same application, or possibly different
-applications. Forum software is like this, for example, as forum
-messages need to be visible to multiple users. Another case we already
-mentioned is sharing high-score information for a web game.
+In many applications, at least some information needs to be shared
+between different users. Forum software is like this, for example, as
+forum messages need to be visible to multiple users. Another case we
+already mentioned is sharing high-score information for a web game.
 
-So, while the frontend needs to maintain the UI, the backend usually
-needs to do *storage*. The backend often also has other
-responsibilities -- coordinating information between different users,
-deriving information, and making sure the data stored is consistent.
+For many applications therefore a backend is needed for *storage* or
+*persistence*. This is usually the only responsibility of the backend;
+other responsibilities include coordinating information between
+different users, controlling access to information, deriving
+information, receiving new information from external sources, and
+making sure the data stored is consistent.
 
-The information in the backend needs to be kept in sync with the
-models in the web application. So, when a todo item is added to the
-todo list, the backend is informed of this; similarly when a todo item
-is removed or altered.
+When frontend models change this can affect the backend. For instance,
+when a todo item is added to the todo list, the backend is informed of
+this. Similarly when a todo item is changed, the backend needs to be
+informed about the update.
 
-The syncing is typically two-way: the backend needs to be updated when
-models in the web application change, and the web application models
-need to be updated when the state of the backend changes. For example,
-when you post an item on a forum, the server backend is informed about
-it, and the backend then informs other people who may be viewing the
-forum about the new item as well. So, there is a bi-directional
-exchange of information between frontend and backend:
+The direction can also be reversed: the web application models need to
+be updated when the state of the backend changes. For example, when
+you post an item on a forum, the server backend is informed about it,
+and the backend then informs other people who may be viewing the forum
+about the new item as well. So, there is a bi-directional exchange of
+information between frontend and backend:
 
 * The backend needs to be informed about changes to the object
-  structure done by the UI.
+  structure in the frontend (typically triggered by the UI).
 
 * The frontend needs to be informed about changes done to the object
-  structure on the server.
+  structure on the server (which often results in a UI update).
 
-You can write code to keep application models and backend in sync
-manually. For HTTP Obviel core offers some facilities to help you with
+You can write manual code to keep frontend models in sync with a
+backend. For HTTP Obviel core offers some facilities to help you with
 this -- you can render a URL directly, causing the object to be loaded
-from the server and (re)rendered.
+from the server and (re)rendered. But even with that convenience you
+need to write quite a bit of custom code.
 
-Obviel Sync goes beyond that. It is a declarative system that lets you
-declare how your frontend models relate to a backend.
+Obviel Sync helps with this. It is a declarative system that lets you
+state how your frontend models relate to a backend. If you use a
+special way to maintain your frontend models, Obviel Sync takes care
+of informing the backend.
 
+Since Obviel Sync keeps track of changes to frontend models, it can
+not only be used to update the backend, but to keep the UI up to date
+as well - when a frontend model is changed, the UI can be updated
+automatically.
 
+Keeping Track of Objects
+------------------------
 
-In Obviel, the frontend UI represents a number of JavaScript
-*objects*. Typically these objects have relationships with each other;
-the objects have a kind of structure. There is a bi-directional
-exchange of information between frontend and backend:
+Obviel Sync needs to keep track of when frontend objects have been
+changed, new ones are created, and existing ones removed. We can then
+use this information to update the backend as well as the UI.
 
-* The backend needs to be informed about changes to the object
-  structure done by the UI.
+Obviel Sync uses a special *session* object to keep track of changes,
+additions and removals. You then *commit* the session when you want
+Obviel Sync to take action. This is also know as the `Unit of Work
+pattern`_.
 
-* The frontend needs to be informed about changes done to the object
-  structure by other users, or by externally provided information.
+.. _`Unit of Work pattern`: http://martinfowler.com/eaaCatalog/unitOfWork.html
 
-The frontend and backend can be seen as synchronizing copies of the
-same object structure, but the data structure the frontend maintains
-does not need to have the same structure as the backend's structure at
-all. Instead, the frontend structure will be optimized for the UI,
-while the backend structure will be optimized for other purposes, such
-as aggregation of information from multiple users. We can get a bit
-more abstract: we can see the frontend and backend as sharing the
-same abstract *information*.
+In order to establish a session, you first need a connection::
 
-Obviel Sync is a JavaScript library that helps you keep frontend
-information in sync with backend information. It supports different
-kinds of backends: HTTP (Rest_), localstorage, and websockets.
+  var conn = new obviel.sync.Connection();
 
+We'll see what you can do with the connections later.
+
+Now you can create a session::
+
+  var session = conn.session();
+
+The connection keeps track of the current session in use.
+
+Now let's imagine you have an object ``obj`` and that you have changed
+it by modifying a property ``foo`` on it::
+
+  obj.foo = "This is a new value";
+
+To inform Obviel Sync that the property ``foo`` has changed on
+``obj``, use ``update``::
+
+  session.update(obj, 'foo');
+
+Now let's consider collections of objects. A collection of objects is
+represented as an array in JavaScript. It must always be part of an
+object; we call this object the *container object*. A container object
+is just an ordinary JavaScript object that can contain one or more
+items. Here is a container object that has a collection property
+``items``::
+
+  var container = { 
+    iface: 'mycontainer',
+    items: []
+  }
+
+We now add an item to the ``items`` collection::
+
+  var item = {iface: 'item', value: 'A'];
+
+  container.items.push(item);
+
+Here's how to tell the session what we've done::
+ 
+  session.add(container, 'items', item);
+
+Similarly we can remove an object from a collection. Obviel Sync has
+a special helper function that lets you do this easily::
+
+  obviel.sync.removeFromArray(container.items, item);
+
+Here's how we tell the session what we've done::
+
+  session.remove(container, 'items', item);
+
+Automatically Keep Track of Changes
+-----------------------------------
+
+It can be a bit cumbersome to have to tell the session separately what
+changes we made to objects. The session provides a special ``mutator`` object
+that makes this easier. We can wrap it around the object we want
+to mutate::
+
+  var m = session.mutator(obj);
+
+You can also create the mutator directly from the connection; this will
+create a hidden session for you automatically::
+
+  var m = conn.mutator(obj);
+
+We now use the mutator to change ``obj``::
+
+  m.set('foo', 'This is a new value');
+
+This sets the property ``foo`` *and* informs the session about it
+(``session.update(obj, 'foo')``) all at the same time.
+
+We can also modify collections in container objects. First let's wrap
+the container object in a mutator::
+
+  var m = session.mutator(container);
+
+Now we can get to the ``items`` collection and push an item into it::
+
+  m.get('items').push(item);
+
+This adds the item to the array ``items`` and tells the session about
+it (``session.add(container, 'items', item)``).
+
+We can also use this to remove items from an array and inform the
+session about it::
+
+  m.get('items').remove(item);
+
+Connections
+-----------
+
+In order to communicate with a backend, Obviel Sync needs a connection.
+
+Obviel Sync at present provides three kinds of connection:
+
+* ``obviel.sync.HttpConnection`` - communicate with a (RESTful) HTTP backend
+  that serves up JSON objects.
+
+* ``obviel.sync.LocalStorageConnection`` - store data in a local
+  storage backend on the browser. XXX somewhat broken
+
+* ``obviel.sync.SocketIoConnection`` - communicate with a websocket backend 
+  using Socket.io. XXX immature
+
+To set up a connection you need to create it::
+
+  conn = new obviel.sync.HttpConnection();
+
+You then need to initialize it with an object using ``init()``.
+``conn.init`` takes an object argument -- it specifies the root object
+of the frontend that you want to keep in sync with the backend. Obviel
+will load initial content for the application from the connection.
+``init`` returns a jQuery deferred that is completed when this loading
+is done.
+
+The typical pattern of loading up a connection looks like this::
+
+  conn.init(root).done(function() {
+     $('#app').render(root);
+  });
+
+I.e. initialize ``root`` from the connection, and then render it somewhere
+into the DOM tree.
+
+Declarations
+------------
+
+Now Obviel Sync needs to be told when and how to communicate with the
+connection. You can do this by declaring this on the connection.  You
+need to do this before you call ``init()`` on the connection.
+
+You can declare per ``iface`` what to do when the frontend is
+modified, and also what to do when the backend reports an object has
+been modified.
+
+When you initialize an object using ``init()``, the backend is asked
+to provide the contents of this object; this is called a ``refresh``
+action. We need to tell Obviel Sync to do what to do when we ask the
+frontend to refresh the ``root`` object::
+
+  conn.frontendRefresh('root', Http({
+     method: 'GET',
+     url: 'http://example.com/refreshRoot',
+     response: obviel.sync.backendUpdate
+  }));
+
+Here we tell Obviel Sync that when a ``refresh`` is requested for
+``root``, we want to issue a GET HTTP request to the server, using URL
+``http://example.com/refreshRoot``, and to take the resulting JSON
+object as an update from the backend, so pass it to ``backendUpdate``.
+
+So now we need to teach Obviel Sync to do when a ``backendUpdate`` for
+a ``root`` object comes in. What we want to do is to update that object
+with the JSON content we received from the server::
+ 
+  conn.backendUpdate('root', obviel.sync.updateObject);
+
+That takes care of basic communication from backend to frontend; we
+can now initialize an object and get its content from the backend. Now
+the other way around: when we change an object on the frontend, we
+want to inform the backend::
+
+  conn.frontendUpdate('root', Http({
+    method: 'POST',
+    url: 'http://example.com/updateRoot'
+  }));
+
+Here we tell Obviel Sync that when an object is updated in the
+frontend, we want to send a HTTP POST to the URL
+``http://example.com/updateRoot``.
 
