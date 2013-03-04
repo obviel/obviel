@@ -91,7 +91,9 @@ pattern`_.
 
 In order to establish a session, you first need a connection::
 
-  var conn = new obviel.sync.Connection();
+  var conn = new obviel.sync.HttpConnection();
+
+XXX explain HttpConnection
 
 We'll see what you can do with the connections later.
 
@@ -181,11 +183,23 @@ session about it::
 
   m.get('items').remove(item);
 
+You can also use ``get`` to get a mutator for nested subobjects, not
+just arrays::
+
+  var m = conn.mutator({
+    iface: 'outer',
+    inner: {
+      iface: 'inner'
+    }
+  });
+  m.get('inner')
+
 Connections
 -----------
 
 In order to communicate with a backend, Obviel Sync needs a connection.
 
+XXX
 Obviel Sync at present provides three kinds of connection:
 
 * ``obviel.sync.HttpConnection`` - communicate with a (RESTful) HTTP backend
@@ -201,12 +215,18 @@ To set up a connection you need to create it::
 
   conn = new obviel.sync.HttpConnection();
 
-You then need to initialize it with an object using ``init()``.
-``conn.init`` takes an object argument -- it specifies the root object
-of the frontend that you want to keep in sync with the backend. Obviel
-will load initial content for the application from the connection.
-``init`` returns a jQuery deferred that is completed when this loading
-is done.
+Initialization
+--------------
+
+When your application frontend starts up, it typically needs to be
+filled with some starting content. The frontend can get this from the
+connection.
+
+You do this by calling ``init()`` on the connection. ``init()`` takes
+an object argument -- it specifies the root object of the frontend
+that you want to keep in sync with the backend. Obviel will load
+initial content for the application from the connection.  ``init``
+returns a jQuery deferred that is completed when this loading is done.
 
 The typical pattern of loading up a connection looks like this::
 
@@ -220,47 +240,123 @@ into the DOM tree.
 Declarations
 ------------
 
-Now Obviel Sync needs to be told when and how to communicate with the
-connection. You can do this by declaring this on the connection.  You
-need to do this before you call ``init()`` on the connection.
+You now know how Obviel Sync can be used to track changes, and how to
+start up loading content for your root object, but not yet how to
+explain to Obviel Sync how to communicate with the backend. What
+should be done when the frontend or backend changes? Obviel Sync needs
+to be told. You declare this on the connection. You need to be done
+with the declarations before you call ``init()`` on the connection.
 
-You can declare per ``iface`` what to do when the frontend is
-modified, and also what to do when the backend reports an object has
-been modified.
+Declaration is per ``iface``. Per ``iface`` you tell Obviel Sync what
+to do when the frontend is modified, and also what to do when the
+backend reports an object has been modified.
 
-When you initialize an object using ``init()``, the backend is asked
-to provide the contents of this object; this is called a ``refresh``
-action. We need to tell Obviel Sync to do what to do when we ask the
-frontend to refresh the ``root`` object::
+Let's examine the operation of ``init()`` first. When you initialize
+an object using ``init()``, the backend is asked to provide the
+contents of this object; this is called a ``refresh`` action. We need
+to tell Obviel Sync what to do when we ask the frontend to refresh the
+``root`` object::
 
-  conn.frontendRefresh('root', Http({
+  conn.frontend('root').refresh({
      method: 'GET',
      url: 'http://example.com/refreshRoot',
-     response: obviel.sync.backendUpdate
-  }));
+     response: obviel.sync.backendUpdate   
+  });
 
 Here we tell Obviel Sync that when a ``refresh`` is requested for
 ``root``, we want to issue a GET HTTP request to the server, using URL
 ``http://example.com/refreshRoot``, and to take the resulting JSON
 object as an update from the backend, so pass it to ``backendUpdate``.
 
-So now we need to teach Obviel Sync to do when a ``backendUpdate`` for
-a ``root`` object comes in. What we want to do is to update that object
-with the JSON content we received from the server::
+So now we need to teach Obviel Sync what to do when a
+``backendUpdate`` for a ``root`` object comes in::
  
-  conn.backendUpdate('root', obviel.sync.updateObject);
+  conn.backend('root').update({
+    find: function(frontendObj) { return root; },
+    action: obviel.sync.updateObject
+  });
+
+We've specified two things here:
+
+* how to find the ``root`` object given an incoming ``frontendObj``. In this
+  case we simply return the global ``root`` object, but this could be looking
+  up something by id, as we will see later.
+
+* what to do with the found object (``root`` in this
+  case). ``obviel.sync.updateObject`` combines ``frontendObj`` with
+  ``root`` and updates its attributes.
 
 That takes care of basic communication from backend to frontend; we
 can now initialize an object and get its content from the backend. Now
 the other way around: when we change an object on the frontend, we
 want to inform the backend::
 
-  conn.frontendUpdate('root', Http({
+  conn.frontend('root').update({
     method: 'POST',
     url: 'http://example.com/updateRoot'
-  }));
+  });
 
 Here we tell Obviel Sync that when an object is updated in the
 frontend, we want to send a HTTP POST to the URL
-``http://example.com/updateRoot``.
+``http://example.com/updateRoot``. The content is a JSON
+respresentation of the ``backendObj`` that changed.
+
+Chaining
+--------
+
+You can chain declarations. All together now::
+
+  conn.frontend('root').refresh({
+     method: 'GET',
+     url: 'http://example.com/refreshRoot',
+     response: obviel.sync.backendUpdate   
+  }).update({
+    method: 'POST',
+    url: 'http://example.com/updateRoot'
+  });
+
+  conn.backend('root').update({
+    find: function(frontendObj) { return root; },
+    action: obviel.sync.updateObject
+  });
+
+Working with collections
+------------------------
+
+Let's maintain an collection of objects. We want to inform the backend
+whenever an item is added or removed::
+
+  conn.frontend('item').add('item', {
+    method: 'POST',
+    url: 'http://example.com/addItem'
+    response: obviel.sync.backendUpdate
+  });
+
+Here we say that when we add an ``item`` to a collection, we want to
+``POST`` the contents as JSON to the url
+``http://example.com/addItem``, and the response we receive we want to
+interpret as a ``backendUpdate`` action - this is useful as often the
+backend updates the just added object with some extra properties such
+as an ``id`` to uniquely identify it.
+
+We can also listen to remove actions::
+
+  conn.frontend('item').remove({
+    method: 'POST',
+    url: 'http://example.com/removeItem'
+    combine: true,
+    transform: obviel.sync.getIds
+  });
+
+Here we've done a few new things. When we remove items from a
+collection it's common to remove more than one of them at the same
+time, and send the list of the items we want to remove to the
+backend. In addition this list doesn't need to be the full items at
+all, but instead a list of ids that uniquely identify each item to
+remove to the backend (the backend needs to be in charge of id
+generation in this case). The ``combine`` setting indicates we want to
+combine multiple remove actions into one, and the ``transform``
+setting indicates we want to only pass the ``id`` property values to
+the backend instead of the full objects.
+
 
