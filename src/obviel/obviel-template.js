@@ -159,7 +159,7 @@ obviel.template = {};
 
         // setting attributes with data (data-id, data-src) become
         // that attribute (id, src)
-        $('.obviel-template-special-attr', el).each(function() {
+        $('*[data-special-attr=true]', el).each(function() {
             var name, value;
 
             for (name in SPECIAL_ATTR) {
@@ -170,7 +170,7 @@ obviel.template = {};
             }
             
             var el = $(this);
-            el.removeClass('obviel-template-special-attr');
+            el.attr('data-special-attr', null);
             if (el.attr('class') === '') {
                 el.removeAttr('class');
             }
@@ -669,7 +669,7 @@ obviel.template = {};
                 throw new module.CompilationError(
                     el, "data-" + name + " cannot be empty");
             }
-            $(el).addClass('obviel-template-special-attr');
+            $(el).attr('data-special-attr', 'true');
         }
     };
     
