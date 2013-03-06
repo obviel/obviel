@@ -450,6 +450,14 @@ var templateTestCase = buster.testCase('template tests', {
                           '<img src="fixtures/destroy.png"/>');
     },
 
+    "data-src with dynamic class": function() {
+        assert.htmlEquals(render('<img data-src="{foo}" class="{bar}" />',
+                                 {foo: 'fixtures/destroy.png',
+                                  bar: 'Bar'}),
+                          '<img src="fixtures/destroy.png" class="Bar" />');
+    },
+
+
     'non-dynamic data-src': function() {
         assert.htmlEquals(render('<img data-src="fixtures/destroy.png" />', {}),
                           '<img src="fixtures/destroy.png" />');
