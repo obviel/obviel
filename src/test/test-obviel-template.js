@@ -432,6 +432,10 @@ var templateTestCase = buster.testCase('template tests', {
                           '<p id="foo"></p>');
     },
 
+    "data-id with dynamic class": function() {
+        assert.htmlEquals(render('<p data-id="{foo}" class="{bar}"></p>', {foo: 'Foo', bar: 'Bar'}),
+                          '<p id="Foo" class="Bar"></p>');
+    },
 
     "disallow dynamic src in template": function() {
         assert.raises(function() {
@@ -511,6 +515,14 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
+    "data-if where if is true with dynamic class": function() {
+        assert.htmlEquals(render('<div data-if="alpha" class="{foo}">{beta}</div>',
+                                 {alpha: true,
+                                  beta: 'Beta',
+                                  foo: 'Foo'}),
+                          '<div class="Foo">Beta</div>');
+    },
+
     "data-if where if is true": function() {
         assert.htmlEquals(render('<div data-if="alpha">{beta}</div>',
                                  {alpha: true,
@@ -522,6 +534,14 @@ var templateTestCase = buster.testCase('template tests', {
         assert.htmlEquals(render('<div data-if="alpha">{beta}</div>',
                                  {alpha: false,
                                   beta: 'Beta'}),
+                          '');
+    },
+
+    "data-if where if is false with dynamic class": function() {
+        assert.htmlEquals(render('<div data-if="alpha" class="{foo}">{beta}</div>',
+                                 {alpha: false,
+                                  beta: 'Beta',
+                                  foo: 'Foo'}),
                           '');
     },
 
