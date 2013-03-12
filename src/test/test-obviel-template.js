@@ -531,6 +531,15 @@ var templateTestCase = buster.testCase('template tests', {
                           '<div class="Foo">Beta</div>');
     },
 
+    "data-if where if is true with dynamic class, subsection": function() {
+        assert.htmlEquals(render('<div data-if="always"><div data-if="alpha" class="{foo}">{beta}</div></div>',
+                                 {alpha: true,
+                                  always: true,
+                                  beta: 'Beta',
+                                  foo: 'Foo'}),
+                          '<div><div class="Foo">Beta</div></div>');
+    },
+
     "data-if where if is true": function() {
         assert.htmlEquals(render('<div data-if="alpha">{beta}</div>',
                                  {alpha: true,
@@ -551,6 +560,16 @@ var templateTestCase = buster.testCase('template tests', {
                                   beta: 'Beta',
                                   foo: 'Foo'}),
                           '');
+    },
+
+    
+    "data-if where if is false with dynamic class, subsection": function() {
+        assert.htmlEquals(render('<div data-if="always"><div data-if="alpha" class="{foo}">{beta}</div></div>',
+                                 {alpha: false,
+                                  always: true,
+                                  beta: 'Beta',
+                                  foo: 'Foo'}),
+                          '<div></div>');
     },
 
     'data-if in data-with': function() {
@@ -1761,6 +1780,12 @@ var templateTestCase = buster.testCase('template tests', {
                                  {name: 'p'}),
                           '<p class="foo">Content</p>');
     },
+    
+    "data-el with dynamic class": function() {
+        assert.htmlEquals(render('<div data-el="{name}" class="{foo}">Content</div>',
+                                 {name: 'p', foo: 'Hello world'}),
+                          '<p class="Hello world">Content</p>');
+    },
 
 
     'data-el without element name is an error': function() {
@@ -1911,6 +1936,13 @@ var templateTestCase = buster.testCase('template tests', {
                           '<div>Hello world!</div>');
     },
 
+    'data-unwrap with dynamic class': function() {
+        assert.htmlEquals(render('<div><div data-unwrap="" class="{foo}">Hello world!</div></div>',
+                                 {foo: 'Foo'}),
+                          '<div>Hello world!</div>');
+                          
+    },
+    
     'data-unwrap with multiple elements inside it': function() {
         assert.htmlEquals(render('<div><div data-unwrap=""><p>Hello</p><p>world!</p></div></div>', {}),
                           '<div><p>Hello</p><p>world!</p></div>');

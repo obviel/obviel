@@ -74,6 +74,16 @@ obviel.template = {};
     // these attributes may not be dynamic, you can only
     // set them dynamically thorugh data-<attrName>
     var SPECIAL_ATTR = {'id': true,  'src': true};
+
+    // special classes that need to be retained even if we have
+    // dynamic class attribute (class="{foo}") as otherwise
+    // Obviel will break. obviel-template-removal is not in this
+    // list because a dynamic class element won't break it anyway,
+    // as it will never get rendered in the first place
+    var SPECIAL_CLASSES = ['obviel-template-special-attr',
+                           'obviel-template-data-el',
+                           'obviel-template-data-unwrap'
+                          ];
     
     module.CompilationError = function(el, message) {
         this.name = 'CompilationError';
@@ -159,7 +169,7 @@ obviel.template = {};
 
         // setting attributes with data (data-id, data-src) become
         // that attribute (id, src)
-        $('*[data-special-attr=true]', el).each(function() {
+        $('*.obviel-template-special-attr', el).each(function() {
             var name, value;
 
             for (name in SPECIAL_ATTR) {
@@ -170,7 +180,7 @@ obviel.template = {};
             }
             
             var el = $(this);
-            el.attr('data-special-attr', null);
+            el.removeClass('obviel-template-special-attr');
             if (el.attr('class') === '') {
                 el.removeAttr('class');
             }
@@ -669,7 +679,7 @@ obviel.template = {};
                 throw new module.CompilationError(
                     el, "data-" + name + " cannot be empty");
             }
-            $(el).attr('data-special-attr', 'true');
+            $(el).addClass('obviel-template-special-attr');
         }
     };
     
@@ -1021,8 +1031,36 @@ obviel.template = {};
     
     module.DynamicAttribute.prototype.renderNotrans = function(
         el, scope, context) {
+        var classes = this.getSpecialClasses(el);
         el.setAttribute(this.name,
                         this.dynamicText.render(el, scope, context));
+        this.restoreSpecialClasses(el, classes);
+    };
+    
+    module.DynamicAttribute.prototype.getSpecialClasses = function(el) {
+        var i = 0,
+            specialClass,
+            wrapped,
+            classes = [];
+        if (this.name === 'class') {
+            wrapped = $(el);
+            for (i = 0; i < SPECIAL_CLASSES.length; i++) {
+                specialClass = SPECIAL_CLASSES[i];
+                if (wrapped.hasClass(specialClass)) {
+                    classes.push(specialClass);
+                }
+            }
+        }
+        return classes;
+    };
+
+    module.DynamicAttribute.prototype.restoreSpecialClasses = function(
+        el, classes) {
+        var i = 0,
+            wrapped = $(el);
+        for (i = 0; i < classes.length; i++) {
+            wrapped.addClass(classes[i]);
+        }
     };
     
     module.Variable = function(el, name) {

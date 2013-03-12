@@ -23,6 +23,11 @@ CHANGES
   A simple search and replace in your templates for these names should
   be enough to update your templates.
 
+* If a dynamic class was in use (class="{foo}") this could break
+  ``data-id``, ``data-src``, ``data-unwrap`` and ``data-el``. Thanks
+  to Daniel Havlik (nilo) for identifying the problem and providing a
+  fix!
+  
 * Start of sync documentation.
 
 * A few documentation tweaks.
