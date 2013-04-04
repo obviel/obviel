@@ -15,7 +15,7 @@ CHANGES
     ``render()`` function to render an object.
 
   * ``data-func`` becomes ``data-call``, as it really calls a function on
-     the view.
+    the view.
 
   * ``data-handler`` becomes ``data-on`` as its shorter and ``on`` typically
     implies event handling.
