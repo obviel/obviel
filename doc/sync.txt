@@ -4,6 +4,9 @@ Sync: synchronizing objects
 Introduction
 ------------
 
+**This document is still science fiction. The implementation is lagging
+behind this documentation. So sync's not ready yet.**
+
 Obviel Sync is a JavaScript library that keeps track of client-side
 objects and can keep them in sync with a backend and a UI. It supports
 different kinds of backends: HTTP (Rest_), localstorage, and
