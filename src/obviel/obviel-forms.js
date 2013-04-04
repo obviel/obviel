@@ -395,6 +395,18 @@ obviel.forms = {};
         var self = this;
         var defer = $.Deferred();
         
+        if (control.inCooldown) {
+            defer.resolve();
+            return defer.promise();
+        }
+        
+        if (control.cooldown) {
+            control.inCooldown = true;
+            setTimeout(function() {
+                control.inCooldown = false;
+            }, control.cooldown);
+        };
+        
         if (!control.noValidation) {
             self.updateErrors().done(function() {
                 // if there are  errors, disable submit

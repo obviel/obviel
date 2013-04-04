@@ -28,7 +28,13 @@ CHANGES
   to Daniel Havlik (nilo) for identifying the problem and providing a
   fix!
   
-* Start of sync documentation.
+* Start of sync documentation. Still science fiction though - implementation
+  is lagging behind API changes in docs.
+
+* A ``cooldown`` feature for Obviel Forms controls which allows you to
+  state a period of time in ms in which the button is unresponsive
+  after clicking it first. This is useful in preventing fast multiple
+  clicks.
 
 * A few documentation tweaks.
 

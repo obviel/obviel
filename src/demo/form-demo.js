@@ -76,6 +76,11 @@ $(document).ready(function() {
                 {
                     'label': 'Change data',
                     'class': 'change'
+                },
+                {
+                    'label': 'Cooldown button',
+                    'action': 'test',
+                    'cooldown': 2000
                 }
             ]
         },
@@ -97,9 +102,12 @@ $(document).ready(function() {
 
     /* this will change the data object, the form will update
        immediately */
+    var counter = 0;
+    
     $('.change', el).click(function(ev) {
         $(data).setField('date', '2010-10-10');
-        $(data).setField('integer', 3);
+        $(data).setField('integer', counter);
+        counter++;
         renderData();
     });
     
