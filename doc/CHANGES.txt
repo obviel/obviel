@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0b6 (unreleased)
+1.0b6 (2013-04-04)
 ==================
 
 * **Backwards incompatible!** Template language renaming. The general
