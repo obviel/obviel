@@ -1063,11 +1063,11 @@ You can however also define this formatter on the view itself::
 
 Now ``someFormatter`` will be called on the view to render ``myVariable``.
 
-The same approach works for ``data-func``::
+The same approach works for ``data-call``::
 
   obviel.view({
      iface: 'foo',
-     obvt: '<div data-func="someFunc"></div>',
+     obvt: '<div data-call="someFunc"></div>',
      someFunc: function(el, variable, context) {
         if (variable('flag')) {
            el.addClass('foo');
