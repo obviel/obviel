@@ -405,7 +405,7 @@ obviel.forms = {};
             setTimeout(function() {
                 control.inCooldown = false;
             }, control.cooldown);
-        };
+        }
         
         if (!control.noValidation) {
             self.updateErrors().done(function() {
