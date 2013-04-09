@@ -304,7 +304,7 @@ if (typeof console === "undefined") {
     module.View.prototype.doCleanup = function() {
         var self = this;
         self.el.data('obviel.renderedView', null);
-        self.el.unbind('render.obviel');
+        self.el.off('render.obviel');
         
         self.unbindEvents();
         self.unbindObjectEvents();
@@ -412,7 +412,7 @@ if (typeof console === "undefined") {
             $.each(events, function(selector, handler) {
                 var el = $(selector, self.el);
                 var wrappedHandler = self.wrapHandler(handler);
-                el.bind(eventName, wrappedHandler);
+                el.on(eventName, wrappedHandler);
                 self.boundHandlers.push({
                     name: eventName,
                     selector: selector,
@@ -429,7 +429,7 @@ if (typeof console === "undefined") {
         }
         $.each(self.boundHandlers, function(index, eventInfo) {
             var el = $(eventInfo.selector, self.el);
-            el.unbind(eventInfo.name, eventInfo.handler);
+            el.off(eventInfo.name, eventInfo.handler);
         });
     };
     
@@ -439,7 +439,7 @@ if (typeof console === "undefined") {
         $.each(self.objectEvents, function(eventName, handler) {
             var wrappedHandler = self.wrapHandler(handler);
 
-            $(self.obj).bind(eventName, wrappedHandler);
+            $(self.obj).on(eventName, wrappedHandler);
 
             self.boundObjectHandlers.push({
                 name: eventName,
@@ -454,7 +454,7 @@ if (typeof console === "undefined") {
             return;
         }
         $.each(self.boundObjectHandlers, function(index, eventInfo) {
-            $(self.obj).unbind(eventInfo.name, eventInfo.handler);
+            $(self.obj).off(eventInfo.name, eventInfo.handler);
         });
     };
 
@@ -501,7 +501,7 @@ if (typeof console === "undefined") {
         // attach rendered view to element if not ephemeral
         self.el.data('obviel.renderedView', self);
         // event handler here to render it next time
-        self.el.bind(
+        self.el.on(
             'render.obviel',
             function(ev) {
                 var view = ev.view;
@@ -520,7 +520,7 @@ if (typeof console === "undefined") {
                 view.doRender();
                 ev.stopPropagation();
                 ev.preventDefault();
-                el.unbind(ev);
+                el.unbind(ev); // XXX how to use off?
             }
         );
     };

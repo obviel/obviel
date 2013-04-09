@@ -95,7 +95,7 @@ obviel.forms = {};
         obj.globalErrors = obj.globalErrors || {};
         obj.data = obj.data || {};
 
-        $(el).bind('change', function(ev) {
+        $(el).on('change', function(ev) {
             // if we are already updating the errors in a submit, we don't want
             // to trigger global validation again
             if (self.updatingErrors) {
@@ -114,7 +114,7 @@ obviel.forms = {};
             }
         });
         
-        $(el).bind('form-change.obviel', function(ev) {
+        $(el).on('form-change.obviel', function(ev) {
             var count = self.totalErrorCount();
             if (count > 0) {
                 var msg = obviel.i18n.variables(ngettext(
@@ -205,11 +205,11 @@ obviel.forms = {};
 
         self.widgetViews.push(fieldEl.view());
 
-        fieldEl.bind('field-error.obviel-forms', function(ev) {
+        fieldEl.on('field-error.obviel-forms', function(ev) {
             fieldEl.addClass('error');
         });
 
-        fieldEl.bind('field-error-clear.obviel-forms', function(ev) {
+        fieldEl.on('field-error-clear.obviel-forms', function(ev) {
             fieldEl.removeClass('error');
         });
 

@@ -2126,7 +2126,7 @@ var templateTestCase = buster.testCase('template tests', {
 
 
     'data-on working': function() {
-            var handlerCalled = false;
+        var handlerCalled = false;
         var handlers = {
             myHandler: function(ev) {
                 handlerCalled = true;
@@ -2223,6 +2223,27 @@ var templateTestCase = buster.testCase('template tests', {
         assert.equals(secondHandlerCalled, true);
     },
 
+    'data-on on textarea': function() {
+        var handlerCalled = false;
+        var handlers = {
+            myHandler: function(ev) {
+                handlerCalled = true;
+            }
+        };
+
+        var getHandler = function(name) {
+            return handlers[name];
+        };
+        
+        var template = new obtemp.Template(
+            '<textarea id="one" data-on="keyup|myHandler"></textarea>');
+        
+        var el = $('<div></div>');
+        template.render(el, {}, { getHandler: getHandler});
+        $('#one', el).trigger('keyup');
+        assert.equals(handlerCalled, true);
+
+    },
     // XXX test failure if dotted name has non-end name to name that doesn't exist
     // also test with data-with, data-if, data-repeat
 

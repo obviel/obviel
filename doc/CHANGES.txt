@@ -1,6 +1,14 @@
 CHANGES
 *******
 
+1.0b7 (unreleased)
+==================
+
+* use '.on' to bind events instead of '.bind', in Obviel core and
+  Obviel Template. This fixes at least one issue where 'keyup' events
+  were not being handled with ``data-on`` on a textarea in FireFox,
+  triggered by a user (the issue didn't exist with firing with trigger).
+
 1.0b6 (2013-04-04)
 ==================
 

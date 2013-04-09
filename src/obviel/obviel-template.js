@@ -872,7 +872,7 @@ obviel.template = {};
                         handler.handlerName + "' because handler function " +
                         "could not be found");
             }
-            $(el).bind(handler.eventName, f);
+            $(el).on(handler.eventName, f);
         }
     };
     
@@ -1907,7 +1907,7 @@ obviel.template = {};
         if (events !== undefined) {
             $.each(events, function(key, value) {
                 $.each(value, function(sub, v) {
-                    $(newEl).bind(v.type, v.handler);
+                    $(newEl).on(v.type, v.handler);
                 });
             });
         }
