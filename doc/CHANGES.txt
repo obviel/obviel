@@ -38,6 +38,10 @@ CHANGES
 * Throw away some dependencies (datalink, qunit) that weren't in use
   (anymore).
 
+* Add ``passwordField`` to Obviel Forms, which renders using ``<input
+  type="password">``. Otherwise it is like ``textlineField``. Thank you
+  Sjoerd van Elferen.
+
 1.0b6 (2013-04-04)
 ==================
 
