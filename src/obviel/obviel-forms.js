@@ -1241,7 +1241,7 @@ obviel.forms = {};
         var d = {
             iface: 'passwordField',
             obvt:
-                '<div class="obviel-field-input">' +
+                '<div class="obviel-field-input controls">' +
                 '<input type="password" name="obviel-field-{prefixedName}"' +
                 'data-id="obviel-field-{prefixedName}"' +
                 'data-func="attributes">' +
