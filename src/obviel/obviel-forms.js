@@ -1233,6 +1233,29 @@ obviel.forms = {};
         }
     };
 
+
+    obviel.iface('passwordField', 'textlineField');
+
+    module.PasswordWidget = function (settings) {
+        settings = settings || {};
+        var d = {
+            iface: 'passwordField',
+            obvt:
+                '<div class="obviel-field-input">' +
+                '<input type="password" name="obviel-field-{prefixedName}"' +
+                'data-id="obviel-field-{prefixedName}"' +
+                'data-func="attributes">' +
+                '</div>'
+        };
+        $.extend(d, settings);
+        module.TextLineWidget.call(this, d);
+    };
+
+    module.PasswordWidget.prototype = new module.TextLineWidget();
+
+    obviel.view(new module.PasswordWidget());
+
+
     obviel.iface('integerField', 'inputField');
     module.IntegerWidget = function(settings) {
         settings = settings || {};
