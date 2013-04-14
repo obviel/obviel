@@ -59,6 +59,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         $('#jsview-area').unview();
         $('#viewdiv').unbind();
         this.server.restore();
+        obviel.view(obviel.forms.defaultErrorAreaView);
     },
 
 // tests to implement still (and to implement in some cases):
@@ -2994,7 +2995,6 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
         assert.equals(fieldGlobalA.text(), 'must be smaller than b');
         assert.equals(formErrorEl.text(), '2 fields did not validate');
-        // and in the widget
         assert.equals(fieldGlobalA.parent().parent().parentView().globalError(),
                       'must be smaller than b');
         
