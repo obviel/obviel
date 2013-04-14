@@ -1903,7 +1903,9 @@ obviel.template = {};
         }
 
         // copy all events
-        var events = $(el).data('events');
+        // XXX use internal API until we figure out how to
+        // migrate events to new element using official jQuery API...
+        var events = $._data(el, 'events');
         if (events !== undefined) {
             $.each(events, function(key, value) {
                 $.each(value, function(sub, v) {
