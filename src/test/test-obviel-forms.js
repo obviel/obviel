@@ -1907,12 +1907,12 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(data.a, false);
         
         // set to on
-        fieldEl.attr('checked', true);
+        fieldEl.prop('checked', true);
         fieldEl.trigger('change');
         assert.equals(data.a, true);
 
         // turn off again
-        fieldEl.attr('checked', false);
+        fieldEl.prop('checked', false);
         fieldEl.trigger('change');
         assert.equals(data.a, false);
     },
@@ -1942,7 +1942,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(fieldEl.is(':checked'), true);
         
         $(data).setField('a', false);
-            assert.equals(fieldEl.is(':checked'), false);
+        assert.equals(fieldEl.is(':checked'), false);
     },
 
     "choice datalink": function() {
