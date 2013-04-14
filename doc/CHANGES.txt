@@ -42,6 +42,10 @@ CHANGES
   type="password">``. Otherwise it is like ``textlineField``. Thank you
   Sjoerd van Elferen.
 
+* Add ``@repeat.first`` and ``@repeat.last`` variables. These are true
+  when first/last in the repeat loop and can be used with ``data-if``. Thank
+  you Rob Gietema.
+
 1.0b6 (2013-04-04)
 ==================
 

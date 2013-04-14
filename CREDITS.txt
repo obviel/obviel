@@ -19,6 +19,8 @@ Creation and Implementation
 
 * Sjoerd van Elferen & Rob Gietema - passwordField for Obviel Forms.
 
+* Rob Gietema - ``@repeat.first`` and ``@repeat.last`` support.
+
 Useful conversations
 --------------------
 

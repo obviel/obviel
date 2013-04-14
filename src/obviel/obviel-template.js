@@ -446,7 +446,9 @@ obviel.template = {};
             number: index + 1,
             length: dataRepeat.length,
             even: even,
-            odd: !even
+            odd: !even,
+            last: index + 1 === dataRepeat.length,
+            first: index === 0
         };
         var repeat = {};
         $.extend(repeat, info);

@@ -305,6 +305,10 @@ contains some useful properties during the construction of loops:
 
 * ``odd`` -- ``true`` if the index is an odd number
 
+* ``first`` -- ``true`` only if the index is the first in the list
+
+* ``last`` -- ``true`` only if the index is the last in the list
+
 For example::
 
   <ul>

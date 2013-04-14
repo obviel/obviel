@@ -904,6 +904,20 @@ var templateTestCase = buster.testCase('template tests', {
             {list: [1, 2]}),
                           '<ul><li>0 2</li><li>1 2</li></ul>');
     },
+    
+    'data-repeat first': function() {
+        assert.htmlEquals(render(
+            '<ul><li data-repeat="list">{@repeat.first}</li></ul>',
+            {list: [1, 2]}),
+                          '<ul><li>true</li><li>false</li></ul>');
+    },
+
+    'data-repeat last': function() {
+        assert.htmlEquals(render(
+            '<ul><li data-repeat="list">{@repeat.last}</li></ul>',
+            {list: [1, 2]}),
+                          '<ul><li>false</li><li>true</li></ul>');
+    },
 
     'data-repeat with @repeat vars, explicit loop': function() {
         assert.htmlEquals(render(
