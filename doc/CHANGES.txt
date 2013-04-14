@@ -9,6 +9,25 @@ CHANGES
   were not being handled with ``data-on`` on a textarea in FireFox,
   triggered by a user (the issue didn't exist with firing with trigger).
 
+* Throw away some dependencies (datalink, qunit) that weren't in use
+  (anymore).
+
+* Upgrade Obviel to work with jQuery 1.9.1. This didn't affect much  
+  code except Obviel Template, which had a minor bug, and Obviel Forms.
+
+  Obviel Forms had bigger problems as jquery-datalink breaks in modern
+  versions of jQuery. To this end ``src/dependencies`` now contains a
+  fixed version of ``jquery.datalink.js`` that you can use to make
+  forms work again with a modern version of jQuery. On the longer term
+  we're looking to replace jquery.datalink with a better system for
+  data binding.
+
+  We also noticed that the optional jquery.ba-bbq dependency for
+  dealing with browser hashchanges was incompatible with jQuery
+  1.9. Included is a fork of jquery.ba-bbq from
+  https://github.com/joshlangner/jquery-bbq that fixes this
+  incompatibility.
+
 1.0b6 (2013-04-04)
 ==================
 
