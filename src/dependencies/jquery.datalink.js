@@ -26,10 +26,10 @@ function getLinks(obj) {
 }
 
 function bind(obj, wrapped, handler) {
-	wrapped.bind( obj.nodeType ? "change" : eventNameChangeField, handler );
+	wrapped.on( obj.nodeType ? "change" : eventNameChangeField, handler );
 }
 function unbind(obj, wrapped, handler) {
-	wrapped.unbind( obj.nodeType ? "change" : eventNameChangeField, handler );
+	wrapped.on( obj.nodeType ? "change" : eventNameChangeField, handler );
 }
 
 $.extend({
@@ -77,11 +77,11 @@ $.extend({
 				var $this = $( target ),
 					args = [ parts[0], value ];
 
-			$this.triggerHandler( eventNameSetField + parts[1] + "!", args );
+			$this.triggerHandler( eventNameSetField + parts[1], args );
 			if ( value !== undefined ) {
 				target[ field ] = value;
 			}
-			$this.triggerHandler( eventNameChangeField + parts[1] + "!", args );
+			$this.triggerHandler( eventNameChangeField + parts[1], args );
 		}
 	}
 });
