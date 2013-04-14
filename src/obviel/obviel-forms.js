@@ -514,9 +514,8 @@ obviel.forms = {};
     module.Widget.prototype.render = function() {
 
     };
-
-
-    obviel.view({
+    
+    module.defaultErrorAreaView = {
         iface: 'obvielFormsErrorArea',
         render: function() {
             // add in field validation or conversion failing error area
@@ -528,7 +527,9 @@ obviel.forms = {};
                            this.obj.globalErrorId +
                            '" class="obviel-global-error"></span>');
         }
-    });
+    };
+    
+    obviel.view(module.defaultErrorAreaView);
     
     module.Widget.prototype.renderErrorArea = function() {
         $('.obviel-field-input', this.el).append(
