@@ -210,7 +210,33 @@ var coreTestCase = buster.testCase("core tests", {
                 assert(cleanupCalled);
             });
     },
+
+    'unregister view, default name': function() {
+        obviel.view({
+            iface: 'ifoo',
+            render: renderText
+        });
+        obviel.unregisterView('ifoo');
+        assert.exception(function() {
+            testel().render({iface: 'ifoo', text: 'qux'});
+        }, 'LookupError');
+    },
     
+    'unregister view, custom name': function() {
+        obviel.view({
+            iface: 'ifoo',
+            name: 'custom',
+            render: renderText
+        });
+        obviel.unregisterView('ifoo', 'custom');
+        assert.exception(function() {
+            testel().render({iface: 'ifoo', text: 'qux'}, 'custom');
+        }, 'LookupError');
+    },
+    'unregister unknown view is noop': function() {
+        obviel.unregisterView('ifoo');
+        assert(true);
+    },
     'render url, default name': function(done) {
         obviel.view({
             render: renderText

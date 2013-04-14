@@ -562,6 +562,17 @@ if (typeof console === "undefined") {
         this.views[view.iface][view.name] = view;
     };
 
+    module.Registry.prototype.unregister = function(iface, name) {
+        name = name || 'default';
+        if (!this.views[iface]) {
+            return;
+        }
+        if (!this.views[iface][name]) {
+            return;
+        }
+        delete this.views[iface][name];
+    };
+    
     module.Registry.prototype.lookup = function(obj, name) {
         var ifaces = module.ifaces(obj);
         
@@ -1005,6 +1016,10 @@ if (typeof console === "undefined") {
         module.registry.register(view);
     };
 
+    module.unregisterView = function(iface, name) {
+        module.registry.unregister(iface, name);
+    };
+    
     module.transformer = function(transformer) {
         module.registry.registerTransformer(transformer);
     };

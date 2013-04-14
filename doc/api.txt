@@ -78,6 +78,16 @@ Obviel core
     will be converted to a :class:`View` object with the object's
     properties.
 
+.. function:: obviel.unregisterView(iface, name)
+
+  Unregister view with Obviel. Obviel will forget about the view
+  again. This is particularly useful during test cleanup, not during
+  normal application running-time.
+
+  :param string iface: the iface of the view you want to unregister.
+  :param string name: the name of the view you want to
+    unregister. Optional; the default name is ``default``.
+
 .. function:: obviel.transformer(transformer)
 
   :param transformer: a function with the ``function(obj, url, name)``

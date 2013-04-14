@@ -4,14 +4,6 @@ CHANGES
 1.0b7 (unreleased)
 ==================
 
-* use '.on' to bind events instead of '.bind', in Obviel core and
-  Obviel Template. This fixes at least one issue where 'keyup' events
-  were not being handled with ``data-on`` on a textarea in FireFox,
-  triggered by a user (the issue didn't exist with firing with trigger).
-
-* Throw away some dependencies (datalink, qunit) that weren't in use
-  (anymore).
-
 * Upgrade Obviel to work with jQuery 1.9.1. This didn't affect much  
   code except Obviel Template, which had a minor bug, and Obviel Forms.
 
@@ -27,6 +19,24 @@ CHANGES
   1.9. Included is a fork of jquery.ba-bbq from
   https://github.com/joshlangner/jquery-bbq that fixes this
   incompatibility.
+
+* Fix an occasional test failure due to ordering issues in the tests for
+  Obviel Forms.
+
+* Expose ``obviel.forms.defaultErrorAreaView`` so it can be
+  re-registered with ``obviel.view`` during test cleanup (in case a
+  test registered its own).
+
+* Add an ``obviel.unregisterView`` function which can be used to
+  remove existing view registrations.
+
+* use '.on' to bind events instead of '.bind', in Obviel core and
+  Obviel Template. This fixes at least one issue where 'keyup' events
+  were not being handled with ``data-on`` on a textarea in FireFox,
+  triggered by a user (the issue didn't exist with firing with trigger).
+
+* Throw away some dependencies (datalink, qunit) that weren't in use
+  (anymore).
 
 1.0b6 (2013-04-04)
 ==================
