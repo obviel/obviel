@@ -186,7 +186,7 @@ var testel = function() {
     return $("<div></div>");
 };
 
-var render = function(text, obj) {
+var renderEl = function(text, obj) {
     var el = testel();
     var template = new obtemp.Template(text);
     var translations = new Translations();
@@ -195,6 +195,11 @@ var render = function(text, obj) {
     };
     template.render(el, obj, {getTranslation: getTranslation,
                               getPluralTranslation: getPluralTranslation});
+    return el;
+};
+
+var render = function(text, obj) {
+    var el = renderEl(text, obj);
     return el.html();
 };
 
@@ -433,8 +438,13 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
     "data-id with dynamic class": function() {
-        assert.htmlEquals(render('<p data-id="{foo}" class="{bar}"></p>', {foo: 'Foo', bar: 'Bar'}),
-                          '<p id="Foo" class="Bar"></p>');
+        // for some reason htmlEquals for normalized HTML compare doesn't
+        // work on Chromium, so test by hand
+        var el = renderEl('<p data-id="{foo}" class="{bar}"></p>',
+                          {foo: 'Foo', bar: 'Bar'});
+        var p_el = $('p', el);
+        assert.equals(p_el.attr('id'), 'Foo');
+        assert(p_el.hasClass('Bar'));
     },
 
     "disallow dynamic src in template": function() {
@@ -451,10 +461,14 @@ var templateTestCase = buster.testCase('template tests', {
     },
 
     "data-src with dynamic class": function() {
-        assert.htmlEquals(render('<img data-src="{foo}" class="{bar}" />',
-                                 {foo: 'fixtures/destroy.png',
-                                  bar: 'Bar'}),
-                          '<img src="fixtures/destroy.png" class="Bar" />');
+        // for some reason htmlEquals for normalized HTML compare doesn't
+        // work on Chromium, so test by hand
+        var el = renderEl('<img data-src="{foo}" class="{bar}" />',
+                          {foo: 'fixtures/destroy.png',
+                           bar: 'Bar'});
+        var img_el = $('img', el);
+        assert.equals(img_el.attr('src'), 'fixtures/destroy.png');
+        assert(img_el.hasClass('Bar'));
     },
 
 
