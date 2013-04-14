@@ -2174,27 +2174,27 @@ var templateTestCase = buster.testCase('template tests', {
             }, obtemp.RenderError);
     },
 
-        'data-on with data-el': function() {
-            var handlerCalled = false;
-            var handlers = {
-                myHandler: function(ev) {
-                    handlerCalled = true;
-                }
-            };
-
-            var getHandler = function(name) {
-                return handlers[name];
-            };
-            
-            var template = new obtemp.Template(
-                '<span data-el="div" id="one" data-on="click|myHandler">Click here</span>');
-            
-                var el = $('<div></div>');
-            template.render(el, {}, { getHandler: getHandler});
-            $('#one', el).trigger('click');
-            assert.equals(handlerCalled, true);
-                
-        },
+    'data-on with data-el': function() {
+        var handlerCalled = false;
+        var handlers = {
+            myHandler: function(ev) {
+                handlerCalled = true;
+            }
+        };
+        
+        var getHandler = function(name) {
+            return handlers[name];
+        };
+        
+        var template = new obtemp.Template(
+            '<span data-el="div" id="one" data-on="click|myHandler">Click here</span>');
+        
+        var el = $('<div></div>');
+        template.render(el, {}, { getHandler: getHandler});
+        $('#one', el).trigger('click');
+        assert.equals(handlerCalled, true);
+        
+    },
 
     'data-on multiple on same el': function() {
             var firstHandlerCalled = false;
