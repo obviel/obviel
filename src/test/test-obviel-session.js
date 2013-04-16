@@ -275,5 +275,161 @@ var sessionTestCase = buster.testCase("session tests:", {
         assert.equals(groups[3].key, {size: 100});
         assert.equals(groups[3].values().length, 1);
         assert.equals(groups[3].values(), [obj5]);
+    },
+    "group single action": function() {
+        var session = new obviel.session.Session();
+
+        var item = {name: "foo"};
+
+        var obj = {id: 1, items: []};
+        obj.items.push(item);
+
+        session.add(obj, "items", item);
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 1);
+
+        var values = groups[0].values();
+
+        assert.equals(values.length, 1);
+
+        assert.same(values[0].item, item);
+        assert.same(values[0].obj, obj);
+    },
+    "group multiple add actions": function() {
+        var session = new obviel.session.Session();
+
+        var item = {name: "foo"};
+        var item2 = {size: 200};
+
+        var obj = {id: 1, items: []};
+        obj.items.push(item);
+        obj.items.push(item2);
+
+        session.add(obj, "items", item);
+        session.add(obj, "items", item2);
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 1);
+
+        var values = groups[0].values();
+
+        assert.equals(values.length, 2);
+
+        assert.same(values[0].item, item);
+        assert.same(values[0].obj, obj);
+        assert.same(values[1].item, item2);
+        assert.same(values[1].obj, obj);
+    },
+    "group multiple update actions": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {id: 1, name: "", size: 0};
+
+        obj.name = "foo";
+        obj.size = 200;
+
+        session.update(obj, "name");
+        session.update(obj, "size");
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 1);
+
+        var values = groups[0].values();
+
+        assert.equals(values.length, 2);
+
+        assert.same(values[0].propertyName, "name");
+        assert.same(values[0].obj, obj);
+        assert.same(values[1].propertyName, "size");
+        assert.same(values[1].obj, obj);
+    },
+    "group update and add actions": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {id: 1, name: "", size: 0, items: []};
+
+        var item = {name: "foo"};
+
+        obj.name = "foo";
+        obj.size = 200;
+        obj.items.push(item);
+
+        session.update(obj, "name");
+        session.update(obj, "size");
+        session.add(obj, "items", item);
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 2);
+
+        var updateValues = groups[0].values();
+        var addValues = groups[1].values();
+
+        assert.equals(updateValues.length, 2);
+        assert.equals(addValues.length, 1);
+
+        assert.same(updateValues[0].propertyName, "name");
+        assert.same(updateValues[1].propertyName, "size");
+        assert.same(addValues[0].item, item);
+    },
+    "group updates on multiple objects": function() {
+        var session = new obviel.session.Session();
+
+        var obj1 = {id: 1, name: "", size: 0};
+        var obj2 = {id: 2, profession: ""};
+
+        obj1.name = "foo";
+        obj1.size = 200;
+        obj2.profession = "Astronomer";
+
+        session.update(obj1, "name");
+        session.update(obj1, "size");
+        session.update(obj2, "profession");
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 2);
+
+        var obj1Values = groups[0].values();
+        var obj2Values = groups[1].values();
+
+        assert.equals(obj1Values.length, 2);
+        assert.equals(obj2Values.length, 1);
+
+        assert.equals(obj1Values[0].propertyName, "name");
+        assert.equals(obj1Values[1].propertyName, "size");
+        assert.equals(obj2Values[0].propertyName, "profession");
+    },
+    "group updates on multiple objects interweaved": function() {
+        var session = new obviel.session.Session();
+
+        var obj1 = {id: 1, name: "", size: 0};
+        var obj2 = {id: 2, profession: ""};
+
+        obj1.name = "foo";
+        obj2.profession = "Astronomer";
+        obj1.size = 200;
+
+        session.update(obj1, "name");
+        session.update(obj2, "profession");
+        session.update(obj1, "size");
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 2);
+
+        var obj1Values = groups[0].values();
+        var obj2Values = groups[1].values();
+
+        assert.equals(obj1Values.length, 2);
+        assert.equals(obj2Values.length, 1);
+
+        assert.equals(obj1Values[0].propertyName, "name");
+        assert.equals(obj1Values[1].propertyName, "size");
+        assert.equals(obj2Values[0].propertyName, "profession");
     }
 });

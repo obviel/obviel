@@ -94,6 +94,10 @@ obviel.session = {};
     module.Session.prototype.getActions = function() {
         return this.actions;
     };
+
+    module.Session.prototype.getActionGroups = function() {
+        return actionGrouper.createGroups(this.actions);
+    };
     
     module.Session.prototype.createMutator = function(obj, propertyName) {
         var value = obj[propertyName];
@@ -182,6 +186,8 @@ obviel.session = {};
         this.classifiers.push(classifier);
     };
     module.Grouper.prototype.createGroups = function(objs) {
+        // XXX remove duplicate objs before grouping them
+
         var info, i, mapping = new module.Mapping();
 
         for (i = 0; i < objs.length; i++) {
@@ -279,6 +285,46 @@ obviel.session = {};
             result.push([key, flatten(obj[key])]);
         }
         return result.sort();
+    };
+
+    var actionGrouper = new module.Grouper();
+
+    actionGrouper.addClassifier(new module.Classifier(function(action) {
+        if (action.name !== "remove") {
+            return null;
+        }
+        return {name: 'remove', objectId: getObjectId(action.obj), propertyName: action.propertyName};
+    }));
+    actionGrouper.addClassifier(new module.Classifier(function(action) {
+        if (action.name !== "add") {
+            return null;
+        }
+        return {name: "add", objectId: getObjectId(action.obj), propertyName: action.propertyName};
+    }));
+    actionGrouper.addClassifier(new module.Classifier(function(action) {
+        if (action.name !== "update") {
+            return null;
+        }
+        return {name: "update", objectId: getObjectId(action.obj)};
+    }));
+    actionGrouper.addClassifier(new module.Classifier(function(action) {
+        if (action.name !== "refresh") {
+            return null;
+        }
+        return {name: "refresh", objectId: getObjectId(action.obj)};
+    }));
+    actionGrouper.addClassifier(new module.Classifier(function(action) {
+        if (action.name !== "touch") {
+            return null;
+        }
+        return {name: "touch", objectId: getObjectId(action.obj)};
+    }));
+
+    var getObjectId = function(obj) {
+        if (obj.id === undefined) {
+            throw new Error("Object has no id property");
+        }
+        return obj.id;
     };
     
 }(jQuery, obviel.session));
