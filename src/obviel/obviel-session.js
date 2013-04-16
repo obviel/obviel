@@ -57,7 +57,7 @@ obviel.session = {};
     AddAction.prototype.constructor = AddAction;
 
     var RemoveAction = function(session, obj, propertyName, item) {
-        ContainerAction.call(this, "add", session, obj, propertyName, item);
+        ContainerAction.call(this, "remove", session, obj, propertyName, item);
     };
 
     RemoveAction.prototype = new ContainerAction();

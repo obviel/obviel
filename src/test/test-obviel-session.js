@@ -25,6 +25,77 @@ var sessionTestCase = buster.testCase("session tests:", {
         assert.same(action.obj, obj);
         assert.equals(action.propertyName, "foo");
     },
+    "add action": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {foo: "bar"};
+
+        session.add(obj, "foo");
+
+        var actions = session.getActions();
+
+        assert.equals(actions.length, 1);
+
+        var action = actions[0];
+
+        assert.equals(action.name, "add");
+        assert.same(action.session, session);
+        assert.same(action.obj, obj);
+        assert.equals(action.propertyName, "foo");
+    },
+    "remove action": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {foo: "bar"};
+
+        session.remove(obj, "foo");
+
+        var actions = session.getActions();
+
+        assert.equals(actions.length, 1);
+
+        var action = actions[0];
+
+        assert.equals(action.name, "remove");
+        assert.same(action.session, session);
+        assert.same(action.obj, obj);
+        assert.equals(action.propertyName, "foo");
+    },
+    "touch action": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {foo: "bar"};
+
+        session.touch(obj, "foo");
+
+        var actions = session.getActions();
+
+        assert.equals(actions.length, 1);
+
+        var action = actions[0];
+
+        assert.equals(action.name, "touch");
+        assert.same(action.session, session);
+        assert.same(action.obj, obj);
+        assert.equals(action.propertyName, "foo");
+    },
+    "refresh action": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {foo: "bar"};
+
+        session.refresh(obj, "foo");
+
+        var actions = session.getActions();
+
+        assert.equals(actions.length, 1);
+
+        var action = actions[0];
+
+        assert.equals(action.name, "refresh");
+        assert.same(action.session, session);
+        assert.same(action.obj, obj);
+    },
     "multiple update action": function() {
         var session = new obviel.session.Session();
 
