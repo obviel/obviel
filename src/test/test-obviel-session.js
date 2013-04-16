@@ -431,5 +431,21 @@ var sessionTestCase = buster.testCase("session tests:", {
         assert.equals(obj1Values[0].propertyName, "name");
         assert.equals(obj1Values[1].propertyName, "size");
         assert.equals(obj2Values[0].propertyName, "profession");
+    },
+    "refresh object": function() {
+        var session = new obviel.session.Session();
+
+        var obj1 = {id: 1, name: "", size: 0};
+
+        session.refresh(obj1);
+
+        var groups = session.getActionGroups();
+
+        assert.equals(groups.length, 1);
+
+        var values = groups[0].values();
+
+        assert.equals(values.length, 1);
+        assert.same(values[0].obj, obj1);
     }
 });
