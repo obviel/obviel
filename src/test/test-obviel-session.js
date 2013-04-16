@@ -121,5 +121,79 @@ var sessionTestCase = buster.testCase("session tests:", {
         assert.same(action.session, session);
         assert.same(action.obj, obj);
         assert.equals(action.propertyName, "bar");
+    },
+    "mapping": function() {
+        var mapping = new obviel.session.Mapping();
+
+        var keyObj = {id: "idstring", other: "content"};
+        var valObj = {value: "val"};
+
+        mapping.put(keyObj, valObj);
+
+        assert.same(mapping.get(keyObj), valObj);
+    },
+    "mapping key not found": function() {
+        var mapping = new obviel.session.Mapping();
+        refute.defined(mapping.get(1));
+    },
+    "mapping with reconstructed key": function() {
+        var mapping = new obviel.session.Mapping();
+
+        var keyObj = {id: "idstring", other: "content"};
+        var valObj = {value: "val"};
+
+        mapping.put(keyObj, valObj);
+
+        var newKeyObj = {id: "idstring", other: "content"};
+
+        assert.same(mapping.get(newKeyObj), valObj);
+    },
+    "mapping with different ordered key": function() {
+        var mapping = new obviel.session.Mapping();
+
+        var keyObj = {id: "idstring", other: "content"};
+        var valObj = {value: "val"};
+
+        mapping.put(keyObj, valObj);
+
+        var newKeyObj = {other: "content", id: "idstring"};
+
+        assert.same(mapping.get(newKeyObj), valObj);
+    },
+    "mapping with keys and array": function() {
+        var mapping = new obviel.session.Mapping();
+
+        var keyObj = {id: "idstring", other: "content", array: ["bla", "blaat"]};
+        var valObj = {value: "val"};
+
+        mapping.put(keyObj, valObj);
+
+        var newKeyObj = {id: "idstring", other: "content", array: ["bla", "blaat"]};
+
+        assert.same(mapping.get(newKeyObj), valObj);
+    },
+    "mapping with keys and array in different order": function() {
+        var mapping = new obviel.session.Mapping();
+
+        var keyObj = {id: "idstring", other: "content", array: ["bla", "blaat"]};
+        var valObj = {value: "val"};
+
+        mapping.put(keyObj, valObj);
+
+        var newKeyObj = {id: "idstring", other: "content", array: ["blaat", "bla"]};
+
+        refute.defined(mapping.get(newKeyObj));
+    },
+    "mapping return values": function() {
+        var mapping = new obviel.session.Mapping();
+
+        mapping.put(1, 10);
+        mapping.put(2, 20);
+
+        var values = mapping.values();
+        values.sort();
+
+        assert.equals(values.length, 2);
+        assert.equals(values, [10, 20]);
     }
 });

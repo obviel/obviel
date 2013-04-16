@@ -174,5 +174,62 @@ obviel.session = {};
     ArrayMutator.prototype.commit = function() {
         return this.session.commit();
     };
+
+    module.Classifier = function() {
+        this.keyFunctions = [];
+    };
+    module.Classifier.prototype.addKeyFunc = function(keyFunc) {
+        this.keyFunctions.push(keyFunc);
+    };
+    module.Classifier.prototype.classify = function(session) {
+        var i, actions;
+        actions = session.getActions();
+        for (i = 0; i < actions.length; i++) {
+            this.classifyAction(actions[i]);
+        }
+    };
+    module.Classifier.prototype.classifyAction = function(action) {
+
+    };
+
+    module.Mapping = function() {
+        this.data = {};
+    };
+
+    module.Mapping.prototype.put = function(key, value) {
+        this.data[deterministicStringify(key)] = value;
+    };
+
+    module.Mapping.prototype.get = function(key) {
+        return this.data[deterministicStringify(key)];
+    };
+
+    module.Mapping.prototype.values = function() {
+        var key, result = [];
+        for (key in this.data) {
+            result.push(this.data[key]);
+        }
+        return result;
+    };
+
+    var deterministicStringify = function(obj) {
+        return JSON.stringify(flatten(obj));
+    };
+    var flatten = function(obj) {
+        var key, result = [];
+        if (!$.isPlainObject(obj) && !$.isArray(obj)) {
+            return obj;
+        }
+        if ($.isArray(obj)) {
+            for (key in obj) {
+                result.push(flatten(obj[key]));
+            }
+            return result;
+        }
+        for (key in obj) {
+            result.push([key, flatten(obj[key])]);
+        }
+        return result.sort();
+    };
     
 }(jQuery, obviel.session));
