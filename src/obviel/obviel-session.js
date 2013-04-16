@@ -175,21 +175,70 @@ obviel.session = {};
         return this.session.commit();
     };
 
-    module.Classifier = function() {
-        this.keyFunctions = [];
+    module.Grouper = function() {
+        this.classifiers = [];
     };
-    module.Classifier.prototype.addKeyFunc = function(keyFunc) {
-        this.keyFunctions.push(keyFunc);
+    module.Grouper.prototype.addClassifier = function(classifier) {
+        this.classifiers.push(classifier);
     };
-    module.Classifier.prototype.classify = function(session) {
-        var i, actions;
-        actions = session.getActions();
-        for (i = 0; i < actions.length; i++) {
-            this.classifyAction(actions[i]);
+    module.Grouper.prototype.createGroups = function(objs) {
+        var info, i, mapping = new module.Mapping();
+
+        for (i = 0; i < objs.length; i++) {
+            info = this.getClassifier(objs[i]);
+
+            var group = mapping.get(info.key);
+            if (group === undefined) {
+                group = new Group(info.classifier, info.key);
+                mapping.put(info.key, group);
+            }
+            group.add(objs[i], i);
+        }
+        return mapping.values().sort(groupCompare);
+    };
+
+    module.Grouper.prototype.getClassifier = function(obj) {
+        var i, key;
+        for(i in this.classifiers) {
+            key = this.classifiers[i].getKey(obj);
+            if (key !== null) {
+                return {key: key, classifier: this.classifiers[i]};
+            }
+        }
+        throw new Error("Cannot classify action");
+    };
+
+    var groupCompare = function(a, b) {
+        if (a.minSeq < b.minSeq) {
+            return -1;
+        } else if (a.minSeq > b.minSeq) {
+            return 1;
+        } else {
+            return 0;
         }
     };
-    module.Classifier.prototype.classifyAction = function(action) {
 
+    var Group = function(classifier, key) {
+        this.classifier = classifier;
+        this.key = key;
+        this.objs = [];
+        this.minSeq = null;
+    };
+    Group.prototype.add = function(obj, seq) {
+        this.objs.push(obj);
+        if (this.minSeq === null) {
+            this.minSeq = seq;
+        }
+    };
+    Group.prototype.values = function() {
+        return this.objs;
+    };
+
+    module.Classifier = function(keyFunc) {
+        this.keyFunc = keyFunc;
+    };
+    module.Classifier.prototype.getKey = function(obj) {
+        return this.keyFunc(obj);
     };
 
     module.Mapping = function() {

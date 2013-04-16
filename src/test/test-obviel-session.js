@@ -195,5 +195,85 @@ var sessionTestCase = buster.testCase("session tests:", {
 
         assert.equals(values.length, 2);
         assert.equals(values, [10, 20]);
+    },
+    "simple classifier grouping": function() {
+        var grouper = new obviel.session.Grouper();
+        var classifier = new obviel.session.Classifier(function(obj) {
+            return 1;
+        });
+
+        grouper.addClassifier(classifier);
+
+        var obj1 = {foo: "Foo"};
+        var obj2 = {bar: "Bar"};
+
+        var groups = grouper.createGroups([obj1, obj2]);
+
+        assert.equals(groups.length, 1);
+        assert.same(groups[0].classifier, classifier);
+
+        var values = groups[0].values();
+
+        assert.equals(values.length, 2);
+        assert.equals(values, [obj1, obj2]);
+    },
+    "single classifier with grouping": function() {
+        var grouper = new obviel.session.Grouper();
+        var classifier = new obviel.session.Classifier(function(obj) {
+            return obj.name;
+        });
+
+        grouper.addClassifier(classifier);
+
+        var obj1 = {name: "A"};
+        var obj2 = {name: "A"};
+        var obj3 = {name: "B"};
+
+        var groups = grouper.createGroups([obj1, obj2, obj3]);
+
+        assert.equals(groups.length, 2);
+        
+        assert.equals(groups[0].key, "A");
+        assert.equals(groups[0].values().length, 2);
+        assert.equals(groups[1].key, "B");
+        assert.equals(groups[1].values().length, 1);
+    },
+    "double classifier with grouping": function() {
+        var grouper = new obviel.session.Grouper();
+        var nameClassifier = new obviel.session.Classifier(function(obj) {
+            if (obj.name === undefined) {
+                return null;
+            }
+            return { name: obj.name };
+        });
+        var sizeClassifier = new obviel.session.Classifier(function(obj) {
+            return { size: obj.size };
+        });
+
+        grouper.addClassifier(nameClassifier);
+        grouper.addClassifier(sizeClassifier);
+
+        var obj1 = {name: "A", size: 10};
+        var obj2 = {name: "B", size: 40};
+        var obj3 = {name: "A"};
+        var obj4 = {size: 200};
+        var obj5 = {size: 100};
+
+        var groups = grouper.createGroups([obj1, obj2, obj3, obj4, obj5]);
+
+        assert.equals(groups.length, 4);
+        
+        assert.equals(groups[0].key, {name: "A"});
+        assert.equals(groups[0].values().length, 2);
+        assert.equals(groups[0].values(), [obj1, obj3]);
+        assert.equals(groups[1].key, {name: "B"});
+        assert.equals(groups[1].values().length, 1);
+        assert.equals(groups[1].values(), [obj2]);
+        assert.equals(groups[2].key, {size: 200});
+        assert.equals(groups[2].values().length, 1);
+        assert.equals(groups[2].values(), [obj4]);
+        assert.equals(groups[3].key, {size: 100});
+        assert.equals(groups[3].values().length, 1);
+        assert.equals(groups[3].values(), [obj5]);
     }
 });
