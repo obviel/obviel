@@ -224,10 +224,6 @@ obviel.session = {};
         return this.actions;
     };
     
-    module.Session.prototype.getActionGroups = function() {
-        return actionGrouper.createGroups(this.actions);
-    };
-    
     module.Session.prototype.createMutator = function(obj, propertyName) {
         var value = obj[propertyName];
         // XXX special case for non-obj attributes, and array attributes
@@ -367,7 +363,7 @@ obviel.session = {};
     module.Grouper.prototype.getClassifier = function(obj) {
         var i, key;
         for(i in this.classifiers) {
-            key = this.classifiers[i].getKey(obj);
+            key = this.classifiers[i].getGroupingKey(obj);
             if (key !== null) {
                 return {key: key, classifier: this.classifiers[i]};
             }
@@ -404,7 +400,7 @@ obviel.session = {};
     module.Classifier = function(keyFunc) {
         this.keyFunc = keyFunc;
     };
-    module.Classifier.prototype.getKey = function(obj) {
+    module.Classifier.prototype.getGroupingKey = function(obj) {
         return this.keyFunc(obj);
     };
 
@@ -460,44 +456,44 @@ obviel.session = {};
         return result.sort();
     };
 
-    var actionGrouper = new module.Grouper();
-
-    actionGrouper.addClassifier(new module.Classifier(function(action) {
-        if (action.name !== "remove") {
-            return null;
-        }
-        return {name: 'remove', objectId: getObjectId(action.obj), propertyName: action.propertyName};
-    }));
-    actionGrouper.addClassifier(new module.Classifier(function(action) {
-        if (action.name !== "add") {
-            return null;
-        }
-        return {name: "add", objectId: getObjectId(action.obj), propertyName: action.propertyName};
-    }));
-    actionGrouper.addClassifier(new module.Classifier(function(action) {
-        if (action.name !== "update") {
-            return null;
-        }
-        return {name: "update", objectId: getObjectId(action.obj)};
-    }));
-    actionGrouper.addClassifier(new module.Classifier(function(action) {
-        if (action.name !== "refresh") {
-            return null;
-        }
-        return {name: "refresh", objectId: getObjectId(action.obj)};
-    }));
-    actionGrouper.addClassifier(new module.Classifier(function(action) {
-        if (action.name !== "touch") {
-            return null;
-        }
-        return {name: "touch", objectId: getObjectId(action.obj)};
-    }));
-
     var getObjectId = function(obj) {
         if (obj.id === undefined) {
             throw new Error("Object has no id property");
         }
         return obj.id;
+    };
+
+    module.getObjectId = getObjectId;
+
+    module.removeKeyFunc = function(action) {
+        if (action.name !== "remove") {
+            return null;
+        }
+        return {name: 'remove', objectId: obviel.session.getObjectId(action.obj), propertyName: action.propertyName};
+    };
+    module.addKeyFunc = function(action) {
+        if (action.name !== "add") {
+            return null;
+        }
+        return {name: "add", objectId: obviel.session.getObjectId(action.obj), propertyName: action.propertyName};
+    };
+    module.updateKeyFunc = function(action) {
+        if (action.name !== "update") {
+            return null;
+        }
+        return {name: "update", objectId: obviel.session.getObjectId(action.obj)};
+    };
+    module.refreshKeyFunc = function(action) {
+        if (action.name !== "refresh") {
+            return null;
+        }
+        return {name: "refresh", objectId: obviel.session.getObjectId(action.obj)};
+    };
+    module.touchKeyFunc = function(action) {
+        if (action.name !== "touch") {
+            return null;
+        }
+        return {name: "touch", objectId: obviel.session.getObjectId(action.obj)};
     };
     
 }(jQuery, obviel.session));

@@ -249,3 +249,20 @@ config['Obviel Session'] = {
     extensions: [require('buster-lint')],
     "buster-lint": linterConf
 };
+
+config['Obviel Sync 2'] = {
+    rootPath: ".",
+    environment: "browser",
+    libs: [
+        'src/dependencies/jquery.js',
+        'src/obviel/obviel-session.js'
+    ],
+    sources: [
+        'src/obviel/obviel-sync-2.js'
+    ],
+    tests: [
+        "src/test/test-obviel-sync-2.js"
+    ],
+    extensions: [require('buster-lint')],
+    "buster-lint": linterConf
+};

@@ -2,6 +2,14 @@
 var assert = buster.assert;
 var refute = buster.refute;
 
+var actionGrouper = new obviel.session.Grouper();
+
+actionGrouper.addClassifier(new obviel.session.Classifier(obviel.session.removeKeyFunc));
+actionGrouper.addClassifier(new obviel.session.Classifier(obviel.session.addKeyFunc));
+actionGrouper.addClassifier(new obviel.session.Classifier(obviel.session.updateKeyFunc));
+actionGrouper.addClassifier(new obviel.session.Classifier(obviel.session.refreshKeyFunc));
+actionGrouper.addClassifier(new obviel.session.Classifier(obviel.session.touchKeyFunc));
+
 var sessionTestCase = buster.testCase("session tests:", {
     setUp: function() {
     },
@@ -286,7 +294,7 @@ var sessionTestCase = buster.testCase("session tests:", {
 
         session.add(obj, "items", item);
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 1);
 
@@ -310,7 +318,7 @@ var sessionTestCase = buster.testCase("session tests:", {
         session.add(obj, "items", item);
         session.add(obj, "items", item2);
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 1);
 
@@ -334,7 +342,7 @@ var sessionTestCase = buster.testCase("session tests:", {
         session.update(obj, "name");
         session.update(obj, "size");
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 1);
 
@@ -362,7 +370,7 @@ var sessionTestCase = buster.testCase("session tests:", {
         session.update(obj, "size");
         session.add(obj, "items", item);
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 2);
 
@@ -390,7 +398,7 @@ var sessionTestCase = buster.testCase("session tests:", {
         session.update(obj1, "size");
         session.update(obj2, "profession");
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 2);
 
@@ -418,7 +426,7 @@ var sessionTestCase = buster.testCase("session tests:", {
         session.update(obj2, "profession");
         session.update(obj1, "size");
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 2);
 
@@ -439,7 +447,7 @@ var sessionTestCase = buster.testCase("session tests:", {
 
         session.refresh(obj1);
 
-        var groups = session.getActionGroups();
+        var groups = actionGrouper.createGroups(session.getActions());
 
         assert.equals(groups.length, 1);
 
