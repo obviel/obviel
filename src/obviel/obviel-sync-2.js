@@ -92,6 +92,13 @@ obviel.sync = {};
 
     };
 
+    module.Session = function() {
+        obviel.session.Session.call(this);
+    };
+
+    module.Session.prototype = new obviel.session.Session();
+    module.Session.prototype.constructor = module.Session;
+
     // module.processAddData = function(config) {
     //  return this.group.values()[0].item;
     // };
