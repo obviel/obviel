@@ -12,6 +12,21 @@ obviel.session = {};
         this.obj = obj;
     };
 
+    Action.prototype.isTrumped = function(trumpKeys) {
+        var i,
+            trumpedBy = this.getTrumpedBy();
+        for (i = 0; i < trumpedBy.length; i++) {
+            if (trumpKeys.contains(trumpedBy[i])) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    Action.prototype.getTrumpedBy = function() {
+        throw new Error("not implemented: getTrumpedBy");
+    };
+    
     var ObjectAction = function(name, session, obj, propertyName) {
         Action.call(this, name, session, obj);
         this.propertyName = propertyName;
@@ -19,7 +34,7 @@ obviel.session = {};
 
     ObjectAction.prototype = new Action();
     ObjectAction.prototype.constructor = ObjectAction;
-
+    
     var ContainerAction = function(name, session, obj, propertyName, item) {
         ObjectAction.call(this, name, session, obj, propertyName);
         this.item = item;
@@ -35,6 +50,25 @@ obviel.session = {};
     UpdateAction.prototype = new ObjectAction();
     UpdateAction.prototype.constructor = UpdateAction;
 
+    UpdateAction.prototype.getTrumpKeys = function() {
+        return [
+            {name: 'update',
+             objectId: getObjectId(this.obj)},
+            {name: 'update',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName}
+        ];
+    };
+    
+    UpdateAction.prototype.getTrumpedBy = function() {
+        return [
+            {name: 'add',
+             itemId: getObjectId(this.obj)},
+            {name: 'remove',
+             itemId: getObjectId(this.obj)}
+        ];
+    };
+    
     var TouchAction = function(session, obj, propertyName) {
         ObjectAction.call(this, "touch", session, obj, propertyName);
     };
@@ -42,6 +76,24 @@ obviel.session = {};
     TouchAction.prototype = new ObjectAction();
     TouchAction.prototype.constructor = TouchAction;
 
+    TouchAction.prototype.getTrumpKeys = function() {
+        return [];
+    };
+
+    TouchAction.prototype.getTrumpedBy = function() {
+        return [
+            {name: 'update',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName},
+            {name: 'refresh',
+             objectId: getObjectId(this.obj)},
+            {name: 'add',
+             itemId: getObjectId(this.obj)},
+            {name: 'remove',
+             itemId: getObjectId(this.obj)}
+        ];
+    };
+    
     var RefreshAction = function(session, obj) {
         Action.call(this, "refresh", session, obj);
     };
@@ -49,19 +101,77 @@ obviel.session = {};
     RefreshAction.prototype = new Action();
     RefreshAction.prototype.constructor = RefreshAction;
 
+    RefreshAction.prototype.getTrumpKeys = function() {
+        return [
+            {name: 'refresh',
+             objectId: getObjectId(this.obj)}
+        ];
+    };
+
+    RefreshAction.prototype.getTrumpedBy = function() {
+        return [
+            {name: 'update',
+             objectId: getObjectId(this.obj)},
+            {name: 'add',
+             itemId: getObjectId(this.obj)},
+            {name: 'remove',
+             itemId: getObjectId(this.obj)}
+        ];
+    };
+
     var AddAction = function(session, obj, propertyName, item) {
         ContainerAction.call(this, "add", session, obj, propertyName, item);
     };
 
     AddAction.prototype = new ContainerAction();
     AddAction.prototype.constructor = AddAction;
+    
+    AddAction.prototype.getTrumpKeys = function() {
+        return [
+            {name: 'add',
+             itemId: getObjectId(this.item)},
+            {name: 'add',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName,
+             itemId: getObjectId(this.item)}
+        ];
+    };
 
+    AddAction.prototype.getTrumpedBy = function() {
+        return [
+            {name: 'remove',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName,
+             itemId: getObjectId(this.item)}
+        ];
+    };
+    
     var RemoveAction = function(session, obj, propertyName, item) {
         ContainerAction.call(this, "remove", session, obj, propertyName, item);
     };
 
     RemoveAction.prototype = new ContainerAction();
     RemoveAction.prototype.constructor = RemoveAction;
+
+    RemoveAction.prototype.getTrumpKeys = function() {
+        return [
+            {name: 'remove',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName,
+             itemId: getObjectId(this.item)},
+            {name: 'remove',
+             itemId: getObjectId(this.item)}
+        ];
+    };
+    
+    RemoveAction.prototype.getTrumpedBy = function() {
+        return [
+            {name: 'add',
+             objectId: getObjectId(this.obj),
+             propertyName: this.propertyName,
+             itemId: getObjectId(this.item)}
+        ];
+    };
 
     module.Session = function() {
         this.actions = [];
@@ -94,7 +204,7 @@ obviel.session = {};
     module.Session.prototype.getActions = function() {
         return this.actions;
     };
-
+    
     module.Session.prototype.getActionGroups = function() {
         return actionGrouper.createGroups(this.actions);
     };
@@ -115,6 +225,25 @@ obviel.session = {};
 
     module.Session.prototype.mutator = function(obj) {
         return new ObjectMutator(this, obj);
+    };
+    
+    module.getActionsAfterTrump = function(actions) {
+        var i, j, actionTrumpKeys, trumpedBy,
+            trumpKeys = new module.Set(),
+            result = [];
+        for (i = 0; i < actions.length; i++) {
+            actionTrumpKeys = actions[i].getTrumpKeys();
+            for (j = 0; j < actionTrumpKeys.length; j++) {
+                trumpKeys.add(actionTrumpKeys[j]);
+            }
+        }
+        for (i = 0; i < actions.length; i++) {
+            if (actions[i].isTrumped(trumpKeys)) {
+                continue;
+            }
+            result.push(actions[i]);
+        }
+        return result;
     };
 
     var ObjectMutator = function(session, obj) {
@@ -178,7 +307,7 @@ obviel.session = {};
     ArrayMutator.prototype.commit = function() {
         return this.session.commit();
     };
-
+    
     module.Grouper = function() {
         this.classifiers = [];
     };
@@ -267,6 +396,18 @@ obviel.session = {};
         return result;
     };
 
+    module.Set = function() {
+        this.mapping = new module.Mapping();
+    };
+
+    module.Set.prototype.add = function(value) {
+        this.mapping.put(value, null);
+    };
+
+    module.Set.prototype.contains = function(value) {
+        return this.mapping.get(value) !== undefined;
+    };
+    
     var deterministicStringify = function(obj) {
         return JSON.stringify(flatten(obj));
     };

@@ -447,5 +447,196 @@ var sessionTestCase = buster.testCase("session tests:", {
 
         assert.equals(values.length, 1);
         assert.same(values[0].obj, obj1);
+    },
+    "update trumps touch": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        session.update(obj, 'foo');
+        session.touch(obj, 'foo');
+
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump[0].name, 'update');
+        assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "update trumps refresh": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        session.update(obj, 'foo');
+        session.refresh(obj);
+
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump[0].name, 'update');
+        assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "add trumps update": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.update(obj, 'foo');
+        session.add(container, 'items', obj);
+
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'add');
+        assert.equals(actionsAfterTrump, [actions[1]]);
+    },
+    "add trumps touch": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.touch(obj, 'foo');
+        session.add(container, 'items', obj);
+
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'add');
+        assert.equals(actionsAfterTrump, [actions[1]]);
+    },
+    "add trumps refresh": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.refresh(obj);
+        session.add(container, 'items', obj);
+
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'add');
+        assert.equals(actionsAfterTrump, [actions[1]]);
+    },
+    "remove trumps update": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.remove(container, 'items', obj);
+        session.update(obj, 'foo');
+        
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'remove');
+        assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "remove trumps touch": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.remove(container, 'items', obj);
+        session.touch(obj, 'foo');
+        
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'remove');
+        assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "remove trumps refresh": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+        
+        session.remove(container, 'items', obj);
+        session.refresh(obj);
+        
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'remove');
+        assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "remove and add cancel each other": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        var container = {
+            id: 2,
+            items: []
+        };
+
+        session.add(container, 'items', obj);
+        session.remove(container, 'items', obj);
+        
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 0);
+    },
+    "refresh trumps touch": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        session.refresh(obj);
+        session.touch(obj, 'foo');
+        
+        var actions = session.getActions();
+        
+        var actionsAfterTrump = obviel.session.getActionsAfterTrump(actions);
+        assert.equals(actionsAfterTrump.length, 1);
+        assert.equals(actionsAfterTrump[0].name, 'refresh');
+        assert.equals(actionsAfterTrump, [actions[0]]);
     }
 });
