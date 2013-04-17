@@ -12,6 +12,13 @@ obviel.session = {};
         this.obj = obj;
     };
 
+    Action.prototype.dupeKey = function() {
+        return {
+            name: this.name,
+            objectId: getObjectId(this.obj)
+        };
+    };
+    
     Action.prototype.isTrumped = function(trumpKeys) {
         var i,
             trumpedBy = this.getTrumpedBy();
@@ -34,7 +41,13 @@ obviel.session = {};
 
     ObjectAction.prototype = new Action();
     ObjectAction.prototype.constructor = ObjectAction;
-    
+
+    ObjectAction.prototype.dupeKey = function() {
+        var result = Action.prototype.dupeKey.call(this);
+        result.propertyName = this.propertyName;
+        return result;
+    };
+
     var ContainerAction = function(name, session, obj, propertyName, item) {
         ObjectAction.call(this, name, session, obj, propertyName);
         this.item = item;
@@ -42,6 +55,12 @@ obviel.session = {};
 
     ContainerAction.prototype = new ObjectAction();
     ContainerAction.prototype.constructor = ContainerAction;
+
+    ContainerAction.prototype.dupeKey = function() {
+        var result = ObjectAction.prototype.dupeKey.call(this);
+        result.itemId = getObjectId(this.item);
+        return result;
+    };
 
     var UpdateAction = function(session, obj, propertyName) {
         ObjectAction.call(this, "update", session, obj, propertyName);
@@ -246,6 +265,19 @@ obviel.session = {};
         return result;
     };
 
+    module.getActionsAfterDedupe = function(actions) {
+        var i, result = [], dupeKey, seen = new module.Set();
+        for (i = 0; i < actions.length; i++) {
+            dupeKey = actions[i].dupeKey();
+            if (seen.contains(dupeKey)) {
+                continue;
+            }
+            seen.add(dupeKey);
+            result.push(actions[i]);
+        }
+        return result;
+    };
+    
     var ObjectMutator = function(session, obj) {
         this.session = session;
         this.obj = obj;

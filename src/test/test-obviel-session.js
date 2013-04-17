@@ -638,5 +638,57 @@ var sessionTestCase = buster.testCase("session tests:", {
         assert.equals(actionsAfterTrump.length, 1);
         assert.equals(actionsAfterTrump[0].name, 'refresh');
         assert.equals(actionsAfterTrump, [actions[0]]);
+    },
+    "remove duplicate refresh": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        session.refresh(obj);
+        session.refresh(obj);
+
+        var actions = session.getActions();
+        var actionsAfterDedupe = obviel.session.getActionsAfterDedupe(actions);
+        assert.equals(actionsAfterDedupe.length, 1);
+        assert.equals(actionsAfterDedupe, [actions[0]]);
+    },
+    "remove duplicate update": function() {
+        var session = new obviel.session.Session();
+        var obj = {
+            id: 1,
+            foo: ''
+        };
+        session.update(obj, 'foo');
+        session.update(obj, 'foo');
+
+        var actions = session.getActions();
+        var actionsAfterDedupe = obviel.session.getActionsAfterDedupe(actions);
+        assert.equals(actionsAfterDedupe.length, 1);
+        assert.equals(actionsAfterDedupe, [actions[0]]);
+    },
+    "remove duplicate add": function() {
+        var session = new obviel.session.Session();
+        var obj1 = {
+            id: 1,
+            foo: ''
+        };
+        var obj2 = {
+            id: 2,
+            bar: ''
+        };
+        var container = {
+            id: 3,
+            items: []
+        };
+        session.add(container, 'items', obj1);
+        session.add(container, 'items', obj1);
+        session.add(container, 'items', obj2);
+        
+        var actions = session.getActions();
+        var actionsAfterDedupe = obviel.session.getActionsAfterDedupe(actions);
+        assert.equals(actionsAfterDedupe.length, 2);
+        assert.equals(actionsAfterDedupe, [actions[0], actions[2]]);
     }
+
 });
