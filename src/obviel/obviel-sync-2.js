@@ -24,7 +24,7 @@ obviel.sync = {};
     module.Config.prototype._get = function(name, args) {
         var value = this[name];
         if ($.isFunction(value)) {
-            args = [this.actionGroup].concat(Array.prototype.slice.call(args));
+            args = Array.prototype.slice.call(args);
             value = value.apply(this, args);
         }
         if (value === undefined) {
@@ -94,6 +94,21 @@ obviel.sync = {};
         return this.group.values()[0].obj.updateUrl;
     };
 
+    module.HttpAddConfig = function() {
+        module.HttpConfig.call(this, "add");
+    };
+
+    module.HttpAddConfig.prototype = new module.HttpConfig();
+    module.HttpAddConfig.prototype.constructor = module.HttpAddConfig;
+
+    module.HttpAddConfig.prototype.getGroupingKey = function(action) {
+        return obviel.session.addKeyFunc(action);
+    };
+
+    module.HttpAddConfig.prototype.data = function() {
+        return this.onlyAction().item;
+    };
+    
     module.Connection = function() {
         this.configs = {};
     };
