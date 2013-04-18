@@ -23,11 +23,14 @@ obviel.sync = {};
 
     module.Config.prototype._get = function(name, args) {
         var value = this[name];
-        if (!$.isFunction(value)) {
-            return value;
+        if ($.isFunction(value)) {
+            args = [this.actionGroup].concat(Array.prototype.slice.call(args));
+            value = value.apply(this, args);
         }
-        args = [this.actionGroup].concat(Array.prototype.slice.call(args));
-        return value.apply(this, args);
+        if (value === undefined) {
+            throw new Error("config.get('" + name + "') returns undefined");
+        }
+        return value;
     };
 
     module.Config.prototype.get = function(name) {
@@ -69,7 +72,7 @@ obviel.sync = {};
     };
 
     module.HttpConfig.prototype.response = function(responseData) {
-
+        return null;
     };
 
     module.HttpUpdateConfig = function() {
