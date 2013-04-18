@@ -8,7 +8,10 @@ obviel.sync = {};
 
 (function($, module) {
 
-    module.Config = function() {};
+    module.Config = function(name) {
+        this.name = name;
+        this.priority = 0;
+    };
 
     module.Config.prototype.clone = function(config) {
         var F = function() {};
@@ -39,17 +42,17 @@ obviel.sync = {};
         throw new Error("Not implemented: getGroupingKey");
     };
 
-    module.HttpConfig = function() {
-        module.Config.call(this);
+    module.HttpConfig = function(name) {
+        module.Config.call(this, name);
         this.method = 'POST';
-    };
-
-    module.HttpConfig.prototype.url = function() {
-        throw new Error("Not implemented: url");
     };
 
     module.HttpConfig.prototype = new module.Config();
     module.HttpConfig.prototype.constructor = module.HttpConfig;
+
+    module.HttpConfig.prototype.url = function() {
+        throw new Error("Not implemented: url");
+    };
 
     module.HttpConfig.prototype.process = function() {
         var data = JSON.stringify(this.get("data")), self = this;
@@ -70,7 +73,7 @@ obviel.sync = {};
     };
 
     module.HttpUpdateConfig = function() {
-        module.HttpConfig.call(this);
+        module.HttpConfig.call(this, "update");
     };
 
     module.HttpUpdateConfig.prototype = new module.HttpConfig();
@@ -88,10 +91,47 @@ obviel.sync = {};
         return this.group.values()[0].obj.updateUrl;
     };
 
-    module.HttpConnection = function() {
-        this.grouper = new obviel.session.Grouper();
-        this.grouper.addClassifier(new module.HttpUpdateConfig());
+    module.Connection = function() {
+        this.configs = {};
     };
+
+    module.Connection.prototype.config = function(config) {
+        if (config instanceof module.Config) {
+            this.configs[config.name] = config;
+            return;
+        }
+        var registeredConfig = this.configs[config.name];
+        if (registeredConfig === undefined) {
+            throw new Error("cannot extend config with name: " + config.name);
+        }
+        this.configs[config.name] = registeredConfig.clone(config);
+    };
+
+    module.Connection.prototype.getPrioritizedConfigs = function() {
+        var key, configs = [];
+        for (key in this.configs) {
+            configs.push(this.configs[key]);
+        }
+        configs.sort(function(a,b) {
+            return b.priority - a.priority;
+        });
+        return configs;
+    };
+
+    module.Connection.prototype.prepareSend = function() {
+        if (this.grouper !== undefined) {
+            return;
+        }
+        this.grouper = new obviel.session.Grouper(this.getPrioritizedConfigs());
+    };
+
+    module.HttpConnection = function() {
+        module.Connection.call(this);
+        this.config(new module.HttpUpdateConfig());
+    };
+
+    module.HttpConnection.prototype = new module.Connection();
+    module.HttpConnection.prototype.constructor = module.HttpConnection;
 
     module.HttpConnection.prototype.send = function(actions) {
         var i, groups = this.grouper.createGroups(actions);
@@ -115,6 +155,7 @@ obviel.sync = {};
     module.Session.prototype.constructor = module.Session;
 
     module.Session.prototype.commit = function() {
+        this.conn.prepareSend();
         this.conn.send(this.getActions());
     };
 

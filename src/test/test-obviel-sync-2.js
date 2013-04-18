@@ -34,22 +34,6 @@ var syncTestCase = buster.testCase("sync tests:", {
     "basic connection setup": function() {
         var server = sinon.fakeServer.create();
 
-        // var mockJson = function(url, json) {
-        //     var getResponse;
-        //     if ($.isFunction(json)) {
-        //         getResponse = json;
-        //     } else {
-        //         getResponse = function() {
-        //             return json;
-        //         };
-        //     }
-        //     var response = function(request) {
-        //         request.respond(200, { 'Content-Type': 'application/json'},
-        //                         JSON.stringify(getResponse()));
-        //     };
-        //     this.server.respondWith('GET', url, response);
-        // };
-
         var data = null;
         var url = "/path";
 
@@ -71,5 +55,50 @@ var syncTestCase = buster.testCase("sync tests:", {
         server.respond();
 
         assert.equals(data, obj);
+
+        server.restore();
+    },
+    "override update with new update config instance": function() {
+        var server = sinon.fakeServer.create();
+
+        var data = null;
+        var url = "/path";
+
+        server.respondWith('POST', url, function(request) {
+            data = $.parseJSON(request.requestBody);
+            request.respond(200, { 'Content-Type': 'application/json'}, JSON.stringify(""));
+        });
+
+        var justUs = {justUs: true};
+
+        var CustomHttpUpdateConfig = function() {
+            obviel.sync.HttpUpdateConfig.call(this);
+        };
+
+        CustomHttpUpdateConfig.prototype = new obviel.sync.HttpUpdateConfig();
+        CustomHttpUpdateConfig.prototype.constructor = CustomHttpUpdateConfig;
+
+        CustomHttpUpdateConfig.prototype.data = function() {
+            return justUs;
+        };
+
+        var conn = new obviel.sync.HttpConnection();
+
+        conn.config(new CustomHttpUpdateConfig());
+        
+        var session = conn.session();
+
+        var obj = {id: 1, foo: "Foo", bar: "Bar", updateUrl: url};
+
+        var m = session.mutator(obj);
+        m.set("foo", "FOO");
+        m.set("bar", "BAR");
+
+        session.commit();
+        server.respond();
+
+        assert.equals(data, justUs);
+
+        server.restore();
     }
 });

@@ -336,8 +336,11 @@ obviel.session = {};
         return this.session.commit();
     };
     
-    module.Grouper = function() {
-        this.classifiers = [];
+    module.Grouper = function(classifiers) {
+        if (classifiers === undefined) {
+            classifiers = [];
+        }
+        this.classifiers = classifiers;
     };
     module.Grouper.prototype.addClassifier = function(classifier) {
         this.classifiers.push(classifier);
