@@ -45,6 +45,18 @@ obviel.sync = {};
         throw new Error("Not implemented: getGroupingKey");
     };
 
+    module.Config.prototype.onlyAction = function() {
+        var values = this.group.values();
+        if (values.length !== 1) {
+            throw new Error("onlyAction() called but multiple actions found");
+        }
+        return values[0];
+    };
+
+    module.Config.prototype.firstAction = function() {
+        return this.group.values()[0];
+    };
+    
     module.HttpConfig = function(name) {
         module.Config.call(this, name);
         this.method = 'POST';
@@ -87,11 +99,11 @@ obviel.sync = {};
     };
 
     module.HttpUpdateConfig.prototype.data = function() {
-        return this.group.values()[0].obj;
+        return this.firstAction().obj;
     };
 
     module.HttpUpdateConfig.prototype.url = function() {
-        return this.group.values()[0].obj.updateUrl;
+        return this.firstAction().obj.updateUrl;
     };
 
     module.HttpAddConfig = function() {
@@ -106,7 +118,11 @@ obviel.sync = {};
     };
 
     module.HttpAddConfig.prototype.data = function() {
-        return this.onlyAction().item;
+        return this.firstAction().item;
+    };
+
+    module.HttpAddConfig.prototype.url = function() {
+        return this.firstAction().obj.addUrl;
     };
     
     module.Connection = function() {
@@ -146,6 +162,7 @@ obviel.sync = {};
     module.HttpConnection = function() {
         module.Connection.call(this);
         this.config(new module.HttpUpdateConfig());
+        this.config(new module.HttpAddConfig());
     };
 
     module.HttpConnection.prototype = new module.Connection();

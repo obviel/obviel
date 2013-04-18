@@ -110,6 +110,7 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         var CustomConfig = function() {
             obviel.sync.HttpConfig.call(this, "custom");
+            this.priority = 100; // make sure it goes ahead of add
         };
 
         CustomConfig.prototype = new obviel.sync.HttpConfig();
