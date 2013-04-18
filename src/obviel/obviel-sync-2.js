@@ -41,9 +41,9 @@ obviel.sync = {};
 
     module.HttpConfig = function() {
         module.Config.call(this);
+        this.method = 'POST';
     };
 
-    module.HttpConfig.prototype.method = "POST";
     module.HttpConfig.prototype.url = function() {
         throw new Error("Not implemented: url");
     };
@@ -59,7 +59,7 @@ obviel.sync = {};
             processData: false,
             contentType: 'application/json',
             dataType: 'json',
-            data: this.get("data")
+            data: data
         }).done(function(responseData) {
             self.call("response", responseData);
         });
@@ -89,15 +89,34 @@ obviel.sync = {};
     };
 
     module.HttpConnection = function() {
-
+        this.grouper = new obviel.session.Grouper();
+        this.grouper.addClassifier(new module.HttpUpdateConfig());
     };
 
-    module.Session = function() {
+    module.HttpConnection.prototype.send = function(actions) {
+        var i, groups = this.grouper.createGroups(actions);
+        for (i = 0; i < groups.length; i++) {
+            var group = groups[i];
+            var config = group.classifier.clone({ group: group });
+            config.process();
+        }
+    };
+
+    module.HttpConnection.prototype.session = function() {
+        return new module.Session(this);
+    };
+
+    module.Session = function(conn) {
         obviel.session.Session.call(this);
+        this.conn = conn;
     };
 
     module.Session.prototype = new obviel.session.Session();
     module.Session.prototype.constructor = module.Session;
+
+    module.Session.prototype.commit = function() {
+        this.conn.send(this.getActions());
+    };
 
     // module.processAddData = function(config) {
     //  return this.group.values()[0].item;
