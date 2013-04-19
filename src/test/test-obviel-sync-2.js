@@ -99,7 +99,6 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(mockResponder.data, justUs);
     },
     "new explicit config instance": function() {
-        var data = null;
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -202,7 +201,6 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert(exceptionTriggered);
     },
     "http add": function() {
-        var data = null;
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -223,7 +221,6 @@ var syncTestCase = buster.testCase("sync tests:", {
         assert.equals(mockResponder.data, item);
     },
     "http remove": function() {
-        var data = null;
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -245,6 +242,24 @@ var syncTestCase = buster.testCase("sync tests:", {
         this.server.respond();
 
         assert.equals(mockResponder.data, [2, 3]);
+    },
+    "http touch": function() {
+        var url = "/path";
+        var mockResponder = new MockResponder();
+        this.server.respondWith('POST', url, mockResponder.handlePost);
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {id: 1, foo: "Foo"};
+
+        var m = session.mutator(obj);
+        m.touch("foo", "FOO");
+        
+        session.commit();
+        this.server.respond();
+
+        assert.equals(mockResponder.data, null);
     }
 
 

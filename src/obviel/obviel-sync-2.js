@@ -152,6 +152,20 @@ obviel.sync = {};
         return this.firstAction().obj.updateUrl;
     };
 
+    module.HttpTouchConfig = function() {
+        module.HttpConfig.call(this, "touch");
+    };
+
+    module.HttpTouchConfig.prototype = new module.HttpConfig();
+    module.HttpTouchConfig.prototype.constructor = module.HttpTouchConfig;
+
+    module.HttpTouchConfig.prototype.getGroupingKey = function(action) {
+        return obviel.session.touchKeyFunc(action);
+    };
+
+    module.HttpTouchConfig.prototype.process = function() {
+        /* do no server processing; touch is only supposed to update the UI */
+    };
     
     module.Connection = function() {
         this.configs = {};
@@ -192,6 +206,7 @@ obviel.sync = {};
         this.config(new module.HttpRemoveConfig());
         this.config(new module.HttpAddConfig());
         this.config(new module.HttpUpdateConfig());
+        this.config(new module.HttpTouchConfig());
     };
 
     module.HttpConnection.prototype = new module.Connection();
