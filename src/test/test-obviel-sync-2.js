@@ -221,6 +221,31 @@ var syncTestCase = buster.testCase("sync tests:", {
         this.server.respond();
 
         assert.equals(mockResponder.data, item);
+    },
+    "http remove": function() {
+        var data = null;
+        var url = "/path";
+
+        var mockResponder = new MockResponder();
+
+        this.server.respondWith('POST', url, mockResponder.handlePost);
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var item1 = {id: 2};
+        var item2 = {id: 3};
+        var obj = {id: 1, items: [item1, item2], removeUrl: url};
+        
+        var m = session.mutator(obj);
+        m.get("items").remove(item1);
+        m.get("items").remove(item2);
+        
+        session.commit();
+        this.server.respond();
+
+        assert.equals(mockResponder.data, [2, 3]);
     }
+
 
 });

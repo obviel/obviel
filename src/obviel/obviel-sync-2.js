@@ -45,16 +45,20 @@ obviel.sync = {};
         throw new Error("Not implemented: getGroupingKey");
     };
 
+    module.Config.prototype.getActions = function() {
+        return this.group.values();
+    };
+    
     module.Config.prototype.onlyAction = function() {
-        var values = this.group.values();
-        if (values.length !== 1) {
+        var actions = this.getActions();
+        if (actions.length !== 1) {
             throw new Error("onlyAction() called but multiple actions found");
         }
-        return values[0];
+        return actions[0];
     };
 
     module.Config.prototype.firstAction = function() {
-        return this.group.values()[0];
+        return this.getActions()[0];
     };
     
     module.HttpConfig = function(name) {
@@ -87,23 +91,27 @@ obviel.sync = {};
         return null;
     };
 
-    module.HttpUpdateConfig = function() {
-        module.HttpConfig.call(this, "update");
+    module.HttpRemoveConfig = function() {
+        module.HttpConfig.call(this, "remove");
     };
 
-    module.HttpUpdateConfig.prototype = new module.HttpConfig();
-    module.HttpUpdateConfig.prototype.constructor = module.HttpUpdateConfig;
+    module.HttpRemoveConfig.prototype = new module.HttpConfig();
+    module.HttpRemoveConfig.prototype.constructor = module.HttpRemoveConfig;
 
-    module.HttpUpdateConfig.prototype.getGroupingKey = function(action) {
-        return obviel.session.updateKeyFunc(action);
+    module.HttpRemoveConfig.prototype.getGroupingKey = function(action) {
+        return obviel.session.removeKeyFunc(action);
     };
 
-    module.HttpUpdateConfig.prototype.data = function() {
-        return this.firstAction().obj;
+    module.HttpRemoveConfig.prototype.data = function() {
+        var i, actions = this.getActions(), result = [];
+        for (i = 0; i < actions.length; i++) {
+            result.push(actions[i].item.id);
+        }
+        return result;
     };
 
-    module.HttpUpdateConfig.prototype.url = function() {
-        return this.firstAction().obj.updateUrl;
+    module.HttpRemoveConfig.prototype.url = function() {
+        return this.firstAction().obj.removeUrl;
     };
 
     module.HttpAddConfig = function() {
@@ -124,6 +132,26 @@ obviel.sync = {};
     module.HttpAddConfig.prototype.url = function() {
         return this.firstAction().obj.addUrl;
     };
+
+    module.HttpUpdateConfig = function() {
+        module.HttpConfig.call(this, "update");
+    };
+
+    module.HttpUpdateConfig.prototype = new module.HttpConfig();
+    module.HttpUpdateConfig.prototype.constructor = module.HttpUpdateConfig;
+
+    module.HttpUpdateConfig.prototype.getGroupingKey = function(action) {
+        return obviel.session.updateKeyFunc(action);
+    };
+
+    module.HttpUpdateConfig.prototype.data = function() {
+        return this.firstAction().obj;
+    };
+
+    module.HttpUpdateConfig.prototype.url = function() {
+        return this.firstAction().obj.updateUrl;
+    };
+
     
     module.Connection = function() {
         this.configs = {};
@@ -161,8 +189,9 @@ obviel.sync = {};
 
     module.HttpConnection = function() {
         module.Connection.call(this);
-        this.config(new module.HttpUpdateConfig());
+        this.config(new module.HttpRemoveConfig());
         this.config(new module.HttpAddConfig());
+        this.config(new module.HttpUpdateConfig());
     };
 
     module.HttpConnection.prototype = new module.Connection();
@@ -194,9 +223,6 @@ obviel.sync = {};
         this.conn.send(this.getActions());
     };
 
-    // module.processAddData = function(config) {
-    //  return this.group.values()[0].item;
-    // };
 
     // module.processRemoveData = function(config) {
     //  var i, values = this.group.values(), result = [];
