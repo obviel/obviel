@@ -213,12 +213,14 @@ obviel.sync = {};
     module.HttpConnection.prototype.constructor = module.HttpConnection;
 
     module.HttpConnection.prototype.send = function(actions) {
-        var i, groups = this.grouper.createGroups(actions);
+        var i, groups = this.grouper.createGroups(actions),
+            promises = [];
         for (i = 0; i < groups.length; i++) {
             var group = groups[i];
             var config = group.classifier.clone({ group: group });
-            config.process();
+            promises.push(config.process());
         }
+        return $.when.apply(null, promises);
     };
 
     module.HttpConnection.prototype.session = function() {
@@ -235,6 +237,7 @@ obviel.sync = {};
 
     module.Session.prototype.commit = function() {
         this.conn.prepareSend();
-        this.conn.send(this.getActions());
+        return this.conn.send(this.getActions());
     };
+    
 }(jQuery, obviel.sync));

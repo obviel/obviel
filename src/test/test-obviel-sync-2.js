@@ -3,12 +3,29 @@ var assert = buster.assert;
 var refute = buster.refute;
 
 var MockResponder = function() {
-    this.data = null;
+    this.datas = [];
     this.handlePost = this._handlePost.bind(this);
 };
+
 MockResponder.prototype._handlePost = function(request) {
-    this.data = $.parseJSON(request.requestBody);
-    request.respond(200, { 'Content-Type': 'application/json'}, JSON.stringify(""));
+    this.datas.push($.parseJSON(request.requestBody));
+    request.respond(200, { 'Content-Type': 'application/json'},
+                    JSON.stringify(""));
+};
+
+MockResponder.prototype.firstData = function() {
+    return this.datas[0];
+};
+
+MockResponder.prototype.onlyData = function() {
+    if (this.datas.length !== 1) {
+        throw new Error("only one data expected");
+    }
+    return this.datas[0];
+};
+
+MockResponder.prototype.getDatas = function() {
+    return this.datas;
 };
 
 var syncTestCase = buster.testCase("sync tests:", {
@@ -59,7 +76,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, obj);
+        assert.equals(mockResponder.onlyData(), obj);
     },
     "override update with new update config instance": function() {
         var url = "/path";
@@ -96,7 +113,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, justUs);
+        assert.equals(mockResponder.onlyData(), justUs);
     },
     "new explicit config instance": function() {
         var url = "/path";
@@ -139,7 +156,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, justUs);
+        assert.equals(mockResponder.onlyData(), justUs);
     },
     "plain object config trying to extend non existing config": function() {
         var conn = new obviel.sync.HttpConnection();
@@ -173,7 +190,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, justUs);
+        assert.equals(mockResponder.onlyData(), justUs);
     },
     "http update without updateUrl should result in error": function() {
         var url = "/path";
@@ -218,7 +235,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, item);
+        assert.equals(mockResponder.onlyData(), item);
     },
     "http remove": function() {
         var url = "/path";
@@ -241,7 +258,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, [2, 3]);
+        assert.equals(mockResponder.onlyData(), [2, 3]);
     },
     "http touch": function() {
         var url = "/path";
@@ -259,8 +276,31 @@ var syncTestCase = buster.testCase("sync tests:", {
         session.commit();
         this.server.respond();
 
-        assert.equals(mockResponder.data, null);
-    }
+        assert.equals(mockResponder.getDatas().length, 0);
+    },
+    "http deferred support": function() {
+        var url = "/path";
+        var mockResponder = new MockResponder();
+        this.server.respondWith('POST', url, mockResponder.handlePost);
 
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {id: 1, foo: "Foo", items: [], updateUrl: url,
+                  addUrl: url};
+        var item = {id: 2};
+        var m = session.mutator(obj);
+        m.set("foo", "FOO");
+        m.get('items').push(item);
+        
+        var done = false;
+        session.commit().done(function() {
+            done = true;
+        });
+        this.server.respond();
+
+        assert(done);
+        assert(mockResponder.getDatas(), [obj, item]);
+    }
 
 });
