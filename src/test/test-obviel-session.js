@@ -697,6 +697,90 @@ var sessionTestCase = buster.testCase("session tests:", {
         var actionsAfterDedupe = obviel.session.getActionsAfterDedupe(actions);
         assert.equals(actionsAfterDedupe.length, 2);
         assert.equals(actionsAfterDedupe, [actions[0], actions[2]]);
+    },
+    "mutator single object update": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.set('value', 2.0);
+
+        assert.equals(obj.value, 2.0);
+        var actions = session.getActions();
+        assert.equals(actions.length, 1);
+        assert.equals(actions[0].name, 'update');
+        assert.equals(actions[0].obj, obj);
+        assert.equals(actions[0].propertyName, 'value');
+    },
+    "mutator single object touch": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.touch('value', 2.0);
+
+        assert.equals(obj.value, 2.0);
+        var actions = session.getActions();
+        assert.equals(actions.length, 1);
+        assert.equals(actions[0].name, 'touch');
+        assert.equals(actions[0].obj, obj);
+        assert.equals(actions[0].propertyName, 'value');
+    },
+    "mutator single object refresh": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {
+            iface: 'test',
+            id: 'testid',
+            value: 1.0
+        };
+
+        var m = session.mutator(obj);
+
+        m.refresh();
+        
+        assert.equals(obj.value, 1.0);
+        var actions = session.getActions();
+        assert.equals(actions.length, 1);
+        assert.equals(actions[0].obj, obj);
+    },
+    "mutator add to array, single add": function() {
+        var session = new obviel.session.Session();
+
+        var obj = {
+            iface: 'test',
+            id: 'a',
+            entries: []
+        };
+        
+        var m = session.mutator(obj);
+
+        var addedObj = {name: 'alpha'};
+        
+        m.get('entries').push(addedObj);
+        
+        assert.equals(obj.entries, [{name: 'alpha'}]);
+
+        var actions = session.getActions();
+
+        assert.equals(actions.length, 1);
+        assert.equals(actions[0].name, 'add');
+        assert.equals(actions[0].obj, obj);
+        assert.equals(actions[0].propertyName, 'entries');
+        assert.equals(actions[0].item, addedObj);
     }
+
 
 });
