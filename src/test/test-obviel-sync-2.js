@@ -200,5 +200,27 @@ var syncTestCase = buster.testCase("sync tests:", {
             assert.equals(e.message, "config.get('url') returns undefined");
         }
         assert(exceptionTriggered);
+    },
+    "http add": function() {
+        var data = null;
+        var url = "/path";
+
+        var mockResponder = new MockResponder();
+
+        this.server.respondWith('POST', url, mockResponder.handlePost);
+
+        var conn = new obviel.sync.HttpConnection();
+        var session = conn.session();
+
+        var obj = {id: 1, items: [], addUrl: url};
+        var item = {id: 2};
+        var m = session.mutator(obj);
+        m.get("items").push(item);
+
+        session.commit();
+        this.server.respond();
+
+        assert.equals(mockResponder.data, item);
     }
+
 });

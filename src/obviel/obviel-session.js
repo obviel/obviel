@@ -285,12 +285,12 @@ obviel.session = {};
 
     ObjectMutator.prototype.set = function(name, value) {
         this.obj[name] = value;
-        this.session.update(this.obj);
+        this.session.update(this.obj, name);
     };
 
     ObjectMutator.prototype.touch = function(name, value) {
         this.obj[name] = value;
-        this.session.touch(this.obj);
+        this.session.touch(this.obj, name);
     };
     
     ObjectMutator.prototype.refresh = function() {
@@ -314,7 +314,7 @@ obviel.session = {};
     
     ArrayMutator.prototype.push = function(value) {
         this.obj[this.arrayName].push(value);
-        this.session.add(value, this.obj, this.arrayName);
+        this.session.add(this.obj, this.arrayName, value);
     };
 
     var removeFromArray = function(array, value) {
@@ -329,7 +329,7 @@ obviel.session = {};
     ArrayMutator.prototype.remove = function(value) {
         var array = this.obj[this.arrayName];
         removeFromArray(array, value);
-        this.session.remove(value, this.obj, this.arrayName);
+        this.session.remove(this.obj, this.arrayName, value);
     };
     
     ArrayMutator.prototype.commit = function() {
