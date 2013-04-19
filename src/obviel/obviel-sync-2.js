@@ -105,7 +105,7 @@ obviel.sync = {};
     module.HttpRemoveConfig.prototype.data = function() {
         var i, actions = this.getActions(), result = [];
         for (i = 0; i < actions.length; i++) {
-            result.push(actions[i].item.id);
+            result.push(obviel.session.getObjectId(actions[i].item));
         }
         return result;
     };
@@ -237,14 +237,4 @@ obviel.sync = {};
         this.conn.prepareSend();
         this.conn.send(this.getActions());
     };
-
-
-    // module.processRemoveData = function(config) {
-    //  var i, values = this.group.values(), result = [];
-    //  for (i = 0; i < values.length, i++) {
-    //      result.push(obviel.session.getObjectId(values[i].item));
-    //  }
-    //  return result;
-    // };
-
 }(jQuery, obviel.sync));
