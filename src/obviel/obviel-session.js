@@ -366,7 +366,7 @@ obviel.session = {};
     module.Grouper.prototype.getClassifier = function(obj) {
         var i, key;
         for(i in this.classifiers) {
-            key = this.classifiers[i].getGroupingKey(obj);
+            key = this.classifiers[i].discriminator(obj);
             if (key !== null) {
                 return {key: key, classifier: this.classifiers[i]};
             }
@@ -403,7 +403,7 @@ obviel.session = {};
     module.Classifier = function(keyFunc) {
         this.keyFunc = keyFunc;
     };
-    module.Classifier.prototype.getGroupingKey = function(obj) {
+    module.Classifier.prototype.discriminator = function(obj) {
         return this.keyFunc(obj);
     };
 

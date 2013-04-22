@@ -41,8 +41,8 @@ obviel.sync = {};
         this._get(name, arguments);
     };
 
-    module.Config.prototype.getGroupingKey = function(action) {
-        throw new Error("Not implemented: getGroupingKey");
+    module.Config.prototype.discriminator = function(action) {
+        throw new Error("Not implemented: discriminator");
     };
 
     module.Config.prototype.getActions = function() {
@@ -98,7 +98,7 @@ obviel.sync = {};
     module.HttpRemoveConfig.prototype = new module.HttpConfig();
     module.HttpRemoveConfig.prototype.constructor = module.HttpRemoveConfig;
 
-    module.HttpRemoveConfig.prototype.getGroupingKey = function(action) {
+    module.HttpRemoveConfig.prototype.discriminator = function(action) {
         return obviel.session.removeKeyFunc(action);
     };
 
@@ -121,7 +121,7 @@ obviel.sync = {};
     module.HttpAddConfig.prototype = new module.HttpConfig();
     module.HttpAddConfig.prototype.constructor = module.HttpAddConfig;
 
-    module.HttpAddConfig.prototype.getGroupingKey = function(action) {
+    module.HttpAddConfig.prototype.discriminator = function(action) {
         return obviel.session.addKeyFunc(action);
     };
 
@@ -140,7 +140,7 @@ obviel.sync = {};
     module.HttpUpdateConfig.prototype = new module.HttpConfig();
     module.HttpUpdateConfig.prototype.constructor = module.HttpUpdateConfig;
 
-    module.HttpUpdateConfig.prototype.getGroupingKey = function(action) {
+    module.HttpUpdateConfig.prototype.discriminator = function(action) {
         return obviel.session.updateKeyFunc(action);
     };
 
@@ -159,7 +159,7 @@ obviel.sync = {};
     module.HttpTouchConfig.prototype = new module.HttpConfig();
     module.HttpTouchConfig.prototype.constructor = module.HttpTouchConfig;
 
-    module.HttpTouchConfig.prototype.getGroupingKey = function(action) {
+    module.HttpTouchConfig.prototype.discriminator = function(action) {
         return obviel.session.touchKeyFunc(action);
     };
 

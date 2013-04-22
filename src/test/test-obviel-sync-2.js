@@ -138,7 +138,7 @@ var syncTestCase = buster.testCase("sync tests:", {
         CustomConfig.prototype.url = function() {
             return url;
         };
-        CustomConfig.prototype.getGroupingKey = function(action) {
+        CustomConfig.prototype.discriminator = function(action) {
             return obviel.session.addKeyFunc(action);
         };
 
