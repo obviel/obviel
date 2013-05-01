@@ -1,17 +1,18 @@
 /*global jsontemplate:false alert:false */
-
-if (typeof obviel === "undefined") {
+define(['jquery'], function($) {    
     var obviel = {};
-}
 
-if (typeof console === "undefined") {
-    var console = {
-        log: function(text) {
-        }
-    };
-}
+// if (typeof obviel === "undefined") {
+//     var obviel = {};
+// }
 
-(function($) {
+// if (typeof console === "undefined") {
+//     var console = {
+//         log: function(text) {
+//         }
+//     };
+//}
+
     // a fallback i18n module that doesn't do any translation.
     // this way we can use obviel with the obviel i18n API without
     // actually having to load obviel-i18n.js. of course it won't
@@ -1096,4 +1097,5 @@ if (typeof console === "undefined") {
         }
     );
 
-}(jQuery, obviel));
+    return obviel;
+}); // (jQuery, obviel));

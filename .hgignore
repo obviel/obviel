@@ -11,4 +11,4 @@ doc/_build
 *.pyc
 *.jslex
 node_modules
-
+components
