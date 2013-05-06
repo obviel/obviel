@@ -78,7 +78,7 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         assert.equals(mockResponder.onlyData(), obj);
     },
-    "override update with new update config instance": function() {
+    "override update with new update sender instance": function() {
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -87,20 +87,20 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         var justUs = {justUs: true};
 
-        var CustomHttpUpdateConfig = function() {
-            obviel.sync.HttpUpdateConfig.call(this);
+        var CustomHttpUpdateSender = function() {
+            obviel.sync.HttpUpdateSender.call(this);
         };
 
-        CustomHttpUpdateConfig.prototype = new obviel.sync.HttpUpdateConfig();
-        CustomHttpUpdateConfig.prototype.constructor = CustomHttpUpdateConfig;
+        CustomHttpUpdateSender.prototype = new obviel.sync.HttpUpdateSender();
+        CustomHttpUpdateSender.prototype.constructor = CustomHttpUpdateSender;
 
-        CustomHttpUpdateConfig.prototype.data = function() {
+        CustomHttpUpdateSender.prototype.data = function() {
             return justUs;
         };
 
         var conn = new obviel.sync.HttpConnection();
 
-        conn.config(new CustomHttpUpdateConfig());
+        conn.sender(new CustomHttpUpdateSender());
         
         var session = conn.session();
 
@@ -115,7 +115,7 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         assert.equals(mockResponder.onlyData(), justUs);
     },
-    "new explicit config instance": function() {
+    "new explicit sender instance": function() {
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -124,27 +124,27 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         var justUs = {justUs: true};
 
-        var CustomConfig = function() {
-            obviel.sync.HttpConfig.call(this, "custom");
+        var CustomSender = function() {
+            obviel.sync.HttpSender.call(this, "custom");
             this.priority = 100; // make sure it goes ahead of add
         };
 
-        CustomConfig.prototype = new obviel.sync.HttpConfig();
-        CustomConfig.prototype.constructor = CustomConfig;
+        CustomSender.prototype = new obviel.sync.HttpSender();
+        CustomSender.prototype.constructor = CustomSender;
 
-        CustomConfig.prototype.data = function() {
+        CustomSender.prototype.data = function() {
             return justUs;
         };
-        CustomConfig.prototype.url = function() {
+        CustomSender.prototype.url = function() {
             return url;
         };
-        CustomConfig.prototype.discriminator = function(action) {
+        CustomSender.prototype.discriminator = function(action) {
             return obviel.session.addKeyFunc(action);
         };
 
         var conn = new obviel.sync.HttpConnection();
 
-        conn.config(new CustomConfig());
+        conn.sender(new CustomSender());
         
         var session = conn.session();
 
@@ -158,14 +158,14 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         assert.equals(mockResponder.onlyData(), justUs);
     },
-    "plain object config trying to extend non existing config": function() {
+    "plain object sender trying to extend non existing sender": function() {
         var conn = new obviel.sync.HttpConnection();
 
         assert.exception(function() {
-            conn.config({name: "custom"});
+            conn.sender({name: "custom"});
         });
     },
-    "plain object config extend existing config": function() {
+    "plain object sender extend existing sender": function() {
         var url = "/path";
 
         var mockResponder = new MockResponder();
@@ -176,7 +176,7 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         var conn = new obviel.sync.HttpConnection();
 
-        conn.config({name: 'update', data: function() {
+        conn.sender({name: 'update', data: function() {
             return justUs;}
         });
         
@@ -213,7 +213,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             session.commit();
         } catch (e) {
             exceptionTriggered = true;
-            assert.equals(e.message, "config.get('url') returns undefined");
+            assert.equals(e.message, "sender.get('url') returns undefined");
         }
         assert(exceptionTriggered);
     },

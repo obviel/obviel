@@ -8,48 +8,48 @@ obviel.sync = {};
 
 (function($, module) {
 
-    module.Config = function(name) {
+    module.Sender = function(name) {
         this.name = name;
         this.priority = 0;
     };
 
-    module.Config.prototype.clone = function(config) {
+    module.Sender.prototype.clone = function(sender) {
         var F = function() {};
         F.prototype = this;
         var clone = new F();
-        $.extend(clone, config);
+        $.extend(clone, sender);
         return clone;
     };
 
-    module.Config.prototype._get = function(name, args) {
+    module.Sender.prototype._get = function(name, args) {
         var value = this[name];
         if ($.isFunction(value)) {
             args = Array.prototype.slice.call(args);
             value = value.apply(this, args);
         }
         if (value === undefined) {
-            throw new Error("config.get('" + name + "') returns undefined");
+            throw new Error("sender.get('" + name + "') returns undefined");
         }
         return value;
     };
 
-    module.Config.prototype.get = function(name) {
+    module.Sender.prototype.get = function(name) {
         return this._get(name, arguments);
     };
 
-    module.Config.prototype.call = function(name) {
+    module.Sender.prototype.call = function(name) {
         this._get(name, arguments);
     };
 
-    module.Config.prototype.discriminator = function(action) {
+    module.Sender.prototype.discriminator = function(action) {
         throw new Error("Not implemented: discriminator");
     };
 
-    module.Config.prototype.getActions = function() {
+    module.Sender.prototype.getActions = function() {
         return this.group.values();
     };
     
-    module.Config.prototype.onlyAction = function() {
+    module.Sender.prototype.onlyAction = function() {
         var actions = this.getActions();
         if (actions.length !== 1) {
             throw new Error("onlyAction() called but multiple actions found");
@@ -57,23 +57,23 @@ obviel.sync = {};
         return actions[0];
     };
 
-    module.Config.prototype.firstAction = function() {
+    module.Sender.prototype.firstAction = function() {
         return this.getActions()[0];
     };
     
-    module.HttpConfig = function(name) {
-        module.Config.call(this, name);
+    module.HttpSender = function(name) {
+        module.Sender.call(this, name);
         this.method = 'POST';
     };
 
-    module.HttpConfig.prototype = new module.Config();
-    module.HttpConfig.prototype.constructor = module.HttpConfig;
+    module.HttpSender.prototype = new module.Sender();
+    module.HttpSender.prototype.constructor = module.HttpSender;
 
-    module.HttpConfig.prototype.url = function() {
+    module.HttpSender.prototype.url = function() {
         throw new Error("Not implemented: url");
     };
 
-    module.HttpConfig.prototype.process = function() {
+    module.HttpSender.prototype.process = function() {
         var data = JSON.stringify(this.get("data")), self = this;
         return $.ajax({
             type: this.get("method"),
@@ -87,22 +87,22 @@ obviel.sync = {};
         });
     };
 
-    module.HttpConfig.prototype.response = function(responseData) {
+    module.HttpSender.prototype.response = function(responseData) {
         return null;
     };
 
-    module.HttpRemoveConfig = function() {
-        module.HttpConfig.call(this, "remove");
+    module.HttpRemoveSender = function() {
+        module.HttpSender.call(this, "remove");
     };
 
-    module.HttpRemoveConfig.prototype = new module.HttpConfig();
-    module.HttpRemoveConfig.prototype.constructor = module.HttpRemoveConfig;
+    module.HttpRemoveSender.prototype = new module.HttpSender();
+    module.HttpRemoveSender.prototype.constructor = module.HttpRemoveSender;
 
-    module.HttpRemoveConfig.prototype.discriminator = function(action) {
+    module.HttpRemoveSender.prototype.discriminator = function(action) {
         return obviel.session.removeKeyFunc(action);
     };
 
-    module.HttpRemoveConfig.prototype.data = function() {
+    module.HttpRemoveSender.prototype.data = function() {
         var i, actions = this.getActions(), result = [];
         for (i = 0; i < actions.length; i++) {
             result.push(obviel.session.getObjectId(actions[i].item));
@@ -110,103 +110,103 @@ obviel.sync = {};
         return result;
     };
 
-    module.HttpRemoveConfig.prototype.url = function() {
+    module.HttpRemoveSender.prototype.url = function() {
         return this.firstAction().obj.removeUrl;
     };
 
-    module.HttpAddConfig = function() {
-        module.HttpConfig.call(this, "add");
+    module.HttpAddSender = function() {
+        module.HttpSender.call(this, "add");
     };
 
-    module.HttpAddConfig.prototype = new module.HttpConfig();
-    module.HttpAddConfig.prototype.constructor = module.HttpAddConfig;
+    module.HttpAddSender.prototype = new module.HttpSender();
+    module.HttpAddSender.prototype.constructor = module.HttpAddSender;
 
-    module.HttpAddConfig.prototype.discriminator = function(action) {
+    module.HttpAddSender.prototype.discriminator = function(action) {
         return obviel.session.addKeyFunc(action);
     };
 
-    module.HttpAddConfig.prototype.data = function() {
+    module.HttpAddSender.prototype.data = function() {
         return this.firstAction().item;
     };
 
-    module.HttpAddConfig.prototype.url = function() {
+    module.HttpAddSender.prototype.url = function() {
         return this.firstAction().obj.addUrl;
     };
 
-    module.HttpUpdateConfig = function() {
-        module.HttpConfig.call(this, "update");
+    module.HttpUpdateSender = function() {
+        module.HttpSender.call(this, "update");
     };
 
-    module.HttpUpdateConfig.prototype = new module.HttpConfig();
-    module.HttpUpdateConfig.prototype.constructor = module.HttpUpdateConfig;
+    module.HttpUpdateSender.prototype = new module.HttpSender();
+    module.HttpUpdateSender.prototype.constructor = module.HttpUpdateSender;
 
-    module.HttpUpdateConfig.prototype.discriminator = function(action) {
+    module.HttpUpdateSender.prototype.discriminator = function(action) {
         return obviel.session.updateKeyFunc(action);
     };
 
-    module.HttpUpdateConfig.prototype.data = function() {
+    module.HttpUpdateSender.prototype.data = function() {
         return this.firstAction().obj;
     };
 
-    module.HttpUpdateConfig.prototype.url = function() {
+    module.HttpUpdateSender.prototype.url = function() {
         return this.firstAction().obj.updateUrl;
     };
 
-    module.HttpTouchConfig = function() {
-        module.HttpConfig.call(this, "touch");
+    module.HttpTouchSender = function() {
+        module.HttpSender.call(this, "touch");
     };
 
-    module.HttpTouchConfig.prototype = new module.HttpConfig();
-    module.HttpTouchConfig.prototype.constructor = module.HttpTouchConfig;
+    module.HttpTouchSender.prototype = new module.HttpSender();
+    module.HttpTouchSender.prototype.constructor = module.HttpTouchSender;
 
-    module.HttpTouchConfig.prototype.discriminator = function(action) {
+    module.HttpTouchSender.prototype.discriminator = function(action) {
         return obviel.session.touchKeyFunc(action);
     };
 
-    module.HttpTouchConfig.prototype.process = function() {
+    module.HttpTouchSender.prototype.process = function() {
         /* do no server processing; touch is only supposed to update the UI */
     };
     
     module.Connection = function() {
-        this.configs = {};
+        this.senders = {};
     };
 
-    module.Connection.prototype.config = function(config) {
-        if (config instanceof module.Config) {
-            this.configs[config.name] = config;
+    module.Connection.prototype.sender = function(sender) {
+        if (sender instanceof module.Sender) {
+            this.senders[sender.name] = sender;
             return;
         }
-        var registeredConfig = this.configs[config.name];
-        if (registeredConfig === undefined) {
-            throw new Error("cannot extend config with name: " + config.name);
+        var registeredSender = this.senders[sender.name];
+        if (registeredSender === undefined) {
+            throw new Error("cannot extend sender with name: " + sender.name);
         }
-        this.configs[config.name] = registeredConfig.clone(config);
+        this.senders[sender.name] = registeredSender.clone(sender);
     };
 
-    module.Connection.prototype.getPrioritizedConfigs = function() {
-        var key, configs = [];
-        for (key in this.configs) {
-            configs.push(this.configs[key]);
+    module.Connection.prototype.getPrioritizedSenders = function() {
+        var key, senders = [];
+        for (key in this.senders) {
+            senders.push(this.senders[key]);
         }
-        configs.sort(function(a,b) {
+        senders.sort(function(a,b) {
             return b.priority - a.priority;
         });
-        return configs;
+        return senders;
     };
 
     module.Connection.prototype.prepareSend = function() {
         if (this.grouper !== undefined) {
             return;
         }
-        this.grouper = new obviel.session.Grouper(this.getPrioritizedConfigs());
+        this.grouper = new obviel.session.Grouper(this.getPrioritizedSenders());
     };
 
     module.HttpConnection = function() {
         module.Connection.call(this);
-        this.config(new module.HttpRemoveConfig());
-        this.config(new module.HttpAddConfig());
-        this.config(new module.HttpUpdateConfig());
-        this.config(new module.HttpTouchConfig());
+        this.sender(new module.HttpRemoveSender());
+        this.sender(new module.HttpAddSender());
+        this.sender(new module.HttpUpdateSender());
+        this.sender(new module.HttpTouchSender());
     };
 
     module.HttpConnection.prototype = new module.Connection();
@@ -217,8 +217,8 @@ obviel.sync = {};
             promises = [];
         for (i = 0; i < groups.length; i++) {
             var group = groups[i];
-            var config = group.classifier.clone({ group: group });
-            promises.push(config.process());
+            var sender = group.classifier.clone({ group: group });
+            promises.push(sender.process());
         }
         return $.when.apply(null, promises);
     };
