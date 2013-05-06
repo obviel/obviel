@@ -8,42 +8,50 @@ obviel.sync = {};
 
 (function($, module) {
 
-    module.Sender = function(name) {
+    module.Config = function(name) {
         this.name = name;
         this.priority = 0;
     };
 
-    module.Sender.prototype.clone = function(sender) {
+    module.Config.prototype.clone = function(config) {
         var F = function() {};
         F.prototype = this;
         var clone = new F();
-        $.extend(clone, sender);
+        $.extend(clone, config);
         return clone;
     };
 
-    module.Sender.prototype._get = function(name, args) {
+    module.Config.prototype._get = function(name, args) {
         var value = this[name];
         if ($.isFunction(value)) {
-            args = Array.prototype.slice.call(args);
+            args = Array.prototype.slice.call(args, 1);
             value = value.apply(this, args);
-        }
-        if (value === undefined) {
-            throw new Error("sender.get('" + name + "') returns undefined");
         }
         return value;
     };
 
-    module.Sender.prototype.get = function(name) {
-        return this._get(name, arguments);
+    module.Config.prototype.get = function(name) {
+        var result = this._get(name, arguments);
+        if (result === undefined) {
+            throw new Error("config.get('" + name + "') returns undefined");
+        }
+        return result;
     };
 
-    module.Sender.prototype.call = function(name) {
+    module.Config.prototype.call = function(name) {
         this._get(name, arguments);
     };
 
-    module.Sender.prototype.discriminator = function(action) {
+    module.Config.prototype.discriminator = function(action) {
         throw new Error("Not implemented: discriminator");
     };
+
+    module.Sender = function(name) {
+        module.Config.call(this, name);
+    };
+
+    module.Sender.prototype = new module.Config();
+    module.Sender.prototype.constructor = module.Sender;
 
     module.Sender.prototype.getActions = function() {
         return this.group.values();
@@ -61,6 +69,14 @@ obviel.sync = {};
         return this.getActions()[0];
     };
     
+    module.Receiver = function(name) {
+        this.name = name;
+        this.priority = 0;
+    };
+
+    module.Receiver.prototype = new module.Config();
+    module.Receiver.prototype.constructor = module.Receiver;
+
     module.HttpSender = function(name) {
         module.Sender.call(this, name);
         this.method = 'POST';
@@ -88,7 +104,7 @@ obviel.sync = {};
     };
 
     module.HttpSender.prototype.response = function(responseData) {
-        return null;
+        this.conn.receive(responseData);
     };
 
     module.HttpRemoveSender = function() {
@@ -169,6 +185,7 @@ obviel.sync = {};
     
     module.Connection = function() {
         this.senders = {};
+        this.receivers = {};
     };
 
     module.Connection.prototype.sender = function(sender) {
@@ -182,6 +199,19 @@ obviel.sync = {};
         }
         this.senders[sender.name] = registeredSender.clone(sender);
     };
+
+    // module.Connection.prototype.receiver = function(receiver) {
+    //     if (receiver instanceof module.Receiver) {
+    //         this.receivers[receiver.name] = receiver;
+    //         return;
+    //     }
+    //     var registeredReceiver = this.receivers[receiver.name];
+    //     if (registeredReceiver == undefined) {
+    //         throw new Error("cannot extend receiver with name: " +
+    //                         receiver.name);
+    //     }
+    //     this.receivers[receiver.name] = registeredReceiver.clone(receiver);
+    // };
 
     var getPrioritized = function(objs) {
         var key, items = [];
@@ -231,13 +261,15 @@ obviel.sync = {};
             i, promises = [];
         for (i = 0; i < groups.length; i++) {
             var group = groups[i];
-            var sender = group.classifier.clone({ group: group });
+            var sender = group.classifier.clone({ group: group,
+                                                  conn: this });
             promises.push(sender.process());
         }
         return $.when.apply(null, promises);
     };
 
     module.Connection.prototype.receive = function(objs) {
+        return;
         // normalize to array
         if (!$.isArray(objs)) {
             objs = [objs];

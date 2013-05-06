@@ -213,7 +213,7 @@ var syncTestCase = buster.testCase("sync tests:", {
             session.commit();
         } catch (e) {
             exceptionTriggered = true;
-            assert.equals(e.message, "sender.get('url') returns undefined");
+            assert.equals(e.message, "config.get('url') returns undefined");
         }
         assert(exceptionTriggered);
     },
