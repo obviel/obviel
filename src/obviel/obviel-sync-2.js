@@ -183,27 +183,50 @@ obviel.sync = {};
         this.senders[sender.name] = registeredSender.clone(sender);
     };
 
-    module.Connection.prototype.getPrioritizedSenders = function() {
-        var key, senders = [];
-        for (key in this.senders) {
-            senders.push(this.senders[key]);
+    var getPrioritized = function(objs) {
+        var key, items = [];
+        for (key in objs) {
+            items.push(objs[key]);
         }
-        senders.sort(function(a,b) {
+        items.sort(function(a,b) {
             return b.priority - a.priority;
         });
-        return senders;
+        return items;
+
     };
 
-    module.Connection.prototype.getGrouper = function() {
-        if (this.grouper !== undefined) {
-            return this.grouper;
+    module.Connection.prototype.getPrioritizedSenders = function() {
+        return getPrioritized(this.senders);
+    };
+
+    module.Connection.prototype.getPrioritizedReceivers = function() {
+        return getPrioritized(this.receivers);
+    };
+
+    var cachedLookup = function(obj, name, factory) {
+        if (obj[name] !== undefined) {
+            return obj[name];
         }
-        this.grouper = new obviel.session.Grouper(this.getPrioritizedSenders());
-        return this.grouper;
+        obj[name] = factory();
+        return obj[name];
+    };
+
+    module.Connection.prototype.getSenderGrouper = function() {
+        var self = this;
+        return cachedLookup(this, 'senderGrouper', function() {
+            return new obviel.session.Grouper(self.getPrioritizedSenders());
+        });
+    };
+
+    module.Connection.prototype.getReceiverGrouper = function() {
+        var self = this;
+        return cachedLookup(this, 'receiverGrouper', function() {
+            return new obviel.session.Grouper(self.getPrioritizedReceivers());
+        });
     };
 
     module.Connection.prototype.send = function(actions) {
-        var grouper = this.getGrouper(),
+        var grouper = this.getSenderGrouper(),
             groups = grouper.createGroups(actions),
             i, promises = [];
         for (i = 0; i < groups.length; i++) {
@@ -212,6 +235,21 @@ obviel.sync = {};
             promises.push(sender.process());
         }
         return $.when.apply(null, promises);
+    };
+
+    module.Connection.prototype.receive = function(objs) {
+        // normalize to array
+        if (!$.isArray(objs)) {
+            objs = [objs];
+        }
+        var grouper = this.getReceiverGrouper(),
+            groups = grouper.createGroups(objs),
+            i;
+        for (i = 0; i < groups.length; i++) {
+            var group = groups[i];
+            var receiver = group.classifier.clone({ group: group });
+            receiver.process();
+        }
     };
 
     module.Connection.prototype.session = function() {
