@@ -438,7 +438,7 @@ obviel.session = {};
     module.Set.prototype.contains = function(value) {
         return this.mapping.get(value) !== undefined;
     };
-    
+
     var deterministicStringify = function(obj) {
         return JSON.stringify(flatten(obj));
     };
