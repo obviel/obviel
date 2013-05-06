@@ -21,6 +21,8 @@ Creation and Implementation
 
 * Rob Gietema - ``@repeat.first`` and ``@repeat.last`` support.
 
+* Michal Gajek - bug reports and discussions
+
 Useful conversations
 --------------------
 

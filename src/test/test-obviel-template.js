@@ -1577,6 +1577,24 @@ var templateTestCase = buster.testCase('template tests', {
 
     },
 
+    'data-render with for @. with named view': function() {
+        obviel.view({
+            iface: 'person',
+            name: 'summary',
+            render: function() {
+                this.el.append('<p>' + this.obj.name + '</p>');
+            }
+        });
+
+        assert.htmlEquals(render('<div data-render="@.|summary"></div>',
+                                  {iface: 'person',
+                                  name: 'Bob'}),
+        '<div><p>Bob</p></div>');
+    },
+
+    // XXX check this with data-trans system as well, using data-tvar?
+
+
     'data-render with altered default view': function() {
         obviel.view({
             iface: 'person',

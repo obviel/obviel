@@ -46,6 +46,9 @@ CHANGES
   when first/last in the repeat loop and can be used with ``data-if``. Thank
   you Rob Gietema.
 
+* Named views didn't work in data-render in combination with ``@.``, made
+  it work. Thank you Michal Gajek for reporting this bug!
+
 1.0b6 (2013-04-04)
 ==================
 

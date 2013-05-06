@@ -1105,9 +1105,9 @@ obviel.template = {};
             this.dynamic = false;
             return;
         }
-        validateDottedName(el, dataRender);
         this.dynamic = true;
         var r = splitNameFormatter(el, dataRender);
+        validateDottedName(el, r.name);
         this.objName = r.name;
         this.getValue = module.resolveFunc(r.name);
         this.viewName = r.formatter;
