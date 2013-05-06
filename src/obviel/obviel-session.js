@@ -365,7 +365,7 @@ obviel.session = {};
 
     module.Grouper.prototype.getClassifier = function(obj) {
         var i, key;
-        for(i in this.classifiers) {
+        for (i = 0; i < this.classifiers.length; i++) {
             key = this.classifiers[i].discriminator(obj);
             if (key !== null) {
                 return {key: key, classifier: this.classifiers[i]};
