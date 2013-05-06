@@ -194,11 +194,28 @@ obviel.sync = {};
         return senders;
     };
 
-    module.Connection.prototype.prepareSend = function() {
+    module.Connection.prototype.getGrouper = function() {
         if (this.grouper !== undefined) {
-            return;
+            return this.grouper;
         }
         this.grouper = new obviel.session.Grouper(this.getPrioritizedSenders());
+        return this.grouper;
+    };
+
+    module.Connection.prototype.send = function(actions) {
+        var grouper = this.getGrouper(),
+            groups = grouper.createGroups(actions),
+            i, promises = [];
+        for (i = 0; i < groups.length; i++) {
+            var group = groups[i];
+            var sender = group.classifier.clone({ group: group });
+            promises.push(sender.process());
+        }
+        return $.when.apply(null, promises);
+    };
+
+    module.Connection.prototype.session = function() {
+        return new module.Session(this);
     };
 
     module.HttpConnection = function() {
@@ -212,21 +229,6 @@ obviel.sync = {};
     module.HttpConnection.prototype = new module.Connection();
     module.HttpConnection.prototype.constructor = module.HttpConnection;
 
-    module.HttpConnection.prototype.send = function(actions) {
-        var i, groups = this.grouper.createGroups(actions),
-            promises = [];
-        for (i = 0; i < groups.length; i++) {
-            var group = groups[i];
-            var sender = group.classifier.clone({ group: group });
-            promises.push(sender.process());
-        }
-        return $.when.apply(null, promises);
-    };
-
-    module.HttpConnection.prototype.session = function() {
-        return new module.Session(this);
-    };
-
     module.Session = function(conn) {
         obviel.session.Session.call(this);
         this.conn = conn;
@@ -236,7 +238,6 @@ obviel.sync = {};
     module.Session.prototype.constructor = module.Session;
 
     module.Session.prototype.commit = function() {
-        this.conn.prepareSend();
         return this.conn.send(this.getActions());
     };
     
