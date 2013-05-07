@@ -182,55 +182,33 @@ obviel.sync = {};
     module.HttpTouchSender.prototype.process = function() {
         /* do no server processing; touch is only supposed to update the UI */
     };
-    
-    module.Connection = function() {
-        this.senders = {};
-        this.receivers = {};
+
+    var Processor = function() {
+        this.configs = {};
     };
 
-    module.Connection.prototype.sender = function(sender) {
-        if (sender instanceof module.Sender) {
-            this.senders[sender.name] = sender;
+    Processor.prototype.register = function(config) {
+        if (config instanceof module.Config) {
+            this.configs[config.name] = config;
             return;
         }
-        var registeredSender = this.senders[sender.name];
-        if (registeredSender === undefined) {
-            throw new Error("cannot extend sender with name: " + sender.name);
+        var registeredConfig = this.configs[config.name];
+        if (registeredConfig === undefined) {
+            throw new Error("cannot extend config with name: " + config.name);
         }
-        this.senders[sender.name] = registeredSender.clone(sender);
+        this.configs[config.name] = registeredConfig.clone(config);
+
     };
 
-    // module.Connection.prototype.receiver = function(receiver) {
-    //     if (receiver instanceof module.Receiver) {
-    //         this.receivers[receiver.name] = receiver;
-    //         return;
-    //     }
-    //     var registeredReceiver = this.receivers[receiver.name];
-    //     if (registeredReceiver == undefined) {
-    //         throw new Error("cannot extend receiver with name: " +
-    //                         receiver.name);
-    //     }
-    //     this.receivers[receiver.name] = registeredReceiver.clone(receiver);
-    // };
-
-    var getPrioritized = function(objs) {
+    Processor.prototype.getPrioritized = function() {
         var key, items = [];
-        for (key in objs) {
-            items.push(objs[key]);
+        for (key in this.configs) {
+            items.push(this.configs[key]);
         }
         items.sort(function(a,b) {
             return b.priority - a.priority;
         });
         return items;
-
-    };
-
-    module.Connection.prototype.getPrioritizedSenders = function() {
-        return getPrioritized(this.senders);
-    };
-
-    module.Connection.prototype.getPrioritizedReceivers = function() {
-        return getPrioritized(this.receivers);
     };
 
     var cachedLookup = function(obj, name, factory) {
@@ -241,47 +219,50 @@ obviel.sync = {};
         return obj[name];
     };
 
-    module.Connection.prototype.getSenderGrouper = function() {
+    Processor.prototype.getGrouper = function() {
         var self = this;
-        return cachedLookup(this, 'senderGrouper', function() {
-            return new obviel.session.Grouper(self.getPrioritizedSenders());
+        return cachedLookup(this, 'grouper', function() {
+            return new obviel.session.Grouper(self.getPrioritized());
         });
     };
 
-    module.Connection.prototype.getReceiverGrouper = function() {
-        var self = this;
-        return cachedLookup(this, 'receiverGrouper', function() {
-            return new obviel.session.Grouper(self.getPrioritizedReceivers());
-        });
-    };
-
-    module.Connection.prototype.send = function(actions) {
-        var grouper = this.getSenderGrouper(),
-            groups = grouper.createGroups(actions),
+    Processor.prototype.process = function(conn, objs) {
+        var grouper = this.getGrouper(),
+            groups = grouper.createGroups(objs),
             i, promises = [];
         for (i = 0; i < groups.length; i++) {
             var group = groups[i];
-            var sender = group.classifier.clone({ group: group,
-                                                  conn: this });
-            promises.push(sender.process());
+            var config = group.classifier.clone({ group: group,
+                                                  conn: conn });
+            promises.push(config.process());
         }
         return $.when.apply(null, promises);
     };
+    
+    module.Connection = function() {
+        this.senderProcessor = new Processor();
+        this.receiverProcessor = new Processor();
+    };
+
+    module.Connection.prototype.sender = function(sender) {
+        this.senderProcessor.register(sender);
+    };
+
+    module.Connection.prototype.receiver = function(receiver) {
+        this.receiverProcessor.register(receiver);
+    };
+
+    module.Connection.prototype.send = function(actions) {
+        return this.senderProcessor.process(this, actions);
+    };
 
     module.Connection.prototype.receive = function(objs) {
-        return;
         // normalize to array
         if (!$.isArray(objs)) {
             objs = [objs];
         }
-        var grouper = this.getReceiverGrouper(),
-            groups = grouper.createGroups(objs),
-            i;
-        for (i = 0; i < groups.length; i++) {
-            var group = groups[i];
-            var receiver = group.classifier.clone({ group: group });
-            receiver.process();
-        }
+        //return this.receiverProcessor.process(this, objs);
+        return;
     };
 
     module.Connection.prototype.session = function() {
