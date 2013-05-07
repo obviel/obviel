@@ -301,6 +301,48 @@ var syncTestCase = buster.testCase("sync tests:", {
 
         assert(done);
         assert(mockResponder.getDatas(), [obj, item]);
+    },
+
+    "http custom response processing": function() {
+        var url = "/path";
+        var mockResponder = new MockResponder();
+        this.server.respondWith('POST', url, function(request) {
+            request.respond(200, {'Content-Type': 'application/json'},
+                            JSON.stringify({id: 1, 'foo': 'BAZ'}));
+        });
+
+        var obj = {id: 1, foo: "Foo", updateUrl: url};
+
+        var conn = new obviel.sync.HttpConnection();
+        conn.sender({
+            name: 'update',
+            response: function(data) {
+                obj.foo = data.foo;
+            }
+        });
+        
+        var session = conn.session();
+        var m = session.mutator(obj);
+        m.set("foo", "FOO");
+        
+        session.commit();
+        this.server.respond();
+        assert.equals(obj.foo, 'BAZ');
     }
+
+        // var CustomReceiver = function() {
+        //     obviel.sync.Receiver.call(this, "custom");
+        // };
+
+        // CustomReceiver.prototype = new obviel.sync.Receiver();
+        // CustomReceiver.prototype.constructor = CustomReceiver;
+
+        // CustomReceiver.prototype.discriminator = function(obj) {
+        //     return true;
+        // };
+        // CustomReceiver.prototype.process = function() {
+            
+        // };
+
 
 });

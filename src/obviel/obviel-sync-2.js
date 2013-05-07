@@ -7,6 +7,7 @@ if (typeof obviel === "undefined") {
 obviel.sync = {};
 
 (function($, module) {
+    var MINIMUM_PRIORITY = -1000000;
 
     module.Config = function(name) {
         this.name = name;
@@ -70,12 +71,27 @@ obviel.sync = {};
     };
     
     module.Receiver = function(name) {
-        this.name = name;
-        this.priority = 0;
+        module.Config.call(this, name);
     };
 
     module.Receiver.prototype = new module.Config();
     module.Receiver.prototype.constructor = module.Receiver;
+
+    module.CatchAllReceiver = function() {
+        module.Receiver.call(this, 'catchall');
+        this.priority = MINIMUM_PRIORITY;
+    };
+
+    module.CatchAllReceiver.prototype = new module.Receiver();
+    module.CatchAllReceiver.prototype.constructor = module.CatchAllReceiver;
+    
+    module.CatchAllReceiver.prototype.discriminator = function(obj) {
+        return {name: 'catchall'};
+    };
+    
+    module.CatchAllReceiver.prototype.process = function() {
+        // do nothing
+    };
 
     var Processor = function() {
         this.configs = {};
@@ -91,7 +107,6 @@ obviel.sync = {};
             throw new Error("cannot extend config with name: " + config.name);
         }
         this.configs[config.name] = registeredConfig.clone(config);
-
     };
 
     Processor.prototype.getPrioritized = function() {
@@ -155,8 +170,7 @@ obviel.sync = {};
         if (!$.isArray(objs)) {
             objs = [objs];
         }
-        //return this.receiverProcessor.process(this, objs);
-        return;
+        return this.receiverProcessor.process(this, objs);
     };
 
     module.Connection.prototype.session = function() {
@@ -288,6 +302,7 @@ obviel.sync = {};
         this.sender(new module.HttpAddSender());
         this.sender(new module.HttpUpdateSender());
         this.sender(new module.HttpTouchSender());
+        this.receiver(new module.CatchAllReceiver());
     };
 
     module.HttpConnection.prototype = new module.Connection();

@@ -352,7 +352,6 @@ obviel.session = {};
 
         for (i = 0; i < objs.length; i++) {
             info = this.getClassifier(objs[i]);
-
             var group = mapping.get(info.key);
             if (group === undefined) {
                 group = new Group(info.classifier, info.key);
@@ -371,7 +370,7 @@ obviel.session = {};
                 return {key: key, classifier: this.classifiers[i]};
             }
         }
-        throw new Error("Cannot classify action");
+        throw new Error("Cannot classify object");
     };
 
     var groupCompare = function(a, b) {
