@@ -77,6 +77,104 @@ obviel.sync = {};
     module.Receiver.prototype = new module.Config();
     module.Receiver.prototype.constructor = module.Receiver;
 
+    var Processor = function() {
+        this.configs = {};
+    };
+
+    Processor.prototype.register = function(config) {
+        if (config instanceof module.Config) {
+            this.configs[config.name] = config;
+            return;
+        }
+        var registeredConfig = this.configs[config.name];
+        if (registeredConfig === undefined) {
+            throw new Error("cannot extend config with name: " + config.name);
+        }
+        this.configs[config.name] = registeredConfig.clone(config);
+
+    };
+
+    Processor.prototype.getPrioritized = function() {
+        var key, items = [];
+        for (key in this.configs) {
+            items.push(this.configs[key]);
+        }
+        items.sort(function(a,b) {
+            return b.priority - a.priority;
+        });
+        return items;
+    };
+
+    var cachedLookup = function(obj, name, factory) {
+        if (obj[name] !== undefined) {
+            return obj[name];
+        }
+        obj[name] = factory();
+        return obj[name];
+    };
+
+    Processor.prototype.getGrouper = function() {
+        var self = this;
+        return cachedLookup(this, 'grouper', function() {
+            return new obviel.session.Grouper(self.getPrioritized());
+        });
+    };
+
+    Processor.prototype.process = function(conn, objs) {
+        var grouper = this.getGrouper(),
+            groups = grouper.createGroups(objs),
+            i, promises = [];
+        for (i = 0; i < groups.length; i++) {
+            var group = groups[i];
+            var config = group.classifier.clone({ group: group,
+                                                  conn: conn });
+            promises.push(config.process());
+        }
+        return $.when.apply(null, promises);
+    };
+    
+    module.Connection = function() {
+        this.senderProcessor = new Processor();
+        this.receiverProcessor = new Processor();
+    };
+
+    module.Connection.prototype.sender = function(sender) {
+        this.senderProcessor.register(sender);
+    };
+
+    module.Connection.prototype.receiver = function(receiver) {
+        this.receiverProcessor.register(receiver);
+    };
+
+    module.Connection.prototype.send = function(actions) {
+        return this.senderProcessor.process(this, actions);
+    };
+
+    module.Connection.prototype.receive = function(objs) {
+        // normalize to array
+        if (!$.isArray(objs)) {
+            objs = [objs];
+        }
+        //return this.receiverProcessor.process(this, objs);
+        return;
+    };
+
+    module.Connection.prototype.session = function() {
+        return new module.Session(this);
+    };
+
+    module.Session = function(conn) {
+        obviel.session.Session.call(this);
+        this.conn = conn;
+    };
+
+    module.Session.prototype = new obviel.session.Session();
+    module.Session.prototype.constructor = module.Session;
+
+    module.Session.prototype.commit = function() {
+        return this.conn.send(this.getActions());
+    };
+
     module.HttpSender = function(name) {
         module.Sender.call(this, name);
         this.method = 'POST';
@@ -183,91 +281,6 @@ obviel.sync = {};
         /* do no server processing; touch is only supposed to update the UI */
     };
 
-    var Processor = function() {
-        this.configs = {};
-    };
-
-    Processor.prototype.register = function(config) {
-        if (config instanceof module.Config) {
-            this.configs[config.name] = config;
-            return;
-        }
-        var registeredConfig = this.configs[config.name];
-        if (registeredConfig === undefined) {
-            throw new Error("cannot extend config with name: " + config.name);
-        }
-        this.configs[config.name] = registeredConfig.clone(config);
-
-    };
-
-    Processor.prototype.getPrioritized = function() {
-        var key, items = [];
-        for (key in this.configs) {
-            items.push(this.configs[key]);
-        }
-        items.sort(function(a,b) {
-            return b.priority - a.priority;
-        });
-        return items;
-    };
-
-    var cachedLookup = function(obj, name, factory) {
-        if (obj[name] !== undefined) {
-            return obj[name];
-        }
-        obj[name] = factory();
-        return obj[name];
-    };
-
-    Processor.prototype.getGrouper = function() {
-        var self = this;
-        return cachedLookup(this, 'grouper', function() {
-            return new obviel.session.Grouper(self.getPrioritized());
-        });
-    };
-
-    Processor.prototype.process = function(conn, objs) {
-        var grouper = this.getGrouper(),
-            groups = grouper.createGroups(objs),
-            i, promises = [];
-        for (i = 0; i < groups.length; i++) {
-            var group = groups[i];
-            var config = group.classifier.clone({ group: group,
-                                                  conn: conn });
-            promises.push(config.process());
-        }
-        return $.when.apply(null, promises);
-    };
-    
-    module.Connection = function() {
-        this.senderProcessor = new Processor();
-        this.receiverProcessor = new Processor();
-    };
-
-    module.Connection.prototype.sender = function(sender) {
-        this.senderProcessor.register(sender);
-    };
-
-    module.Connection.prototype.receiver = function(receiver) {
-        this.receiverProcessor.register(receiver);
-    };
-
-    module.Connection.prototype.send = function(actions) {
-        return this.senderProcessor.process(this, actions);
-    };
-
-    module.Connection.prototype.receive = function(objs) {
-        // normalize to array
-        if (!$.isArray(objs)) {
-            objs = [objs];
-        }
-        //return this.receiverProcessor.process(this, objs);
-        return;
-    };
-
-    module.Connection.prototype.session = function() {
-        return new module.Session(this);
-    };
 
     module.HttpConnection = function() {
         module.Connection.call(this);
@@ -280,16 +293,5 @@ obviel.sync = {};
     module.HttpConnection.prototype = new module.Connection();
     module.HttpConnection.prototype.constructor = module.HttpConnection;
 
-    module.Session = function(conn) {
-        obviel.session.Session.call(this);
-        this.conn = conn;
-    };
-
-    module.Session.prototype = new obviel.session.Session();
-    module.Session.prototype.constructor = module.Session;
-
-    module.Session.prototype.commit = function() {
-        return this.conn.send(this.getActions());
-    };
     
 }(jQuery, obviel.sync));
