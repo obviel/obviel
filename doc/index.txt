@@ -10,20 +10,46 @@
      </div>
   </div>
 
-What is Obviel?
-===============
+Obviel is a client-side web framework
+=====================================
 
-Obviel is a client-side web framework for jQuery. For a JavaScript
-*object* you render a *view* on an *element*: **Ob-vi-el**. Obviel
-supports the construction of dynamic, rich client-side web
-applications.
+Obviel is a client-side web framework. Obviel helps you build dynamic,
+rich client-side web applications in JavaScript. 
 
-Obviel's :doc:`core <manual>` is a model/view abstraction that helps
-you improve the structure of your jQuery-based JavaScript
-applications. On top of that Obviel adds a lot of features, such as
-templating, i18n support, form generation and validation, and
-routing. Obviel stays close to HTML but lets you build sophisticated
-components when you need to.
+The core principle of Obviel: **For a JavaScript *object* you render a
+*view* on an *element*: Ob-vi-el**
+
+Obviel's core is a simple extension to jQuery. It adds a ``render``
+function that is used to render objects on DOM elements::
+
+  $(".foo").render(obj);
+
+``obj`` can be any object with a simple string property called
+``iface``::
+
+  var obj = {
+    iface: 'animal'
+    name: 'Elephant'
+  };
+
+You tell Obviel how to render an object of a certain iface by
+declaring a *view*::
+
+  obviel.view({
+    iface: 'animal',
+    obvt: '<div>Animal name: {name}</div>'
+  });
+
+You can use plain JavaScript code, templates, or a combination to
+construct a view.
+
+That's Obviel in a nutshell. Obviel's :doc:`manual <manual>` tells you
+a lot more about Obviel's core.
+
+On top of that Obviel adds a lot of features, such as templating, i18n
+support, form generation and validation, and routing. Obviel stays
+close to HTML but lets you build sophisticated components when you
+need to.
 
 Client-side templating
 ----------------------
