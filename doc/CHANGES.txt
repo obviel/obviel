@@ -1,8 +1,8 @@
 CHANGES
 *******
 
-1.0b7 (unreleased)
-==================
+1.0rc1 (unreleased)
+===================
 
 * Upgrade Obviel to work with jQuery 1.9.1. This didn't affect much  
   code except Obviel Template, which had a minor bug, and Obviel Forms.
