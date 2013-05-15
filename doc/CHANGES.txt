@@ -1,7 +1,7 @@
 CHANGES
 *******
 
-1.0rc1 (unreleased)
+1.0rc1 (2013-05-15)
 ===================
 
 * Upgrade Obviel to work with jQuery 1.9.1. This didn't affect much  
