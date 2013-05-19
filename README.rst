@@ -1,8 +1,9 @@
 Obviel - Object/View/Element
 ============================
 
-.. image:: https://secure.travis-ci.org/obviel/obviel.png?branch=master)](http://travis-ci.org/obviel/obviel/
+.. image:: https://secure.travis-ci.org/obviel/obviel.png?branch=master
   :alt: Build status
+  :target: http://travis-ci.org/obviel/obviel/
 
 Obviel is a way to structure your Javascript application.
 
