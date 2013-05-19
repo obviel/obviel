@@ -1,6 +1,11 @@
 CHANGES
 *******
 
+1.0 (2013-05-19)
+================
+
+* Obviel 1.0 final! The code is identical to Obviel 1.0rc1.
+
 1.0rc1 (2013-05-15)
 ===================
 
