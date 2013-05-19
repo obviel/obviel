@@ -183,6 +183,26 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert(fieldA_el.parentView().el.hasClass('foo'));
     },
 
+    'form with placeholder field': function() {
+        var el = testel();
+        el.render({
+            ifaces: ['viewform'],
+            form: {
+                name: 'test',
+                widgets: [{
+                    ifaces: ['textlineField'],
+                    name: 'text',
+                    placeholder: 'Text',
+                    description: 'A textline widget'
+                }]
+            }
+        });
+        var formEl = $('form', el);
+        assert.equals($('#obviel-field-test-text', formEl).attr('placeholder'),
+                      'Text');
+        assert.equals($('#obviel-field-test-text', formEl).data('placeholder'),
+                      'Text');
+    },
 
     'form with disabled field': function() {
         var el = testel();
