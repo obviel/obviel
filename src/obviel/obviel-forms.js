@@ -1123,6 +1123,10 @@ obviel.forms = {};
         if (variable('disabled')) {
             el.attr('disabled', variable('disabled'));
         }
+        if (variable('placeholder')) {
+            el.attr('placeholder', variable('placeholder'));
+            el.attr('data-placeholder', variable('placeholder'));
+        }
     };
     
     module.InputWidget.prototype.convert = function(value) {
