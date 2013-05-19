@@ -57,7 +57,7 @@ var coreTestCase = buster.testCase("core tests", {
         });
         var el = testel();
         el.render({text: 'foo'});
-        assert.equals(el.text(), 'foo2');
+        assert.equals(el.text(), 'foo');
     },
 
     'named view, no name provided results in error': function() {
