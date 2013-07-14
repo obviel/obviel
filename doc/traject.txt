@@ -258,7 +258,7 @@ This works with variables too::
 
 Here we've registered the path ``departments/$departmentId``, but we
 have not registered ``department``. So what kind of object is
-``obj.departmentParent``? It's a special default object that traject
+``obj.trajectParent``? It's a special default object that traject
 creates if it doesn't have any more specific lookup function
 registered for that path::
 
