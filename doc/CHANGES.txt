@@ -1,6 +1,17 @@
 CHANGES
 *******
 
+1.0.1 (unreleased)
+==================
+
+* Fix a race condition where it was possible for an data-unwrap to
+  happen before the contents of an element was fully rendered with
+  data-render. This caused the element to disappear without a trace, no
+  data-render contents would appear.
+
+  This case is hard to test for so no test was written; it appears to
+  happen when templates are loaded from URLs for the first time.
+
 1.0 (2013-05-19)
 ================
 

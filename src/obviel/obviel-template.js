@@ -137,6 +137,7 @@ obviel.template = {};
     };
     
     module.Template.prototype.render = function(el, obj, context) {
+        var self = this;
         var scope = new module.Scope(obj);
         if (!context) {
             context = { getTranslation: null, getHandler: null };
@@ -162,6 +163,13 @@ obviel.template = {};
         el.empty();
         el.get(0).appendChild(frag);
         
+        // need to wait until data-render triggered views are done
+        return $.when.apply(null, context.subviewPromises).done(function() {
+            self.finalize(el);
+        });
+    };
+
+    module.Template.prototype.finalize = function(el) {
         // wipe out any elements marked for removal by data-if; these
         // could not be removed previously so as not to break the
         // indexed based access to elements
@@ -204,11 +212,8 @@ obviel.template = {};
             this.parentNode.insertBefore(frag, this.nextSibling);
             this.parentNode.removeChild(this);
         });
-
-        // need to wait until data-render triggered views are done
-        return $.when.apply(null, context.subviewPromises);
     };
-    
+
     module.Section = function(el, rootSection) {
         this.el = el;
 

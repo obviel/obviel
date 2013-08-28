@@ -2027,6 +2027,35 @@ var templateTestCase = buster.testCase('template tests', {
                           'Hallo wereld!');
     },
 
+    'data-unwrap with data-render': function() {
+        obviel.view({
+            iface: 'person',
+            render: function() {
+                this.el.append('<p>' + this.obj.name + '</p>');
+            }
+        });
+
+        assert.htmlEquals(
+            render('<div data-unwrap="" data-render="bob"></div>',
+                   {bob: {iface: 'person',
+                          name: 'Bob'}}),
+            '<p>Bob</p>');
+    },
+
+    'data-unwrap with data-render and data-repeat': function() {
+        obviel.view({
+            iface: 'person',
+            render: function() {
+                this.el.append('<p>' + this.obj.name + '</p>');
+            }
+        });
+
+        assert.htmlEquals(
+            render('<div data-unwrap="" data-repeat="persons" data-render="@."></div>',
+                   {persons: [{iface: 'person',
+                               name: 'Bob'}]}),
+            '<p>Bob</p>');
+    },
 
     'empty data-if is illegal': function() {
         assert.raises(function() {
