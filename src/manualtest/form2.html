@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>How can responses to form-triggered POST requests be routed through a transformer?</title>
+    <link href="../dependencies/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
+
+    <link href="../obviel/obviel-forms.i18n" rel="i18n" type="application/json" />
+
+    <script type="text/javascript" src="../dependencies/jquery.js"></script>
+    <script type="text/javascript" src="../dependencies/jquery-ui.js"></script>
+    <script type="text/javascript" src="../dependencies/jquery.datalink.js"></script>
+    <script type="text/javascript" src="../dependencies/Gettext.js"></script>
+    <script type="text/javascript" src="../dependencies/json2.js"></script>
+    <script type="text/javascript" src="../obviel/obviel-template.js"></script>
+    <script type="text/javascript" src="../obviel/obviel-i18n.js"></script>
+    <script type="text/javascript" src="../obviel/obviel.js"></script>
+    <script type="text/javascript" src="../obviel/obviel-forms.js"></script>
+    <script type="text/javascript" src="../obviel/obviel-forms-autocomplete.js"></script>
+    <script type="text/javascript" src="../obviel/obviel-forms-datepicker.js"></script>
+    <script type="text/javascript" src="form2.js"></script>
+  </head>
+  <body>
+    <p>This example is a bit convoluted, but the general jist of it is
+    this: push edit, fill out the form, post the edits to the server,
+    and receive an updated object for rendering in display mode (so
+    you can push edit again and start anew).</p>
+
+    <p>as of the time of writing this test, the resulting object is
+    not run through the transformer hook in the registry.  this would
+    be a naive way to fix that:</p>
+
+    <pre>
+diff --git a/src/obviel/obviel-forms.js b/src/obviel/obviel-forms.js
+index dc70e88..c15cab8 100644
+--- a/src/obviel/obviel-forms.js
++++ b/src/obviel/obviel-forms.js
+@@ -479,27 +479,27 @@ obviel.forms = {};
+             contentType: contentType,
+             dataType: 'json',
+             success: function(data) {
+-                self.el.render(data, viewName).done(function() {
++                self.el.render(obviel.registry.transformerHook(data), viewName).done(function() {
+    </pre>
+
+    <p>(the server is cheating a little, because it was supposed to run
+    on any trivial file http server.  so the post action just points
+    to an alternative json file that is passed to the client on
+    save, and you will lose your edits.)</p>
+
+    <h1>but enough talk.  here is the test:</h1>
+
+    <div id="main"></div>
+  </body>
+</html>

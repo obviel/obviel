@@ -1,0 +1,6 @@
+{
+    "main_interface": "text",
+    "text": {
+        "content": "this is the response from the 'server' after it has received your edits.  i am testing this with a trivial http file server, but in reali life this would contain your actual edits."
+    }
+}
