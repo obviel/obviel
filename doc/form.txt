@@ -127,7 +127,7 @@ Obviel does several things differently:
 * the form content JSON is submitted to the server using an AJAX
   request.
 
-Let's look at an example first. 
+Let's look at an example first.
 
 Here is an Obviel form::
 
@@ -135,12 +135,13 @@ Here is an Obviel form::
     ifaces: ['viewform'],
     form: {
       widgets: [
-        ifaces: ['textlineField'],
-        name: 'test',
-        title: 'Test',
-        validate: {
-           required: true
-        }
+          {
+            iface: 'textlineField',
+            name: 'test',
+            title: 'Test',
+            validate: {
+             required: true
+          }
       ],
       controls: [
         {
@@ -153,7 +154,7 @@ Here is an Obviel form::
       'test': 'Some value'
     }
   }
-  
+
 If this JSON is assigned to an object ``form`` in JavaScript, this is how
 we would render this form in an element somewhere on the page::
 
