@@ -719,7 +719,37 @@ if (typeof console === "undefined") {
     module.clearTemplateCache = function() {
         module.cachedTemplates.clear();
     };
-    
+
+    module.LoadingTemplates = function() {
+        this.loading = {};
+    };
+
+    module.LoadingTemplates.prototype.register = function(key, promise) {
+        this.loading[key] = promise;
+    };
+
+    module.LoadingTemplates.prototype.clear = function() {
+        this.loading = {};
+    };
+
+    module.LoadingTemplates.prototype.get = function(key) {
+        var promise = this.loading[key];
+        if (promise === undefined) {
+            return null;
+        }
+        return promise;
+    };
+
+    module.LoadingTemplates.prototype.isEmpty = function() {
+        return $.isEmptyObject(this.loading);
+    };
+
+    module.loadingTemplates = new module.LoadingTemplates();
+
+    module.clearLoadingTemplates = function() {
+        module.loadingTemplates.clear();
+    };
+
     module.SourceLoaderError = function(text) {
         this.name = 'SourceLoaderError';
         this.text = text;
@@ -883,18 +913,33 @@ if (typeof console === "undefined") {
             return template.render(view);
         }
         var key = loader.key();
+
         // see whether we have a cached template for loader, use it if so
         template = module.cachedTemplates.get(key);
         if (template !== null) {
             return template.render(view);
         }
-        // otherwise compile source indicated by loader, and render
+        // see whether we are loading this template already and if
+        // so wait for it to load.
+        var loadingTemplatePromise = module.loadingTemplates.get(key);
+        if (loadingTemplatePromise !== null) {
+            return loadingTemplatePromise.pipe(function(template) {
+                return template.render(view);
+            });
+        }
+        // otherwise load & compile template, then render
+        var loadingDefer = $.Deferred();
+        module.loadingTemplates.register(key, loadingDefer.promise());
         return this.compile(loader, view).pipe(function(template) {
             module.cachedTemplates.register(key, template);
+            // we're done loading, so inform possible others waiting for load
+            // note that we never remove the loading key from the
+            // loadingTemplates, because the cache will always kick in now
+            loadingDefer.resolve(template);
             return template.render(view);
         });
     };
-    
+
     module.HtmlCompiler = function() {
     };
     

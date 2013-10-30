@@ -46,6 +46,7 @@ var coreTestCase = buster.testCase("core tests", {
     tearDown: function() {
         obviel.clearRegistry();
         obviel.clearTemplateCache();
+        obviel.clearLoadingTemplates();
         obviel.i18n.clearTranslations();
         obviel.i18n.clearLocale();
         obviel.clearIface();
@@ -675,6 +676,7 @@ var coreTestCase = buster.testCase("core tests", {
         // some implementation detail knowledge about cache keys is here
         var cacheKey = 'url_jsont_' + 'testUrl';
         assert.equals(cache.get(cacheKey), null);
+        assert(obviel.loadingTemplates.isEmpty());
 
         var el = testel();
         
@@ -2017,9 +2019,36 @@ var coreTestCase = buster.testCase("core tests", {
             assert.equals(spy.args[0][0].status, 500);
             done();
         });
+    },
+
+    "loading templates twice will result in only one load": function() {
+        this.server.autoRespond = false;
+
+        var loading = 0;
+        this.server.respondWith('GET', 'test.obvt', function(request) {
+            loading++;
+            request.respond(200, { 'Content-Type': 'text/html'},
+                            '<div>{foo}</div>');
+        });
+
+        obviel.view({
+            iface: 'test',
+            obvtUrl: 'test.obvt'
+        });
+
+        var el = testel();
+
+        // render twice in a row, which would cause two template loads
+        el.render({foo: 'the value', iface: 'test'});
+        assert.equals(obviel.loadingTemplates.isEmpty(), false);
+        el.render({foo: 'another value', iface: 'test'});
+
+        // now generate server response
+        this.server.respond();
+        // we've loaded the template only once
+        assert.equals(loading, 1);
     }
-    
-    
+
     // XXX problems testing this due to asynchronous nature of JS; exception
 // doesn't get thrown in time. need to write this around deferred.reject
 // "location of script url error": function(done) {

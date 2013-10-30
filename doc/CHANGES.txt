@@ -12,6 +12,11 @@ CHANGES
   This case is hard to test for so no test was written; it appears to
   happen when templates are loaded from URLs for the first time.
 
+* If you have a view where an external template needs to be loaded,
+  and you quickly render this view in succession, the template would
+  be loaded from the server multiple times, as the cache would not yet
+  be filled. Now the template is only loaded once.
+
 1.0 (2013-05-19)
 ================
 
