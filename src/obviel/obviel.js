@@ -6,8 +6,8 @@ if (typeof obviel === "undefined") {
 
 if (typeof console === "undefined") {
     var console = {
-        log: function(text) {
-        }
+        log: function(text) {},
+        error: function(text) {}
     };
 }
 
@@ -972,7 +972,7 @@ if (typeof console === "undefined") {
             return new module.ObvielTemplate(location, source);
         } catch (e) {
             var text = exceptionInfo(location, e);
-            console.log("obvt compiler error: " + text);
+            console.error("obvt compiler error: " + text);
             throw new obviel.template.CompilationError(e.el, text);
         }
     };
@@ -1009,7 +1009,7 @@ if (typeof console === "undefined") {
             return this.compiled.render(view.el, view.obj, context);
         } catch (e) {
             var text = exceptionInfo(this.location, e);
-            console.log("obvt render error: " + text);
+            console.error("obvt render error: " + text);
             throw new obviel.template.RenderError(e.el, text);
         }
     };
