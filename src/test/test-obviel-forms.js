@@ -1747,7 +1747,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-a', formEl);
         $(data).setField('a', 1);
-        assert.equals(fieldEl.val(), 1);
+        assert.equals(fieldEl.val(), "1");
     },
 
     "float datalink": function() {

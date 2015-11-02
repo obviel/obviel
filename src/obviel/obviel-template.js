@@ -377,12 +377,12 @@ obviel.template = {};
         }
         indexes.reverse();
 
-        var c = new module.Codegen('node');
-        for (var j in indexes) {
-            c.push('node = node.childNodes[' + indexes[j] + '];');
-        }
-        c.push('return node;');
-        return c.getFunction();
+        return function(node) {
+            for (var j in indexes) {
+                node = node.childNodes[indexes[j]];
+            }
+            return node;
+        };
     };
     
     module.Section.prototype.compileRender = function(el) {
@@ -1803,38 +1803,45 @@ obviel.template = {};
     };
     
     module.resolveFunc = function(dottedName) {
-        var c = new module.Codegen('scope');
         if (dottedName === '@.') {
-            c.push('return scope.stack[scope.stack.length - 1];');
-            return c.getFunction();
+            return function(scope) {
+                return scope.stack[scope.stack.length - 1];
+            };
         } else if (dottedName === '@open') {
-            c.push('return "{";');
+            return function(scope) {
+                return "{";
+            };
         } else if (dottedName === '@close') {
-            c.push('return "}";');
+            return function(scope) {
+                return "}";
+            };
         } else if (dottedName === '@doublepipe') {
-            c.push('return "||";');
+            return function(scope) {
+                return "||";
+            };
         }
-        
-        c.push('for (var i = scope.stack.length - 1; i >= 0; i--) {');
-        c.push('  var obj = scope.stack[i];');
+
         var names = dottedName.split('.');
-        var name = null;
-        for (var i = 0; i < names.length - 1; i++) {
-            name = names[i];
-            c.push('  obj = obj["' + name + '"];');
-            c.push('  if (obj === undefined) {');
-            c.push('    continue;');
-            c.push('  }');
-        }
-        name = names[names.length - 1];
-        c.push('  obj = obj["' + name + '"];');
-        c.push('  if (obj !== undefined) {');
-        c.push('    return obj;');
-        c.push('  }');
-        
-        c.push('}');
-        c.push('return undefined;' );
-        return c.getFunction();
+        var lastName = names[names.length - 1];
+        return function(scope) {
+            for (var i = scope.stack.length - 1; i >= 0; i--) {
+                var obj = scope.stack[i];
+                for (var j = 0; j < names.length - 1; j++) {
+                    obj = obj[names[j]];
+                    if (obj === undefined) {
+                        break;
+                    }
+                }
+                if (obj === undefined) {
+                    continue;
+                }
+                obj = obj[lastName];
+                if (obj !== undefined) {
+                    return obj;
+                }
+            }
+            return undefined;
+        };
     };
 
     module.Registry = function() {
@@ -2168,21 +2175,6 @@ obviel.template = {};
     
     isHtmlText = function(text) {
         return trim(text).charAt(0) === '<';
-    };
-
-    module.Codegen = function(args) {
-        this.args = args;
-        this.result = [];
-    };
-
-    module.Codegen.prototype.push = function(s) {
-        this.result.push(s);
-    };
-
-    module.Codegen.prototype.getFunction = function() {
-        /*jshint evil:true*/
-        var code = this.result.join('');
-        return new Function(this.args, code);
     };
 
     module.variables = function(text, variables) {

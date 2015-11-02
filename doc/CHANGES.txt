@@ -17,6 +17,14 @@ CHANGES
   be loaded from the server multiple times, as the cache would not yet
   be filled. Now the template is only loaded once.
 
+* Rewrite obviel-template.js so that it doesn't use code generation
+  anymore -- this trips up browser Content Security Policy in some cases
+  and it's not worth the hassle.
+
+* Make the tests work with modern Buster. At least in Chrome -- in
+  Firefox I get assorted errors that don't seem to have to do with
+  actual test failures.
+
 1.0 (2013-05-19)
 ================
 

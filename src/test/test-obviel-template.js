@@ -17,7 +17,7 @@ var extraNormalize = function(text) {
     return text;
 };
 
-buster.assertions.add('htmlEquals', {
+buster.referee.add('htmlEquals', {
     assert: function(actual, expected) {
         return actual === normalizeHtml(expected);
     },
@@ -28,8 +28,8 @@ buster.assertions.add('htmlEquals', {
 
 function assertEnoughArguments(name, args, num) {
     if (args.length < num) {
-        buster.assertions.fail("[" + name + "] Expected to receive at least " +
-                               num + " argument" + (num > 1 ? "s" : ""));
+        buster.referee.fail("[" + name + "] Expected to receive at least " +
+                            num + " argument" + (num > 1 ? "s" : ""));
         return false;
     }
     
@@ -42,7 +42,7 @@ function interpolate(string, property, value) {
 
 function interpolateProperties(msg, properties) {
     for (var prop in properties) {
-        msg = interpolate(msg, prop, buster.assertions.format(properties[prop]));
+        msg = interpolate(msg, prop, buster.referee.format(properties[prop]));
     }
     
     return msg || "";
@@ -53,7 +53,7 @@ function interpolatePosArg(message, values) {
     values = values || [];
     
     for (var i = 0, l = values.length; i < l; i++) {
-        message = interpolate(message, i, buster.assertions.format(values[i]));
+        message = interpolate(message, i, buster.referee.format(values[i]));
     }
     
     return message;
@@ -62,17 +62,17 @@ function interpolatePosArg(message, values) {
 function fail(type, assertion, msg) {
     delete this.fail;
     var message = interpolateProperties(
-        interpolatePosArg(buster.assertions[type][assertion][msg] || msg,
+        interpolatePosArg(buster.referee[type][assertion][msg] || msg,
                           [].slice.call(arguments, 3)), this);
-    buster.assertions.fail("[" + type + "." + assertion + "] " + message);
+    buster.referee.fail("[" + type + "." + assertion + "] " + message);
 }
 
 function countAssertion() {
-    if (typeof buster.assertions.count !== "number") {
-        buster.assertions.count = 0;
+    if (typeof buster.referee.count !== "number") {
+        buster.referee.count = 0;
     }
     
-    buster.assertions.count += 1;
+    buster.referee.count += 1;
 }
 
 function captureException(callback) {
@@ -122,7 +122,7 @@ assert.raises = function(callback, exception, message) {
         
         
     }
-    buster.assertions.emit("pass", "assert.raises", message, callback, exception);
+    buster.referee.emit("pass", "assert.raises", message, callback, exception);
     return undefined;
 };
 
