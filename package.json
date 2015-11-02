@@ -1,33 +1,38 @@
 {
-    "name": "obviel",
-    "version": "1.1.0",
-    "description": "Obviel - a client-side web framework",
-    "keywords" : ["obviel", "javascript", "jquery"],
-    "homepage": "http://github.com/obviel/obviel",
-    "author": "Martijn Faassen",
-    "contributors": [{
-        "name": "Martijn Faassen",
-        "email": "faassen@startifact.com"
-    }],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/obviel/obviel.git"
-    },
-    "bugs" : "http://github.com/obviel/obviel/issues",
-    "scripts": {
-        "test": "./node_modules/buster/bin/buster-test"
-    },
-    "devDependencies": {
-        "buster": "~0.6.12",
-        "buster-lint": "~0.3.1",
-        "buster-coverage": "~0.1.0"
-    },
-    "licenses" : [
-        {
-            "type" : "BSD"
-        }
-    ],
-    "engines" : {
-        "node" : "~0.6"
+  "name": "obviel",
+  "version": "1.1.0",
+  "description": "Obviel - a client-side web framework",
+  "keywords": [
+    "obviel",
+    "javascript",
+    "jquery"
+  ],
+  "homepage": "http://github.com/obviel/obviel",
+  "author": "Martijn Faassen",
+  "contributors": [
+    {
+      "name": "Martijn Faassen",
+      "email": "faassen@startifact.com"
     }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/obviel/obviel.git"
+  },
+  "bugs": "http://github.com/obviel/obviel/issues",
+  "scripts": {
+    "test": "./node_modules/buster/bin/buster-test"
+  },
+  "devDependencies": {
+    "buster": "^0.7.18",
+    "buster-lint": "~0.3.1"
+  },
+  "licenses": [
+    {
+      "type": "BSD"
+    }
+  ],
+  "engines": {
+    "node": "~0.6"
+  }
 }
