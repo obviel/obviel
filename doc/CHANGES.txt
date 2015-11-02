@@ -1,8 +1,8 @@
 CHANGES
 *******
 
-1.0.1 (unreleased)
-==================
+1.1 (2015-11-02)
+================
 
 * Fix a race condition where it was possible for an data-unwrap to
   happen before the contents of an element was fully rendered with
