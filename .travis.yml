@@ -4,7 +4,7 @@ before_script:
   - sleep 5
   - node_modules/buster/bin/buster-server &
   - sleep 5
-  - chrome http://localhost:1111/capture 2> /dev/null &
+  - google-chrome http://localhost:1111/capture 2> /dev/null &
   - sleep 5
 
 
