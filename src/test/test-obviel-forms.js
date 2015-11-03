@@ -32,10 +32,10 @@ var obvielFormsTestCase = buster.testCase('form tests', {
     setUp: function() {
         $('#jsview-area').html('<div id="viewdiv"></div>');
         $('#jsview-area').unbind();
-        
+
         this.server = sinon.fakeServer.create();
         this.server.autoRespond = true;
-        
+
         // XXX would be nice to be able to register this centrally
         this.mockJson = function(url, json) {
             var getResponse;
@@ -89,13 +89,13 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var data = { foo: 'hoi' };
         inputEl.link(data, {foo: linkContext});
         formEl.link(data);
-        
+
         $(data).setField('foo', 'dag');
         assert.equals(inputEl.val(), 'dag');
         inputEl.val('something else');
         inputEl.trigger('change');
         assert.equals(data.foo, 'something else');
-        
+
     },
 
     'empty form': function() {
@@ -146,7 +146,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var formEl = $('form', el);
 
         var fieldA_el = $('#obviel-field-test-text', formEl);
-        
+
         assert(fieldA_el.parentView().el.hasClass('foo'));
     },
 
@@ -179,7 +179,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var formEl = $('form', el);
 
         var fieldA_el = $('#obviel-field-test-group-text', formEl);
-        
+
         assert(fieldA_el.parentView().el.hasClass('foo'));
     },
 
@@ -397,7 +397,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var fieldA_el = $('#obviel-field-test-a', formEl);
 
         fieldA_el.val('not an int');
-        
+
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
 
@@ -414,7 +414,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             noValidation: true,
             action: 'testUrl'
         };
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -433,7 +433,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             requestBody = request.requestBody;
             return {'ifaces': ['successIface']};
         });
-        
+
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-a', formEl);
         // not a valid value, but it doesn't matter as we don't
@@ -492,7 +492,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var widget = new obviel.forms.TextLineWidget().clone({
             obj: {}
         });
-        
+
         assert.equals(widget.convert('foo'), {value: 'foo'});
         assert.equals(widget.convert(''), {value: null});
     },
@@ -513,7 +513,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var widget = new obviel.forms.TextLineWidget().clone({
             obj: {}
         });
-        
+
         assert.equals(widget.validate('foo'), undefined);
         assert.equals(widget.validate(null), undefined);
     },
@@ -562,7 +562,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             var widget = new obviel.forms.TextWidget().clone({
                 obj: { }
             });
-            
+
             assert.equals(widget.convert('foo'), {value: 'foo'});
             assert.equals(widget.convert(''), {value: null});
         },
@@ -586,7 +586,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var widget = new obviel.forms.IntegerWidget().clone({
             obj: {}
         });
-        
+
         assert.equals(widget.convert('foo'), {'error': 'not a number'});
     },
 
@@ -670,7 +670,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var widget = new obviel.forms.FloatWidget().clone({
             obj: {}
         });
-        
+
         assert.equals(widget.convert('1.2'), {value: 1.2});
         assert.equals(widget.convert('1'), {value: 1});
         assert.equals(widget.convert('-1.2'), {value: -1.2});
@@ -720,7 +720,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }
             }
         });
-        
+
         assert.equals(widget.validate(null), undefined);
     },
 
@@ -788,7 +788,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }
             }
         });
-        
+
         assert.equals(widget.validate('-1.2'), undefined);
 
         widget = new obviel.forms.DecimalWidget().clone({
@@ -802,7 +802,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }
             }
         });
-        
+
 
         assert.equals(widget.validate('1.22'),
               'decimal must contain at least 2 digits before the decimal mark');
@@ -837,7 +837,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
               undefined);
         assert.equals(widget.validate('-22.111111'),
               'decimal may not contain more than 5 digits after the decimal mark');
-        
+
         widget = new obviel.forms.DecimalWidget().clone({
                 obj: {
                     validate: {
@@ -846,7 +846,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }
         });
 
-        
+
         assert.equals(widget.validate('1'), undefined);
         assert.equals(widget.validate('.1'), undefined);
 
@@ -857,7 +857,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }
             }
         });
-        
+
         assert.equals(widget.validate(null), 'this field is required');
 
         widget = new obviel.forms.DecimalWidget().clone({
@@ -867,7 +867,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                     }
             }
             });
-        
+
         assert.equals(widget.validate(null), undefined);
     },
 
@@ -896,7 +896,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                             title: 'C',
                         defaultvalue: 1
                     }
-                    
+
                 ]
             },
             data: data,
@@ -963,11 +963,11 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-composite-a', formEl);
         var fieldB_el = $('#obviel-field-test-composite-b', formEl);
-        
+
         fieldA_el.val('foo');
         fieldB_el.val('not an int'); // not an int
         fieldA_el.trigger('change');
@@ -1021,10 +1021,10 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var fieldB_el = $('#obviel-field-test-composite-b', formEl);
         $(data.composite).setField('a', 'Bar');
         $(data.composite).setField('b', 3);
-        
+
         assert.equals(fieldA_el.val(), 'Bar');
         assert.equals(fieldB_el.val(), '3');
-        
+
         $(data.composite).setField('a', null);
         assert.equals(fieldA_el.val(), '');
     },
@@ -1086,14 +1086,14 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                                         ifaces: ['textlineField'],
                                         name: 'a',
                                         title: 'A'
-                                        
+
                                     },
                                     {
                                         ifaces: ['integerField'],
                                         name: 'b',
                                         title: 'B'
                                     }
-                                    
+
                                 ]
                             },
                             {
@@ -1108,7 +1108,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
         var fieldCompositeCompositeA_el = $(
             '#obviel-field-test-composite-composite-a', formEl);
@@ -1116,11 +1116,11 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             '#obviel-field-test-composite-composite-b', formEl);
         var fieldCompositeB_el = $(
             '#obviel-field-test-composite-b', formEl);
-        
+
         fieldCompositeCompositeA_el.val('foo');
         fieldCompositeCompositeB_el.val('3');
         fieldCompositeB_el.val('4');
-        
+
         fieldCompositeCompositeA_el.trigger('change');
         fieldCompositeCompositeB_el.trigger('change');
         fieldCompositeB_el.trigger('change');
@@ -1161,7 +1161,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
         var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
         var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
@@ -1206,7 +1206,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
 
         var addButton = $('.obviel-repeat-add-button', formEl);
@@ -1214,10 +1214,10 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         assert.equals(data.repeating.length, 1);
         assert.equals(errors.repeating.length, 1);
-        
+
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
-        
+
         fieldA_el.val('foo');
         fieldB_el.val('not an int'); // not an int
         fieldA_el.trigger('change');
@@ -1268,7 +1268,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
 
         var addButton = $('.obviel-repeat-add-button', formEl);
@@ -1276,7 +1276,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         assert.equals(data.repeating.length, 1);
         assert.equals(errors.repeating.length, 1);
-        
+
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
 
@@ -1285,7 +1285,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         assert.equals(data.repeating[0].a, 'foo');
         assert.equals(data.repeating[0].b, 1);
-        
+
     },
 
     "repeating empty entries without defaults": function() {
@@ -1319,7 +1319,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
             });
-        
+
         var formEl = $('form', el);
 
             var addButton = $('.obviel-repeat-add-button', formEl);
@@ -1327,13 +1327,13 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         assert.equals(data.repeating.length, 1);
         assert.equals(errors.repeating.length, 1);
-        
+
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
 
         assert(data.repeating[0].a === null);
         assert(data.repeating[0].b === null);
-        
+
     },
 
     "repeating back datalink": function() {
@@ -1370,16 +1370,16 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             var formEl = $('form', el);
         var addButton = $('.obviel-repeat-add-button', formEl);
         addButton.trigger('click');
-            
+
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
-        
+
         $(data.repeating[0]).setField('a', 'Bar');
         $(data.repeating[0]).setField('b', 3);
-        
+
         assert.equals(fieldA_el.val(), 'Bar');
         assert.equals(fieldB_el.val(), '3');
-        
+
         $(data.repeating[0]).setField('a', null);
         assert.equals(fieldA_el.val(), '');
     },
@@ -1416,27 +1416,27 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
 
         var addButton = $('.obviel-repeat-add-button', formEl);
         addButton.trigger('click');
         addButton.trigger('click');
         addButton.trigger('click');
-        
+
         assert.equals(data.repeating.length, 3);
         assert.equals(errors.repeating.length, 3);
-        
+
         var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
         var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
 
         var field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
         var field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
-        
+
         var field2_aEl = $('#obviel-field-test-repeating-2-a', formEl);
         var field2_bEl = $('#obviel-field-test-repeating-2-b', formEl);
-        
-        
+
+
         field0_aEl.val('foo');
         field0_bEl.val('10');
         field1_aEl.val('bar');
@@ -1450,7 +1450,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         change(field1_bEl);
         change(field2_aEl);
         change(field2_bEl);
-        
+
         assert.equals(data.repeating[0].a, 'foo');
         assert.equals(data.repeating[0].b, 10);
         assert.equals(data.repeating[1].a, 'bar');
@@ -1470,7 +1470,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
         assert.equals(field1_aEl.length, 0);
         assert.equals(field1_bEl.length, 0);
-        
+
         assert.equals(data.repeating[0].a, 'foo');
         assert.equals(data.repeating[0].b, 10);
         assert.equals(data.repeating[1].a, 'baz');
@@ -1537,21 +1537,21 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
-        
+
         assert.equals(data.repeating.length, 3);
         assert.equals(errors.repeating.length, 3);
-        
+
         var field0_aEl = $('#obviel-field-test-repeating-0-a', formEl);
         var field0_bEl = $('#obviel-field-test-repeating-0-b', formEl);
 
         var field1_aEl = $('#obviel-field-test-repeating-1-a', formEl);
         var field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
-        
+
         var field2_aEl = $('#obviel-field-test-repeating-2-a', formEl);
         var field2_bEl = $('#obviel-field-test-repeating-2-b', formEl);
-        
+
         field0_aEl.val('foo-changed');
         field0_bEl.val('11');
         field1_aEl.val('bar-changed');
@@ -1565,7 +1565,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         change(field1_bEl);
         change(field2_aEl);
         change(field2_bEl);
-        
+
         assert.equals(data.repeating[0].a, 'foo-changed');
         assert.equals(data.repeating[0].b, 11);
             assert.equals(data.repeating[1].a, 'bar-changed');
@@ -1585,7 +1585,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         field1_bEl = $('#obviel-field-test-repeating-1-b', formEl);
         assert.equals(field1_aEl.length, 0);
         assert.equals(field1_bEl.length, 0);
-        
+
         assert.equals(data.repeating[0].a, 'foo-changed');
         assert.equals(data.repeating[0].b, 11);
         assert.equals(data.repeating[1].a, 'baz-changed');
@@ -1688,7 +1688,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }]
             },
             data: data,
-            
+
             errors: errors
         });
         var formEl = $('form', el);
@@ -1926,7 +1926,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // starts as off
         fieldEl.trigger('change');
         assert.equals(data.a, false);
-        
+
         // set to on
         fieldEl.prop('checked', true);
         fieldEl.trigger('change');
@@ -1961,7 +1961,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         $(data).setField('a', true);
         assert.equals(fieldEl.is(':checked'), true);
-        
+
         $(data).setField('a', false);
         assert.equals(fieldEl.is(':checked'), false);
     },
@@ -1988,7 +1988,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-a', formEl);
-        
+
             fieldEl.val('foo');
         fieldEl.trigger('change');
         assert.equals(data.a, 'foo');
@@ -2198,7 +2198,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                                 JSON.stringify({}));
             }
         });
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2221,31 +2221,31 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
-        
+
         fieldA_el.val('wrong');
 
-        
+
         // submitting this should trigger a global error
         var view = el.view();
         view.submit({});
         this.server.respond();
 
         assert.equals(globalErrors.a, 'must not be wrong');
-            
+
         // it also shows up in the element
         var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
         assert.equals(fieldGlobalA.text(), 'must not be wrong');
-        
+
         // make the global validation problem go away again
         fieldA_el.val('right');
         view.submit({});
         this.server.respond();
         assert.equals(globalErrors.a, '');
         assert.equals(fieldGlobalA.text(), '');
-        
+
     },
 
     "field error rendering": function() {
@@ -2368,7 +2368,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // there's a form error
         var formErrorEl = $('.obviel-formerror', el);
         assert.equals(formErrorEl.text(), '1 field did not validate');
-        
+
         // now we put in a correct value
         fieldEl.val('long enough');
         fieldEl.trigger('change');
@@ -2381,7 +2381,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // the submit button isn't disabled
         var controlEls = $('button.obviel-control', el);
         assert.equals(controlEls.is(':disabled'), false);
-        
+
     },
 
     "field error not seen until submit": function() {
@@ -2522,7 +2522,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             data: data,
             errors: errors
         });
-        
+
         var formEl = $('form', el);
         var addButton = $('.obviel-repeat-add-button', formEl);
         addButton.trigger('click');
@@ -2561,7 +2561,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             'label': 'Submit!',
             'action': 'testUrl'
         };
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -2585,8 +2585,8 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             requestBody = $.parseJSON(request.requestBody);
             return {ifaces: ['successIface']};
         });
-        
-        
+
+
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-text', formEl);
             fieldEl.val('foo');
@@ -2599,7 +2599,62 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             assert.equals(el.text(), 'success!');
             done();
         });
-        
+
+    },
+
+    "run transformer on post response": function(done) {
+        // this is a clone of "actual submit", with the mutation that
+        // the json object returned from the server mockup is empty,
+        // and needs to be pimped by the transformer.
+
+        var el = testel();
+        var errors = {};
+        var controlInfo = {
+            'label': 'Submit!',
+            'action': 'testUrl'
+        };
+
+        obviel.transformer(function(obj, path, name) {
+          obj.ifaces = ['successIface'];
+        });
+
+        el.render({
+            ifaces: ['viewform'],
+            form: {
+                name: 'test',
+                widgets: [{
+                    ifaces: ['textlineField'],
+                    name: 'text',
+                    title: 'Text',
+                    description: 'A text widget',
+                    validate: {
+                        minLength: 3
+                    }
+                }],
+                controls: [controlInfo]
+            },
+            errors: errors
+        });
+
+        var requestBody;
+        this.mockJson('testUrl', function(request) {
+            requestBody = $.parseJSON(request.requestBody);
+            return { };
+        });
+
+        var formEl = $('form', el);
+        var fieldEl = $('#obviel-field-test-text', formEl);
+            fieldEl.val('foo');
+
+        var buttonEl = $('button', el);
+        var view = el.view();
+        view.submitControl(buttonEl, controlInfo).done(function() {
+            assert.equals(requestBody, {"text":"foo"});
+            // the successIface should be rendered
+            assert.equals(el.text(), 'success!');
+            done();
+        });
+
     },
 
     "actual submit with disabled field": function() {
@@ -2634,24 +2689,24 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         var requestBody;
-        
+
         this.mockJson('testUrl', function(request) {
             requestBody = $.parseJSON(request.requestBody);
             return {ifaces: ['successIface']};
         });
 
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
         var fieldEl = $('#obviel-field-test-text', formEl);
         fieldEl.val('foo');
         var field2El = $('#obviel-field-test-text2', formEl);
         field2El.val('bar');
-        
+
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
         this.server.respond();
-        
+
         assert.equals(requestBody, {"text":"foo","text2":"bar"});
 
         // the successIface should be rendered
@@ -2701,7 +2756,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
 
         var buttonEl = $('button', el);
@@ -2746,14 +2801,14 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             called++;
         });
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
 
         var buttonEl = $('button', el);
         buttonEl.trigger('click');
         this.server.respond();
-        
-        
+
+
         assert.equals(called, 0);
     },
 
@@ -2949,7 +3004,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var errors = {};
         var globalErrors = {};
 
-        
+
         this.mockJson('validate', function(request) {
             var data = $.parseJSON(request.requestBody);
             if (data.a > data.b) {
@@ -2984,7 +3039,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
@@ -2997,17 +3052,17 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // no action defined, so submit will succeed quietly
         view.submit({});
         this.server.respond();
-        
+
         assert.equals(globalErrors.a, undefined);
         assert.equals(globalErrors.b, undefined);
         var formErrorEl = $('.obviel-formerror', el);
         assert.equals(formErrorEl.text(), '');
-        
+
         fieldA_el.val('10');
         fieldB_el.val('1');
         view.submit({});
         this.server.respond();
-        
+
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
 
@@ -3017,12 +3072,12 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         assert.equals(formErrorEl.text(), '2 fields did not validate');
         assert.equals(fieldGlobalA.parent().parent().parentView().globalError(),
                       'must be smaller than b');
-        
+
         // make the global validation problem go away again
         fieldB_el.val('100');
         view.submit({});
         this.server.respond();
-        
+
         assert.equals(globalErrors.a, '');
         assert.equals(globalErrors.b, '');
         assert.equals(fieldGlobalA.text(), '');
@@ -3045,7 +3100,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             }
             return {};
         });
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3077,7 +3132,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldB_el.val('10');
 
         var server = this.server;
-        
+
         server.autoRespond = false;
 
         // submitting this, everything should be fine
@@ -3085,7 +3140,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // no action defined, so submit will succeed quietly
         view.submit({});
         server.respond();
-            
+
         assert.equals(globalErrors.a, undefined);
         assert.equals(globalErrors.b, undefined);
         var formErrorEl = $('.obviel-formerror', el);
@@ -3094,31 +3149,31 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // now create global validation error
         fieldA_el.val('10');
         fieldB_el.val('1');
-        
+
         view.submit({});
         server.respond();
 
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
-        
+
         // it also shows up in the element
         var fieldGlobalA = $('#obviel-global-error-test-a', formEl);
         assert.equals(fieldGlobalA.text(), 'must be smaller than b');
         assert.equals(formErrorEl.text(), '2 fields did not validate');
-        
+
         // possibly make the global validation problem go away (but not)
         // by modifying one of the affected fields
         fieldA_el.val('11');
         fieldA_el.parentView().change();
         server.respond();
-                
+
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
-        
+
         fieldB_el.val('100');
         fieldB_el.parentView().change();
         server.respond();
-        
+
         // this should've resubmitted for validation, so the problem should be
         // gone already
         assert.equals(globalErrors.a, '');
@@ -3134,7 +3189,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var globalErrors = {};
 
         var count = 0;
-        
+
         this.mockJson('validate', function(request) {
             count++;
             var data = $.parseJSON(request.requestBody);
@@ -3146,7 +3201,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             }
             return {};
         });
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3178,7 +3233,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         var server = this.server;
         server.autoRespond = false;
-        
+
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
@@ -3192,23 +3247,23 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         view.submit({});
         server.respond();
         assert.equals(count, 1);
-        
+
         // create error
         fieldA_el.val('10');
         fieldB_el.val('1');
         view.submit({});
         server.respond();
-        
+
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
         assert.equals(count, 2);
-        
+
         // possibly make the global validation problem go away (but not)
         // by modifying unrelated field
         fieldC_el.val('55');
         fieldC_el.parentView().change();
         server.respond();
-        
+
         // we should not have done any global validation check, as this
         // field is unrelated to global validation errors
         assert.equals(count, 2);
@@ -3219,7 +3274,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var data = {};
         var errors = {};
         var globalErrors = {};
-        
+
         this.mockJson('validate', function(request) {
             var data = $.parseJSON(request.requestBody);
             if (data.repeating[0].a === 'triggerError') {
@@ -3229,7 +3284,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             }
             return {};
         });
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3263,11 +3318,11 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         var server = this.server;
         server.autoRespond = false;
-        
+
         var addButton = $('.obviel-repeat-add-button', formEl);
         addButton.trigger('click');
         server.respond();
-        
+
         var fieldA_el = $('#obviel-field-test-repeating-0-a', formEl);
         var fieldB_el = $('#obviel-field-test-repeating-0-b', formEl);
         fieldA_el.val('foo');
@@ -3278,28 +3333,28 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         // no action defined, so submit will succeed quietly
         view.submit({});
         server.respond();
-        
+
         assert.equals(globalErrors.repeating[0].a, undefined);
         assert.equals(globalErrors.repeating[0].b, undefined);
-        
+
         fieldA_el.val('triggerError');
         fieldB_el.val('1');
         view.submit({});
         server.respond();
-        
+
         assert.equals(globalErrors.repeating[0].a, 'error');
         assert.equals(globalErrors.repeating[0].b, undefined);
-        
+
         // make the global validation problem go away again
         fieldA_el.val('nothing');
         view.submit({});
         server.respond();
-        
+
         assert.equals(globalErrors.repeating[0].a, '');
         assert.equals(globalErrors.repeating[0].b, undefined);
 
     },
-    
+
     'display value': function () {
         var el = testel();
         var data = {
@@ -3372,7 +3427,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                    '</div>' +
                    '</div>')
         });
-        
+
         var el = testel();
         var data = {};
         var errors = {};
@@ -3391,7 +3446,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }]
             },
             data: data,
-            
+
             errors: errors
         });
 
@@ -3426,23 +3481,23 @@ var obvielFormsTestCase = buster.testCase('form tests', {
                 }]
             },
             data: data,
-            
+
             errors: errors
         });
 
         var formEl = $('form', el);
 
         // bind to error event
-        
+
         formEl.bind('field-error.obviel-forms', function(ev) {
             $(ev.target).parents('.obviel-field').addClass('foo');
         });
 
-        
+
         formEl.bind('field-error-clear.obviel-forms', function(ev) {
             $(ev.target).parents('.obviel-field').removeClass('foo');
         });
-        
+
         var fieldEl = $('#obviel-field-test-a', formEl);
         fieldEl.val('foo'); // not an int
         fieldEl.trigger('change');
@@ -3451,7 +3506,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         fieldEl.val(1); // an int
         fieldEl.trigger('change');
-        
+
         assert(!fieldEl.parents('.obviel-field').hasClass('foo'));
     },
 
@@ -3460,7 +3515,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var data = {};
         var errors = {};
         var globalErrors = {};
-        
+
         this.mockJson('validate', function(request) {
             var data = $.parseJSON(request.requestBody);
             if (data.a > data.b) {
@@ -3493,9 +3548,9 @@ var obvielFormsTestCase = buster.testCase('form tests', {
             errors: errors,
             globalErrors: globalErrors
         });
-        
+
         this.server.autoRespond = false;
-            
+
         var formEl = $('form', el);
         var fieldA_el = $('#obviel-field-test-a', formEl);
         var fieldB_el = $('#obviel-field-test-b', formEl);
@@ -3513,7 +3568,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         var view = el.view();
         view.submit({});
         this.server.respond();
-        
+
         assert.equals(globalErrors.a, 'must be smaller than b');
         assert.equals(globalErrors.b, 'must be greater than a');
 
@@ -3525,11 +3580,11 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         fieldB_el.val('100');
         view.submit({});
         this.server.respond();
-        
+
         // the clear event has triggered for both fields
         refute(fieldA_el.parents('.obviel-field').hasClass('foo'));
         refute(fieldB_el.parents('.obviel-field').hasClass('foo'));
-        
+
     },
     'http error in validationUrl': function() {
         var el = testel();
@@ -3539,12 +3594,12 @@ var obvielFormsTestCase = buster.testCase('form tests', {
 
         var spy = sinon.spy();
         obviel.httpErrorHook(spy);
-        
+
         this.server.respondWith('POST', 'validate', function(request) {
             request.respond(500, {'Content-Type': 'text/html'},
                             '<div>Internal server error</div>');
         });
-        
+
         el.render({
             ifaces: ['viewform'],
             form: {
@@ -3558,7 +3613,7 @@ var obvielFormsTestCase = buster.testCase('form tests', {
         });
 
         this.server.autoRespond = false;
-        
+
         var formEl = $('form', el);
         var view = el.view();
         view.submit({});
